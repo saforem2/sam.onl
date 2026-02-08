@@ -1,47 +1,72 @@
-# Astro Starter Kit: Minimal
+# WebTUI
 
-```sh
-pnpm create astro@latest -- --template minimal
+Modular CSS Library that brings the beauty of Terminal UIs to the browser
+
+- Docs: https://webtui.ironclad.sh
+- Examples: https://webtui.ironclad.sh/showcase
+- Discord Server: https://discord.gg/yUS6T8YnfT
+
+## Quickstart
+
+Install the base WebTUI package with your preferred package manager
+
+```bash
+bun i @webtui/css
+npm i @webtui/css
+yarn add @webtui/css
+pnpm install @webtui/css
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/minimal)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/minimal)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/minimal/devcontainer.json)
+In your global CSS file, define the order of layers then import the library
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+```css
+@layer base, utils, components;
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+@import '@webtui/css';
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+Start using the library in your HTML
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+```html
+<button>click</button>
+<button size-="large">click me too</button>
+<div box-="square">
+    <p>content</p>
+</div>
+```
 
-Any static assets, like images, can be placed in the `public/` directory.
+For more detailed installation instructions, see the [installation guide](https://webtui.ironclad.sh/start/installation) and [framework-specific installations](https://webtui.ironclad.sh/start/installation)
 
-## 🧞 Commands
+## Packages
 
-All commands are run from the root of the project, from a terminal:
+All the officially-maintained packages in the monorepo
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
+- [@webtui/css](https://npmjs.com/package/@webtui/css)
+- [@webtui/plugin-nf](https://npmjs.com/package/@webtui/plugin-nf)
+- [@webtui/theme-catppuccin](https://npmjs.com/package/@webtui/theme-catppuccin)
+- [@webtui/theme-gruvbox](https://npmjs.com/package/@webtui/theme-gruvbox)
+- [@webtui/theme-nord](https://npmjs.com/package/@webtui/theme-nord)
+- [@webtui/theme-vitesse](https://npmjs.com/package/@webtui/theme-vitesse)
+- [@webtui/theme-everforest](https://npmjs.com/package/@webtui/theme-everforest)
 
-## 👀 Want to learn more?
+## Development
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+This repository is a monorepo that contains the website and all the official WebTUI packages.
+
+1. Ensure [Bun](https://bun.sh/) is installed
+2. Clone the repository
+    ```bash
+    git clone https://github.com/webtui/webtui
+    ```
+3. Install dependencies
+    ```bash
+    bun i
+    ```
+4. Build the project
+    ```bash
+    bun run build
+    ```
+4. Start the dev server
+    ```bash
+    bun run dev
+    ```

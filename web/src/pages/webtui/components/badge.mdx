@@ -1,0 +1,156 @@
+---
+layout: '@/layouts/Doc.astro'
+title: Badge
+---
+
+import Example from '@/components/Example.astro'
+import badgeStyle from '@webtui/css/components/badge.css?raw'
+
+Displays a badge
+
+<Example
+    stylesheets={[badgeStyle]}
+    html={`
+<span is-="badge">Badge</span>
+`}
+/>
+
+## Import
+
+```css
+@import '@webtui/css/components/badge.css';
+```
+
+## Usage
+
+```html
+<span is-="badge">badge</span>
+```
+
+## Examples
+
+### Variants
+
+Use the `variant-` attribute to change the color of a badge
+
+```html
+<span is-="badge" variant-="foreground1">foreground1</span>
+<span is-="badge" variant-="background2">background2</span>
+```
+
+<Example
+    stylesheets={[
+        badgeStyle,
+        `body { display: flex; flex-wrap: wrap; gap: 1lh 1ch;}`,
+    ]}
+    html={`
+<span is-="badge" variant-="background0">background0</span>
+<span is-="badge" variant-="background1">background1</span>
+<span is-="badge" variant-="background2">background2</span>
+<span is-="badge" variant-="background3">background3</span>
+<span is-="badge" variant-="foreground0">foreground0</span>
+<span is-="badge" variant-="foreground1">foreground1</span>
+<span is-="badge" variant-="foreground2">foreground2</span>
+`}
+/>
+
+Available variants match the [base theme colors](/start/theming#colors)
+
+### Caps
+
+Use the `cap-` attribute to customize badges' end cap styles
+
+```html
+<span is-="badge">square</span>
+<span is-="badge" cap-="round">round</span>
+<span is-="badge" cap-="triangle">triangle</span>
+```
+
+<Example
+    stylesheets={[
+        badgeStyle,
+        `body { display: flex; flex-wrap: wrap; gap: 1lh 1ch;}`,
+    ]}
+    html={`
+<span is-="badge" cap-="square">square</span>
+<span is-="badge" cap-="round">round</span>
+<span is-="badge" cap-="triangle">triangle</span>
+<span is-="badge" cap-="ribbon">ribbon</span>
+<span is-="badge" cap-="slant-top">slant-top</span>
+<span is-="badge" cap-="slant-bottom">slant-bottom</span>
+`}
+/>
+
+Pass two values separated by a space to customize the start and end cap styles
+
+<Example
+    stylesheets={[
+        badgeStyle,
+        `body { display: flex; flex-wrap: wrap; gap: 1lh 1ch;}`,
+    ]}
+    html={`
+<span is-="badge" cap-="square round">square round</span>
+<span is-="badge" cap-="round ribbon">round ribbon</span>
+<span is-="badge" cap-="ribbon triangle">ribbon triangle</span>
+<span is-="badge" cap-="triangle slant-top">triangle slant-top</span>
+<span is-="badge" cap-="slant-top slant-bottom">slant-top slant-bottom</span>
+<span is-="badge" cap-="slant-bottom square">slant-bottom square</span>
+`}
+/>
+
+## Reference
+
+### Properties
+
+Use the following custom CSS properties to style badges
+
+- `--badge-color`: The color of the badge
+- `--badge-text`: The text color of the badge
+
+```css
+#my-custom-badge {
+    --badge-color: #ffffff;
+    --badge-text: #000000;
+}
+```
+
+Using `background-color` directly will color behind the badge instead of coloring the badge shape
+
+<Example
+    stylesheets={[badgeStyle]}
+    css={`
+        span[is-='badge'] {
+            --badge-color: var(--foreground0);
+            --badge-text: var(--background0);
+            background-color: grey;
+        }
+    `}
+    html={`<span is-="badge" cap-="slant-top">badge</span>`}
+/>
+
+### Extending
+
+To extend the Badge stylesheet, define a CSS rule on the `components` layer
+
+```css
+@layer components {
+    [is-~='badge'] {
+        &[variant-='red'] {
+            --badge-color: red;
+            --badge-text: white;
+        }
+
+        /* ... */
+    }
+}
+```
+
+### Scope
+
+- All elements with the `is-~="badge"` selector
+
+```css
+[is-~='badge'] {
+    /* ... */
+}
+```

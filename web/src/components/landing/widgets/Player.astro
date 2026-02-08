@@ -1,0 +1,208 @@
+<column box-="square" class="widget" id="stats-widget" gap-="1" pad-="2 1">
+    <column box-="round" pad-="2 1" id="playing">
+        <row gap-="1">
+            <span>&#xf04c;</span>
+            <row self-="grow shrink !basis" style="overflow: hidden;">
+                <strong class="title" id="track-title">Loading...</strong>
+                <span class="album" id="track-album">
+                    <span>&#xf001;</span> —
+                </span>
+                <span class="author" id="track-artist">
+                    <span>&#xf007;</span> —
+                </span>
+            </row>
+            <row self-="!shrink">
+                <span class="duration" id="track-duration">--:--</span>
+            </row>
+        </row>
+        <row id="progress-bar">
+            <span>[</span>
+            <div id="progress" is-="separator"></div>
+            <div id="progress-gutter" is-="separator"></div>
+            <span>]</span>
+        </row>
+    </column>
+
+    <column pad-="1 0" self-="grow" style="overflow: hidden;">
+        <strong>Next up</strong>
+        <column>
+            <div is-="separator" style="--separator-color: var(--background2)">
+            </div>
+        </column>
+        <column id="up-next"></column>
+    </column>
+</column>
+
+<script type="module">
+    const lastfmData = {
+        baseURL:
+            'https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=',
+        user: 'saforem2',
+        apiKey: '1dbc15037c1fe71ce06acbb3f73adc75',
+        additional: '&format=json&limit=6',
+    }
+
+    const trackTitle = document.getElementById('track-title')
+    const trackAlbum = document.getElementById('track-album')
+    const trackArtist = document.getElementById('track-artist')
+    const trackDuration = document.getElementById('track-duration')
+    const upNext = document.getElementById('up-next')
+
+    const clearUpNext = () => {
+        if (!upNext) return
+        while (upNext.firstChild) {
+            upNext.removeChild(upNext.firstChild)
+        }
+    }
+
+    const makeSeparator = () => {
+        const column = document.createElement('column')
+        column.setAttribute('pad-', '1 0')
+        const divider = document.createElement('div')
+        divider.setAttribute('is-', 'separator')
+        divider.style.setProperty('--separator-color', 'var(--background1)')
+        column.appendChild(divider)
+        return column
+    }
+
+    const makeRow = ({ name, album, artist }) => {
+        const row = document.createElement('row')
+        row.className = 'song'
+
+        const icon = document.createElement('span')
+        icon.innerHTML = '&#xf04b;'
+        row.appendChild(icon)
+
+        const details = document.createElement('row')
+        details.setAttribute('self-', 'grow')
+
+        const title = document.createElement('strong')
+        title.className = 'title'
+        title.textContent = name ?? 'Unknown'
+
+        const albumEl = document.createElement('span')
+        albumEl.className = 'album'
+        albumEl.innerHTML = `<span>&#xf001;</span> ${album ?? 'Unknown'}`
+
+        const artistEl = document.createElement('span')
+        artistEl.className = 'author'
+        artistEl.innerHTML = `<span>&#xf007;</span> ${artist ?? 'Unknown'}`
+
+        details.appendChild(title)
+        details.appendChild(albumEl)
+        details.appendChild(artistEl)
+        row.appendChild(details)
+
+        const duration = document.createElement('span')
+        duration.textContent = '--:--'
+        row.appendChild(duration)
+
+        return row
+    }
+
+    const updateNowPlaying = (track) => {
+        if (trackTitle) trackTitle.textContent = track?.name ?? 'Silence!'
+        if (trackAlbum) {
+            const album = track?.album?.['#text'] || 'Unknown'
+            trackAlbum.innerHTML = `<span>&#xf001;</span> ${album}`
+        }
+        if (trackArtist) {
+            const artist = track?.artist?.['#text'] || 'Sam Foreman'
+            trackArtist.innerHTML = `<span>&#xf007;</span> ${artist}`
+        }
+        if (trackDuration) trackDuration.textContent = '--:--'
+    }
+
+    const setLastFM = async () => {
+        try {
+            const url =
+                lastfmData.baseURL +
+                lastfmData.user +
+                '&api_key=' +
+                lastfmData.apiKey +
+                lastfmData.additional
+
+            const resp = await fetch(url)
+            if (!resp.ok) throw new Error('lastfm fetch failed')
+            const data = await resp.json()
+            const tracks = data?.recenttracks?.track ?? []
+            const [current, ...rest] = tracks
+
+            updateNowPlaying(current)
+
+            clearUpNext()
+            if (upNext && rest.length > 0) {
+                rest.forEach((track, index) => {
+                    upNext.appendChild(
+                        makeRow({
+                            name: track?.name,
+                            album: track?.album?.['#text'],
+                            artist: track?.artist?.['#text'],
+                        }),
+                    )
+                    if (index < rest.length - 1) {
+                        upNext.appendChild(makeSeparator())
+                    }
+                })
+            }
+        } catch (error) {
+            updateNowPlaying(null)
+            clearUpNext()
+        }
+    }
+
+    setLastFM()
+    setInterval(setLastFM, 10 * 5000)
+</script>
+
+<style>
+    #progress-bar {
+        color: var(--blue);
+        #progress {
+            --separator-color: var(--lavender);
+            width: 15ch;
+        }
+
+        #progress-gutter {
+            --separator-color: var(--background2);
+            flex-grow: 1;
+        }
+    }
+
+    #stats-widget {
+        grid-column: 2 / 4;
+        grid-row: 1 / 3;
+    }
+
+    #playing {
+        --box-border-color: var(--background2);
+        color: var(--mauve);
+    }
+
+    .song {
+        gap: 1ch;
+        padding-left: 1ch;
+        padding-right: 1ch;
+        color: var(--foreground1);
+    }
+
+    .author,
+    .album,
+    .title {
+        flex-grow: 1;
+        max-width: 16ch;
+        min-width: 16ch;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+
+        span {
+            color: var(--pink);
+        }
+    }
+
+    .author,
+    .album {
+        color: var(--foreground2);
+    }
+</style>

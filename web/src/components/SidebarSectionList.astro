@@ -1,0 +1,69 @@
+---
+import { compareUrlPaths } from '@/utils/url'
+
+type SidebarLink = {
+    type: 'link'
+    id?: string
+    text: string
+    href: string
+}
+
+type SidebarSection = {
+    type: 'section'
+    id?: string
+    label: string
+    href?: string
+    children?: SidebarItem[]
+}
+
+type SidebarItem = SidebarLink | SidebarSection
+
+interface Props {
+    items?: SidebarItem[]
+    urlPath: string
+}
+
+const { items, urlPath } = Astro.props as Props
+
+const isExternal = (href?: string) => !!href && /^https?:\/\//.test(href)
+---
+
+{
+    items?.map((item) => {
+        if (item.type === 'section') {
+            return (
+                <details open class="sidebar-section">
+                    <summary>
+                        {item.href ? (
+                            <a
+                                href={item.href}
+                                class={compareUrlPaths(urlPath, item.href)
+                                    ? 'active'
+                                    : ''}>
+                                {item.label}
+                            </a>
+                        ) : (
+                            <span>{item.label}</span>
+                        )}
+                    </summary>
+                    <ul>
+                        <Astro.self items={item.children} urlPath={urlPath} />
+                    </ul>
+                </details>
+            )
+        }
+
+        const external = isExternal(item.href)
+
+        return (
+            <a
+                href={item.href}
+                class={compareUrlPaths(urlPath, item.href) ? 'active' : ''}
+                data-slug={item.id}
+                target={external ? '_blank' : undefined}
+                rel={external ? 'noreferrer' : undefined}>
+                {item.text}
+            </a>
+        )
+    })
+}

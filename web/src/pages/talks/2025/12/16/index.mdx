@@ -1,0 +1,501 @@
+---
+layout: '@/layouts/Doc.astro'
+title: 'AuroraGPT: Training Foundation Models on Supercomputers'
+date: '2025-12-16'
+---
+
+Sam Foreman
+2025-12-16
+
+- [🧰 AuroraGPT: Toolbox](#toolbox-auroragpt-toolbox)
+- [👥 Team Leads](#busts_in_silhouette-team-leads)
+- [🤝 Teams](#handshake-teams)
+- [🏋️ Challenges](#weight_lifting-challenges)
+    - [💾 AuroraGPT: Training](#floppy_disk-auroragpt-training)
+    - [🍹 AuroraGPT: Blending Data,
+      Efficiently](#tropical_drink-auroragpt-blending-data-efficiently)
+    - [📉 Training AuroraGPT-7B on 2T
+      Tokens](#chart_with_downwards_trend-training-auroragpt-7b-on-2t-tokens)
+    - [📉 Training AuroraGPT-2B on 7T
+      Tokens](#chart_with_downwards_trend-training-auroragpt-2b-on-7t-tokens)
+    - [✨ Features](#sparkles-features)
+    - [✨ Features (even more!)](#sparkles-features-even-more)
+- [🧬 MProt-DPO](#dna-mprot-dpo)
+    - [🧬 Scaling Results (2024)](#dna-scaling-results-2024)
+    - [🧬 MProt-DPO: Scaling Results](#dna-mprot-dpo-scaling-results)
+    - [🚂 Loooooooooong Sequence
+      Lengths](#steam_locomotive-loooooooooong-sequence-lengths)
+- [🌎 AERIS (2025)](#earth_americas-aeris-2025)
+    - [👀 High-Level Overview of
+      AERIS](#eyes-high-level-overview-of-aeris)
+    - [➕ Contributions](#heavy_plus_sign-contributions)
+    - [⚠️ Issues with the Deterministic
+      Approach](#warning-issues-with-the-deterministic-approach)
+    - [🎲 Transitioning to a Probabilistic
+      Model](#game_die-transitioning-to-a-probabilistic-model)
+    - [🌀 Sequence-Window-Pipeline Parallelism
+      `SWiPe`](#cyclone-sequence-window-pipeline-parallelism-swipe)
+    - [🚀 AERIS: Scaling Results](#rocket-aeris-scaling-results)
+    - [🌪️ Hurricane Laura](#tornado-hurricane-laura)
+- [📓 References](#notebook-references)
+- [❤️ Acknowledgements](#heart-acknowledgements)
+- [Extras](#extras)
+
+### 🧰 AuroraGPT: Toolbox
+
+- **Datasets and data pipelines** (how do we deal with scientific data?)
+- **Software infrastructure and workflows** (scalable, robust,
+  extensible)
+- **Evaluation of state-of-the-art LLM Models** (how do they perform on
+  scientific tasks?)
+
+<div class="flex-container" style="gap: 5pt; margin-block-end: 5pt;">
+
+> [!TIP]
+>
+> ### 🍋 ezpz
+>
+> [saforem2/ezpz](https://github.com/saforem2/ezpz)
+>
+> <span class="dim-text">Write once, run anywhere</span>
+
+> [!NOTE]
+>
+> ### 🚂 Training
+>
+> [argonne-lcf/Megatron-DeepSpeed](https://github.com/argonne-lcf/Megatron-DeepSpeed)
+>
+> <span class="dim-text">For the largest of large language models</span>
+
+> [!IMPORTANT]
+>
+> ### 🏃‍♂️ Running
+>
+> [argonne-lcf/inference-endpoints](https://github.com/argonne-lcf/inference-endpoints)
+>
+> <span class="dim-text">Inference endpoints for LLMs, hosted @ ALCF</span>
+
+</div>
+
+### 👥 Team Leads
+
+<div style="font-size: 100%;">
+
+<div class="flex-container"
+style="text-align: center; align-items: center;">
+
+**Planning**
+
+<img
+    src="../../../../assets/team/rick-stevens.png"
+    style="height:75pt"
+    alt="Rick Stevens"
+/>
+
+<img
+    src="../../../../assets/team/ian-foster.png"
+    style="height:75pt"
+    alt="Ian Foster"
+/>
+
+<img
+    src="../../../../assets/team/rinku-gupta.png"
+    style="height:75pt"
+    alt="Rinku Gupta"
+/>
+
+<img
+    src="../../../../assets/team/mike-papka.png"
+    style="height:75pt"
+    alt="Mike Papka"
+/>
+
+<img
+    src="../../../../assets/team/arvind-ramanathan.png"
+    style="height:75pt"
+    alt="Arvind Ramanathan"
+/>
+
+<img
+    src="../../../../assets/team/fangfang-xia.png"
+    style="height:75pt"
+    alt="Fangfang Xia"
+/>
+
+</div>
+
+<div class="flex-container" style="text-align: center;">
+
+<div class="col">
+
+**Data**
+
+<img
+    src="../../../../assets/team/ian-foster.png"
+    style="height:75pt"
+    alt="Ian Foster"
+/>
+
+<img
+    src="../../../../assets/team/robert-underwood.png"
+    style="height:75pt"
+    alt="Robert Underwood"
+/>
+
+</div>
+
+<div class="col">
+
+**Training**
+
+<img
+    src="../../../../assets/team/venkat-vishwanath.png"
+    style="height:75pt"
+    alt="Venkat Vishwanath"
+/>
+
+<img
+    src="../../../../assets/team/sam-foreman.png"
+    style="height:75pt"
+    alt="Sam Foreman"
+/>
+
+</div>
+
+<div class="col">
+
+**Evaluation**
+
+<img
+    src="../../../../assets/team/franck-cappello.png"
+    style="height:75pt"
+    alt="Franck Cappello"
+/>
+
+<img
+    src="../../../../assets/team/sandeep-madireddy.png"
+    style="height:75pt"
+    alt="Sandeep Madireddy"
+/>
+
+<img src="../../../../assets/team/bo-li.png" style="height:75pt" alt="Bo Li" />
+
+</div>
+
+<div class="col">
+
+**Post**
+
+<img
+    src="../../../../assets/team/eliu-huerta.png"
+    style="height:75pt"
+    alt="Eliu Huerta"
+/>
+
+<img
+    src="../../../../assets/team/azton-wells.png"
+    style="height:75pt"
+    alt="Azton Wells"
+/>
+
+</div>
+
+<div class="col">
+
+**Inference**
+
+<img
+    src="../../../../assets/team/rajeev-thakur.png"
+    style="height:75pt"
+    alt="Rajeev Thakur"
+/>
+
+</div>
+
+<div class="col">
+
+**Comms**
+
+<img
+    src="../../../../assets/team/charlie-catlett.png"
+    style="height:75pt"
+    alt="Charlie Catlett"
+/>
+
+<img
+    src="../../../../assets/team/david-martin.png"
+    style="height:75pt"
+    alt="David Martin"
+/>
+
+</div>
+
+<div class="col">
+
+**Distribution**
+
+<img
+    src="../../../../assets/team/brad-ullrich.png"
+    style="height:75pt"
+    alt="Brad Ullrich"
+/>
+
+</div>
+
+</div>
+
+</div>
+
+### 🤝 Teams
+
+<div class="flex-container">
+
+<div class="column">
+
+- **Planning**
+- **Data Prep**
+    - Accumulate 20+ T tokens of high-quality scientific text and
+      structured data
+- <span style="background: oklch(from #ff1a8f calc(l * 1.15) c h / 0.1); border: 1px solid #ff1a8f; border-radius: 0.25px;">
+      **Models / Training**
+  </span>
+  [^1] - Train (entirely from scratch) a series of models on publicly available
+  data
+- **Evaluation**
+    - Skills, trustworthiness, safety, robustness, privacy, machine ethics
+
+</div>
+
+<div class="column">
+
+- **Post-Training**
+    - Fine-tuning, alignment
+- **Inference**
+    - Model serving, API development / public-facing web services
+- **Distribution**
+    - Licensing, generating and distributing artifacts for public
+      consumption
+- **Communication**
+
+</div>
+
+</div>
+
+## 🏋️ Challenges
+
+This is _incredibly_ difficult in practice, due in part to:
+
+- Brand new hardware, architecture, software
+- Lack of native support in existing frameworks (though getting better!)
+- General system stability  
+  +10k Nodes
+  $\left(\times \frac{12\,\,\mathrm{XPU}}{1\,\,\mathrm{Node}}\right)\Rightarrow$ +**100k** XPUs
+    - network performance
+    - file system stability (impacted by _other users_ !)
+    - _many_ unexpected difficulties occur at increasingly large scales
+- Combinatorial explosion of possible configurations and experiments
+- \{hyperparameters, architectures, tokenizers, learning rates, …\}
+
+### 💾 AuroraGPT: Training
+
+- To train a fixed model on trillions of tokens requires:
+    1.  **Aggregating** data from multiple different _corpora_  
+        (e.g. ArXiv, Reddit, StackExchange, GitHub, Wikipedia, etc.)
+    2.  **Sampling** _each training batch_ according to a fixed
+        distribution across corpora
+    3.  **Building** indices that map batches of tokens into these files
+        (indexing)
+
+<div class="red-card">
+
+The original implementation was _slow_:
+
+- Designed to run _serially_ on a **single device**
+- **Major bottleneck** when debugging data pipeline at scale
+
+</div>
+
+### 🍹 AuroraGPT: Blending Data, Efficiently
+
+<div class="flex-container"
+style="padding: 10pt; justify-content: space-around; align-items: flex-start;">
+
+<div class="column" style="width:25%;">
+
+- 🐢 Original implementation:
+    - **Slow** (serial, single device)
+    - <span class="dim-text">~ 1 hr</span>/2T tokens
+- 🐇 New implementation:
+    - **Fast!** (distributed, asynchronous)
+    - <span style="color:#2296F3;">~ **2 min**</span>/2T tokens (**30x** faster
+      !!)
+
+</div>
+
+<div class="column">
+
+<div id="fig-data-processing">
+
+<img src="../../../../assets/AuroraGPT/data-processing.svg" class="r-stretch" />
+
+Figure 1: Time spent preparing 2T tokens
+
+</div>
+
+</div>
+
+</div>
+
+### 📉 Training AuroraGPT-7B on 2T Tokens
+
+### 📉 Training AuroraGPT-2B on 7T Tokens
+
+<div id="fig-auroragpt-2b">
+
+<img
+    src="../../../../assets/aeris/diffusion.gif"
+    alt="Reverse Diffusion Process"
+    loading="lazy"
+/>
+
+<img
+    src="../../../../assets/aeris/diffusion_forward.png"
+    style="width:89.6%"
+    alt="Forward Diffusion Process (\pi\rightarrow \mathcal{N})"
+/>
+
+</div>
+
+### 🌀 Sequence-Window-Pipeline Parallelism `SWiPe`
+
+<div class="flex-container">
+
+<div class="column" style="width:33%;">
+
+- `SWiPe` is a **novel parallelism strategy** for Swin-based
+  Transformers
+- Hybrid 3D Parallelism strategy, combining:
+    - Sequence parallelism (`SP`)
+    - Window parallelism (`WP`)
+    - Pipeline parallelism (`PP`)
+
+</div>
+
+<div id="fig-swipe-layer">
+
+![](../../../../assets/aeris/wpsp.svg)
+
+Figure 10
+
+</div>
+
+</div>
+
+<div id="fig-comms">
+
+![](../../../../assets/aeris/comms1.svg)
+
+Figure 11: `SWiPe` Communication Patterns
+
+</div>
+
+### 🚀 AERIS: Scaling Results
+
+<div class="flex-container">
+
+<div id="fig-aeris-scaling">
+
+![](../../../../assets/aeris/aeris-scaling.svg)
+
+Figure 12: AERIS: Scaling Results
+
+</div>
+
+<div class="column" style="width:30%;">
+
+- <span class="highlight-blue">**10 EFLOPs**</span> (sustained) @ **120,960
+  GPUs**
+- See (Hatanpää et al. (2025)) for additional details
+- [arXiv:2509.13523](https://arxiv.org/abs/2509.13523)
+
+</div>
+
+</div>
+
+### 🌪️ Hurricane Laura
+
+<div id="fig-hurricane-laura">
+
+![](../../../../assets/aeris/science/hurricane.png)
+
+Figure 13: Hurricane Laura tracks (top) and intensity (bottom).
+Initialized 7(a), 5(b) and 3(c) days prior to 2020-08-28T00z.
+
+</div>
+
+## 📓 References
+
+<div id="refs" class="references csl-bib-body hanging-indent">
+
+<div id="ref-mprot-dpo2024" class="csl-entry">
+
+Dharuman, Gautham, Kyle Hippe, Alexander Brace, et al. 2024. “MProt-DPO:
+Breaking the ExaFLOPS Barrier for Multimodal Protein Design Workflows
+with Direct Preference Optimization.” _Proceedings of the International
+Conference for High Performance Computing, Networking, Storage, and
+Analysis_ (Atlanta, GA, USA), SC ’24.
+[https://doi.org/10.1109/SC41406.2024.00013](https://doi.org/10.1109/SC41406.2024.00013).
+
+</div>
+
+<div id="ref-stock2025aeris" class="csl-entry">
+
+Hatanpää, Väinö, Eugene Ku, Jason Stock, et al. 2025. _AERIS: Argonne
+Earth Systems Model for Reliable and Skillful Predictions_.
+[https://arxiv.org/abs/2509.13523](https://arxiv.org/abs/2509.13523).
+
+</div>
+
+<div id="ref-price2024gencast" class="csl-entry">
+
+Price, Ilan, Alvaro Sanchez-Gonzalez, Ferran Alet, et al. 2024.
+_GenCast: Diffusion-Based Ensemble Forecasting for Medium-Range
+Weather_. [https://arxiv.org/abs/2312.15796](https://arxiv.org/abs/2312.15796).
+
+</div>
+
+<div id="ref-song2023ds4sci" class="csl-entry">
+
+Song, Shuaiwen Leon, Bonnie Kruft, Minjia Zhang, et al. 2023.
+_DeepSpeed4Science Initiative: Enabling Large-Scale Scientific Discovery
+Through Sophisticated AI System Technologies_.
+[https://arxiv.org/abs/2310.04610](https://arxiv.org/abs/2310.04610).
+
+</div>
+
+</div>
+
+## ❤️ Acknowledgements
+
+> This research used resources of the Argonne Leadership Computing
+> Facility, which is a DOE Office of Science User Facility supported
+> under Contract DE-AC02-06CH11357.
+
+## Extras
+
+[^1]: Co-led by: Venkat Vishwanath, Sam Foreman
+
+[^2]: Implemented by Marieme Ngom
+
+[^3]:
+    Relative to PDE-based models, e.g.:
+    [GFS](https://www.ncdc.noaa.gov/data-access/model-data/model-datasets/global-forcast-system-gfs)
+
+[^4]:
+    [GenCast: A Generative Model for Medium-Range Global Weather
+    Forecasting](https://arxiv.org/html/2312.15796v1) (Price et al.
+    (2024))
+
+[^5]:
+    Demonstrated on up to 120,960 GPUs on Aurora and 8,064 GPUs on
+    LUMI.

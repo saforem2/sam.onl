@@ -1,0 +1,520 @@
+---
+import { compareUrlPaths } from '@/utils/url'
+import {
+    makeSortedCategoryEntries,
+    categoryLabels,
+} from '@/utils/content'
+import VimNavigation from './landing/VimNavigation.astro'
+import SidebarSectionList from '@/components/SidebarSectionList.astro'
+
+const categories = makeSortedCategoryEntries()
+const customSectionSlugs = new Set(['posts', 'talks', 'more'])
+const otherCategories = categories.filter(
+    ([slug]) => !customSectionSlugs.has(slug),
+)
+
+const { pathname: urlPath } = Astro.url
+
+type SidebarLink = {
+    type: 'link'
+    id?: string
+    text: string
+    href: string
+}
+
+type SidebarSection = {
+    type: 'section'
+    id?: string
+    label: string
+    href?: string
+    children?: SidebarItem[]
+}
+
+type SidebarItem = SidebarLink | SidebarSection
+
+type RouteEntry = {
+    slug: string
+    href: string
+    title: string
+}
+
+const slugFromPath = (path: string) => {
+    const [, suffix] = path.split('/pages/')
+    if (!suffix) return null
+    return suffix.replace(/\.(md|mdx|astro)$/, '').replace(/\/(index)$/, '')
+}
+
+const fallbackTitle = (slug: string) =>
+    slug.split('/').filter(Boolean).slice(-1)[0] ?? slug
+
+const routeTitle = (module: Record<string, unknown>, slug: string) =>
+    (module?.frontmatter as { title?: string } | undefined)?.title ??
+    fallbackTitle(slug)
+
+const makeRouteEntries = (modules: Record<string, unknown>) => {
+    const entries: RouteEntry[] = []
+
+    Object.entries(modules).forEach(([path, module]) => {
+        const slug = slugFromPath(path)
+        if (!slug) return
+        if (slug.endsWith('/index')) return
+
+        const moduleRecord = module as Record<string, unknown>
+
+        entries.push({
+            slug,
+            href: `/${slug}`,
+            title: routeTitle(moduleRecord, slug),
+        })
+    })
+
+    return entries
+}
+
+const groupByYear = (
+    entries: RouteEntry[],
+    base: string,
+    overrides: Record<string, string> = {},
+) => {
+    const groups = new Map<string, RouteEntry[]>()
+
+    entries
+        .filter((entry) => entry.slug.startsWith(`${base}/`))
+        .forEach((entry) => {
+            const overrideYear = overrides[entry.slug]
+            const match = entry.slug.match(new RegExp(`^${base}/(\\d{4})/`))
+            const year = overrideYear ?? match?.[1] ?? 'Other'
+
+            if (!groups.has(year)) {
+                groups.set(year, [])
+            }
+            groups.get(year)?.push(entry)
+        })
+
+    return groups
+}
+
+const sortYears = (years: string[]) =>
+    years.sort((a, b) => {
+        if (a === 'Other') return 1
+        if (b === 'Other') return -1
+        return Number(b) - Number(a)
+    })
+
+const sortEntries = (entries: RouteEntry[]) =>
+    entries.sort((a, b) => b.slug.localeCompare(a.slug))
+
+const link = (text: string, href: string, id?: string): SidebarLink => ({
+    type: 'link',
+    text,
+    href,
+    id,
+})
+
+const section = (
+    label: string,
+    options: Omit<SidebarSection, 'type' | 'label'> = {},
+): SidebarSection => ({
+    type: 'section',
+    label,
+    ...options,
+})
+
+const postModules = import.meta.glob('../pages/posts/**/*.{md,mdx,astro}', {
+    eager: true,
+}) as Record<string, unknown>
+const talkModules = import.meta.glob('../pages/talks/**/*.{md,mdx,astro}', {
+    eager: true,
+}) as Record<string, unknown>
+
+const postEntries = makeRouteEntries(postModules).filter(
+    (entry) => entry.slug !== 'posts' && !entry.slug.startsWith('posts/drafts/'),
+)
+const talkEntries = makeRouteEntries(talkModules).filter(
+    (entry) => entry.slug !== 'talks',
+)
+
+const postsByYear = groupByYear(postEntries, 'posts', {
+    'posts/resume/README': '2025',
+})
+const talksByYear = groupByYear(talkEntries, 'talks')
+
+const postYears = sortYears(Array.from(postsByYear.keys()))
+const talkYears = sortYears(Array.from(talksByYear.keys()))
+
+const postsSection = section('✏️ Posts', {
+    id: 'posts',
+    href: '/posts',
+    children: postYears.map((year) =>
+        section(year, {
+            children: sortEntries(postsByYear.get(year) ?? []).map((entry) =>
+                link(entry.title, entry.href, entry.slug),
+            ),
+        }),
+    ),
+})
+
+const talksSection = section('🦜 Talks', {
+    id: 'talks',
+    href: '/talks',
+    children: talkYears.map((year) =>
+        section(year, {
+            children: sortEntries(talksByYear.get(year) ?? []).map((entry) =>
+                link(entry.title, entry.href, entry.slug),
+            ),
+        }),
+    ),
+})
+
+const moreSection = section('➕ More', {
+    id: 'more',
+    href: '/more',
+    children: [
+        section('📚 Projects', {
+            href: '/projects',
+            children: [
+                section('🎒 Intro to HPC Bootcamp 2025', {
+                    href: '/projects/hpc-bootcamp-2025',
+                    children: [
+                        section('[00] Intro to AI and HPC', {
+                            href: '/projects/hpc-bootcamp-2025/00-intro-AI-HPC',
+                            children: [
+                                link(
+                                    '[0] Compute Systems',
+                                    '/projects/hpc-bootcamp-2025/00-intro-AI-HPC/0-compute-systems',
+                                ),
+                                link(
+                                    '[1] Shared Resources',
+                                    '/projects/hpc-bootcamp-2025/00-intro-AI-HPC/1-shared-resources',
+                                ),
+                                link(
+                                    '[2] Jupyter Notebooks',
+                                    '/projects/hpc-bootcamp-2025/00-intro-AI-HPC/2-jupyter-notebooks',
+                                ),
+                                link(
+                                    '[3] Homework',
+                                    '/projects/hpc-bootcamp-2025/00-intro-AI-HPC/3-homework',
+                                ),
+                                link(
+                                    '[4] NERSC',
+                                    '/projects/hpc-bootcamp-2025/00-intro-AI-HPC/4-nersc',
+                                ),
+                                link(
+                                    '[5] MCMC Example',
+                                    '/projects/hpc-bootcamp-2025/00-intro-AI-HPC/5-mcmc-example',
+                                ),
+                                link(
+                                    '[6] Linear Regression',
+                                    '/projects/hpc-bootcamp-2025/00-intro-AI-HPC/6-linear-regression',
+                                ),
+                            ],
+                        }),
+                        section('[01] Neural Networks', {
+                            href: '/projects/hpc-bootcamp-2025/01-neural-networks',
+                            children: [
+                                link(
+                                    '[0] Intro to NNs',
+                                    '/projects/hpc-bootcamp-2025/01-neural-networks/0-intro',
+                                ),
+                                link(
+                                    '[1] MNIST Example',
+                                    '/projects/hpc-bootcamp-2025/01-neural-networks/1-mnist',
+                                ),
+                                link(
+                                    '[2] Advanced',
+                                    '/projects/hpc-bootcamp-2025/01-neural-networks/2-advanced',
+                                ),
+                                link(
+                                    '[3] Conv. Nets',
+                                    '/projects/hpc-bootcamp-2025/01-neural-networks/3-conv-nets',
+                                ),
+                                link(
+                                    '[4] Representation Learning',
+                                    '/projects/hpc-bootcamp-2025/01-neural-networks/4-representation-learning',
+                                ),
+                            ],
+                        }),
+                        section('[02] Large Language Models', {
+                            href: '/projects/hpc-bootcamp-2025/02-llms',
+                            children: [
+                                link(
+                                    '[0] Intro to LLMs',
+                                    '/projects/hpc-bootcamp-2025/02-llms/0-intro-to-llms',
+                                ),
+                            ],
+                        }),
+                    ],
+                }),
+                section('📦 GitHub Repos', {
+                    children: [
+                        link('👤 `saforem2/`', 'https://github.com/saforem2'),
+                        link('🍋 `ezpz`', 'https://saforem2.github.io/ezpz'),
+                        link('🍋 `ezpz`', 'https://github.com/saforem2/ezpz'),
+                        link(
+                            '🟥 `l2hmc-qcd`',
+                            'https://github.com/saforem2/l2hmc-qcd',
+                        ),
+                        link(
+                            '🤖 `Megatron-DeepSpeed`',
+                            'https://github.com/argonne-lcf/Megatron-DeepSpeed',
+                        ),
+                        link('💬 `wordplay` 🎮', 'https://github.com/saforem2/wordplay'),
+                        link(
+                            '🎓 `ai-science-training`',
+                            'https://www.alcf.anl.gov/alcf-ai-science-training-series',
+                        ),
+                        link('💸 `enrich`', 'https://github.com/saforem2/enrich'),
+                        link(
+                            '🤷🏻‍♂️`ambivalent`',
+                            'https://github.com/saforem2/ambivalent',
+                        ),
+                        link(
+                            '🌍 `climate-analysis`',
+                            'https://github.com/saforem2/climate-analysis',
+                        ),
+                        link('🎨 `glitz`', 'https://github.com/saforem2/glitz'),
+                        link(
+                            '🌐 `personal_site`',
+                            'https://github.com/saforem2/personal_site',
+                        ),
+                        link(
+                            '🗒️ `Notes-Demo`',
+                            'https://github.com/saforem2/notes-demo',
+                        ),
+                    ],
+                }),
+            ],
+        }),
+    ],
+})
+
+const customSidebar: SidebarItem[] = [postsSection, talksSection, moreSection]
+
+---
+
+<nav box-="square" shear-="top" id="sidebar">
+    <button
+        id="sidebar-toggle"
+        type="button"
+        aria-expanded="true"
+        aria-controls="sidebar"
+        aria-label="Toggle sidebar (Ctrl+B)">
+        <code>&lt;C-b&gt;</code>
+    </button>
+    <div id="category-container">
+        <div id="category-list">
+            <SidebarSectionList items={customSidebar} urlPath={urlPath} />
+            {
+                otherCategories.map(([slug, pages]) => (
+                    <div>
+                        {categoryLabels[slug]}
+                        <ul>
+                            {pages.map(({ id, data: { title } }) => (
+                                <a
+                                    href={`/${id}`}
+                                    class={
+                                        compareUrlPaths(urlPath, id)
+                                            ? 'active'
+                                            : ''
+                                    }
+                                    data-slug={id}>
+                                    {title}
+                                </a>
+                            ))}
+                        </ul>
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+    <div id="sidebar-vim-nav-container">
+        <VimNavigation showHL />
+    </div>
+</nav>
+
+<style>
+    #sidebar-vim-nav-container {
+        padding-left: 1ch;
+        padding-right: 2ch;
+        padding-top: 1lh;
+        padding-bottom: 1lh;
+        display: flex;
+        flex-direction: row;
+    }
+    #sidebar {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: visible;
+        flex-grow: 1;
+
+        &:focus-within {
+            --box-border-color: var(--foreground2);
+        }
+
+        #category-container {
+            position: relative;
+            flex-grow: 1;
+            margin-top: 1lh;
+        }
+
+        #category-list {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1lh;
+            padding: 0 1ch;
+            overflow-y: auto;
+        }
+    }
+
+    #sidebar-toggle{
+        position: absolute;
+        background: transparent;
+        border: none;
+        padding: 0ch 1ch;
+        transform-origin: right top;
+        color: var(--foreground1);
+        cursor: pointer;
+        text-decoration: none;
+        z-index: 2;
+        right: 0.5lh;
+        top: 0.5lh;
+        color: var(--button-secondary);
+        background-color: oklch(from var(--button-primary) calc(l * 1.15) c h / 0.1);
+        height: 1lh;
+        margin-inline-end: -5px;
+        margin-top: 3px;
+    }
+
+    /* #sidebar-toggle { */
+    /*     position: absolute; */
+    /*     top: 2lh; */
+    /*     right: 0; */
+    /*     background: transparent; */
+    /*     border: none; */
+    /*     padding: 0 0.5ch; */
+    /*     transform: rotate(90deg); */
+    /*     transform-origin: right top; */
+    /*     color: var(--foreground1); */
+    /*     cursor: pointer; */
+    /*     text-decoration: none; */
+    /*     z-index: 2; */
+    /**/
+    /*     code { */
+    /*         background-color: transparent; */
+    /*     } */
+    /* } */
+
+    #sidebar-toggle:focus,
+    #sidebar-toggle:hover {
+        color: var(--foreground0);
+        text-decoration: underline;
+    }
+
+    #category-list a[href] {
+        color: var(--foreground2);
+        text-decoration: none;
+        outline: none;
+        display: list-item;
+
+        &::before {
+            content: '├ ';
+        }
+
+        &:last-of-type::before {
+            content: '└ ';
+        }
+
+        &.active {
+            color: var(--foreground0);
+            text-decoration: underline;
+            font-weight: var(--font-weight-bold);
+            background-color: var(--background1);
+        }
+
+        &:focus {
+            background-color: var(--background1);
+        }
+    }
+
+    details {
+        summary {
+            font-weight: var(--font-weight-bold);
+            &::marker {
+                color: var(--foreground2);
+                content: '\eab6\ ';
+            }
+
+            &:hover,
+            &:focus {
+                background-color: var(--background1);
+            }
+        }
+
+        &[open] {
+            summary {
+                &::marker {
+                    content: '\eab4\ ';
+                }
+            }
+        }
+    }
+
+    .sidebar-section > summary > a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    #category-list ul {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5lh;
+        padding-left: 1ch;
+        margin: 0;
+    }
+
+    details[open] a.hidden,
+    details.hidden,
+    .hidden {
+        display: none;
+    }
+</style>
+
+<script>
+    import {
+        applyVimNavigation,
+        isUserTyping,
+        vimFocusElement,
+    } from '@/utils/vim'
+
+    let currentElement: HTMLElement | null =
+        document.querySelector(`ul > a.active`)
+
+    window.addEventListener('keydown', (e) => {
+        // Don't navigate if the user is typing
+        if (isUserTyping()) {
+            return
+        }
+
+        if (e.key === 'h') {
+            const elementToFocus = currentElement ?? null
+
+            if (elementToFocus) {
+                vimFocusElement(elementToFocus)
+            }
+        }
+    })
+
+    const sidebar = document.getElementById('sidebar')
+    if (sidebar) {
+        applyVimNavigation(
+            sidebar,
+            'details:not(.hidden)[open] a:not(.hidden), details:not(.hidden) summary',
+            (element) => {
+                currentElement = element
+            },
+        )
+    }
+</script>

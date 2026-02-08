@@ -1,0 +1,214 @@
+---
+layout: '@/layouts/Doc.astro'
+title: Progress
+---
+
+import Example from '@/components/Example.astro'
+import progressStyle from '@webtui/css/components/progress.css?raw'
+
+Displays a progress bar
+
+**Note:** The progress bar component automatically rounds the progress display value to the nearest character width
+
+<Example
+    stylesheets={[
+        progressStyle,
+        `body{display:flex;flex-direction:column;gap:1lh;}`,
+    ]}
+    html={`<div is-="progress" style="--progress-value:50;">50%</div>
+<div is-="progress" style="--progress-value:25;">25%</div>`}
+/>
+
+## Import
+
+```css
+@import '@webtui/css/components/progress.css';
+```
+
+## Usage
+
+Unfortunately, due to gecko-based browsers not supporting [modern `attr()` usage](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/attr), you have to use CSS variables for controlling the progress value.
+
+```html
+<div is-="progress" style="--progress-value: 50;">50%</div>
+<div is-="progress" style="--progress-value: 2; --progress-max: 5;">2/5</div>
+```
+
+To dynamically update the progress value with JavaScript:
+
+```js
+document
+    .getElementById('my-progress-element')
+    .style.setProperty('--progress-max', '100')
+document
+    .getElementById('my-progress-element')
+    .style.setProperty('--progress-value', '50')
+```
+
+## Examples
+
+### Color
+
+<Example
+    stylesheets={[
+        progressStyle,
+        `body{display:flex;flex-direction:column;gap:1lh;}`,
+    ]}
+    css={`
+        #red {
+            --progress-value-background: red;
+            --progress-empty-background: grey;
+        }
+        #green {
+            --progress-value-background: green;
+            --progress-empty-background: white;
+        }
+        #blue {
+            --progress-value-background: blue;
+        }
+    `}
+    html={`<div is-="progress" style="--progress-value:50;--progress-max:100" id="red">50%</div>
+<div is-="progress" style="--progress-value:40;--progress-max:100" id="green">40%</div>
+<div is-="progress" style="--progress-value:30;--progress-max:100" id="blue">30%</div>
+<div is-="progress" style="--progress-value:20;--progress-max:100; --progress-value-background: orange">20%</div>`}
+/>
+
+### Text content
+
+<Example
+    stylesheets={[
+        progressStyle,
+        `body{display:flex;flex-direction:column;gap:1lh;}`,
+    ]}
+    css={`
+        #one {
+            --progress-value-background: transparent;
+            --progress-value-color: var(--foreground0);
+            --progress-value-content: '========================';
+            --progress-empty-background: transparent;
+            --progress-empty-color: var(--foreground0);
+            --progress-empty-content: '';
+            max-width: 24ch;
+        }
+        #two {
+            --progress-value-background: transparent;
+            --progress-value-color: var(--foreground0);
+            --progress-value-content: '########################';
+            --progress-empty-background: transparent;
+            --progress-empty-color: var(--foreground0);
+            --progress-empty-content: '........................';
+            max-width: 24ch;
+        }
+        #three {
+            --progress-value-background: transparent;
+            --progress-value-color: var(--foreground0);
+            --progress-value-content: '████████████████████████';
+            --progress-empty-background: transparent;
+            --progress-empty-color: var(--foreground0);
+            --progress-empty-content: '';
+            max-width: 24ch;
+        }
+    `}
+    html={`<div is-="progress" style="--progress-value:75;" id="one">75%</div>
+<div is-="progress" style="--progress-value:50;" id="two">50%</div>
+<div is-="progress" style="--progress-value:25;" id="three">50%</div>`}
+/>
+
+### Hybrid
+
+<Example
+    stylesheets={[
+        progressStyle,
+        `body{display:flex;flex-direction:column;gap:1lh;}`,
+    ]}
+    css={`
+        #one {
+            --progress-value-background: var(--background2);
+            --progress-value-color: var(--foreground0);
+            --progress-value-content: 'OOOOOOOOOOOOOOOOOOOOOOOO';
+            --progress-empty-background: var(--background1);
+            --progress-empty-color: var(--foreground0);
+            --progress-empty-content: '........................';
+            max-width: 24ch;
+        }
+        #two {
+            --progress-value-background: red;
+            --progress-value-color: var(--foreground0);
+            --progress-value-content: '()()()()()()()()()()()()';
+            --progress-empty-background: transparent;
+            --progress-empty-color: var(--foreground0);
+            --progress-empty-content: '';
+            max-width: 24ch;
+        }
+        #three {
+            --progress-value-background: var(--foreground2);
+            --progress-value-color: var(--foreground0);
+            --progress-value-content: '>>>>>>>>>>>>>>>>>>>>>>>>';
+            --progress-empty-background: var(--background2);
+            --progress-empty-color: var(--foreground0);
+            --progress-empty-content: '------------------------';
+            max-width: 24ch;
+        }
+    `}
+    html={`<div is-="progress" style="--progress-value:25;" id="one">25%</div>
+<div is-="progress" style="--progress-value:50;" id="two">50%</div>
+<div is-="progress" style="--progress-value:75;" id="three">75%</div>`}
+/>
+
+## Reference
+
+### Properties
+
+- `--progress-value`: The current progress value (defaults to 0). Typically this is dynamically set by JavaScript
+- `--progress-max`: The maximum progress value (defaults to 100)
+- `--progress-value-background`: The background color of the progress value bar
+- `--progress-value-color`: The text color of the progress value bar
+- `--progress-value-content`: The text content of the progress value bar
+- `--progress-empty-background`: The background color of the remaining empty space in the progress bar
+- `--progress-empty-color`: The text color of the remaining empty space in the progress bar
+- `--progress-empty-content`: The text content of the remaining empty space in the progress bar
+
+**Important:** Since CSS doesn't have a way to arbitrarily repeat text a number of times, you will have to repeat a character an arbitrary amount of times for `--progress-value-content` or `--progress-empty-content`
+
+```css
+progress {
+    --progress-value: 50;
+    --progress-max: 100;
+    --progress-value-background: var(--background2);
+    --progress-value-color: var(--foreground0);
+    --progress-value-content: '[#######################';
+    --progress-empty-background: var(--background1);
+    --progress-empty-color: var(--foreground0);
+    --progress-empty-content: '.......................]';
+}
+```
+
+### Extending
+
+To extend the Progress stylesheet, define a CSS rule on the `components` layer
+
+```css
+@layer components {
+    [is-~='progress'] {
+        &[variant='yarn'] {
+            --progress-value-content: '[#######################';
+            --progress-empty-content: '.......................]';
+        }
+
+        &[variant='npm'] {
+            --progress-value-content: '[████████████████████';
+            --progress-empty-content: '░░░░░░░░░░░░░░░░░░░░]';
+        }
+
+        /* ... */
+    }
+}
+```
+
+### Scope
+
+```css
+[is-~='progress'] {
+    /* ... */
+}
+```

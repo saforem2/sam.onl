@@ -1,0 +1,75 @@
+---
+layout: '@/layouts/Doc.astro'
+title: "🧊 Cooling Down Checkpoints: Best Practices for Model Evaluation"
+---
+
+Sam Foreman
+2025-11-12
+
+- [📉 Simple Experiment to Compare Validation
+  Loss](#chart_with_downwards_trend-simple-experiment-to-compare-validation-loss)
+- [☃️ Cooling Down](#snowman_with_snow-cooling-down)
+- [♻️ Convert to Universal
+  (Optional)](#recycle-convert-to-universal-optional)
+- [📄 W&B Report](#page_facing_up-wb-report)
+
+## 📉 Simple Experiment to Compare Validation Loss
+
+<div class="light-content">
+
+![Cool Down Comparison](./assets/cooldown.png)
+
+</div>
+
+<div class="dark-content">
+
+![Cool Down Comparison](./assets/cooldown-dark.png)
+
+</div>
+
+## ☃️ Cooling Down
+
+- 256 Nodes of Aurora:
+
+  - Cooled down over last 10%:
+
+    - W&B Run:
+      [volcanic-blaze-4312](https://wandb.ai/aurora_gpt/AuroraGPT/runs/7bjj8vgu/overview?nw=nwuserforemans)
+
+  - Explicit command:
+
+    ``` bash
+    ROPE_THETA=50000 \
+      GRAD_ACC_STEPS=2 \
+      MICRO_BATCH=1 \
+      USE_ACTIVATION_CHECKPOINTING=0 \
+      ZERO_STAGE=0 \
+      TRAIN_TOKENS=4673780159710 \
+      OPT=sophiag \
+      DATA_FILE_LIST=ALCF/data-lists/aurora/olmo-mix-1124.txt \
+      LR_DECAY_STYLE=constant \
+      LOAD=cooldown-checkpoints/sophiag-global-step-73500/global_step73500 \
+      bash train_alcf.sh \
+        --no-load-lr-state \
+        --lr_constant_plus_cooldown \
+        --lr_constant_plus_cooldown_frac 0.10
+    ```
+
+## ♻️ Convert to Universal (Optional)
+
+``` bash
+TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 python3 ALCF/ds_to_universal.py \
+    --input_folder test_rollback/global_step136000 \
+    --output_folder test_rollback/global_step136000_universal
+```
+
+## 📄 W&B Report
+
+<div class="column-body-outset"
+style="box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;">
+
+&lt;iframe loading="lazy" src="https://api.wandb.ai/links/aurora_gpt/dek99dmd" align="center" frameborder="0" webkitallowfullscreen allowfullscreen style="border:none;height:1024px;width:100%">
+
+&lt;/iframe>
+
+</div>

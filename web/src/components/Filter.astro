@@ -1,0 +1,467 @@
+---
+import { docPages } from '@/utils/content'
+import Dropdown from '@/components/ui/Dropdown.astro'
+import type { MarkdownHeading } from 'astro'
+
+const docHeadings = docPages
+    .map((page) => ({
+        headings:
+            (page.rendered?.metadata?.headings as
+                | Array<MarkdownHeading>
+                | undefined) ?? [],
+        title: page.data.title,
+        id: page.id,
+    }))
+    .reduce(
+        (prev, curr) => {
+            const headings: Array<[string, string | MarkdownHeading]> = [
+                [curr.id, curr.title],
+            ]
+
+            for (const heading of curr.headings) {
+                headings.push([curr.id, heading])
+            }
+
+            return prev.concat(headings)
+        },
+        [] as Array<[string, string | MarkdownHeading]>,
+    )
+
+const themeOptions = {
+    light: 'Light',
+    dark: 'Dark',
+    catppuccin: 'Catppuccin',
+    nord: 'Nord',
+    gruvbox: 'Gruvbox',
+    'vitesse-dark': 'Vitesse',
+    everforest: 'Everforest',
+}
+---
+
+<dialog id="command-dialog" size-="small" position-="center" container-="fill">
+    <div box-="round" shear-="top" id="command-content">
+        <row align-="between">
+            <span is-="badge" variant-="background0">&#xf120; Command</span>
+            <button id="command-close-btn" variant-="foreground0" size-="small"
+                >x</button
+            >
+        </row>
+        <div id="command-sections">
+            <section class="command-section" box-="round">
+                <span is-="badge" variant-="background0">Site Info</span>
+                <p>
+                    WebTUI docs and showcase for the terminal-inspired CSS
+                    library.
+                </p>
+            </section>
+            <section class="command-section" box-="round">
+                <span is-="badge" variant-="background0">Keybinds</span>
+                <div class="keybind">
+                    <code>&#x2303;K</code>
+                    <span>Command palette</span>
+                </div>
+                <div class="keybind">
+                    <code>/</code>
+                    <span>Search</span>
+                </div>
+                <div class="keybind">
+                    <code>?</code>
+                    <span>Show keybinds</span>
+                </div>
+            </section>
+            <section class="command-section" box-="round">
+                <span is-="badge" variant-="background0">Theme</span>
+                <Dropdown
+                    id="command-theme-dropdown"
+                    data-theme-dropdown="true"
+                    label="Theme"
+                    items={themeOptions}
+                    data-value="light"
+                    position="bottom baseline-right"
+                />
+            </section>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="search-dialog" size-="small" position-="center" container-="fill">
+    <div box-="round" shear-="top" id="search-content">
+        <row align-="between">
+            <span is-="badge" variant-="background0">&#xea6d; Search</span>
+            <button id="close-btn" variant-="foreground0" size-="small"
+                >x</button
+            >
+        </row>
+        <column box-="round">
+            <input id="search-input" placeholder="Filter" autofocus />
+        </column>
+
+        <div id="search-results">
+            <div id="search-results-container">
+                {
+                    docHeadings.map(([id, header], i) => {
+                        const headerText =
+                            typeof header === 'string' ? header : header.text
+
+                        return (
+                            <a
+                                class:list={[
+                                    'search-result',
+                                    i === 0 ? 'active' : '',
+                                ]}
+                                tabindex="0"
+                                href={`/${id}${typeof header === 'string' ? '' : `#${header.slug}`}`}
+                                data-value={`${id}: ${headerText}`}>
+                                {id}:{' '}
+                                {typeof header === 'string'
+                                    ? ''
+                                    : '#'.repeat(header.depth)}
+                                {headerText}
+                            </a>
+                        )
+                    })
+                }
+            </div>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="theme-dialog" size-="small" position-="center" container-="fill">
+    <div box-="round" shear-="top" id="theme-content">
+        <row align-="between">
+            <span is-="badge" variant-="background0">&#xf1fc; Theme</span>
+            <button id="theme-close-btn" variant-="foreground0" size-="small"
+                >x</button
+            >
+        </row>
+        <div id="theme-options">
+            {Object.entries(themeOptions).map(([key, value]) => (
+                <button
+                    class="theme-option"
+                    data-theme-option={key}
+                    aria-selected="false"
+                    variant-="background1">
+                    {value}
+                </button>
+            ))}
+        </div>
+    </div>
+</dialog>
+
+<style>
+    #command-dialog,
+    #search-dialog,
+    #theme-dialog {
+        position: fixed;
+
+        &::backdrop {
+            backdrop-filter: blur(8px) grayscale(60%);
+            background-color: color-mix(
+                in oklch,
+                var(--background0) 70%,
+                transparent
+            );
+        }
+    }
+
+    #command-content,
+    #search-content,
+    #theme-content {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #command-sections {
+        display: flex;
+        flex-direction: column;
+        gap: 1lh;
+        overflow-y: auto;
+        padding: 1ch;
+    }
+
+    .command-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5lh;
+        padding: 1ch;
+        background-color: var(--background0);
+    }
+
+    .keybind {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25lh;
+    }
+
+    #command-theme-dropdown,
+    #command-theme-dropdown details,
+    #command-theme-dropdown summary {
+        width: 100%;
+    }
+
+    #command-theme-dropdown summary {
+        justify-content: space-between;
+    }
+
+    #search-results {
+        flex-grow: 1;
+        overflow: hidden;
+        position: relative;
+
+        #search-results-container {
+            position: absolute;
+            inset: 0;
+            overflow-y: auto;
+            padding-left: 1ch;
+            padding-right: 1ch;
+            display: flex;
+            flex-direction: column;
+
+            .search-result {
+                text-decoration: none;
+                color: var(--foreground1);
+
+                &.hidden {
+                    display: none;
+                }
+
+                &:focus,
+                &:hover,
+                &.active {
+                    background-color: var(--background1);
+                }
+            }
+        }
+    }
+
+    #search-input {
+        background-color: var(--background0);
+    }
+
+    #theme-options {
+        flex-grow: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5lh;
+        padding: 1ch;
+    }
+
+    .theme-option {
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .theme-option[aria-selected='true'] {
+        background-color: var(--background1);
+        color: var(--foreground0);
+        font-weight: var(--font-weight-bold);
+    }
+
+    &::highlight(search) {
+        background-color: var(--background2);
+        color: var(--foreground0);
+    }
+</style>
+
+<script>
+    import { isUserTyping, paginateElements } from '@/utils/vim'
+
+    const commandDialog = document.getElementById(
+        'command-dialog',
+    ) as HTMLDialogElement
+    const searchInput = document.getElementById(
+        'search-input',
+    ) as HTMLInputElement
+    const searchDialog = document.getElementById(
+        'search-dialog',
+    ) as HTMLDialogElement
+    const themeDialog = document.getElementById(
+        'theme-dialog',
+    ) as HTMLDialogElement
+    const focusableLinks = document.querySelectorAll('.search-result')
+
+    let activeLink: HTMLAnchorElement | null =
+        (focusableLinks[0] as HTMLAnchorElement | null) ?? null
+
+    const treeWalker = document.createTreeWalker(
+        document.getElementById('search-results-container') as HTMLElement,
+        NodeFilter.SHOW_TEXT,
+    )
+    const allTextNodes: Array<Text> = []
+    let currentNode = treeWalker.nextNode()
+    while (currentNode) {
+        allTextNodes.push(currentNode as Text)
+        currentNode = treeWalker.nextNode()
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (isUserTyping()) return
+
+        if (e.key === 'k' && e.ctrlKey) {
+            e.preventDefault()
+            e.stopImmediatePropagation()
+            commandDialog.showModal()
+            return
+        }
+
+        if (e.key === '/') {
+            e.preventDefault()
+            searchDialog.showModal()
+            return
+        }
+
+        if (e.key === '?') {
+            e.preventDefault()
+            commandDialog.showModal()
+        }
+    })
+
+    searchInput.addEventListener('input', () => {
+        const value = searchInput.value.trim()
+
+        const focusableLinks = document.querySelectorAll('.search-result')
+
+        focusableLinks.forEach((element) => {
+            element.classList.remove('hidden')
+
+            if (
+                element
+                    .getAttribute('data-value')
+                    ?.toLowerCase()
+                    .includes(value.toLowerCase())
+            )
+                return
+
+            element.classList.add('hidden')
+        })
+
+        const visibleLinks = document.querySelectorAll(
+            '.search-result:not(.hidden)',
+        )
+
+        if (visibleLinks.length > 0) {
+            activeLink = visibleLinks[0] as HTMLAnchorElement
+        } else {
+            activeLink = null
+        }
+
+        CSS.highlights.clear()
+
+        if (!value) return
+
+        const ranges = allTextNodes
+            .map((el) => {
+                return { el, text: el.textContent?.toLowerCase() }
+            })
+            .map(({ text, el }) => {
+                const indices = []
+                let startPos = 0
+
+                if (!text) return []
+                while (startPos < text.length) {
+                    const index = text.indexOf(value, startPos)
+                    if (index === -1) break
+                    indices.push(index)
+                    startPos = index + value.length
+                }
+
+                // Create a range object for each instance of
+                // str we found in the text node.
+                return indices.map((index) => {
+                    const range = new Range()
+                    range.setStart(el, index)
+                    range.setEnd(el, index + value.length)
+                    return range
+                })
+            })
+
+        // Create a Highlight object for the ranges.
+        const searchResultsHighlight = new Highlight(...ranges.flat())
+
+        // Register the Highlight object in the registry.
+        CSS.highlights.set('search', searchResultsHighlight)
+    })
+
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' || (e.key === 'c' && e.ctrlKey)) {
+            e.preventDefault()
+            searchDialog.close()
+            return
+        }
+
+        if (!activeLink) return
+
+        const visibleLinks = document.querySelectorAll(
+            '.search-result[tabindex]:not(.hidden)',
+        ) as NodeListOf<HTMLAnchorElement>
+
+        const { prev, next } = paginateElements(activeLink, visibleLinks)
+
+        if ((e.key === 'n' && e.ctrlKey) || e.key === 'ArrowDown') {
+            e.preventDefault()
+
+            visibleLinks.forEach((link) => {
+                link.classList.remove('active')
+            })
+            next.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+            next.classList.add('active')
+        }
+
+        if ((e.key === 'p' && e.ctrlKey) || e.key === 'ArrowUp') {
+            e.preventDefault()
+
+            visibleLinks.forEach((link) => {
+                link.classList.remove('active')
+            })
+            prev.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+            prev.classList.add('active')
+        }
+
+        if (e.key === 'Enter') {
+            e.preventDefault()
+
+            activeLink?.click()
+        }
+    })
+
+    document.querySelectorAll('.search-result:not(.hidden)').forEach((link) => {
+        link.addEventListener('click', () => {
+            searchDialog.close()
+        })
+    })
+
+    document.getElementById('close-btn')?.addEventListener('click', () => {
+        searchDialog.close()
+    })
+
+    document.getElementById('theme-close-btn')?.addEventListener('click', () => {
+        themeDialog.close()
+    })
+
+    document
+        .getElementById('command-close-btn')
+        ?.addEventListener('click', () => {
+            commandDialog.close()
+        })
+
+    searchDialog.addEventListener('click', (e) => {
+        if (e.target === searchDialog) searchDialog.close()
+    })
+
+    commandDialog.addEventListener('click', (e) => {
+        if (e.target === commandDialog) commandDialog.close()
+    })
+
+    themeDialog.addEventListener('click', (e) => {
+        if (e.target === themeDialog) themeDialog.close()
+    })
+
+    document.querySelectorAll('[data-theme-option]').forEach((button) => {
+        button.addEventListener('click', () => {
+            themeDialog.close()
+        })
+    })
+</script>

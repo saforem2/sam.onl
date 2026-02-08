@@ -1,0 +1,151 @@
+---
+import '@/styles/global.css'
+---
+
+<!doctype html>
+<html lang="en" data-webtui-theme="light">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+        <script is:inline>
+            const storedTheme = localStorage.getItem('webtui-theme')
+            const systemTheme = window.matchMedia(
+                '(prefers-color-scheme: dark)',
+            ).matches
+                ? 'dark'
+                : 'light'
+            document.documentElement.setAttribute(
+                'data-webtui-theme',
+                storedTheme ?? systemTheme,
+            )
+        </script>
+        <meta name="generator" content={Astro.generator} />
+        <title>Sam Foreman</title>
+
+        <!-- Icon(s) -->
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+        <!-- OpenGraph / X Title -->
+        <meta property="og:title" content="Sam Foreman" />
+        <meta name="twitter:title" content="Sam Foreman" />
+
+        <!-- OpenGraph / X Description -->
+        <meta name="description" content="Sam Foreman's Personal Website" />
+        <meta name="og:description" content="Sam Foreman's Personal Website" />
+        <meta
+            name="twitter:description"
+            content="Sam Foreman's Personal Website"
+        />
+
+        <!-- OpenGraph / X Cover Image -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+            name="twitter:image"
+            content="https://webtui.ironclad.sh/cover.png"
+        />
+        <meta
+            property="og:image"
+            content="https://webtui.ironclad.sh/cover.png"
+        />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:width" content="1920" />
+        <meta property="og:image:height" content="1200" />
+
+        <!-- Misc Metadata -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://webtui.ironclad.sh" />
+        <meta name="twitter:site" content="@webtui" />
+        <meta name="twitter:creator" content="@IroncladDev" />
+        <meta name="twitter:url" content="https://webtui.ironclad.sh" />
+        <meta
+            name="keywords"
+            content="terminal, css, ui, tui, library, web, open-source"
+        />
+        <meta name="theme-color" content="#1e1e2e" />
+
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://iosevka-webfonts.github.io/iosevka/Iosevka.css"
+            rel="stylesheet"
+        />
+        <!-- <link -->
+        <!--     href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400..600;1,400..600&display=swap" -->
+        <!--     rel="stylesheet" -->
+        <!-- /> -->
+    </head>
+    <body>
+        <slot />
+        <script type="module">
+            const mermaidCodeBlocks = document.querySelectorAll(
+                'pre[data-language="mermaid"] > code, pre > code.language-mermaid',
+            )
+            const legacyMermaidBlocks = document.querySelectorAll(
+                'pre.mermaid, pre.mermaid-js',
+            )
+
+            if (
+                mermaidCodeBlocks.length > 0 ||
+                legacyMermaidBlocks.length > 0
+            ) {
+                const toMermaidBlock = (codeEl) => {
+                    const pre = codeEl.parentElement
+                    if (!pre) return
+
+                    const container = document.createElement('div')
+                    container.className = 'mermaid'
+                    container.dataset.mermaid = codeEl.textContent ?? ''
+                    container.textContent = container.dataset.mermaid
+                    pre.replaceWith(container)
+                }
+
+                mermaidCodeBlocks.forEach((codeEl) => toMermaidBlock(codeEl))
+                legacyMermaidBlocks.forEach((node) => {
+                    if (!(node instanceof HTMLElement)) return
+                    node.classList.add('mermaid')
+                    node.dataset.mermaid = node.textContent ?? ''
+                })
+
+                const resolveMermaidTheme = () => {
+                    const theme =
+                        document.documentElement.getAttribute(
+                            'data-webtui-theme',
+                        ) ?? 'light'
+
+                    return theme === 'light' ? 'default' : 'dark'
+                }
+
+                const renderMermaid = async () => {
+                    const { default: mermaid } = await import('mermaid')
+
+                    mermaid.initialize({
+                        startOnLoad: false,
+                        theme: resolveMermaidTheme(),
+                    })
+
+                    const nodes = document.querySelectorAll('.mermaid')
+                    nodes.forEach((node) => {
+                        const source = node.dataset.mermaid
+                        if (!source) return
+
+                        node.removeAttribute('data-processed')
+                        node.textContent = source
+                    })
+
+                    await mermaid.run({ nodes })
+                }
+
+                renderMermaid()
+
+                new MutationObserver(() => {
+                    renderMermaid()
+                }).observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: ['data-webtui-theme'],
+                })
+            }
+        </script>
+    </body>
+</html>

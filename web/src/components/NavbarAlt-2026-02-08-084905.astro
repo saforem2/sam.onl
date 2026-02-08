@@ -1,0 +1,274 @@
+---
+import Filter from '@/components/Filter.astro'
+import faviconSf from '@/assets/favicon-sf.svg'
+
+const url = Astro.url
+
+let isOn:
+    | 'home'
+    | 'docs'
+    | 'showcase'
+    | 'posts'
+    | 'talks'
+    | 'projects'
+    | 'about'
+    | 'ideas'
+
+if (url.pathname === '/') {
+    isOn = 'home'
+}
+
+if (url.pathname.startsWith('/posts')) {
+    isOn = 'posts'
+}
+
+if (url.pathname.startsWith('/talks')) {
+    isOn = 'talks'
+}
+if (url.pathname.startsWith('/projects')) {
+    isOn = 'projects'
+}
+
+if (url.pathname.startsWith('/about')) {
+    isOn = 'about'
+}
+
+if (url.pathname.startsWith('/ideas')) {
+    isOn = 'ideas'
+}
+if (url.pathname.startsWith('/webtui')) {
+    isOn = 'docs'
+}
+---
+
+<nav box-="square">
+    <span>
+        <a href="/" id="home-link">
+            [<span>&#xf015</span>]
+            <!-- <img -->
+            <!--     src={faviconSf.src} -->
+            <!--     width="16" -->
+            <!--     height="16" -->
+            <!--     alt="" -->
+            <!--     aria-hidden="true" -->
+            <!-- /> -->
+        </a>
+        Sam Foreman
+    </span>
+    <row id="links">
+        <a href="/posts" data-active={isOn === 'posts'}>
+            [<span>&#xf02d</span>
+            <span>Posts</span>]
+        </a>
+        <a href="/talks" data-active={isOn === 'talks'}>
+            [<span>&#xf1e0</span>
+            <span>Talks</span>]
+        </a>
+        <a href="/projects" data-active={isOn === 'projects'}>
+            [<span>&#xf1c0</span>
+            <span>Projects</span>]
+        </a>
+        <a href="https://github.com/saforem2/sam.onl" target="_blank">
+            [<span>&#xe709</span>
+            <span>Github</span>]
+        </a>
+        <button id="theme-button" size-="small">
+            <span>&#xf1fc;</span>
+            <span>Theme</span>
+        </button>
+        <button id="search-button" size-="small">
+            <span>&#xea6d;</span>
+            <span>Search</span>
+        </button>
+    </row>
+</nav>
+<Filter />
+
+<style>
+    nav {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 1lh 2ch;
+        container-type: inline-size;
+        container-name: navbar;
+        white-space: nowrap;
+        z-index: 10;
+
+        #home-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75ch;
+            text-decoration: none;
+            font-weight: bold;
+            color: var(--foreground1);
+
+            img {
+                display: block;
+            }
+
+            &:focus,
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    #links {
+        row-gap: 2ch;
+        column-gap: 1lh;
+
+        a {
+            display: inline-flex;
+            gap: 1ch;
+            text-decoration: none;
+            color: var(--foreground2);
+
+            &[data-active='true'] {
+                color: var(--foreground0);
+                font-weight: bold;
+                text-decoration: underline;
+            }
+
+            &:focus,
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+
+        #theme-button,
+        #search-button {
+            display: inline-flex;
+            gap: 1ch;
+        }
+    }
+
+    @media (max-width: 84ch) {
+        #links {
+            gap: 1ch;
+
+            a {
+                background-color: var(--background1);
+                padding: 0 1ch;
+                span:last-of-type {
+                    display: none;
+                }
+            }
+
+            #theme-button {
+                padding: 0 1ch;
+            }
+        }
+    }
+
+    @media (max-width: 54ch) {
+        nav {
+            align-items: normal;
+            gap: 10px;
+        }
+        #search-button span:last-of-type,
+        #theme-button span:last-of-type {
+            display: none;
+        }
+    }
+
+    @media (max-width: 44ch) {
+        nav {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<script>
+    import { isUserTyping } from '@/utils/vim'
+
+    const searchDialog = document.getElementById(
+        'search-dialog',
+    ) as HTMLDialogElement
+    const themeDialog = document.getElementById(
+        'theme-dialog',
+    ) as HTMLDialogElement
+
+    const root = document.documentElement
+    const themeStorageKey = 'webtui-theme'
+    const themeDropdowns = Array.from(
+        document.querySelectorAll('[data-theme-dropdown="true"]'),
+    ) as HTMLElement[]
+    const themeButtons = Array.from(
+        document.querySelectorAll('[data-theme-option]'),
+    ) as HTMLButtonElement[]
+
+    const setTheme = (theme: string) => {
+        if (root.getAttribute('data-webtui-theme') !== theme) {
+            root.setAttribute('data-webtui-theme', theme)
+        }
+
+        themeDropdowns.forEach((dropdown) => {
+            if (dropdown.getAttribute('data-value') !== theme) {
+                dropdown.setAttribute('data-value', theme)
+            }
+        })
+
+        themeButtons.forEach((button) => {
+            const value = button.getAttribute('data-theme-option')
+            const isActive = value === theme
+            button.setAttribute('aria-selected', String(isActive))
+            button.setAttribute(
+                'variant-',
+                isActive ? 'default' : 'background1',
+            )
+            button.setAttribute('data-active', String(isActive))
+        })
+
+        localStorage.setItem(themeStorageKey, theme)
+    }
+
+    const storedTheme = localStorage.getItem(themeStorageKey)
+    if (storedTheme) {
+        setTheme(storedTheme)
+    } else {
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
+            .matches
+            ? 'dark'
+            : 'light'
+        setTheme(systemTheme)
+    }
+
+    themeDropdowns.forEach((dropdown) => {
+        new MutationObserver(() => {
+            const value = dropdown.getAttribute('data-value')
+            if (value && root.getAttribute('data-webtui-theme') !== value) {
+                setTheme(value)
+            }
+        }).observe(dropdown, {
+            attributes: true,
+            attributeFilter: ['data-value'],
+        })
+    })
+
+    themeButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const value = button.getAttribute('data-theme-option')
+            if (!value) return
+            setTheme(value)
+            themeDialog.close()
+        })
+    })
+
+    document.getElementById('theme-button')?.addEventListener('click', () => {
+        themeDialog.showModal()
+    })
+
+    document.getElementById('search-button')?.addEventListener('click', () => {
+        searchDialog.showModal()
+    })
+
+    window.addEventListener('keydown', (e) => {
+        if (isUserTyping()) return
+
+        if (e.key === '/') {
+            e.preventDefault()
+            searchDialog.showModal()
+        }
+    })
+</script>

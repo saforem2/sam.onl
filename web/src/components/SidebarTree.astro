@@ -1,0 +1,114 @@
+---
+import { compareUrlPaths } from '@/utils/url'
+
+type SidebarLink = {
+    type: 'link'
+    id?: string
+    text?: string
+    href?: string
+}
+
+type SidebarSection = {
+    type: 'section'
+    id?: string
+    label: string
+    href?: string
+    collapseLevel?: number
+    children?: SidebarItem[]
+}
+
+type SidebarItem = SidebarLink | SidebarSection
+
+interface Props {
+    items?: SidebarItem[]
+    depth?: number
+    parentCollapseLevel?: number
+    trunk?: boolean[]
+    urlPath: string
+}
+
+const { items, depth = 0, parentCollapseLevel, trunk = [], urlPath } =
+    Astro.props as Props
+
+const isExternal = (href?: string) => !!href && /^https?:\/\//.test(href)
+
+const makePrefix = (branchStates: boolean[], isLast: boolean, depth: number) => {
+    if (depth === 0) return ''
+
+    const trunkPrefix = branchStates
+        .map((hasNext) => (hasNext ? ' ' : '  '))
+        .join('')
+    const branch = isLast ? '  ' : '  '
+    return `${trunkPrefix}${branch}`
+}
+---
+
+{
+    items?.map((item, index) => {
+        const isLast = index === (items?.length ?? 0) - 1
+        const prefix = makePrefix(trunk, isLast, depth)
+        const childTrunk = [...trunk, !isLast]
+
+        if (item.type === 'section') {
+            const collapseLevel = item.collapseLevel ?? parentCollapseLevel
+            const isOpen =
+                collapseLevel === undefined ? depth === 0 : depth < collapseLevel
+
+            return (
+                <details open={isOpen} class="sidebar-section">
+                    <summary class="sidebar-tree-summary">
+                        {prefix ? (
+                            <span class="tree-prefix" aria-hidden="true">
+                                {prefix}
+                            </span>
+                        ) : null}
+                        {item.href ? (
+                            <a
+                                href={item.href}
+                                class={`sidebar-tree-link ${
+                                    compareUrlPaths(urlPath, item.href)
+                                        ? 'active'
+                                        : ''
+                                }`}>
+                                <span class="sidebar-tree-label">{item.label}</span>
+                            </a>
+                        ) : (
+                            <span class="sidebar-tree-label">{item.label}</span>
+                        )}
+                    </summary>
+                    <div class="sidebar-children">
+                        <Astro.self
+                            items={item.children}
+                            depth={depth + 1}
+                            parentCollapseLevel={collapseLevel}
+                            trunk={childTrunk}
+                            urlPath={urlPath}
+                        />
+                    </div>
+                </details>
+            )
+        }
+
+        const href = item.href ?? '#'
+        const external = isExternal(href)
+        const text = item.text ?? item.id ?? href
+
+        return (
+            <a
+                href={href}
+                class={`sidebar-tree-link ${
+                    compareUrlPaths(urlPath, href) ? 'active' : ''
+                }`}
+                data-slug={item.id}
+                target={external ? '_blank' : undefined}
+                rel={external ? 'noreferrer' : undefined}>
+                {prefix ? (
+                    <span class="tree-prefix" aria-hidden="true">
+                        {prefix}
+                    </span>
+                ) : null}
+                <span class="sidebar-tree-label">{text}</span>
+            </a>
+        )
+    })
+}

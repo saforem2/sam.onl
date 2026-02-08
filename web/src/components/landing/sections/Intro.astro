@@ -1,0 +1,124 @@
+---
+import Navbar from '../../Navbar.astro'
+import Widgets from '../widgets/Widgets.astro'
+---
+
+<header id="intro">
+    <Widgets />
+    <column id="content">
+        <Navbar />
+        <column id="main" box-="square">
+            <h1>
+                <span is-="badge" variant-="green">&#xf4b5; Hi, I'm Sam!</span>
+            </h1>
+            <column>
+                <p>
+                    <!-- WebTUI is a <strong>modular CSS library</strong> that brings -->
+                    <!-- the beauty of <a href="/start/tuis-vs-guis">Terminal UIs</a> -->
+                    <!-- to the browser -->
+                    Currently: training large models on supercomputers at
+                    <a href="https://www.anl.gov/alcf" target="_blank"
+                        >Argonne Leadership Computing Facility</a
+                    >.<br />
+                </p>
+                <div is-="separator"></div>
+                <row gap-="1">
+                    <a href="/landing"><button>Sam Foreman</button></a>
+                    <div is-="separator"></div>
+                    <a href="/posts"
+                        ><button variant-="background2">Posts</button></a
+                    >
+                    <!-- same for talks, and more -->
+                    <a href="/talks"><button>Talks</button></a>
+                    <a href="projects/"><button>Projects</button></a>
+                </row>
+            </column>
+        </column>
+    </column>
+    <column id="statusline">
+        <row>
+            <span
+                is-="badge"
+                variant-="blue"
+                style="--badge-text: var(--background0)">NORMAL</span
+            >
+            <span
+                is-="badge"
+                variant-="background1"
+                style="--badge-text: var(--blue)">&#xe725; master</span
+            >
+            <row self-="grow">
+                <span is-="badge" variant-="background0">index.astro</span>
+            </row>
+            <row id="statusline-right">
+                <span is-="badge" variant-="background0">utf-8</span>
+                <span is-="badge" variant-="background1">Top</span>
+                <span
+                    is-="badge"
+                    variant-="blue"
+                    style="--badge-text: var(--background0)">1:1</span
+                >
+            </row>
+        </row>
+    </column>
+</header>
+
+<style>
+    #intro {
+        position: relative;
+        background-color: var(--background0);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        #content {
+            position: absolute;
+            background-color: oklch(
+                from var(--background1) calc(l * 0.85) c h / 1
+            );
+            max-width: 80%;
+            width: round(calc(100% - 2ch), 1ch);
+            padding: 1lh 2ch;
+
+            #main {
+                padding: 1lh 2ch;
+                gap: 1lh;
+                --box-border-color: var(--foreground2);
+            }
+
+            h1 {
+                color: var(--foreground0);
+                display: inline-flex;
+                gap: 1ch;
+            }
+        }
+    }
+
+    #statusline {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 2lh;
+        background-color: var(--background0);
+        box-shadow: 0 -1lh 0 0 var(--mantle);
+    }
+
+    @media (max-width: 50ch) {
+        #container {
+            #content,
+            #main {
+                padding: 1lh 1ch;
+            }
+        }
+
+        #statusline-right {
+            display: none;
+        }
+    }
+
+    [is-='separator'] {
+        --separator-color: var(--foreground2);
+    }
+</style>
