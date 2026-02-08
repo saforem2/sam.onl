@@ -219,22 +219,30 @@ if (headings.length > 0) {
             window.history.forward()
         }
 
-        if (e.key === 'l') {
+        if (e.key === 'h') {
             const activeElement = document.activeElement
 
             if (activeElement && mainContent.contains(activeElement)) {
+                e.preventDefault()
                 const target = getSidebarTarget()
                 if (target instanceof HTMLElement) {
                     vimFocusElement(target)
                 }
                 return
             }
+        }
 
-            const elementToFocus =
-                currentElement ?? findFirstFocusableElement() ?? null
+        if (e.key === 'l') {
+            const activeElement = document.activeElement
 
-            if (elementToFocus) {
-                vimFocusElement(elementToFocus)
+            if (activeElement && sidebar?.contains(activeElement)) {
+                e.preventDefault()
+                const elementToFocus =
+                    currentElement ?? findFirstFocusableElement() ?? null
+
+                if (elementToFocus) {
+                    vimFocusElement(elementToFocus)
+                }
             }
         }
 

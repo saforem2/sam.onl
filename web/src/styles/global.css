@@ -23,13 +23,24 @@
 @import '@webtui/theme-everforest';
 
 @layer base {
-    :where(a, button, summary, [tabindex]:not([tabindex='-1'])):focus-visible {
-        outline: 2px solid var(--foreground0);
-        outline-offset: 2px;
-        background-color: var(--background1);
-        text-decoration: underline;
-    }
-
+    /* :where(a, button, summary, [tabindex]:not([tabindex='-1'])):focus-visible { */
+    /*     outline: 2px solid var(--foreground0); */
+    /*     outline-offset: 2px; */
+    /*     background-color: var(--red); */
+    /*     text-decoration: underline; */
+    /* } */
+    /**/
+    /* #scroll-container { */
+    /*     & #main-content { */
+    /*         & > [tabindex='0'], */
+    /*         & > ul > li[tabindex='0'] { */
+    /*             &:focus { */
+    /*                 background-color: var(--background1); */
+    /*             } */
+    /*         } */
+    /*     } */
+    /* } */
+    /**/
     ::highlight(vim) {
         background-color: color-mix(
             in oklch,
@@ -48,7 +59,6 @@
             'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace,
             'Symbols Nerd Font';
         --font-size: 17px;
-        --line-height: 1.5;
         --box-border-color: var(--background1);
         /* --background0: #fff; */
         /* --background1: #ddd; */
@@ -77,6 +87,11 @@
         /* margin: 0 1ch; */
         /* line-height: var(--line-height, 1.5); */
         font-variant-ligatures: common-ligatures;
+    }
+
+    .flex-container {
+        display: flex;
+        flex-direction: row;
     }
 
     li > p {
@@ -212,6 +227,9 @@
 }
 
 @layer components {
+    button:not([size-]):not([box-]) {
+        margin-inline: 1ch;
+    }
     .callout-tip {
         background-color: oklch(
             from var(--background2) calc(l * var(--oklch-scale, 1.15)) c h / 0.1

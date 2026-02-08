@@ -8,10 +8,10 @@ import '@webtui/css/components/radio.css'
 ---
 
 <div id="widgets-grid">
-    <Chart />
+    <Clock />
     <Player />
     <FileTree />
-    <Clock />
+    <Chart />
     <SettingsWidget />
 </div>
 
@@ -22,16 +22,16 @@ import '@webtui/css/components/radio.css'
         left: 50vw;
         transform: translate(round(-50%, 1ch), round(-50%, 1lh));
         display: grid;
-        max-width: 96ch;
-        max-height: 40lh;
+        max-width: 90vw;
+        max-height: 90vh;
         min-width: 80ch;
         min-height: 32lh;
         width: round(calc(100vw - 4ch), 1ch);
         height: round(calc(100vh - 2lh), 1lh);
         grid-template-columns: repeat(3, 1fr);
-        grid-auto-rows: minmax(8lh, 10lh);
+        grid-auto-rows: minmax(8lh, 12lh);
         grid-column-gap: 1ch;
         pointer-events: none;
-        opacity: 0.5;
+        opacity: 0.3;
     }
 </style>

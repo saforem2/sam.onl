@@ -9,15 +9,42 @@
         <span>| |</span>
     </column>
     <column self-="grow" align-="center" gap-="1">
-        <span>Mon Jun 9</span>
-        <span>2:31 PM CST</span>
+        <span id="clock-date">--</span>
+        <span id="clock-time">--</span>
     </column>
 </row>
 
+<script>
+    const dateNode = document.getElementById('clock-date')
+    const timeNode = document.getElementById('clock-time')
+
+    const dateFormatter = new Intl.DateTimeFormat('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+    })
+
+    const timeFormatter = new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZoneName: 'short',
+    })
+
+    const updateClock = () => {
+        const now = new Date()
+        if (dateNode) dateNode.textContent = dateFormatter.format(now)
+        if (timeNode) timeNode.textContent = timeFormatter.format(now)
+    }
+
+    updateClock()
+    setInterval(updateClock, 1000)
+</script>
+
 <style>
     #clock-widget {
-        grid-column: 2;
-        grid-row: 4 / 5;
+        grid-column: 1;
+        grid-row: 1 / 2;
     }
 
     #clock-circle span {

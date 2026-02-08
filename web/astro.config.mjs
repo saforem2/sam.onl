@@ -17,6 +17,13 @@ const indexableElements = [
     'pre',
     'li',
     'p',
+    'a',
+    'div',
+    'details',
+    'summary',
+    'flex-container',
+    'column',
+    'flex',
 ]
 
 const rehypeMarkdownTabIndex = () => {

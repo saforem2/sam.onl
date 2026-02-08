@@ -77,7 +77,7 @@ h6::before {
         display: flex;
         flex-direction: column;
         gap: 1lh;
-        /* padding: 1lh 1ch; */
+        padding: 1lh 1ch;
         overflow-y: auto;
         color: var(--foreground1);
 
@@ -92,7 +92,10 @@ h6::before {
             outline: none;
 
             &:focus {
-                background-color: var(--background1);
+                background-color: oklch(
+                    from var(--accent, var(--foreground, #838383))
+                        calc(l * 0.85) c h / 0.1
+                );
 
                 &:not(:is(pre)) code {
                     background-color: var(--background2);
@@ -123,6 +126,16 @@ h6::before {
             display: block;
         }
 
+        li {
+            text-indent: 2ch hanging;
+        }
+        /* li > p { */
+        /*     margin-block: 1lh; */
+        /* } */
+        li:last-child {
+            margin-bottom: 1lh;
+        }
+
         li > details[is-~='accordion'] {
             margin-left: 2ch;
         }
@@ -143,22 +156,28 @@ h6::before {
                 justify-content: space-between;
             }
 
-            a {
-                color: var(--blue);
-                text-decoration: none;
-                display: flex;
-                flex-direction: column;
-                --box-border-color: var(--background2);
-                outline: none;
-
-                &.next {
-                    text-align: right;
-                }
-
-                &:hover,
-                &:focus {
-                    --box-border-color: var(--red);
-                }
+            /* a { */
+            /*     color: var(--blue); */
+            /*     text-decoration: none; */
+            /*     display: flex; */
+            /*     flex-direction: column; */
+            /*     --box-border-color: var(--background2); */
+            /*     outline: none; */
+            /**/
+            /*     &.next { */
+            /*         text-align: right; */
+            /*     } */
+            /**/
+            /*     &:hover, */
+            /*     &:focus { */
+            /*         --box-border-color: var(--red); */
+            /*     } */
+            /* } */
+            a:focus:focus-visible {
+                color: var(--accent);
+                background-color: oklch(
+                    from var(--accent) calc(l * 0.85) c h / 0.1
+                );
             }
         }
     }

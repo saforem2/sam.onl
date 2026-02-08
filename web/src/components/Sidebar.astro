@@ -426,6 +426,7 @@ const { pathname: urlPath } = Astro.url
         flex-direction: column;
         overflow: hidden;
         flex-grow: 1;
+        line-height: 1.3;
 
         &:focus-within {
             --box-border-color: var(--foreground0);
@@ -455,7 +456,6 @@ const { pathname: urlPath } = Astro.url
         display: list-item;
         margin-inline-start: 2ch;
         text-indent: 2ch hanging;
-        line-height: 1.33;
 
         &::before {
             content: '├ ';
@@ -466,14 +466,22 @@ const { pathname: urlPath } = Astro.url
         }
 
         &.active {
-            color: var(--foreground0);
-            text-decoration: underline;
-            font-weight: var(--font-weight-bold);
-            background-color: var(--background1);
+            /* color: var(--accent); */
+            /* text-decoration: underline; */
+            /* font-weight: var(--font-weight-bold); */
+            background-color: oklch(
+                from var(--background1, var(--foreground, #838383))
+                    calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+            );
+            /* background-color: var(--background1); */
         }
 
         &:focus {
-            background-color: var(--background1);
+            /* background-color: var(--background1); */
+            background-color: oklch(
+                from var(--accent, var(--foreground, #838383)) calc(l * 0.85) c
+                    h / 0.1
+            );
         }
     }
 
@@ -534,7 +542,10 @@ const { pathname: urlPath } = Astro.url
 
     details {
         summary {
-            font-weight: var(--font-weight-bold);
+            font-weight: var(--font-weight-bold, bold);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            color: var(--foreground2);
             &::marker {
                 color: var(--foreground2);
                 content: '\eab6\ ';
@@ -586,40 +597,29 @@ const { pathname: urlPath } = Astro.url
 </style>
 
 <script>
-    import {
-        applyVimNavigation,
-        isUserTyping,
-        vimFocusElement,
-    } from '@/utils/vim'
-
-    let currentElement: HTMLElement | null = document.querySelector('a.active')
+    import { applyVimNavigation } from '@/utils/vim'
 
     const sidebar = document.getElementById('sidebar')
-    const getMainContentTarget = () =>
-        document.querySelector(
-            '#main-content > [tabindex="0"], #main-content li[tabindex="0"]',
-        )
 
-    window.addEventListener('keydown', (e) => {
-        if (isUserTyping()) return
+    const revealFocusedElement = (element: HTMLElement) => {
+        let parent = element.parentElement
 
-        if (e.key === 'h' && sidebar) {
-            const activeElement = document.activeElement
-            if (activeElement && sidebar.contains(activeElement)) {
-                const target = getMainContentTarget()
-                if (target instanceof HTMLElement) {
-                    vimFocusElement(target)
-                }
+        while (parent) {
+            if (parent instanceof HTMLDetailsElement) {
+                parent.open = true
             }
+
+            if (parent.id === 'sidebar') break
+            parent = parent.parentElement
         }
-    })
+    }
 
     if (sidebar) {
         applyVimNavigation(
             sidebar,
             'details:not(.hidden)[open] a:not(.hidden), details:not(.hidden) summary',
             (element) => {
-                currentElement = element
+                revealFocusedElement(element)
             },
         )
     }

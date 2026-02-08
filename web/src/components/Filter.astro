@@ -135,15 +135,17 @@ const themeOptions = {
             >
         </row>
         <div id="theme-options">
-            {Object.entries(themeOptions).map(([key, value]) => (
-                <button
-                    class="theme-option"
-                    data-theme-option={key}
-                    aria-selected="false"
-                    variant-="background1">
-                    {value}
-                </button>
-            ))}
+            {
+                Object.entries(themeOptions).map(([key, value]) => (
+                    <button
+                        class="theme-option"
+                        data-theme-option={key}
+                        aria-selected="false"
+                        variant-="background1">
+                        {value}
+                    </button>
+                ))
+            }
         </div>
     </div>
 </dialog>
@@ -252,12 +254,17 @@ const themeOptions = {
     .theme-option {
         display: flex;
         justify-content: flex-start;
+        background-image: none;
+        /* background-color: oklch( */
+        /*     from var(--background1) calc(l * var(--oklch-scale, 0.85)) c h / 1 */
+        /* ); */
     }
 
     .theme-option[aria-selected='true'] {
-        background-color: var(--background1);
+        background-color: var(--background3);
         color: var(--foreground0);
         font-weight: var(--font-weight-bold);
+        background-image: none;
     }
 
     &::highlight(search) {
@@ -437,9 +444,11 @@ const themeOptions = {
         searchDialog.close()
     })
 
-    document.getElementById('theme-close-btn')?.addEventListener('click', () => {
-        themeDialog.close()
-    })
+    document
+        .getElementById('theme-close-btn')
+        ?.addEventListener('click', () => {
+            themeDialog.close()
+        })
 
     document
         .getElementById('command-close-btn')

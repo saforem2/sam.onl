@@ -8,12 +8,14 @@ export function isUserTyping() {
 }
 
 // Recursively gets the first text node from a DOM element
-function getFirstTextNode(element: Node) {
+function getFirstTextNode(element: Node | null): Node | null {
+    if (!element) return null
+
     if (element.nodeType === Node.TEXT_NODE) {
         return element
     }
 
-    return getFirstTextNode(element.firstChild as Node)
+    return getFirstTextNode(element.firstChild)
 }
 
 // Applies the ::highlight(vim) CSS pseudo-class to an element
@@ -23,6 +25,11 @@ export function applyVimCursorHighlight(element: HTMLElement) {
     if (!firstChild) return
 
     const textNode = getFirstTextNode(firstChild)
+
+    if (!textNode) {
+        CSS.highlights.clear()
+        return
+    }
 
     if (
         typeof textNode?.textContent !== 'string' ||
@@ -56,10 +63,21 @@ export function applyVimNavigation(
     queryString: string,
     onElementFocus?: (element: HTMLElement) => void,
 ) {
+    const isElementVisible = (candidate: HTMLElement) => {
+        if (candidate.hidden) return false
+
+        const style = window.getComputedStyle(candidate)
+        if (style.display === 'none' || style.visibility === 'hidden') {
+            return false
+        }
+
+        return candidate.getClientRects().length > 0
+    }
+
     function reattachTabbableElements() {
-        const vimTabbableElements = element.querySelectorAll(
-            queryString,
-        ) as NodeListOf<HTMLElement>
+        const vimTabbableElements = Array.from(
+            element.querySelectorAll(queryString) as NodeListOf<HTMLElement>,
+        ).filter(isElementVisible)
 
         for (const el of vimTabbableElements) {
             el.onfocus = () => {

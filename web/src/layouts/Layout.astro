@@ -25,6 +25,9 @@ import '@/styles/global.css'
 
         <!-- Icon(s) -->
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/logo@512.png" />
 
         <!-- OpenGraph / X Title -->
         <meta property="og:title" content="Sam Foreman" />
@@ -79,6 +82,47 @@ import '@/styles/global.css'
     <body>
         <slot />
         <script type="module">
+            const MAIN_FOCUS_SELECTOR = '#main-content, main, [role="main"]'
+
+            const isNaturallyFocusable = (element) =>
+                element.matches(
+                    'a[href], button, input, textarea, select, summary, [tabindex]:not([tabindex="-1"])',
+                )
+
+            const focusMainRegion = () => {
+                if (window.location.hash.length > 0) return
+
+                const mainRegion = document.querySelector(MAIN_FOCUS_SELECTOR)
+                if (!(mainRegion instanceof HTMLElement)) return
+
+                const firstMainChild = mainRegion.firstElementChild
+                const target =
+                    firstMainChild instanceof HTMLElement
+                        ? firstMainChild
+                        : mainRegion
+
+                const activeElement = document.activeElement
+                if (
+                    activeElement instanceof HTMLElement &&
+                    activeElement !== document.body &&
+                    activeElement !== document.documentElement
+                ) {
+                    return
+                }
+
+                if (!isNaturallyFocusable(target)) {
+                    if (mainRegion.id === 'main-content') {
+                        target.setAttribute('tabindex', '0')
+                    } else {
+                        target.setAttribute('tabindex', '-1')
+                    }
+                }
+
+                target.focus({ preventScroll: true })
+            }
+
+            focusMainRegion()
+
             const mermaidCodeBlocks = document.querySelectorAll(
                 'pre[data-language="mermaid"] > code, pre > code.language-mermaid',
             )
