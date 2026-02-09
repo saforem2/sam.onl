@@ -56,7 +56,7 @@ export default defineConfig({
             // theme: 'one-dark-pro',
             themes: {
                 dark: 'one-dark-pro',
-                light: 'min-light',
+                light: 'ayu-light',
             },
         },
         wrap: true,

@@ -277,10 +277,7 @@ if (headings.length > 0) {
     if (sidebarToggle && sidebarContainer) {
         const setSidebarToggleLabel = () => {
             sidebarToggle.innerHTML = '<code>&lt;C-b&gt;</code>'
-            sidebarToggle.setAttribute(
-                'aria-label',
-                'Toggle sidebar (Ctrl+B)',
-            )
+            sidebarToggle.setAttribute('aria-label', 'Toggle sidebar (Ctrl+B)')
         }
 
         const setSidebarCollapsed = (collapsed: boolean) => {
@@ -290,12 +287,13 @@ if (headings.length > 0) {
             setSidebarToggleLabel()
         }
 
-        const isCollapsed =
-            localStorage.getItem('sidebar-collapsed') === 'true'
+        const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true'
         setSidebarCollapsed(isCollapsed)
 
         sidebarToggle.addEventListener('click', () => {
-            setSidebarCollapsed(!sidebarContainer.classList.contains('collapsed'))
+            setSidebarCollapsed(
+                !sidebarContainer.classList.contains('collapsed'),
+            )
         })
 
         window.addEventListener('keydown', (e) => {
@@ -321,7 +319,10 @@ if (headings.length > 0) {
 
     if (sidebarContainer && sidebarResizer) {
         const setSidebarWidth = (widthPx: number) => {
-            sidebarContainer.style.setProperty('--sidebar-width', `${widthPx}px`)
+            sidebarContainer.style.setProperty(
+                '--sidebar-width',
+                `${widthPx}px`,
+            )
         }
 
         const getBounds = () => {

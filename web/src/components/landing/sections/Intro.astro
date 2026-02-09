@@ -20,18 +20,12 @@ import Widgets from '../widgets/Widgets.astro'
                 </p>
                 <div is-="separator"></div>
                 <row gap-="1">
-                    [<span><a href="/landing"> </a></span>] [<span
-                        ><a href="https://twitter.com/saforem2"> </a></span
-                    >] [<span><a href="https://github.com/saforem2"> </a></span
-                    >]
-                    <!-- <a href="/landing"><button>Sam Foreman</button></a> -->
-                    <!-- <div is-="separator"></div> -->
-                    <!-- <a href="/posts" -->
-                    <!--     ><button variant-="background2">Posts</button></a -->
-                    <!-- > -->
-                    <!-- same for talks, and more -->
-                    <!-- <a href="/talks"><button>Talks</button></a> -->
-                    <!-- <a href="projects/"><button>Projects</button></a> -->
+                    <a href="/landing"> </a>
+                    <a href="/posts"> </a>
+                    <a href="/talks">󰐨 </a>
+                    <a href="/projects"> </a>
+                    <a href="https://twitter.com/saforem2"> </a>
+                    <a href="https://github.com/saforem2"> </a>
                 </row>
             </column>
         </column>
@@ -76,6 +70,7 @@ import Widgets from '../widgets/Widgets.astro'
             #content {
                 nav {
                     padding: 1ch;
+                    overflow-x: auto;
                 }
                 position: absolute;
                 background-color: var(--background1);
@@ -90,6 +85,14 @@ import Widgets from '../widgets/Widgets.astro'
                     padding: 1lh 2ch;
                     gap: 1lh;
                     --box-border-color: var(--foreground2);
+                    a {
+                        color: var(--foreground1);
+                text-decoration: none;
+
+                        &:focus,
+                        &:hover {
+                            text-decoration: underline;
+                    }
                 }
 
                 h1 {
