@@ -468,15 +468,15 @@ const { pathname: urlPath } = Astro.url
 
         &.active {
             background-color: oklch(
-                from var(--background1, var(--foreground, #838383))
+                from var(--background-active, var(--background2, #838383))
                     calc(l * var(--oklch-scale, 0.85)) c h / 0.1
             );
         }
 
         &:focus {
             background-color: oklch(
-                from var(--accent, var(--foreground, #838383)) calc(l * 0.85) c
-                    h / 0.1
+                from var(--background-active, var(--background2, #838383))
+                    calc(l * var(--oklch-scale, 0.85)) c h / 0.1
             );
         }
     }

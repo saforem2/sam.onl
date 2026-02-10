@@ -64,6 +64,7 @@
         --mantle: #e6e9ef;
         --crust: #e4e4e4;
         --pre-background: transparent;
+        --code-bg: #f8f8f8;
         --foreground0: #000000;
         --foreground1: #333333;
         --foreground2: #888888;
@@ -72,6 +73,9 @@
         --background1: #ced4da;
         --background2: #cccccc;
         --background3: #999999;
+        --background-active: oklch(
+            from var(--background1) calc(l * var(--oklch-scale)) c h / 0.1
+        );
         --red: #ff8a80;
         --green: #05a551;
         --yellow: #ff794e;
@@ -83,23 +87,27 @@
         --teal: #00838f;
         --accent: #f92672;
         --url: #137af5;
-        --h1: oklch(from #ff5252 l c h);
-        --h2: oklch(from #);
-        --h3: #6089de;
-        --h4: #50fa7b;
-        --h5: #fd971f;
-        --h6: #bd93f9;
+        --h1: oklch(from #e05560 l c h);
+        --h2: oklch(from #118cc2 l c h);
+        --h3: oklch(from #1da811 l c h);
+        --h4: oklch(from #fd971f l c h);
+        --h5: oklch(from #9a76ce l c h);
+        --h6: oklch(from #56b5c1 l c h);
     }
 
+    /* #e05560 #ee8f24 #1da811 #118cc2 #9a76ce #56b5c1 */
+    /* #abb2bf #3b4048 #282c34 #e5c07b #d19a66 #98c379 #56b6c2 #61afef #c678dd #e06c75 */
+
     [data-webtui-theme='dark'] {
-        --h1: #838383;
-        --h2: #ff2052;
-        --h3: #ff79c6;
-        --h4: #f1fa8c;
-        --h5: #50fa7b;
-        --h6: #bd93f9;
+        --h1: oklch(from #e05560 l c h);
+        --h2: oklch(from #61afef l c h);
+        --h3: oklch(from #98c379 l c h);
+        --h4: oklch(from #d19a66 l c h);
+        --h5: oklch(from #c678dd l c h);
+        --h6: oklch(from #ff79c6 l c h);
         --accent: #ff2052;
         --url: #82b1ff;
+        --code-bg: #333333;
         --oklch-scale: 1.15;
         --base: #1c1c1c;
         --mantle: #111111;
@@ -113,6 +121,9 @@
         --background1: #242424;
         --background2: #333333;
         --background3: #777777;
+        --background-active: oklch(
+            from #666666 calc(l * var(--oklch-scale)) c h / 0.1
+        );
         /* --background1: #222222; */
         /* --background2: #333333; */
         /* --background3: #444444; */

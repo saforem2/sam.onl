@@ -208,28 +208,31 @@ h6::before {
             outline: none;
 
             &:focus {
-                background-color: oklch(
-                    from var(--foreground, var(--foreground, #838383))
-                        calc(l * 0.85) c h / 0.1
+                background-color: var(
+                    --background-active,
+                    oklch(
+                        from var(--foreground)
+                            calc(l * var(--oklch-scale, 1.15)) c h / 0.1
+                    )
                 );
 
-                &:not(:is(pre)) code {
-                    background-color: var(--background2);
-                }
+                /* &:not(:is(pre)) code { */
+                /*     background-color: var(--background2); */
+                /* } */
+                /**/
+                /* &:has(> div.image-caption) { */
+                /*     background-color: var(--background0); */
+                /**/
+                /*     figcaption { */
+                /*         background-color: var(--background1); */
+                /*     } */
+                /* } */
 
-                &:has(> div.image-caption) {
-                    background-color: var(--background0);
-
-                    figcaption {
-                        background-color: var(--background1);
-                    }
-                }
-
-                &:is(pre) {
-                    span.line:first-child {
-                        background-color: var(--background2);
-                    }
-                }
+                /* &:is(pre) { */
+                /*     span.line:first-child { */
+                /*         background-color: var(--background2); */
+                /*     } */
+                /* } */
             }
         }
 

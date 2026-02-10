@@ -5,6 +5,17 @@ import { visit } from 'unist-util-visit'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeMermaid from 'rehype-mermaid'
+// import { createHighlighter } from 'shiki'
+// import { createCssVariablesTheme } from 'shiki'
+//
+// const oneLight = createCssVariablesTheme({
+//   name: 'one-light',
+//   variablePrefix: '--shiki',
+//   variableDefaults: {},
+//   fontStyle: true
+// })
+// import oneLight from 'shiki/themes/one-light.json'
+// import oneLight from 'shiki/themes/one-light.json'
 
 const indexableElements = [
     'h1',
@@ -57,7 +68,16 @@ export default defineConfig({
             // theme: 'one-dark-pro',
             themes: {
                 dark: 'one-dark-pro',
-                light: 'ayu-light',
+                light: 'github-light-default',
+            },
+            colorReplacements: {
+                'github-light-default': {
+                    '#FFFFFF': '#F8F8F8',
+                },
+                'one-light:': {
+                    '#986801': '#ee8f24',
+                    '#C18401': '#eea724',
+                },
             },
         },
     },
