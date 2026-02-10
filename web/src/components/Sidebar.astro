@@ -197,7 +197,7 @@ const groupPagesByYear = (pages: CollectionEntry<'docs'>[], slug: string) => {
         }
     }
 
-    for (const [year, yearPages] of grouped.entries()) {
+    for (const [, yearPages] of grouped.entries()) {
         if (dateGroupedCategories.has(slug)) {
             yearPages.sort((a, b) => {
                 const dateA = getPageDate(a)?.getTime() ?? 0
@@ -443,9 +443,9 @@ const { pathname: urlPath } = Astro.url
             inset: 0;
             display: flex;
             flex-direction: column;
-            gap: 1lh;
-            padding: 0 1ch;
+            gap: 0lh;
             overflow-y: auto;
+            margin-inline: 1ch;
         }
     }
 
@@ -466,21 +466,16 @@ const { pathname: urlPath } = Astro.url
         }
 
         &.active {
-            /* color: var(--accent); */
-            /* text-decoration: underline; */
-            /* font-weight: var(--font-weight-bold); */
             background-color: oklch(
-                from var(--background1, var(--foreground, #838383))
+                from var(--background-active, var(--background2, #838383))
                     calc(l * var(--oklch-scale, 0.85)) c h / 0.1
             );
-            /* background-color: var(--background1); */
         }
 
         &:focus {
-            /* background-color: var(--background1); */
             background-color: oklch(
-                from var(--accent, var(--foreground, #838383)) calc(l * 0.85) c
-                    h / 0.1
+                from var(--background-active, var(--background2, #838383))
+                    calc(l * var(--oklch-scale, 0.85)) c h / 0.1
             );
         }
     }
@@ -501,6 +496,7 @@ const { pathname: urlPath } = Astro.url
         display: list-item;
         margin-block-start: 1ch;
         color: var(--foreground1);
+        background-color: var(--background0);
     }
     ul > details > summary::marker {
         content: '\eab6\ ';
@@ -542,10 +538,11 @@ const { pathname: urlPath } = Astro.url
 
     details {
         summary {
-            font-weight: var(--font-weight-bold, bold);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            color: var(--foreground2);
+            font-weight: 500;
+            /* -webkit-font-smoothing: antialiased; */
+            /* -moz-osx-font-smoothing: grayscale; */
+            background-color: none;
+            color: var(--foreground1);
             &::marker {
                 color: var(--foreground2);
                 content: '\eab6\ ';

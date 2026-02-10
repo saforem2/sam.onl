@@ -68,6 +68,86 @@ import '@/styles/global.css'
             href="https://iosevka-webfonts.github.io/iosevka/Iosevka.css"
             rel="stylesheet"
         />
+        <style is:inline>
+            svg[id^='mermaid-'] {
+                display: block;
+                width: 100%;
+                max-width: 100%;
+                height: auto !important;
+                min-height: 12rem;
+            }
+        </style>
+        <script is:inline>
+            const normalizeMermaidSvgSize = () => {
+                const mermaidSvgs = document.querySelectorAll(
+                    "svg[id^='mermaid-']",
+                )
+
+                mermaidSvgs.forEach((node) => {
+                    const viewBox = node.getAttribute('viewBox')
+                    if (!viewBox) return
+
+                    const parts = viewBox
+                        .trim()
+                        .split(/\s+/)
+                        .map((value) => Number(value))
+                    if (parts.length !== 4) return
+
+                    const width = parts[2]
+                    const height = parts[3]
+                    if (!Number.isFinite(width) || !Number.isFinite(height))
+                        return
+                    if (width <= 0 || height <= 0) return
+
+                    node.setAttribute('width', String(width))
+                    node.setAttribute('height', String(height))
+                    node.style.width = '100%'
+                    const renderedWidth =
+                        node.getBoundingClientRect().width ||
+                        node.parentElement?.getBoundingClientRect().width ||
+                        width
+                    const renderedHeight = (renderedWidth * height) / width
+                    const resolvedHeight =
+                        Number.isFinite(renderedHeight) && renderedHeight > 0
+                            ? renderedHeight
+                            : height
+
+                    node.style.setProperty(
+                        'height',
+                        `${resolvedHeight}px`,
+                        'important',
+                    )
+                    node.style.setProperty(
+                        'min-height',
+                        `${resolvedHeight}px`,
+                        'important',
+                    )
+                    node.style.setProperty('width', '100%', 'important')
+                    node.style.setProperty('max-width', '100%', 'important')
+                    node.style.setProperty('display', 'block', 'important')
+                })
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener(
+                    'DOMContentLoaded',
+                    normalizeMermaidSvgSize,
+                    {
+                        once: true,
+                    },
+                )
+            } else {
+                normalizeMermaidSvgSize()
+            }
+
+            window.addEventListener('load', normalizeMermaidSvgSize, {
+                once: true,
+            })
+            setTimeout(normalizeMermaidSvgSize, 0)
+            setTimeout(normalizeMermaidSvgSize, 50)
+            setTimeout(normalizeMermaidSvgSize, 250)
+            window.addEventListener('resize', normalizeMermaidSvgSize)
+        </script>
         <!-- <link -->
         <!--     href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400..600;1,400..600&display=swap" -->
         <!--     rel="stylesheet" -->
@@ -117,12 +197,91 @@ import '@/styles/global.css'
 
             focusMainRegion()
 
+            const stabilizeMermaidSvgLayout = () => {
+                const mermaidSvgs = document.querySelectorAll(
+                    'svg[id^="mermaid-"]',
+                )
+
+                mermaidSvgs.forEach((node) => {
+                    if (!(node instanceof SVGElement)) return
+
+                    const viewBox = node.getAttribute('viewBox')
+                    if (!viewBox) return
+
+                    const [, , widthRaw, heightRaw] = viewBox
+                        .trim()
+                        .split(/\s+/)
+                        .map((value) => Number(value))
+
+                    if (
+                        !Number.isFinite(widthRaw) ||
+                        !Number.isFinite(heightRaw)
+                    ) {
+                        return
+                    }
+
+                    if (widthRaw <= 0 || heightRaw <= 0) return
+
+                    node.setAttribute('width', String(widthRaw))
+                    node.setAttribute('height', String(heightRaw))
+                    node.style.setProperty('display', 'block', 'important')
+                    node.style.setProperty('width', '100%', 'important')
+                    node.style.setProperty('max-width', '100%', 'important')
+                    const renderedWidth =
+                        node.getBoundingClientRect().width ||
+                        node.parentElement?.getBoundingClientRect().width ||
+                        widthRaw
+                    const renderedHeight =
+                        (renderedWidth * heightRaw) / widthRaw
+                    const resolvedHeight =
+                        Number.isFinite(renderedHeight) && renderedHeight > 0
+                            ? renderedHeight
+                            : heightRaw
+
+                    node.style.setProperty(
+                        'height',
+                        `${resolvedHeight}px`,
+                        'important',
+                    )
+                    node.style.setProperty(
+                        'min-height',
+                        `${resolvedHeight}px`,
+                        'important',
+                    )
+                    node.style.setProperty(
+                        'aspect-ratio',
+                        `${widthRaw} / ${heightRaw}`,
+                        'important',
+                    )
+                    node.style.setProperty('visibility', 'visible', 'important')
+                })
+            }
+
+            stabilizeMermaidSvgLayout()
+            setTimeout(stabilizeMermaidSvgLayout, 0)
+            setTimeout(stabilizeMermaidSvgLayout, 50)
+            setTimeout(stabilizeMermaidSvgLayout, 250)
+
             const mermaidCodeBlocks = document.querySelectorAll(
                 'pre[data-language="mermaid"] > code, pre > code.language-mermaid',
             )
-            const legacyMermaidBlocks = document.querySelectorAll(
-                'pre.mermaid, pre.mermaid-js',
-            )
+            const legacyMermaidBlocks = Array.from(
+                document.querySelectorAll(
+                    'pre.mermaid, pre.mermaid-js, .mermaid',
+                ),
+            ).filter((node) => {
+                if (!(node instanceof HTMLElement)) return false
+                if (node.matches('svg') || node.querySelector('svg, img')) {
+                    return false
+                }
+
+                const source = (node.textContent ?? '').trim()
+                if (source.length === 0) return false
+
+                return /^\s*(?:%%[^\n]*\n\s*)*(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|quadrantChart|xychart-beta|requirementDiagram|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b/.test(
+                    source,
+                )
+            })
 
             if (
                 mermaidCodeBlocks.length > 0 ||
@@ -155,12 +314,30 @@ import '@/styles/global.css'
                     return theme === 'light' ? 'default' : 'dark'
                 }
 
+                const resolveMermaidFontFamily = () => {
+                    const fontFamily = getComputedStyle(
+                        document.documentElement,
+                    ).getPropertyValue('--font-family')
+
+                    return fontFamily.trim() || 'monospace'
+                }
+
+                const resolveMermaidFontSize = () => {
+                    const fontSize = getComputedStyle(
+                        document.documentElement,
+                    ).getPropertyValue('--font-size')
+
+                    return fontSize.trim() || '16px'
+                }
+
                 const renderMermaid = async () => {
                     const { default: mermaid } = await import('mermaid')
 
                     mermaid.initialize({
                         startOnLoad: false,
                         theme: resolveMermaidTheme(),
+                        fontFamily: resolveMermaidFontFamily(),
+                        fontSize: resolveMermaidFontSize(),
                     })
 
                     const nodes = document.querySelectorAll('.mermaid')
@@ -172,7 +349,12 @@ import '@/styles/global.css'
                         node.textContent = source
                     })
 
-                    await mermaid.run({ nodes })
+                    try {
+                        await mermaid.run({ nodes })
+                        stabilizeMermaidSvgLayout()
+                    } catch (error) {
+                        console.error('Mermaid rendering failed:', error)
+                    }
                 }
 
                 renderMermaid()

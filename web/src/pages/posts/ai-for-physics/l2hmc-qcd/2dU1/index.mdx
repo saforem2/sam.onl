@@ -1,28 +1,28 @@
 ---
 layout: '@/layouts/Doc.astro'
-title: "🎢 l2hmc-qcd Example: 2D U(1)"
+title: '🎢 l2hmc-qcd Example: 2D U(1)'
 ---
 
 Sam Foreman
 2023-12-14
 
 - [`l2hmc-qcd`: 2D $U(1)$ Example](#l2hmc-qcd-2d-u1-example)
-  - [Contents](#contents)
+    - [Contents](#contents)
 - [`l2hmc`: Example](#l2hmc-example)
-  - [Imports / Setup](#imports--setup)
+    - [Imports / Setup](#imports--setup)
 - [Initialize and Build `Experiment`
   objects:](#initialize-and-build-experiment-objects)
-  - [PyTorch](#pytorch)
-    - [Training](#training)
-    - [Inference](#inference)
-  - [TensorFlow](#tensorflow)
-    - [Train](#train)
-    - [Inference](#inference-1)
+    - [PyTorch](#pytorch)
+        - [Training](#training)
+        - [Inference](#inference)
+    - [TensorFlow](#tensorflow)
+        - [Train](#train)
+        - [Inference](#inference-1)
 - [Model Performance](#model-performance)
 - [Comparisons](#comparisons)
-  - [TensorFlow Results](#tensorflow-results)
-    - [PyTorch Results](#pytorch-results)
-  - [Comparisons](#comparisons-1)
+    - [TensorFlow Results](#tensorflow-results)
+        - [PyTorch Results](#pytorch-results)
+    - [Comparisons](#comparisons-1)
 
 # `l2hmc-qcd`: 2D $U(1)$ Example
 
@@ -46,8 +46,22 @@ Sam Foreman
 
 # `l2hmc`: Example
 
-<a href="https://arxiv.org/abs/2105.03418"><img alt="arxiv" src="http://img.shields.io/badge/arXiv-2105.03418-B31B1B.svg" align="left" /></a>
-<a href="https://arxiv.org/abs/2112.01582"><img alt="arxiv" src="http://img.shields.io/badge/arXiv-2112.01582-B31B1B.svg" align="left" style="margin-left:10px;" /></a><br />
+<a href="https://arxiv.org/abs/2105.03418">
+    <img
+        alt="arxiv"
+        src="http://img.shields.io/badge/arXiv-2105.03418-B31B1B.svg"
+        align="left"
+    />
+</a>
+<a href="https://arxiv.org/abs/2112.01582">
+    <img
+        alt="arxiv"
+        src="http://img.shields.io/badge/arXiv-2112.01582-B31B1B.svg"
+        align="left"
+        style="margin-left:10px;"
+    />
+</a>
+<br />
 
 This notebook will (attempt) to walk through the steps needed to
 successfully instantiate and “run” an experiment.
@@ -55,9 +69,11 @@ successfully instantiate and “run” an experiment.
 For this example, we wish to train the L2HMC sampler for the 2D $U(1)$
 lattice gauge model with Wilson action:
 
-$$\begin&#123;equation*&#125;
+$$
+\begin&#123;equation*&#125;
 S_&#123;\beta&#125;(n) = \beta \sum_&#123;n&#125;\sum_&#123;\mu&lt;\nu&#125;\mathrm&#123;Re&#125;\left[1 - U_&#123;\mu\nu&#125;(n) \right]
-\end&#123;equation*&#125;$$
+\end&#123;equation*&#125;
+$$
 
 This consists of the following steps:
 
@@ -67,29 +83,27 @@ This consists of the following steps:
 4.  Compare our trained models’ performance against generic HMC
     `Experiment.evaluate(job_type='hmc')`
 
-<span style="font-weight:700; font-size:1.5em;">Evaluating
-Performance</span>
-Explicitly, we measure the performance of our model by comparing the
-*tunneling rate* $\delta Q$ of our **trained** sampler to that of
-generic HMC.
-Explicitly, the tunneling rate is given by:
+<span style="font-weight:700; font-size:1.5em;">Evaluating Performance</span>
+Explicitly, we measure the performance of our model by comparing the *tunneling
+rate* $\delta Q$ of our **trained** sampler to that of generic HMC. Explicitly,
+the tunneling rate is given by:
 
 $$\delta Q = \frac&#123;1&#125;&#123;N_&#123;\mathrm&#123;chains&#125;&#125;&#125;\sum_&#123;\mathrm&#123;chains&#125;&#125; \left|Q_&#123;i+1&#125; - Q_&#123;i&#125;\right|$$
 
 where the difference is between subsequent states in a chain, and the
 sum is over all $N$ chains (each being ran in parallel,
-*independently*).
-Since our goal is to generate *independent configurations*, the more our
-sampler tunnels between different topological sectors (*tunneling
-rate*), the more efficient our sampler.
+_independently_).
+Since our goal is to generate _independent configurations_, the more our
+sampler tunnels between different topological sectors (_tunneling
+rate_), the more efficient our sampler.
 
 ## Imports / Setup
 
-``` python
+```python
 ! nvidia-smi | tail --lines -7
 ```
 
-``` python
+```python
 # automatically detect and reload local changes to modules
 %load_ext autoreload
 %autoreload 2
@@ -110,7 +124,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
     2
 
-``` python
+```python
 devices = os.environ.get('CUDA_VISIBLE_DEVICES', None)
 print(devices)
 !getconf _NPROCESSORS_ONLN  # get number of availble CPUs
@@ -119,7 +133,7 @@ print(devices)
     2
     256
 
-``` python
+```python
 os.environ['TORCH_CPP_LOG_LEVEL'] = 'ERROR'
 os.environ['AUTOGRAPH_VERBOSITY'] = '10'
 !echo $CUDA_VISIBLE_DEVICES
@@ -127,7 +141,7 @@ os.environ['AUTOGRAPH_VERBOSITY'] = '10'
 
     2
 
-``` python
+```python
 from __future__ import absolute_import, print_function, annotations, division
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -165,7 +179,7 @@ print(console.is_jupyter)
 
     False
 
-``` python
+```python
 import l2hmc
 l2hmc.__file__
 ```
@@ -176,7 +190,7 @@ l2hmc.__file__
 
 - The `l2hmc.main` module provides a function `build_experiment`:
 
-``` python
+```python
 def build_experiment(overrides: list[str]) -> tfExperiment | ptExperiment:
     ...
 ```
@@ -192,18 +206,19 @@ which will:
     -\> `l2hmc.experiment.pytorch.Experiment` b. `framework=tensorflow`
     -\> `l2hmc.experiment.tensorflow.Experiment`
 
-``` python
+```python
 >>> train_output = experiment.train()
 >>> eval_output = experiment.evaluate(job_type='eval')
 >>> hmc_output = experiment.evaluate(job_type='hmc')
 ```
 
-<b><u>Overriding Defaults</u></b>
-Specifics about the training / evaluation / hmc runs can be flexibly
-overridden by passing arguments to the training / evaluation / hmc runs,
-respectively
+<b>
+    <u>Overriding Defaults</u>
+</b>
+Specifics about the training / evaluation / hmc runs can be flexibly overridden
+by passing arguments to the training / evaluation / hmc runs, respectively
 
-``` python
+```python
 import numpy as np
 
 #seed = np.random.randint(100000)
@@ -254,7 +269,7 @@ outputs = {
 }
 ```
 
-``` python
+```python
 from l2hmc.configs import dict_to_list_of_overrides
 OVERRIDES = dict_to_list_of_overrides(DEFAULTS)
 OVERRIDES
@@ -279,7 +294,7 @@ OVERRIDES
      'annealing_schedule.beta_init=4.0',
      'annealing_schedule.beta_final=4.0']
 
-``` python
+```python
 # Build PyTorch Experiment
 ptExpU1 = build_experiment(
     overrides=[
@@ -302,7 +317,7 @@ ptExpU1 = build_experiment(
     [06/23/23 12:58:17][INFO][trainer.py:283] - num_params in model: 1486740
     [06/23/23 12:58:17][WARNING][trainer.py:250] - logging with freq 20 for wandb.watch
 
-``` python
+```python
 # Build TensorFlow Experiment
 import tensorflow as tf
 tf.keras.mixed_precision.set_global_policy('mixed_float16')
@@ -326,7 +341,7 @@ tfExpU1 = build_experiment(
 
 ### Training
 
-``` python
+```python
 outputs['pytorch']['train'] = ptExpU1.trainer.train()
     #nera=5,
     #nepoch=2000,
@@ -336,8 +351,11 @@ outputs['pytorch']['train'] = ptExpU1.trainer.train()
 _ = ptExpU1.save_dataset(job_type='train', nchains=32)
 ```
 
-<img src="assets/8272861d462b935cd19269560b692eb9277eba43.png"
-width="1108" height="395" />
+<img
+    src="assets/8272861d462b935cd19269560b692eb9277eba43.png"
+    width="1108"
+    height="395"
+/>
 
     [06/23/23 12:58:19][INFO][trainer.py:439] - [TRAINING] x.dtype: torch.float32
     [06/23/23 12:58:19][INFO][trainer.py:439] - [TRAINING] self._dtype: torch.float16
@@ -439,7 +457,7 @@ width="1108" height="395" />
 
 #### Evaluation
 
-``` python
+```python
 outputs['pytorch']['eval'] = ptExpU1.trainer.eval(
     job_type='eval',
     nprint=500,
@@ -459,8 +477,11 @@ _ = ptExpU1.save_dataset(job_type='eval', nchains=32)
     eval_steps=2000
     nleapfrog=None
 
-<img src="assets/90a5e478cf73243724cacc3e8e49941e608b669d.png"
-width="1108" height="389" />
+<img
+    src="assets/90a5e478cf73243724cacc3e8e49941e608b669d.png"
+    width="1108"
+    height="389"
+/>
 
     [06/23/23 13:52:46][INFO][trainer.py:1181] - estep=0 dt=0.278 beta=4.000 loss=-26.568 dQsin=0.310 dQint=0.328 energy=412.448 logprob=405.216 logdet=7.232 sldf=3.974 sldb=-3.865 sld=7.232 xeps=0.193 veps=0.148 acc=0.484 sumlogdet=0.003 acc_mask=0.508 plaqs=0.863 intQ=-0.086 sinQ=-0.055
     [06/23/23 13:54:55][INFO][trainer.py:1181] - estep=500 dt=0.226 beta=4.000 loss=-23.825 dQsin=0.266 dQint=0.227 energy=407.989 logprob=400.742 logdet=7.247 sldf=3.976 sldb=-3.845 sld=7.247 xeps=0.193 veps=0.148 acc=0.470 sumlogdet=0.029 acc_mask=0.492 plaqs=0.862 intQ=-0.164 sinQ=-0.105
@@ -532,7 +553,7 @@ width="1108" height="389" />
 
 #### HMC
 
-``` python
+```python
 outputs['pytorch']['hmc'] = ptExpU1.trainer.eval(
     job_type='hmc',
     nprint=500,
@@ -553,8 +574,11 @@ _ = ptExpU1.save_dataset(job_type='hmc', nchains=32)
     eval_steps=2000
     nleapfrog=20
 
-<img src="assets/7e8b44441613e03b2963cbfaca8a46568844755e.png"
-width="1108" height="389" />
+<img
+    src="assets/7e8b44441613e03b2963cbfaca8a46568844755e.png"
+    width="1108"
+    height="389"
+/>
 
     [06/23/23 14:02:17][INFO][trainer.py:1181] - hstep=0 dt=0.034 beta=4.000 loss=-11.965 dQsin=0.256 dQint=0.172 energy=395.464 logprob=395.464 logdet=0.000 acc=0.762 sumlogdet=0.000 acc_mask=0.734 plaqs=0.864 intQ=0.203 sinQ=0.148
     [06/23/23 14:02:47][INFO][trainer.py:1181] - hstep=500 dt=0.035 beta=4.000 loss=-15.159 dQsin=0.263 dQint=0.156 energy=395.520 logprob=395.520 logdet=0.000 acc=0.771 sumlogdet=0.000 acc_mask=0.734 plaqs=0.864 intQ=-0.078 sinQ=-0.086
@@ -609,7 +633,7 @@ width="1108" height="389" />
 
 ### Train
 
-``` python
+```python
 outputs['tensorflow']['train'] = tfExpU1.trainer.train()
 #    nera=5,
 #    nepoch=2000,
@@ -621,14 +645,21 @@ _ = tfExpU1.save_dataset(job_type='train', nchains=32)
     [06/23/23 14:05:07][INFO][trainer.py:200] - Looking for checkpoints in: /lus/grand/projects/DLHMC/foremans/locations/thetaGPU/projects/l2hmc-qcd/src/l2hmc/checkpoints/U1/2-16-16/nlf-10/xsplit-True/sepnets-True/merge-True/net-16-16-16_dp-0.2_bn-False/tensorflow
     [06/23/23 14:05:07][INFO][trainer.py:200] - No checkpoints found to load from. Continuing
 
-<img src="assets/9fbb0ed154d423574fb6a62d67f630750261f07b.png"
-width="1108" height="389" />
+<img
+    src="assets/9fbb0ed154d423574fb6a62d67f630750261f07b.png"
+    width="1108"
+    height="389"
+/>
 
     [06/23/23 14:05:07][INFO][trainer.py:1266] - ERA: 0 / 1, BETA: 4.000
     [06/23/23 14:06:32][INFO][trainer.py:200] - Thermalizing configs @ 4.00 took 85.1316 s
 
-``` json
-{"model_id":"3ce8a6d5ef17444abb0644b54156bbcf","version_major":2,"version_minor":0}
+```json
+{
+    "model_id": "3ce8a6d5ef17444abb0644b54156bbcf",
+    "version_major": 2,
+    "version_minor": 0
+}
 ```
 
     WARNING:tensorflow:From /lus/grand/projects/datascience/foremans/locations/thetaGPU/miniconda3/envs/2023-04-26/lib/python3.10/site-packages/tensorflow/python/autograph/pyct/static_analysis/liveness.py:83: Analyzer.lamba_check (from tensorflow.python.autograph.pyct.static_analysis.liveness) is deprecated and will be removed after 2023-09-23.
@@ -731,7 +762,7 @@ width="1108" height="389" />
 
 #### Evaluate
 
-``` python
+```python
 outputs['tensorflow']['eval'] = tfExpU1.trainer.eval(
     job_type='eval',
     nprint=500,
@@ -751,11 +782,18 @@ _ = tfExpU1.save_dataset(job_type='eval', nchains=32)
     eval_steps = 2000
     nleapfrog = None
 
-<img src="assets/eb44c97aabe9785f673264745fefb2b83ea99d23.png"
-width="1108" height="389" />
+<img
+    src="assets/eb44c97aabe9785f673264745fefb2b83ea99d23.png"
+    width="1108"
+    height="389"
+/>
 
-``` json
-{"model_id":"42d6b6d371eb4dbca473bb047e79f408","version_major":2,"version_minor":0}
+```json
+{
+    "model_id": "42d6b6d371eb4dbca473bb047e79f408",
+    "version_major": 2,
+    "version_minor": 0
+}
 ```
 
     [06/23/23 14:33:00][INFO][trainer.py:200] - estep=0 dt=13.921 beta=4.000 loss=-34.934 dQsin=0.296 dQint=0.242 energy=402.696 logprob=398.796 logdet=3.900 sldf=2.138 sldb=-1.896 sld=3.900 xeps=0.183 veps=0.124 acc=0.472 sumlogdet=0.008 acc_mask=0.469 plaqs=0.865 intQ=0.094 sinQ=0.060
@@ -828,7 +866,7 @@ width="1108" height="389" />
 
 #### HMC
 
-``` python
+```python
 outputs['tensorflow']['hmc'] = tfExpU1.trainer.eval(
     job_type='hmc',
     nprint=500,
@@ -849,11 +887,18 @@ _ = tfExpU1.save_dataset(job_type='hmc', nchains=32)
     eval_steps = 2000
     nleapfrog = 20
 
-<img src="assets/f34f47c948373d280dfd39c87e3215635e3e4eec.png"
-width="1119" height="394" />
+<img
+    src="assets/f34f47c948373d280dfd39c87e3215635e3e4eec.png"
+    width="1119"
+    height="394"
+/>
 
-``` json
-{"model_id":"c9e14ead5fda4789a4a40038a941d064","version_major":2,"version_minor":0}
+```json
+{
+    "model_id": "c9e14ead5fda4789a4a40038a941d064",
+    "version_major": 2,
+    "version_minor": 0
+}
 ```
 
     [06/23/23 14:38:03][INFO][trainer.py:200] - hstep=0 dt=0.197 beta=4.000 loss=-14.990 dQsin=0.288 dQint=0.195 energy=397.008 logprob=397.008 logdet=0.000 acc=0.822 sumlogdet=0.000 acc_mask=0.828 plaqs=0.862 intQ=-0.148 sinQ=-0.153
@@ -914,10 +959,10 @@ save_datasetrations which we can then use to calculate expectation
 values of physical observables.
 
 For our purposes, we are interested in obtaining lattice configurations
-from distinct *topological charge sectors*, as characterized by a
-configurations *topological charge*, $Q$.
+from distinct _topological charge sectors_, as characterized by a
+configurations _topological charge_, $Q$.
 
-HMC is known to suffer from *critical slowing down*, a phenomenon in
+HMC is known to suffer from _critical slowing down_, a phenomenon in
 which our configurations remains stuck in some local topological charge
 sector and fails to produce distinct configurations.
 
@@ -927,7 +972,7 @@ lattice spacing (i.e. continuum limit), making this theory especially
 problematic.
 
 Because of this, we can assess our models’ performance by looking at the
-*tunneling rate*, i.e. the rate at which our sampler jumps between these
+_tunneling rate_, i.e. the rate at which our sampler jumps between these
 different charge sectors.
 
 We can write this quantity as:
@@ -937,19 +982,19 @@ $$\delta Q = |Q^&#123;(i)&#125; - Q^&#123;(i-1)&#125;|$$
 where we look at the difference in the topological charge between
 sequential configurations.
 
-<b>Note:</b> The efficiency of our sampler is directly proportional to
-the tunneling rate, which is inversely proportional to the integrated
-autocorrelation time $\tau$, i.e.
- 
+<b>Note:</b> The efficiency of our sampler is directly proportional to the
+tunneling rate, which is inversely proportional to the integrated
+autocorrelation time $\tau$, i.e.  
 
 $$\text&#123;Efficiency&#125; \propto \delta Q \propto \frac&#123;1&#125;&#123;\tau&#125;$$
 
 Explicitly, this means that the **more efficient** the model
 $\longrightarrow$
-- the **larger** tunneling rate - the **smaller** integrated
-autocorrelation time for $Q$
 
-``` python
+- the **larger** tunneling rate - the **smaller** integrated
+  autocorrelation time for $Q$
+
+```python
 import xarray as xr
 
 def get_thermalized_configs(
@@ -989,7 +1034,7 @@ parts of our run via:
 Note that the data from each of the different parts of our experiment
 (i.e. `train`, `eval`, and `hmc`) are stored as a dict, e.g.
 
-``` python
+```python
 >>> list(ptExpU1.trainer.histories.keys())
 ['train', 'eval', 'hmc']
 >>> train_history = ptExpU1.trainer.histories['train']
@@ -1005,7 +1050,7 @@ We aggregate the data into the `dsets` dict below, grouped by:
 1.  **Framework** (`pytorch` / `tensorflow`)
 2.  **Job type** (`train`, `eval`, `hmc`)
 
-``` python
+```python
 import logging
 log = logging.getLogger(__name__)
 dsets = {}
@@ -1031,7 +1076,7 @@ for fw in fws:
     Getting dataset for tf: eval
     Getting dataset for tf: hmc
 
-``` python
+```python
 import numpy as np
 import matplotlib.pyplot as plt
 plt.rcParams['text.usetex'] = False
@@ -1102,11 +1147,11 @@ _ = ax[1].legend(loc='best', frameon=False)
 
 ## TensorFlow Results
 
-``` python
+```python
 import rich
 ```
 
-``` python
+```python
 sns.set_context('notebook')
 ndraws = len(dsets['tf']['eval']['dQint'].draw)
 drop = int(0.1 * ndraws)
@@ -1164,7 +1209,7 @@ console.print(f"dQint.sum(): {dqh.astype(int).sum().T}")
 
 ### PyTorch Results
 
-``` python
+```python
 sns.set_context('notebook')
 ndraws = len(dsets['pt']['eval']['dQint'].draw)
 drop = int(0.1 * ndraws)
@@ -1214,7 +1259,7 @@ console.print(f"dQint.sum(): {dqh.astype(int).sum().T.values}")
 
 ## Comparisons
 
-``` python
+```python
 import matplotlib.pyplot as plt
 from l2hmc.utils.plot_helpers import set_plot_style, COLORS
 
@@ -1284,5 +1329,6 @@ for idx in range(4):
 
 ![](assets/4a952c94b9203ad5e0adbabee00709b0b92f0baf.png)
 
-``` python
+```python
+
 ```

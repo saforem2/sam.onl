@@ -59,6 +59,9 @@
             'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace,
             'Symbols Nerd Font';
         --font-size: 17px;
+        --font-family-sans-serif:
+            'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace;
+        --font-family-monospace: 'Iosevka Web';
         --box-border-color: var(--background1);
         /* --background0: #fff; */
         /* --background1: #ddd; */
@@ -87,6 +90,7 @@
         /* margin: 0 1ch; */
         /* line-height: var(--line-height, 1.5); */
         font-variant-ligatures: common-ligatures;
+        margin: 0 1ch;
     }
 
     .flex-container {
@@ -123,50 +127,62 @@
         background-color: var(--foreground0);
         color: var(--background0);
     }
-    /* --h1: #333333; */
-    /* --h2: #ff5252; */
-    /* --h3: #6089de; */
-    /* --h4: #50fa7b; */
-    /* --h5: #fd971f; */
-    /* --h6: #bd93f9; */
-
     h1 {
-        color: oklch(from var(--h1, #838383) l c h);
-        background-color: oklch(
-            from var(--h1, #838383) calc(l * 0.85) c h / 0.1
-        );
+        color: oklch(from var(--h1, var(--red)) l c h);
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(
+                from var(--h1, var(--red)) calc(l * var(--oklch-scale, 0.85)) c
+                    h / 0.1
+            );
+        }
     }
 
     h2 {
-        color: oklch(from var(--h1, #ff5252) l c h);
-        background-color: oklch(
-            from var(--h1, #ff5252) calc(l * 0.85) c h / 0.1
-        );
+        color: oklch(from var(--h2, #ff5252) l c h);
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(
+                from var(--h2, #ff5252) calc(l * 0.85) c h / 0.1
+            );
+        }
     }
 
     h3 {
         color: oklch(from var(--h3, #6089de) l c h);
-        background-color: oklch(
-            from var(--h3, #6089de) calc(l * 0.85) c h / 0.1
-        );
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(
+                from var(--h3, #6089de) calc(l * 0.85) c h / 0.1
+            );
+        }
     }
     h4 {
         color: oklch(from var(--h4, #50fa7b) l c h);
-        background-color: oklch(
-            from var(--h4, #50fa7b) calc(l * 0.85) c h / 0.1
-        );
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(
+                from var(--h4, #50fa7b) calc(l * 0.85) c h / 0.1
+            );
+        }
     }
     h5 {
         color: oklch(from var(--h5, #fd971f) l c h);
-        background-color: oklch(
-            from var(--h5, #fd971f) calc(l * 0.85) c h / 0.1
-        );
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(
+                from var(--h5, #fd971f) calc(l * 0.85) c h / 0.1
+            );
+        }
     }
     h6 {
         color: oklch(from var(--h6, #f92672) l c h);
-        background-color: oklch(
-            from var(--h6, #f92672) calc(l * 0.85) c h / 0.1
-        );
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(
+                from var(--h6, #f92672) calc(l * 0.85) c h / 0.1
+            );
+        }
     }
 
     pre:not([size-]),
@@ -293,6 +309,16 @@ p:has(> img) {
         width: auto;
         height: auto;
     }
+}
+
+html[data-webtui-theme='light'] .astro-code,
+html[data-webtui-theme='light'] .astro-code span {
+    background-color: oklch(from var(--code-bg, #f8f8f8) l c h) !important;
+    /* color: var(--shiki-dark) !important; */
+    /* background-color: var(--shiki-dark-bg) !important; */
+    /* font-style: var(--shiki-dark-font-style) !important; */
+    /* font-weight: var(--shiki-dark-font-weight) !important; */
+    /* text-decoration: var(--shiki-dark-text-decoration) !important; */
 }
 
 html[data-webtui-theme='dark'] .astro-code,

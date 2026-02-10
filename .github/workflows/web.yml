@@ -28,12 +28,15 @@ jobs:
     # Build job
     build:
         runs-on: ubuntu-latest
+        env:
+            PLAYWRIGHT_BROWSERS_PATH: /home/runner/.cache/ms-playwright
         steps:
             - uses: actions/checkout@v4
             - uses: oven-sh/setup-bun@v2
               with:
                   bun-version: latest
             - run: bun install
+            - run: npx playwright install --with-deps chromium
             - run: bun run build
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3

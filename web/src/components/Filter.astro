@@ -55,21 +55,6 @@ const themeOptions = {
                 </p>
             </section>
             <section class="command-section" box-="round">
-                <span is-="badge" variant-="background0">Keybinds</span>
-                <div class="keybind">
-                    <code>&#x2303;K</code>
-                    <span>Command palette</span>
-                </div>
-                <div class="keybind">
-                    <code>/</code>
-                    <span>Search</span>
-                </div>
-                <div class="keybind">
-                    <code>?</code>
-                    <span>Show keybinds</span>
-                </div>
-            </section>
-            <section class="command-section" box-="round">
                 <span is-="badge" variant-="background0">Theme</span>
                 <Dropdown
                     id="command-theme-dropdown"
@@ -79,6 +64,17 @@ const themeOptions = {
                     data-value="light"
                     position="bottom baseline-right"
                 />
+            </section>
+            <section class="command-section" box-="round">
+                <span is-="badge" variant-="background0">Keybinds</span>
+                <div class="keybind-grid" role="list">
+                    <code role="listitem">&#x2303;K</code>
+                    <span>Command palette</span>
+                    <code role="listitem">/</code>
+                    <span>Search</span>
+                    <code role="listitem">?</code>
+                    <span>Show keybinds</span>
+                </div>
             </section>
         </div>
     </div>
@@ -191,10 +187,12 @@ const themeOptions = {
         background-color: var(--background0);
     }
 
-    .keybind {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25lh;
+    .keybind-grid {
+        display: grid;
+        grid-template-columns: minmax(5ch, max-content) minmax(0, 1fr);
+        column-gap: 1ch;
+        row-gap: 0.25lh;
+        align-items: baseline;
     }
 
     #command-theme-dropdown,

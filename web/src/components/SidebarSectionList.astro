@@ -37,9 +37,11 @@ const isExternal = (href?: string) => !!href && /^https?:\/\//.test(href)
                         {item.href ? (
                             <a
                                 href={item.href}
-                                class={compareUrlPaths(urlPath, item.href)
-                                    ? 'active'
-                                    : ''}>
+                                class={
+                                    compareUrlPaths(urlPath, item.href)
+                                        ? 'active'
+                                        : ''
+                                }>
                                 {item.label}
                             </a>
                         ) : (

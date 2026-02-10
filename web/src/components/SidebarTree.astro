@@ -27,12 +27,21 @@ interface Props {
     urlPath: string
 }
 
-const { items, depth = 0, parentCollapseLevel, trunk = [], urlPath } =
-    Astro.props as Props
+const {
+    items,
+    depth = 0,
+    parentCollapseLevel,
+    trunk = [],
+    urlPath,
+} = Astro.props as Props
 
 const isExternal = (href?: string) => !!href && /^https?:\/\//.test(href)
 
-const makePrefix = (branchStates: boolean[], isLast: boolean, depth: number) => {
+const makePrefix = (
+    branchStates: boolean[],
+    isLast: boolean,
+    depth: number,
+) => {
     if (depth === 0) return ''
 
     const trunkPrefix = branchStates
@@ -52,7 +61,9 @@ const makePrefix = (branchStates: boolean[], isLast: boolean, depth: number) => 
         if (item.type === 'section') {
             const collapseLevel = item.collapseLevel ?? parentCollapseLevel
             const isOpen =
-                collapseLevel === undefined ? depth === 0 : depth < collapseLevel
+                collapseLevel === undefined
+                    ? depth === 0
+                    : depth < collapseLevel
 
             return (
                 <details open={isOpen} class="sidebar-section">
@@ -70,7 +81,9 @@ const makePrefix = (branchStates: boolean[], isLast: boolean, depth: number) => 
                                         ? 'active'
                                         : ''
                                 }`}>
-                                <span class="sidebar-tree-label">{item.label}</span>
+                                <span class="sidebar-tree-label">
+                                    {item.label}
+                                </span>
                             </a>
                         ) : (
                             <span class="sidebar-tree-label">{item.label}</span>

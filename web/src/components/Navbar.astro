@@ -48,26 +48,17 @@ if (url.pathname === '/') {
 ---
 
 <nav box-="square">
-    <span>
-        <a href="/" id="home-link">
-            [<span>&#xf015</span>]
-            <!-- <img -->
-            <!--     src={faviconSf.src} -->
-            <!--     width="16" -->
-            <!--     height="16" -->
-            <!--     alt="" -->
-            <!--     aria-hidden="true" -->
-            <!-- /> -->
-        </a>
-    </span>
+    <!--                                                                                 -->
+    <span><a href="/" id="home-link">[<span> </span>]</a></span>
     <row id="links">
-        <a href="/posts" data-active={isOn === 'posts'}>  Posts </a>
-        <a href="/talks" data-active={isOn === 'talks'}> 󰐨 Talks </a>
-        <a href="/projects" data-active={isOn === 'projects'}>  Projects </a>
+        <a href="/posts" data-active={isOn === 'posts'}> Posts</a>
+        <a href="/talks" data-active={isOn === 'talks'}>󰐨 Talks</a>
+        <a href="/more" data-active={isOn === 'more'}> More</a>
+        <!-- <a href="/projects" data-active={isOn === 'projects'}>  Projects </a> -->
         <a href="https://github.com/saforem2/sam.onl" target="_blank"
             > Github</a
         >
-        <button id="theme-button" size-="small"> &#xf1fc;</button>
+        <button id="theme-button" size-="small">  </button>
         <button id="search-button" size-="small"> &#xea6d;</button>
     </row>
 </nav>
@@ -106,13 +97,12 @@ if (url.pathname === '/') {
         #home-link {
             display: inline-flex;
             align-items: center;
-            gap: 0.75ch;
             text-decoration: none;
             -moz-osx-font-smoothing: grayscale;
             -webkit-font-smoothing: subpixel-antialiased;
             font-weight: var(--font-weight-bold);
             color: var(--foreground1);
-
+            gap: 1ch;
             img {
                 display: block;
             }
@@ -137,9 +127,14 @@ if (url.pathname === '/') {
             color: var(--foreground2);
 
             &[data-active='true'] {
-                color: var(--foreground0);
+                /* color: var(--accent); */
+                padding: 0 1ch;
+                background-color: oklch(
+                    from var(--accent) calc(l * var(--oklch-scale, 0.85)) c h /
+                        0.1
+                );
                 font-weight: bold;
-                text-decoration: underline;
+                text-decoration: none;
             }
 
             &:focus,
@@ -148,10 +143,47 @@ if (url.pathname === '/') {
             }
         }
 
-        #theme-button,
+        & #home-link {
+            &:focus,
+            &:hover {
+                text-decoration: none;
+                background-color: oklch(
+                    from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h /
+                        0.1
+                );
+                color: var(--blue);
+            }
+        }
+
+        #theme-button {
+            display: inline-flex;
+            gap: 1ch;
+            color: var(--foreground1);
+            background-color: oklch(
+                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
+                    0.1
+            );
+            &:focus,
+            &:hover {
+                background-color: oklch(
+                    from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h /
+                        0.1
+                );
+                color: var(--blue);
+            }
+        }
         #search-button {
             display: inline-flex;
             gap: 1ch;
+            background-color: var(--foreground0);
+            &:focus,
+            &:hover {
+                background-color: oklch(
+                    from var(--green) calc(l * var(--oklch-scale, 0.85)) c h /
+                        0.1
+                );
+                color: var(--green);
+            }
         }
     }
 

@@ -95,23 +95,56 @@ export function applyVimNavigation(
         if (isUserTyping()) return
 
         const activeElements = reattachTabbableElements()
+        if (activeElements.length === 0) return
 
-        if (
-            Array.from(activeElements).indexOf(
-                document.activeElement as HTMLElement,
-            ) === -1
-        )
+        const isNextKey = e.key === 'j' || e.key === 'ArrowDown'
+        const isPrevKey = e.key === 'k' || e.key === 'ArrowUp'
+        const isFirstKey = e.key === 'g'
+        const isLastKey = e.key === 'G'
+
+        if (!isNextKey && !isPrevKey && !isFirstKey && !isLastKey) {
             return
+        }
+
+        const activeElement = document.activeElement as HTMLElement | null
+        const activeIndex = activeElement
+            ? Array.from(activeElements).indexOf(activeElement)
+            : -1
+
+        if (activeIndex === -1) {
+            e.preventDefault()
+            const fallbackTarget =
+                isPrevKey || isLastKey
+                    ? activeElements.at(-1)
+                    : activeElements[0]
+            fallbackTarget?.focus()
+            return
+        }
 
         const { next, prev, first, last } = paginateElements(
-            document.activeElement as HTMLElement,
+            activeElement as HTMLElement,
             activeElements,
         )
 
-        if (e.key === 'j' || e.key === 'ArrowDown') next.focus()
-        if (e.key === 'k' || e.key === 'ArrowUp') prev.focus()
-        if (e.key === 'g') first.focus()
-        if (e.key === 'G') last.focus()
+        if (isNextKey) {
+            e.preventDefault()
+            next?.focus()
+        }
+
+        if (isPrevKey) {
+            e.preventDefault()
+            prev?.focus()
+        }
+
+        if (isFirstKey) {
+            e.preventDefault()
+            first?.focus()
+        }
+
+        if (isLastKey) {
+            e.preventDefault()
+            last?.focus()
+        }
     })
 }
 
