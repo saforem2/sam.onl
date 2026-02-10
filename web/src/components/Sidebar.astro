@@ -197,7 +197,7 @@ const groupPagesByYear = (pages: CollectionEntry<'docs'>[], slug: string) => {
         }
     }
 
-    for (const [year, yearPages] of grouped.entries()) {
+    for (const [, yearPages] of grouped.entries()) {
         if (dateGroupedCategories.has(slug)) {
             yearPages.sort((a, b) => {
                 const dateA = getPageDate(a)?.getTime() ?? 0
@@ -444,9 +444,9 @@ const { pathname: urlPath } = Astro.url
             inset: 0;
             display: flex;
             flex-direction: column;
-            gap: 1lh;
-            padding: 0 1ch;
+            gap: 0lh;
             overflow-y: auto;
+            margin-inline: 1ch;
         }
     }
 

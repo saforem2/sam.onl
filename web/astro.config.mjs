@@ -78,7 +78,7 @@ export default defineConfig({
             // theme: 'one-dark-pro',
             themes: {
                 dark: 'one-dark-pro',
-                light: 'one-light',
+                light: 'min-light',
             },
             colorReplacements: {
                 'one-light': {
