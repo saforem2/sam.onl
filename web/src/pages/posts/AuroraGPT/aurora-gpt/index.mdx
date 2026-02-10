@@ -14,7 +14,6 @@ Sam Foreman
 
 Setup script / history:
 
-
 **Interactive Session**
 
     ```bash
@@ -58,13 +57,11 @@ Setup script / history:
     $ python3 setup.py develop |& tee build.log
     ```
 
-
 ## Running
 
 ### Using `launch`
 
 Setup:
-
 
     **Setup**
 
@@ -194,7 +191,6 @@ Setup:
     ```bash
     RuntimeError: oneCCL: global.cpp:150 getenv_local_coord: EXCEPTION: to get local_idx/count from ATL, set CCL_ZE_IPC_EXCHANGE=sockets explicitly
     ```
-
 
 **Run:**
 
@@ -407,7 +403,6 @@ Setup:
 
 **Take 2**: Trying with `CCL_ZE_IPC_EXCHANGE=sockets` (still no luck)
 
-
 **Run:**
 
     ```bash
@@ -421,11 +416,9 @@ Setup:
     RuntimeError: oneCCL: global.cpp:150 getenv_local_coord: EXCEPTION: to get local_idx/count from ATL, set CCL_ZE_IPC_EXCHANGE=sockets explicitly
     ```
 
-
 ## Using `deepspeed`
 
 Setup:
-
 
 **Setup**
 
@@ -434,7 +427,6 @@ $ cat $PBS_NODEFILE > hostfile ; sed -e 's/$/ slots=12/' -i hostfile
 $ echo "PATH=${PATH}" >> .deepspeed_env ; echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> .deepspeed_env ; echo "http_proxy=${http_proxy}" >> .deepspeed_env ; echo "https_proxy=${https_proxy}" >> .deepspeed_env
 ```
 
-
 Run: - Command:
 
         ```bash
@@ -442,7 +434,6 @@ Run: - Command:
         ```
 
 Output:
-
 
 **Output**
 
@@ -600,4 +591,3 @@ Output:
         x4502c1s3b0n0:   File "/home/foremans/miniconda3/envs/anl_release_q4/lib/python3.9/site-packages/torch/distributed/distributed_c10d.py", line 2050, in all_reduce
         x4502c1s3b0n0:     work = group.allreduce([tensor], opts)
         ```
-

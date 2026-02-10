@@ -5,7 +5,16 @@ import { makeSortedCategoryEntries } from '@/utils/content'
 import { compareUrlPaths } from '@/utils/url'
 import Navbar from '@/components/Navbar.astro'
 
-const { frontmatter, headings } = Astro.props
+type DocHeading = {
+    depth: number
+    text: string
+    slug: string
+}
+
+const { frontmatter, headings } = Astro.props as {
+    frontmatter: { title: string }
+    headings: DocHeading[]
+}
 
 const sortedPages = makeSortedCategoryEntries().flatMap(
     (category) => category[1],
@@ -19,26 +28,7 @@ const nextDoc =
         : sortedPages.at(pageIndex + 1)
 const prevDoc = pageIndex === 0 ? undefined : sortedPages.at(pageIndex - 1)
 
-const headers: Array<
-    Array<{
-        depth: number
-        text: string
-        slug: string
-    }>
-> = [[]]
-
-if (headings.length > 0) {
-    let currentDepth = headings[0].depth
-
-    for (const heading of headings) {
-        if (heading.depth === currentDepth) {
-            headers.at(-1)?.push(heading)
-        } else {
-            headers.push([heading])
-            currentDepth = heading.depth
-        }
-    }
-}
+const tocHeadings = headings.filter((heading) => heading.depth >= 2)
 ---
 
 <style is:global>
@@ -123,6 +113,37 @@ if (headings.length > 0) {
                     </div>
                 </row>
             </article>
+            {
+                tocHeadings.length > 0 && (
+                    <>
+                        <div id="toc-resizer" aria-hidden="true" />
+                        <aside id="toc-container" class="mobile-hidden">
+                            <nav
+                                box-="square"
+                                shear-="top"
+                                id="toc-sidebar"
+                                aria-label="Table of contents">
+                                <div id="toc-list-container">
+                                    <ul id="toc-list">
+                                        {tocHeadings.map((heading) => (
+                                            <li>
+                                                <a
+                                                    href={`#${heading.slug}`}
+                                                    class={`toc-link depth-${heading.depth}`}
+                                                    data-heading-slug={
+                                                        heading.slug
+                                                    }>
+                                                    {heading.text}
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </nav>
+                        </aside>
+                    </>
+                )
+            }
         </row>
         <div id="mobile-nav">
             <button variant-="background1" id="menu-button">
@@ -142,7 +163,7 @@ if (headings.length > 0) {
     } from '@/utils/vim'
 
     const queryString =
-        '#main-content > [tabindex="0"], #main-content li[tabindex="0"]'
+        '#main-content [tabindex="0"], #main-content a[href], #main-content summary'
 
     const vimTabbableElements: NodeListOf<HTMLElement> =
         document.querySelectorAll(queryString)
@@ -157,16 +178,16 @@ if (headings.length > 0) {
         })
 
     const mainContent = document.getElementById('main-content') as HTMLElement
-    const nav = document.querySelector('nav') as HTMLElement | null
     const sidebar = document.getElementById('sidebar') as HTMLElement | null
-    const getNavTarget = () =>
-        nav?.querySelector(
-            'a[href], button, summary, [tabindex]:not([tabindex="-1"])',
-        )
+    const tocSidebar = document.getElementById(
+        'toc-sidebar',
+    ) as HTMLElement | null
     const getSidebarTarget = () =>
         sidebar?.querySelector('a.active') ||
         sidebar?.querySelector('details summary') ||
         sidebar?.querySelector('a')
+    const getTocTarget = () =>
+        tocSidebar?.querySelector('a.active') || tocSidebar?.querySelector('a')
 
     const isFocusableElement = (element: Element) =>
         element.matches(
@@ -230,6 +251,17 @@ if (headings.length > 0) {
                 }
                 return
             }
+
+            if (activeElement && tocSidebar?.contains(activeElement)) {
+                e.preventDefault()
+                const elementToFocus =
+                    currentElement ?? findFirstFocusableElement() ?? null
+
+                if (elementToFocus) {
+                    vimFocusElement(elementToFocus)
+                }
+                return
+            }
         }
 
         if (e.key === 'l') {
@@ -242,6 +274,15 @@ if (headings.length > 0) {
 
                 if (elementToFocus) {
                     vimFocusElement(elementToFocus)
+                }
+                return
+            }
+
+            if (activeElement && mainContent.contains(activeElement)) {
+                const target = getTocTarget()
+                if (target instanceof HTMLElement) {
+                    e.preventDefault()
+                    vimFocusElement(target)
                 }
             }
         }
@@ -261,6 +302,96 @@ if (headings.length > 0) {
     applyVimNavigation(mainContent, queryString, (element) => {
         currentElement = element
     })
+
+    if (tocSidebar) {
+        applyVimNavigation(tocSidebar, 'a[href]')
+    }
+</script>
+
+<!-- Heading Anchor Links -->
+<script>
+    const headingContainer = document.getElementById('main-content')
+
+    if (headingContainer) {
+        const headingNodes = headingContainer.querySelectorAll(
+            'h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]',
+        )
+
+        headingNodes.forEach((heading) => {
+            if (!(heading instanceof HTMLElement)) return
+            if (heading.querySelector(':scope > a.heading-anchor')) return
+
+            const slug = heading.id
+            if (!slug) return
+
+            const anchor = document.createElement('a')
+            anchor.className = 'heading-anchor'
+            anchor.href = `#${slug}`
+            anchor.setAttribute(
+                'aria-label',
+                `Link to section ${heading.textContent ?? ''}`,
+            )
+            anchor.textContent = '#'
+            heading.append(anchor)
+        })
+    }
+</script>
+
+<!-- TOC Active Heading -->
+<script>
+    const mainContent = document.getElementById(
+        'main-content',
+    ) as HTMLElement | null
+    const tocLinks = Array.from(
+        document.querySelectorAll('#toc-list a[data-heading-slug]'),
+    ) as HTMLAnchorElement[]
+
+    if (mainContent && tocLinks.length > 0) {
+        const headingElements = tocLinks
+            .map((link) => {
+                const slug = link.dataset.headingSlug
+                if (!slug) return null
+                return document.getElementById(slug)
+            })
+            .filter(
+                (element): element is HTMLElement =>
+                    element instanceof HTMLElement,
+            )
+
+        const setActiveTocLink = (activeId: string) => {
+            tocLinks.forEach((link) => {
+                const slug = link.dataset.headingSlug
+                link.classList.toggle('active', slug === activeId)
+            })
+        }
+
+        const syncActiveHeading = () => {
+            const scrollTop = mainContent.scrollTop
+            let activeHeading = headingElements[0]
+
+            for (const heading of headingElements) {
+                if (heading.offsetTop - 24 <= scrollTop) {
+                    activeHeading = heading
+                } else {
+                    break
+                }
+            }
+
+            if (activeHeading) {
+                setActiveTocLink(activeHeading.id)
+                const activeLink = document.querySelector(
+                    '#toc-list a.active',
+                ) as HTMLAnchorElement | null
+                activeLink?.scrollIntoView({ block: 'nearest' })
+            }
+        }
+
+        mainContent.addEventListener('scroll', syncActiveHeading, {
+            passive: true,
+        })
+        window.addEventListener('hashchange', syncActiveHeading)
+        syncActiveHeading()
+    }
 </script>
 
 <!-- Sidebar Toggle -->
@@ -304,6 +435,63 @@ if (headings.length > 0) {
                     !sidebarContainer.classList.contains('collapsed'),
                 )
             }
+        })
+    }
+</script>
+
+<!-- TOC Resize -->
+<script>
+    const tocContainer = document.getElementById(
+        'toc-container',
+    ) as HTMLElement | null
+    const tocResizer = document.getElementById(
+        'toc-resizer',
+    ) as HTMLDivElement | null
+
+    if (tocContainer && tocResizer) {
+        const setTocWidth = (widthPx: number) => {
+            tocContainer.style.setProperty('--toc-width', `${widthPx}px`)
+        }
+
+        const getBounds = () => {
+            const styles = window.getComputedStyle(tocContainer)
+            const minWidth = parseFloat(styles.minWidth)
+            const maxWidth = parseFloat(styles.maxWidth)
+            return { minWidth, maxWidth }
+        }
+
+        const storedWidth = localStorage.getItem('toc-width')
+        if (storedWidth) {
+            const widthPx = Number(storedWidth)
+            if (!Number.isNaN(widthPx)) {
+                setTocWidth(widthPx)
+            }
+        }
+
+        const onMouseMove = (event: MouseEvent) => {
+            const { right } = tocContainer.getBoundingClientRect()
+            const { minWidth, maxWidth } = getBounds()
+            const rawWidth = right - event.clientX
+            const nextWidth = Math.min(maxWidth, Math.max(minWidth, rawWidth))
+            setTocWidth(nextWidth)
+        }
+
+        const onMouseUp = () => {
+            tocResizer.classList.remove('dragging')
+            const styles = window.getComputedStyle(tocContainer)
+            const widthPx = parseFloat(styles.width)
+            if (!Number.isNaN(widthPx)) {
+                localStorage.setItem('toc-width', String(widthPx))
+            }
+            window.removeEventListener('mousemove', onMouseMove)
+            window.removeEventListener('mouseup', onMouseUp)
+        }
+
+        tocResizer.addEventListener('mousedown', (event) => {
+            event.preventDefault()
+            tocResizer.classList.add('dragging')
+            window.addEventListener('mousemove', onMouseMove)
+            window.addEventListener('mouseup', onMouseUp)
         })
     }
 </script>

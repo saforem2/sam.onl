@@ -1,9 +1,6 @@
 ---
 import { compareUrlPaths } from '@/utils/url'
-import {
-    makeSortedCategoryEntries,
-    categoryLabels,
-} from '@/utils/content'
+import { makeSortedCategoryEntries, categoryLabels } from '@/utils/content'
 import VimNavigation from './landing/VimNavigation.astro'
 import SidebarSectionList from '@/components/SidebarSectionList.astro'
 
@@ -128,7 +125,8 @@ const talkModules = import.meta.glob('../pages/talks/**/*.{md,mdx,astro}', {
 }) as Record<string, unknown>
 
 const postEntries = makeRouteEntries(postModules).filter(
-    (entry) => entry.slug !== 'posts' && !entry.slug.startsWith('posts/drafts/'),
+    (entry) =>
+        entry.slug !== 'posts' && !entry.slug.startsWith('posts/drafts/'),
 )
 const talkEntries = makeRouteEntries(talkModules).filter(
     (entry) => entry.slug !== 'talks',
@@ -258,12 +256,18 @@ const moreSection = section('➕ More', {
                             '🤖 `Megatron-DeepSpeed`',
                             'https://github.com/argonne-lcf/Megatron-DeepSpeed',
                         ),
-                        link('💬 `wordplay` 🎮', 'https://github.com/saforem2/wordplay'),
+                        link(
+                            '💬 `wordplay` 🎮',
+                            'https://github.com/saforem2/wordplay',
+                        ),
                         link(
                             '🎓 `ai-science-training`',
                             'https://www.alcf.anl.gov/alcf-ai-science-training-series',
                         ),
-                        link('💸 `enrich`', 'https://github.com/saforem2/enrich'),
+                        link(
+                            '💸 `enrich`',
+                            'https://github.com/saforem2/enrich',
+                        ),
                         link(
                             '🤷🏻‍♂️`ambivalent`',
                             'https://github.com/saforem2/ambivalent',
@@ -289,7 +293,6 @@ const moreSection = section('➕ More', {
 })
 
 const customSidebar: SidebarItem[] = [postsSection, talksSection, moreSection]
-
 ---
 
 <nav box-="square" shear-="top" id="sidebar">
@@ -303,7 +306,7 @@ const customSidebar: SidebarItem[] = [postsSection, talksSection, moreSection]
     </button>
     <div id="category-container">
         <div id="category-list">
-            <SidebarSectionList items={customSidebar} urlPath={urlPath} />
+            <SidebarSectionList items={customSidebar} {urlPath} />
             {
                 otherCategories.map(([slug, pages]) => (
                     <div>
@@ -369,7 +372,7 @@ const customSidebar: SidebarItem[] = [postsSection, talksSection, moreSection]
         }
     }
 
-    #sidebar-toggle{
+    #sidebar-toggle {
         position: absolute;
         background: transparent;
         border: none;
@@ -382,7 +385,9 @@ const customSidebar: SidebarItem[] = [postsSection, talksSection, moreSection]
         right: 0.5lh;
         top: 0.5lh;
         color: var(--button-secondary);
-        background-color: oklch(from var(--button-primary) calc(l * 1.15) c h / 0.1);
+        background-color: oklch(
+            from var(--button-primary) calc(l * 1.15) c h / 0.1
+        );
         height: 1lh;
         margin-inline-end: -5px;
         margin-top: 3px;

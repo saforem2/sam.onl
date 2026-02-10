@@ -46,26 +46,37 @@ export default defineConfig({
             rehypeHeadingIds,
             rehypeMarkdownTabIndex,
             rehypeKatex,
-            rehypeMermaid,
+            // rehypeMermaid,
         ],
         syntaxHighlight: {
             type: 'shiki',
             excludeLangs: ['mermaid', 'math'],
         },
         shikiConfig: {
+            wrap: false,
             // theme: 'one-dark-pro',
             themes: {
                 dark: 'one-dark-pro',
                 light: 'ayu-light',
             },
         },
-        wrap: true,
     },
     integrations: [
         mdx({
             extendMarkdownConfig: true,
             remarkPlugins: [remarkMath],
-            rehypePlugins: [rehypeKatex],
+            rehypePlugins: [
+                rehypeKatex,
+                [
+                    rehypeMermaid,
+                    {
+                        mermaidConfig: {
+                            fontFamily: 'var(--font-family)',
+                            fontSize: 'var(--font-size)',
+                        },
+                    },
+                ],
+            ],
         }),
     ],
     vite: {

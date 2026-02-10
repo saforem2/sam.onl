@@ -413,6 +413,7 @@ const { pathname: urlPath } = Astro.url
 </nav>
 
 <style>
+
     #sidebar-vim-nav-container {
         padding-left: 1ch;
         padding-right: 2ch;
@@ -466,18 +467,13 @@ const { pathname: urlPath } = Astro.url
         }
 
         &.active {
-            /* color: var(--accent); */
-            /* text-decoration: underline; */
-            /* font-weight: var(--font-weight-bold); */
             background-color: oklch(
                 from var(--background1, var(--foreground, #838383))
                     calc(l * var(--oklch-scale, 0.85)) c h / 0.1
             );
-            /* background-color: var(--background1); */
         }
 
         &:focus {
-            /* background-color: var(--background1); */
             background-color: oklch(
                 from var(--accent, var(--foreground, #838383)) calc(l * 0.85) c
                     h / 0.1
@@ -501,6 +497,7 @@ const { pathname: urlPath } = Astro.url
         display: list-item;
         margin-block-start: 1ch;
         color: var(--foreground1);
+        background-color: var(--background0);
     }
     ul > details > summary::marker {
         content: '\eab6\ ';
@@ -542,10 +539,11 @@ const { pathname: urlPath } = Astro.url
 
     details {
         summary {
-            font-weight: var(--font-weight-bold, bold);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            color: var(--foreground2);
+            font-weight: 500
+            /* -webkit-font-smoothing: antialiased; */
+            /* -moz-osx-font-smoothing: grayscale; */
+            background-color: none;
+            color: var(--foreground1);
             &::marker {
                 color: var(--foreground2);
                 content: '\eab6\ ';

@@ -1,6 +1,6 @@
 ---
 layout: '@/layouts/Doc.astro'
-title: "🔳 `l2hmc-qcd` Example: 4D SU(3)"
+title: '🔳 `l2hmc-qcd` Example: 4D SU(3)'
 ---
 
 Sam Foreman
@@ -11,7 +11,7 @@ Sam Foreman
 - [Training](#training)
 - [Evaluation](#evaluation)
 
-``` python
+```python
 # %matplotlib inline
 import matplotlib_inline
 matplotlib_inline.backend_inline.set_matplotlib_formats('svg')
@@ -36,7 +36,7 @@ plt.style.use(ambivalent.STYLES['ambivalent'])
 Using device: cpu
 ```
 
-``` python
+```python
 import ezpz
 from pathlib import Path
 from typing import Optional
@@ -76,7 +76,7 @@ seed: 979520535
 
     [rank0]:W1231 11:21:26.555000 12897 torch/distributed/elastic/multiprocessing/redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
 
-``` python
+```python
 from l2hmc.utils.plot_helpers import (  # noqa
     plot_scalar,
     plot_chains,
@@ -126,7 +126,7 @@ def plot_metric(
 
 ## Load config + build Experiment
 
-``` python
+```python
 from rich import print
 
 from l2hmc.configs import CONF_DIR
@@ -135,7 +135,7 @@ with su3conf.open('r') as stream:
     conf = dict(yaml.safe_load(stream))
 ```
 
-``` python
+```python
 import json
 from rich import print_json
 print_json(json.dumps(conf, indent=4, sort_keys=True))
@@ -215,7 +215,7 @@ overrides = dict_to_list_of_overrides(conf)
 &#125;
 ```
 
-``` python
+```python
 ptExpSU3 = get_experiment(overrides=[*overrides], build_networks=True)
 
 # console.print(ptExpSU3.config)
@@ -236,7 +236,7 @@ assert isinstance(ptExpSU3, Experiment)
     [2025-12-31 11:21:32,123708][I][ipykernel_12897/1455121896:5:&lt;module>] checkSU(state.x): (tensor[8] f64 x∈[1.555e-14, 1.280e-13] μ=5.128e-14 σ=4.647e-14 [1.555e-14, 2.123e-14, 1.571e-14, 4.069e-14, 1.280e-13, 1.997e-14, 4.937e-14, 1.197e-13], tensor[8] f64 x∈[3.730e-13, 4.090e-12] μ=1.462e-12 σ=1.414e-12 [3.730e-13, 5.266e-13, 4.105e-13, 1.261e-12, 4.090e-12, 4.025e-13, 1.513e-12, 3.120e-12])
     [2025-12-31 11:21:32,131367][I][ipykernel_12897/1455121896:6:&lt;module>] checkSU(state.x): (tensor[8] f64 x∈[2.760e-16, 2.865e-16] μ=2.803e-16 σ=3.214e-18 [2.760e-16, 2.804e-16, 2.812e-16, 2.865e-16, 2.797e-16, 2.783e-16, 2.781e-16, 2.825e-16], tensor[8] f64 x∈[8.924e-16, 9.900e-16] μ=9.342e-16 σ=3.144e-17 [9.298e-16, 9.900e-16, 9.658e-16, 9.112e-16, 8.924e-16, 9.120e-16, 9.338e-16, 9.386e-16])
 
-``` python
+```python
 # from l2hmc.utils.plot_helpers import set_plot_style
 # set_plot_style()
 
@@ -251,7 +251,7 @@ EVAL_DIR.mkdir(exist_ok=True, parents=True)
 TRAIN_DIR.mkdir(exist_ok=True, parents=True)
 ```
 
-``` python
+```python
 ptExpSU3.trainer.print_grads_and_weights()
 logger.info(ptExpSU3.config)
 #console.print(ptExpSU3.config)
@@ -259,73 +259,73 @@ logger.info(ptExpSU3.config)
 
     [2025-12-31 11:21:32,255438][I][pytorch/trainer:2003:print_grads_and_weights] --------------------------------------------------------------------------------
     [2025-12-31 11:21:32,256420][I][pytorch/trainer:2004:print_grads_and_weights] GRADS:
-    [2025-12-31 11:21:32,257261][I][l2hmc/common:97:print_dict] networks.xnet.input_layer.xlayer.weight: None None 
+    [2025-12-31 11:21:32,257261][I][l2hmc/common:97:print_dict] networks.xnet.input_layer.xlayer.weight: None None
     None
-    networks.xnet.input_layer.xlayer.bias: None None 
+    networks.xnet.input_layer.xlayer.bias: None None
     None
-    networks.xnet.input_layer.vlayer.weight: None None 
+    networks.xnet.input_layer.vlayer.weight: None None
     None
-    networks.xnet.input_layer.vlayer.bias: None None 
+    networks.xnet.input_layer.vlayer.bias: None None
     None
-    networks.xnet.scale.coeff: None None 
+    networks.xnet.scale.coeff: None None
     None
-    networks.xnet.scale.layer.weight: None None 
+    networks.xnet.scale.layer.weight: None None
     None
-    networks.xnet.scale.layer.bias: None None 
+    networks.xnet.scale.layer.bias: None None
     None
-    networks.xnet.transf.coeff: None None 
+    networks.xnet.transf.coeff: None None
     None
-    networks.xnet.transf.layer.weight: None None 
+    networks.xnet.transf.layer.weight: None None
     None
-    networks.xnet.transf.layer.bias: None None 
+    networks.xnet.transf.layer.bias: None None
     None
-    networks.xnet.transl.weight: None None 
+    networks.xnet.transl.weight: None None
     None
-    networks.xnet.transl.bias: None None 
+    networks.xnet.transl.bias: None None
     None
-    networks.vnet.input_layer.xlayer.weight: None None 
+    networks.vnet.input_layer.xlayer.weight: None None
     None
-    networks.vnet.input_layer.xlayer.bias: None None 
+    networks.vnet.input_layer.xlayer.bias: None None
     None
-    networks.vnet.input_layer.vlayer.weight: None None 
+    networks.vnet.input_layer.vlayer.weight: None None
     None
-    networks.vnet.input_layer.vlayer.bias: None None 
+    networks.vnet.input_layer.vlayer.bias: None None
     None
-    networks.vnet.scale.coeff: None None 
+    networks.vnet.scale.coeff: None None
     None
-    networks.vnet.scale.layer.weight: None None 
+    networks.vnet.scale.layer.weight: None None
     None
-    networks.vnet.scale.layer.bias: None None 
+    networks.vnet.scale.layer.bias: None None
     None
-    networks.vnet.transf.coeff: None None 
+    networks.vnet.transf.coeff: None None
     None
-    networks.vnet.transf.layer.weight: None None 
+    networks.vnet.transf.layer.weight: None None
     None
-    networks.vnet.transf.layer.bias: None None 
+    networks.vnet.transf.layer.bias: None None
     None
-    networks.vnet.transl.weight: None None 
+    networks.vnet.transl.weight: None None
     None
-    networks.vnet.transl.bias: None None 
+    networks.vnet.transl.bias: None None
     None
-    xeps.0: None None 
+    xeps.0: None None
     None
-    xeps.1: None None 
+    xeps.1: None None
     None
-    xeps.2: None None 
+    xeps.2: None None
     None
-    xeps.3: None None 
+    xeps.3: None None
     None
-    veps.0: None None 
+    veps.0: None None
     None
-    veps.1: None None 
+    veps.1: None None
     None
-    veps.2: None None 
+    veps.2: None None
     None
-    veps.3: None None 
+    veps.3: None None
     None
     [2025-12-31 11:21:32,260291][I][pytorch/trainer:2006:print_grads_and_weights] --------------------------------------------------------------------------------
     [2025-12-31 11:21:32,260825][I][pytorch/trainer:2007:print_grads_and_weights] WEIGHTS:
-    [2025-12-31 11:21:32,266638][I][l2hmc/common:97:print_dict] networks.xnet.input_layer.xlayer.weight: torch.Size([256, 18432]) torch.float64 
+    [2025-12-31 11:21:32,266638][I][l2hmc/common:97:print_dict] networks.xnet.input_layer.xlayer.weight: torch.Size([256, 18432]) torch.float64
     [[ 5.34675944e-03  4.83692293e-03 -1.95424055e-03 ... -3.19398849e-03
       -5.18456944e-03 -4.53952094e-03]
      [-2.11885804e-03 -1.92370769e-03  2.95698048e-03 ... -5.08499583e-03
@@ -339,7 +339,7 @@ logger.info(ptExpSU3.config)
       -4.22490545e-03  1.29105152e-03]
      [ 3.40661623e-03 -6.68222571e-03  5.55093943e-03 ... -4.75621507e-03
        3.87005153e-03 -4.84463461e-03]]
-    networks.xnet.input_layer.xlayer.bias: torch.Size([256]) torch.float64 
+    networks.xnet.input_layer.xlayer.bias: torch.Size([256]) torch.float64
     [-6.27517033e-03  6.95361315e-03  1.04622427e-03  7.10507091e-04
       5.23612152e-03  2.78631701e-03 -3.01457626e-03 -4.28143761e-03
       4.90115525e-03  5.15937100e-03 -4.35841365e-03 -8.57890304e-04
@@ -404,7 +404,7 @@ logger.info(ptExpSU3.config)
       2.84811140e-03 -5.93072944e-03  1.68583282e-03 -7.24992565e-03
       5.68267560e-03  6.84689886e-03  4.39475857e-03 -6.97825429e-03
      -8.91775789e-04 -6.67257741e-03 -1.61668491e-03 -3.75113533e-03]
-    networks.xnet.input_layer.vlayer.weight: torch.Size([256, 18432]) torch.float64 
+    networks.xnet.input_layer.vlayer.weight: torch.Size([256, 18432]) torch.float64
     [[-7.12676676e-03 -7.19851121e-03  1.92262912e-03 ...  2.99740846e-03
       -6.84328585e-04 -4.82583241e-03]
      [-3.14961727e-03  3.82433539e-03 -3.95051939e-03 ... -5.88200204e-03
@@ -418,7 +418,7 @@ logger.info(ptExpSU3.config)
        1.51566670e-03  5.53408306e-05]
      [-3.43699633e-03  1.99222704e-03 -1.56282397e-03 ...  6.05750745e-03
       -3.89425094e-03  4.43250670e-03]]
-    networks.xnet.input_layer.vlayer.bias: torch.Size([256]) torch.float64 
+    networks.xnet.input_layer.vlayer.bias: torch.Size([256]) torch.float64
     [-5.81100325e-03  1.49579324e-03  4.36190909e-03 -8.49009705e-04
       3.20082334e-03  3.33662172e-04  3.72210486e-03  3.36646725e-04
      -2.79477384e-03 -6.72874945e-04 -1.64154347e-03 -4.82888035e-03
@@ -483,9 +483,9 @@ logger.info(ptExpSU3.config)
       5.83027720e-03  2.39593258e-04  6.93626532e-03  5.72961919e-03
       1.80774082e-03  2.68778953e-04 -7.24801149e-03  4.82184413e-03
       5.05562602e-03 -9.55384415e-04 -6.21657675e-03 -4.77821335e-03]
-    networks.xnet.scale.coeff: torch.Size([1, 9216]) torch.float64 
+    networks.xnet.scale.coeff: torch.Size([1, 9216]) torch.float64
     [[0. 0. 0. ... 0. 0. 0.]]
-    networks.xnet.scale.layer.weight: torch.Size([9216, 256]) torch.float64 
+    networks.xnet.scale.layer.weight: torch.Size([9216, 256]) torch.float64
     [[-0.02095451 -0.05686737 -0.03893118 ...  0.05419893  0.0257452
       -0.00133821]
      [-0.02743688  0.05120197  0.04050343 ... -0.02929596 -0.0450575
@@ -499,12 +499,12 @@ logger.info(ptExpSU3.config)
        0.02845275]
      [-0.02562548  0.06007688  0.04966506 ...  0.01592266 -0.04651895
       -0.06127886]]
-    networks.xnet.scale.layer.bias: torch.Size([9216]) torch.float64 
+    networks.xnet.scale.layer.bias: torch.Size([9216]) torch.float64
     [-0.00265899 -0.02646664  0.03583225 ... -0.05350547  0.01444305
      -0.0579916 ]
-    networks.xnet.transf.coeff: torch.Size([1, 9216]) torch.float64 
+    networks.xnet.transf.coeff: torch.Size([1, 9216]) torch.float64
     [[0. 0. 0. ... 0. 0. 0.]]
-    networks.xnet.transf.layer.weight: torch.Size([9216, 256]) torch.float64 
+    networks.xnet.transf.layer.weight: torch.Size([9216, 256]) torch.float64
     [[ 0.0392582   0.01133145 -0.00443078 ... -0.00694468 -0.04578733
       -0.00618808]
      [ 0.05615496 -0.01601937 -0.02873052 ... -0.05706579  0.0437926
@@ -518,10 +518,10 @@ logger.info(ptExpSU3.config)
        0.04390161]
      [-0.0428873  -0.05551796 -0.0498907  ...  0.05401175 -0.03260137
       -0.00792571]]
-    networks.xnet.transf.layer.bias: torch.Size([9216]) torch.float64 
+    networks.xnet.transf.layer.bias: torch.Size([9216]) torch.float64
     [-0.05458491 -0.01676385 -0.03765772 ...  0.02738577 -0.01892707
      -0.02420786]
-    networks.xnet.transl.weight: torch.Size([9216, 256]) torch.float64 
+    networks.xnet.transl.weight: torch.Size([9216, 256]) torch.float64
     [[-0.00059796  0.02023506  0.04343998 ...  0.03514851 -0.01630495
       -0.00890796]
      [-0.04728036  0.03806493  0.05296336 ...  0.0266868  -0.0065818
@@ -535,10 +535,10 @@ logger.info(ptExpSU3.config)
        0.04144075]
      [-0.05571851 -0.0217138   0.01634122 ... -0.06058459  0.03315463
        0.04835562]]
-    networks.xnet.transl.bias: torch.Size([9216]) torch.float64 
+    networks.xnet.transl.bias: torch.Size([9216]) torch.float64
     [-0.03604141  0.0033956  -0.03758735 ... -0.06090733  0.04404094
       0.02962441]
-    networks.vnet.input_layer.xlayer.weight: torch.Size([256, 8192]) torch.float64 
+    networks.vnet.input_layer.xlayer.weight: torch.Size([256, 8192]) torch.float64
     [[ 0.01075344 -0.00442174  0.00251958 ...  0.00492397 -0.00723896
       -0.0004272 ]
      [ 0.00524415 -0.00669573 -0.00382291 ... -0.00345527  0.01067931
@@ -552,7 +552,7 @@ logger.info(ptExpSU3.config)
        0.00102762]
      [ 0.00723328  0.00198979 -0.00973361 ...  0.0109373   0.01054264
       -0.00025926]]
-    networks.vnet.input_layer.xlayer.bias: torch.Size([256]) torch.float64 
+    networks.vnet.input_layer.xlayer.bias: torch.Size([256]) torch.float64
     [ 3.65765368e-03  7.52889404e-04  2.19535202e-03  1.05928379e-02
      -5.27907654e-03  1.00805048e-02  7.18645468e-03 -2.34496113e-03
      -5.25810350e-03 -1.56410156e-03 -1.04346141e-02  8.78774986e-03
@@ -617,7 +617,7 @@ logger.info(ptExpSU3.config)
       7.59982802e-03  4.27736245e-03 -2.95032108e-03  6.74438212e-03
      -8.56251345e-03 -6.72417714e-04  1.70828986e-03 -6.03540616e-03
      -1.33815357e-03 -8.68643801e-03  5.90444563e-03 -7.06679271e-03]
-    networks.vnet.input_layer.vlayer.weight: torch.Size([256, 8192]) torch.float64 
+    networks.vnet.input_layer.vlayer.weight: torch.Size([256, 8192]) torch.float64
     [[-0.00619353 -0.00650042 -0.0026522  ...  0.0068372  -0.00948694
        0.00933975]
      [ 0.00215677 -0.00293593  0.00045273 ...  0.00930159  0.00635273
@@ -631,7 +631,7 @@ logger.info(ptExpSU3.config)
        0.00684057]
      [-0.0049713   0.00518988  0.00185278 ... -0.00432856  0.00915126
       -0.00262938]]
-    networks.vnet.input_layer.vlayer.bias: torch.Size([256]) torch.float64 
+    networks.vnet.input_layer.vlayer.bias: torch.Size([256]) torch.float64
     [ 2.13762449e-03  1.96605652e-03  6.51065477e-03  3.76194401e-03
       8.96954576e-03 -7.08439098e-03 -7.25670396e-03 -5.70495530e-03
       4.06333268e-03  1.04406584e-02 -3.83235173e-03 -7.33952637e-03
@@ -696,9 +696,9 @@ logger.info(ptExpSU3.config)
      -5.81500628e-03  7.83152856e-03 -1.01906154e-02  8.47155625e-03
      -3.04322853e-03 -1.51121378e-03 -8.13083116e-03 -7.11132059e-03
      -4.21085208e-03 -4.57075550e-04 -1.05307749e-05  6.18722644e-04]
-    networks.vnet.scale.coeff: torch.Size([1, 9216]) torch.float64 
+    networks.vnet.scale.coeff: torch.Size([1, 9216]) torch.float64
     [[0. 0. 0. ... 0. 0. 0.]]
-    networks.vnet.scale.layer.weight: torch.Size([9216, 256]) torch.float64 
+    networks.vnet.scale.layer.weight: torch.Size([9216, 256]) torch.float64
     [[-0.00761683  0.01649503 -0.03692442 ...  0.02964766 -0.00675128
       -0.04392627]
      [-0.00589     0.00963807  0.01736705 ... -0.00313597 -0.03191036
@@ -712,12 +712,12 @@ logger.info(ptExpSU3.config)
        0.04902634]
      [-0.01296662 -0.04693715  0.01220499 ... -0.00491532  0.01583796
       -0.04115975]]
-    networks.vnet.scale.layer.bias: torch.Size([9216]) torch.float64 
+    networks.vnet.scale.layer.bias: torch.Size([9216]) torch.float64
     [-0.05532441  0.04261724  0.01327692 ... -0.02727258 -0.00564456
       0.05526191]
-    networks.vnet.transf.coeff: torch.Size([1, 9216]) torch.float64 
+    networks.vnet.transf.coeff: torch.Size([1, 9216]) torch.float64
     [[0. 0. 0. ... 0. 0. 0.]]
-    networks.vnet.transf.layer.weight: torch.Size([9216, 256]) torch.float64 
+    networks.vnet.transf.layer.weight: torch.Size([9216, 256]) torch.float64
     [[-8.06922849e-05 -4.86478073e-02 -1.74624561e-02 ...  5.14657732e-02
        1.11850013e-02 -2.96893353e-03]
      [ 5.42348063e-02 -6.03741696e-02  7.92496492e-04 ... -6.04141558e-02
@@ -731,10 +731,10 @@ logger.info(ptExpSU3.config)
        3.69714337e-02 -5.36188244e-02]
      [ 1.06812561e-02  2.56660157e-02 -1.52740900e-02 ... -1.88780392e-02
        1.36668521e-02  2.64287697e-02]]
-    networks.vnet.transf.layer.bias: torch.Size([9216]) torch.float64 
+    networks.vnet.transf.layer.bias: torch.Size([9216]) torch.float64
     [-0.04448601  0.05444971  0.05047074 ... -0.02935933 -0.0370173
      -0.03672931]
-    networks.vnet.transl.weight: torch.Size([9216, 256]) torch.float64 
+    networks.vnet.transl.weight: torch.Size([9216, 256]) torch.float64
     [[ 0.03190299  0.03209705 -0.00548753 ... -0.01850558 -0.03685719
       -0.01781093]
      [ 0.05555422  0.01567202  0.05491162 ... -0.01233239 -0.01591408
@@ -748,31 +748,31 @@ logger.info(ptExpSU3.config)
       -0.00770556]
      [-0.00473506  0.04545451 -0.05643493 ...  0.04181123 -0.03172008
       -0.05468202]]
-    networks.vnet.transl.bias: torch.Size([9216]) torch.float64 
+    networks.vnet.transl.bias: torch.Size([9216]) torch.float64
     [ 0.02885058 -0.01754039  0.02482559 ... -0.014913   -0.02643838
      -0.02004313]
-    xeps.0: torch.Size([]) torch.float64 
+    xeps.0: torch.Size([]) torch.float64
     0.01
-    xeps.1: torch.Size([]) torch.float64 
+    xeps.1: torch.Size([]) torch.float64
     0.01
-    xeps.2: torch.Size([]) torch.float64 
+    xeps.2: torch.Size([]) torch.float64
     0.01
-    xeps.3: torch.Size([]) torch.float64 
+    xeps.3: torch.Size([]) torch.float64
     0.01
-    veps.0: torch.Size([]) torch.float64 
+    veps.0: torch.Size([]) torch.float64
     0.01
-    veps.1: torch.Size([]) torch.float64 
+    veps.1: torch.Size([]) torch.float64
     0.01
-    veps.2: torch.Size([]) torch.float64 
+    veps.2: torch.Size([]) torch.float64
     0.01
-    veps.3: torch.Size([]) torch.float64 
+    veps.3: torch.Size([]) torch.float64
     0.01
     [2025-12-31 11:21:32,293773][I][pytorch/trainer:2009:print_grads_and_weights] --------------------------------------------------------------------------------
     [2025-12-31 11:21:32,294670][I][ipykernel_12897/3178487732:2:&lt;module>] ExperimentConfig(wandb=&#123;'setup': &#123;'id': None, 'group': None, 'config': None, 'save_code': True, 'sync_tensorboard': True, 'mode': 'online', 'resume': 'allow', 'entity': 'l2hmc-qcd', 'project': 'l2hmc-qcd', 'settings': &#123;'start_method': 'thread'&#125;, 'tags': ['beta_init=6.0', 'beta_final=6.0']&#125;&#125;, steps=Steps(nera=1, nepoch=10, test=50, log=1, print=1, extend_last_era=1), framework='pytorch', loss=LossConfig(use_mixed_loss=True, charge_weight=0.0, rmse_weight=0.1, plaq_weight=0.1, aux_weight=0.0), network=NetworkConfig(units=[256], activation_fn='tanh', dropout_prob=0.0, use_batch_norm=False), conv=ConvolutionConfig(filters=[], sizes=[], pool=[]), net_weights=NetWeights(x=NetWeight(s=0.0, t=1.0, q=1.0), v=NetWeight(s=1.0, t=1.0, q=1.0)), dynamics=DynamicsConfig(nchains=8, group='SU3', latvolume=[4, 4, 4, 4], nleapfrog=4, eps=0.01, eps_hmc=0.25, use_ncp=True, verbose=True, eps_fixed=False, use_split_xnets=False, use_separate_networks=False, merge_directions=True), learning_rate=LearningRateConfig(lr_init=0.0001, mode='auto', monitor='loss', patience=5, cooldown=0, warmup=1000, verbose=True, min_lr=1e-06, factor=0.98, min_delta=0.0001, clip_norm=1.0), annealing_schedule=AnnealingSchedule(beta_init=6.0, beta_final=6.0, dynamic=False), gradient_accumulation_steps=1, restore=False, save=False, c1=0.0, port='2345', compile=True, profile=False, init_aim=False, init_wandb=False, use_wandb=False, use_tb=False, debug_mode=False, default_mode=True, print_config=True, precision='float32', ignore_warnings=True, backend='DDP', seed=9992, ds_config_path='/Users/samforeman/projects/saforem2/l2hmc-qcd/src/l2hmc/conf/ds_config.yaml', name=None, width=200, nchains=None, compression=False)
 
 ## HMC
 
-``` python
+```python
 xhmc, history_hmc = evaluate(
     nsteps=50,
     exp=ptExpSU3,
@@ -839,7 +839,7 @@ xhmc, history_hmc = evaluate(
     [2025-12-31 11:21:47,917059][I][pytorch/experiment:121:evaluate] STEP: 48
     [2025-12-31 11:21:48,199489][I][pytorch/experiment:121:evaluate] STEP: 49
 
-``` python
+```python
 dataset_hmc = history_hmc.get_dataset()
 _ = history_hmc.plot_all(title='HMC')
 ```
@@ -874,27 +874,27 @@ _ = history_hmc.plot_all(title='HMC')
 
 ![](index_files/figure-commonmark/cell-11-output-15.svg)
 
-``` python
+```python
 xhmc = ptExpSU3.trainer.dynamics.unflatten(xhmc)
 print(f"checkSU(x_eval): {g.checkSU(xhmc)}")
 print(f"checkSU(x_eval): {g.checkSU(g.projectSU(xhmc))}")
 ```
 
 ```text
-checkSU(x_eval): (tensor[8] f64 x∈[2.502e-16, 5.331e-16] μ=4.279e-16 σ=1.346e-16 [2.502e-16, 5.244e-16, 5.210e-16, 
-2.808e-16, 5.331e-16, 5.305e-16, 5.168e-16, 2.662e-16], tensor[8] f64 x∈[7.632e-16, 1.578e-15] μ=1.246e-15 
+checkSU(x_eval): (tensor[8] f64 x∈[2.502e-16, 5.331e-16] μ=4.279e-16 σ=1.346e-16 [2.502e-16, 5.244e-16, 5.210e-16,
+2.808e-16, 5.331e-16, 5.305e-16, 5.168e-16, 2.662e-16], tensor[8] f64 x∈[7.632e-16, 1.578e-15] μ=1.246e-15
 σ=3.609e-16 [7.632e-16, 1.513e-15, 1.578e-15, 8.960e-16, 1.497e-15, 1.480e-15, 1.454e-15, 7.840e-16])
 ```
 
 ```text
-checkSU(x_eval): (tensor[8] f64 x∈[2.436e-16, 3.161e-16] μ=2.897e-16 σ=3.147e-17 [2.436e-16, 3.149e-16, 3.161e-16, 
-2.702e-16, 3.107e-16, 3.075e-16, 3.091e-16, 2.455e-16], tensor[8] f64 x∈[7.665e-16, 9.669e-16] μ=8.918e-16 
+checkSU(x_eval): (tensor[8] f64 x∈[2.436e-16, 3.161e-16] μ=2.897e-16 σ=3.147e-17 [2.436e-16, 3.149e-16, 3.161e-16,
+2.702e-16, 3.107e-16, 3.075e-16, 3.091e-16, 2.455e-16], tensor[8] f64 x∈[7.665e-16, 9.669e-16] μ=8.918e-16
 σ=8.773e-17 [7.839e-16, 9.658e-16, 9.669e-16, 7.665e-16, 9.371e-16, 9.338e-16, 9.663e-16, 8.140e-16])
 ```
 
 ## Training
 
-``` python
+```python
 import time
 from l2hmc.utils.history import BaseHistory, summarize_dict
 
@@ -939,7 +939,7 @@ for step in range(100):
     [2025-12-31 11:25:08,390086][I][ipykernel_12897/30352159:21:&lt;module>] train_step=90 dt=2.014 energy=-4033.966 logprob=-4032.690 logdet=-1.276 sldf=-0.798 sldb=0.806 sld=-1.276 xeps=0.012 veps=0.016 acc=1.000 sumlogdet=0.006 beta=6.000 acc_mask=1.000 loss=-473.295 plaqs=0.440 sinQ=0.000 intQ=0.007 dQint=0.013 dQsin=0.001
     [2025-12-31 11:25:19,868897][I][ipykernel_12897/30352159:21:&lt;module>] train_step=95 dt=3.220 energy=-4188.433 logprob=-4186.851 logdet=-1.581 sldf=-0.977 sldb=0.967 sld=-1.581 xeps=0.012 veps=0.016 acc=1.000 sumlogdet=-0.075 beta=6.000 acc_mask=1.000 loss=-855.853 plaqs=0.457 sinQ=-0.002 intQ=-0.023 dQint=0.013 dQsin=0.001
 
-``` python
+```python
 dataset_train = history_train.get_dataset()
 _ = history_train.plot_all(
     title='Train',
@@ -1001,7 +1001,7 @@ _ = history_train.plot_all(
 
 ## Evaluation
 
-``` python
+```python
 # state = ptExpSU3.trainer.dynamics.random_state(6.0)
 xeval, history_eval = evaluate(
     nsteps=50,
@@ -1067,7 +1067,7 @@ xeval, history_eval = evaluate(
     [2025-12-31 11:26:04,732341][I][pytorch/experiment:121:evaluate] STEP: 48
     [2025-12-31 11:26:05,213580][I][pytorch/experiment:121:evaluate] STEP: 49
 
-``` python
+```python
 dataset_eval = history_eval.get_dataset()
 _ = history_eval.plot_all(title='Eval')
 ```
@@ -1120,7 +1120,7 @@ _ = history_eval.plot_all(title='Eval')
 
 ![](index_files/figure-commonmark/cell-16-output-24.svg)
 
-``` python
+```python
 xeval = ptExpSU3.trainer.dynamics.unflatten(xeval)
 logger.info(f"checkSU(x_eval): {g.checkSU(xeval)}")
 logger.info(f"checkSU(x_eval): {g.checkSU(g.projectSU(xeval))}")
@@ -1129,7 +1129,7 @@ logger.info(f"checkSU(x_eval): {g.checkSU(g.projectSU(xeval))}")
     [2025-12-31 11:26:09,856048][I][ipykernel_12897/2193937887:2:&lt;module>] checkSU(x_eval): (tensor[8] f64 x∈[1.386e-16, 1.523e-16] μ=1.437e-16 σ=4.820e-18 [1.401e-16, 1.386e-16, 1.523e-16, 1.436e-16, 1.473e-16, 1.470e-16, 1.416e-16, 1.390e-16], tensor[8] f64 x∈[4.900e-16, 7.789e-16] μ=6.360e-16 σ=1.034e-16 [6.312e-16, 5.391e-16, 5.597e-16, 7.129e-16, 6.306e-16, 7.453e-16, 4.900e-16, 7.789e-16])
     [2025-12-31 11:26:09,868908][I][ipykernel_12897/2193937887:3:&lt;module>] checkSU(x_eval): (tensor[8] f64 x∈[1.351e-16, 1.500e-16] μ=1.409e-16 σ=4.762e-18 [1.420e-16, 1.388e-16, 1.392e-16, 1.500e-16, 1.351e-16, 1.446e-16, 1.413e-16, 1.365e-16], tensor[8] f64 x∈[4.802e-16, 7.133e-16] μ=6.128e-16 σ=1.057e-16 [7.131e-16, 5.905e-16, 4.802e-16, 7.133e-16, 4.960e-16, 7.133e-16, 5.094e-16, 6.869e-16])
 
-``` python
+```python
 import matplotlib.pyplot as plt
 pdiff = dataset_eval.plaqs - dataset_hmc.plaqs
 pdiff

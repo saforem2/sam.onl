@@ -17,6 +17,7 @@ ROCm 6.0 ecosystem, leveraging new features like TorchDynamo for
 performance
 
 ```mermaid
+%%{init: {'themeCSS': '.titleText{color:var(--foreground1)!important;fill:var(--foreground1)!important;font-size:0.95rem!important;font-weight:700;}.taskText{font-weight:600;font-size:0.74rem!important;}.taskText,.taskTextOutsideLeft,.taskTextOutsideRight,.sectionTitle,.tick text{fill:var(--foreground0)!important;}.taskTextOutsideLeft,.taskTextOutsideRight,.sectionTitle{font-size:0.74rem!important;}.tick text{font-size:0.7rem!important;}.taskTextOutsideRight{text-anchor:start;transform:translateX(0.45ch);}.taskTextOutsideLeft{text-anchor:end;transform:translateX(-0.45ch);}.todayMarker{stroke:var(--red)!important;stroke-width:0.12rem;opacity:0.9;}.grid .tick line{stroke:var(--background3)!important;opacity:0.6;}.section0{fill:color-mix(in oklch,var(--background1) 72%,transparent)!important;}.section1{fill:color-mix(in oklch,var(--blue) 38%,transparent)!important;}.active,.done{fill:color-mix(in srgb,var(--blue) 72%,white 28%)!important;}.crit,.milestone{fill:var(--red)!important;stroke:var(--red)!important;}'}}%%
 gantt
     title AMD and Intel PyTorch Enablement Timeline
     dateFormat  YYYY
@@ -33,154 +34,90 @@ gantt
     section Intel and PyTorch
       Initial PyTorch contributions                :i2,2018, 2019
       Intel Extension for PyTorch launch           :i3,2020, 2024
-      VTune ITT API integration in PyTorch         :i4,2022, 2022
-      PyTorch Foundation Premier membership        :i5,2023, 2023
-      Prototype native Intel GPU support           :i6,2024, 2024
-      Solid native Intel GPU support               :i7,2025, 2025
-      IPEX feature upstreaming completion          :i8,2025, 2025
-      Intel Extension for PyTorch end of life      :i9,2026, 2026
+      VTune ITT API integration in PyTorch         :milestone, i4, 2022, 1d
+      PyTorch Foundation Premier membership        :milestone, i5, 2023, 1d
+      Prototype native Intel GPU support           :milestone, i6, 2024, 1d
+      Solid native Intel GPU support               :milestone, i7, 2025, 1d
+      IPEX feature upstreaming completion          :milestone, i8, 2025, 1d
+      Intel Extension for PyTorch end of life      :milestone, crit, i9, 2026, 1d
 
 ```
 
-``` mermaid
+```mermaid
+%%{init: {'themeCSS': '.titleText{color:var(--foreground1)!important;fill:var(--foreground1)!important;font-size:0.95rem!important;font-weight:700;}.taskText{font-weight:600;font-size:0.74rem!important;}.taskText,.taskTextOutsideLeft,.taskTextOutsideRight,.sectionTitle,.tick text{fill:var(--foreground0)!important;}.taskTextOutsideLeft,.sectionTitle{font-size:0.74rem!important;}.taskTextOutsideRight{font-size:0.66rem!important;text-anchor:start;transform:translateX(0.2ch);}.tick text{font-size:0.7rem!important;}.taskTextOutsideLeft{text-anchor:end;transform:translateX(-0.45ch);}.todayMarker{stroke:var(--red)!important;stroke-width:0.12rem;opacity:0.9;}.grid .tick line{stroke:var(--background3)!important;opacity:0.6;}.section0{fill:color-mix(in oklch,var(--orange) 30%,transparent)!important;}.section1{fill:color-mix(in oklch,var(--background2) 76%,transparent)!important;}.section2{fill:color-mix(in oklch,var(--blue) 42%,transparent)!important;}.active,.done{fill:color-mix(in srgb,var(--blue) 72%,white 28%)!important;}.crit,.milestone{fill:var(--red)!important;stroke:var(--red)!important;}'}}%%
 gantt
     title PyTorch Vendor Integration Timeline AMD vs Intel
     dateFormat  YYYY-MM-DD
     axisFormat  %Y
 
 section AMD
-    Installable PyTorch ROCm Python packages         :amd2, 2021-03-04,
-    ROCm marked stable                               :amd3,2022-06-28,
+    Installable PyTorch ROCm Python packages         :amd2, 2021-03-04, 1d
+    ROCm marked stable                               :amd3, 2022-06-28, 1d
 
 section PyTorch Releases
-    1.8                                             :milestone,crit, pt180, 2021-03-04,
-    1.12                                            :pt1120, 2022-06-28,
-    2.0                                             :milestone,crit,pt200, 2023-03-15,
-    2.4                                             :pt24, 2024-07-24,
-    2.5                                             :milestone,crit,pt250, 2024-10-17,
-    2.6                                             :pt260, 2025-01-29,
-    2.7                                             :pt270, 2025-04-23,
-    2.8                                             :crit, pt280, 2025-08-06,
-    2.9                                             :pt290, 2025-10-15,
-    2.10                                            :pt210, 2026-01-15,
+    1.8                                             :milestone, crit, pt180, 2021-03-04, 1d
+    1.12                                            :pt1120, 2022-06-28, 1d
+    2.0                                             :milestone, crit, pt200, 2023-03-15, 1d
+    2.4                                             :pt24, 2024-07-24, 1d
+    2.5                                             :milestone, crit, pt250, 2024-10-17, 1d
+    2.6                                             :pt260, 2025-01-29, 1d
+    2.7                                             :pt270, 2025-04-23, 1d
+    2.8                                             :crit, pt280, 2025-08-06, 1d
+    2.9                                             :pt290, 2025-10-15, 1d
+    2.10                                            :pt210, 2026-01-15, 1d
 
 section Intel
-    Incremental Intel GPU improvements begin           :int2, 2024-07-24,
-    Native Intel GPU support announced in PyTorch 2.5  :int3, 2024-10-17,
-    Intel GPU eager and compile parity in PyTorch 2.7  :int4, 2025-04-23,
-    Intel XCCL Backend introduced in PyTorch 2.8       :int5, 2025-04-23,
+    Intel GPU improvements begin                        :int2, 2024-07-24, 1d
+    Native Intel GPU support in 2.5                    :int3, 2024-10-17, 1d
+    Intel GPU eager/compile parity in 2.7              :int4, 2025-04-23, 1d
+    Intel XCCL backend in 2.8                           :int5, 2025-04-23, 1d
     IPEX discontinued                                  :int6, 2025-08-06, 2026-03-31
-    IPEX end of life                                   :int7, 2026-03-31,
+    IPEX end of life                                   :milestone, crit, int7, 2026-03-31, 1d
 
 ```
 
-> Intel: Mar 2026 (planned): IPEX end-of-lifemove to native PyTorch
-
-    %% --- Forward-looking roadmap (AMD) ---
-    AMD-->>PT: 2026: MI450X rack-scale target (2H 2026 competitiveness)
-    AMD-->>PT: Post-2026: MI500 series plans (major AI perf increase)
-
-
-
-    ``` mermaid
-    gantt
-        title AMD and Intel PyTorch Enablement Timeline
-        dateFormat  YYYY
-        axisFormat  %Y
-
-        section AMD ROCm and PyTorch
-          Torch7 era and early CUDA to HIP ports        :amd1, 2012, 2016
-          ROCm 1.0 and HIPIFY tooling                   :amd2, 2016, 2020
-          Official PyTorch ROCm Python packages         :amd3, 2021, 2022
-          PyTorch Foundation governance participation   :amd4, 2022, 2023
-          Triton ecosystem support                      :amd6, 2023, 2024
-          MI300x PyTorch guidance                       :amd7, 2024, 2024
-
-        section Intel and PyTorch
-          Initial PyTorch contributions                :i2,2018, 2019
-          Intel Extension for PyTorch launch           :i3,2020, 2024
-          VTune ITT API integration in PyTorch         :i4,2022, 2022
-          PyTorch Foundation Premier membership        :i5,2023, 2023
-          Prototype native Intel GPU support           :i6,2024, 2024
-          Solid native Intel GPU support               :i7,2025, 2025
-          IPEX feature upstreaming completion          :i8,2025, 2025
-          Intel Extension for PyTorch end of life      :i9,2026, 2026
-
-``` mermaid
-gantt
-    title AMD and Intel PyTorch Enablement Timeline
-    dateFormat  YYYY
-    axisFormat  %Y
-
-    section amd AMD
-      Torch7 era and early CUDA to HIP ports        :2012, 2016
-      ROCm 1.0 and HIPIFY tooling                   :2016, 2020
-      Official PyTorch ROCm Python packages         :2021, 2022
-      PyTorch Foundation governance participation   :2022, 2023
-      ROCm                                          :vert, 2023, 2023
-      PyTorch 2.0 day zero ROCm support             :milestone,crit, 2023, 2023
-      Triton ecosystem support                      :2023, 2024
-      MI300x PyTorch guidance                       :2024, 2024
-      Torchtune on AMD GPUs guide                   :2024, 2024
-      PyTorch on Windows public preview             :2025, 2025
-      AMD PyTorch on Windows ROCm 7.1.1             :2025, 2025
-      MI450X rack scale roadmap                     :2026, 2026
-      MI500 series future roadmap                   :2027, 2028
-
-    section intel Intel
-      Initial PyTorch contributions                :2018, 2019
-      Intel Extension for PyTorch launch           :2020, 2024
-      VTune ITT API integration in PyTorch         :2022, 2022
-      PyTorch Foundation Premier membership        :2023, 2023
-      Prototype native Intel GPU support           :2024, 2025
-      Solid native Intel GPU support               :milestone,crit, 2025, 2025
-      X&#123;PU,CCL&#125;                                    :vert, 2025, 2025
-      IPEX feature upstreaming completion          :2025, 2025
-      Intel Extension for PyTorch end of life      :2026, 2026
-```
-
-–\>
+> Intel: Mar 2026 (planned): IPEX end-of-life, move to native PyTorch.
 
 ## AMD Timeline
 
 - Pre-2021: Early Efforts and Torch7
-  - 2012: Torch7 was released, a precursor to PyTorch, written in C++
-    and CUDA.
-  - ROCm 1.0: AMD demonstrated the ability to port CUDA code to HIP
-    (AMD’s C++ dialect for GPU computing) using the HIPIFY tool,
-    including ports of Caffe and Torch7.
+    - 2012: Torch7 was released, a precursor to PyTorch, written in C++
+      and CUDA.
+    - ROCm 1.0: AMD demonstrated the ability to port CUDA code to HIP
+      (AMD’s C++ dialect for GPU computing) using the HIPIFY tool,
+      including ports of Caffe and Torch7.
 - 2021-2022: Official Support and Foundation
-  - March 2021: PyTorch for the AMD ROCm platform became officially
-    available as a Python package, simplifying installation on supported
-    Linux systems.
-  - September 2022: The PyTorch project joined the independent Linux
-    Foundation, with AMD participating as a founding member of the
-    PyTorch Foundation governing board.
+    - March 2021: PyTorch for the AMD ROCm platform became officially
+      available as a Python package, simplifying installation on supported
+      Linux systems.
+    - September 2022: The PyTorch project joined the independent Linux
+      Foundation, with AMD participating as a founding member of the
+      PyTorch Foundation governing board.
 - 2023: PyTorch 2.0 Integration
-  - April 2023: AMD announced day-zero support for PyTorch 2.0 within
-    the ROCm 6.0 ecosystem, leveraging new features like TorchDynamo for
-    performance improvements.
-  - OpenAI Triton Support: The ecosystem grew to include support for
-    OpenAI Triton, a key component for high-performance AI workloads.
+    - April 2023: AMD announced day-zero support for PyTorch 2.0 within
+      the ROCm 6.0 ecosystem, leveraging new features like TorchDynamo for
+      performance improvements.
+    - OpenAI Triton Support: The ecosystem grew to include support for
+      OpenAI Triton, a key component for high-performance AI workloads.
 - 2024-2025: Expanding Accessibility (Windows & Consumer GPUs)
-  - June 2024: AMD released guides and information on running PyTorch
-    models on AMD MI300x systems, highlighting near drop-in
-    compatibility with code written for Nvidia GPUs.
-  - September 2025: AMD released a public preview of PyTorch on Windows,
-    enabling native AI inference on select consumer Radeon RX 7000 and
-    9000 series GPUs and Ryzen AI APUs, without needing workarounds like
-    WSL2.
-  - October 2024: AMD released a “how-to” guide for using Torchtune, a
-    PyTorch library for fine-tuning LLMs, on AMD GPUs.
-  - November 2025: Release of AMD Software: PyTorch on Windows Edition
-    7.1.1, featuring an update to AMD ROCm 7.1.1.
+    - June 2024: AMD released guides and information on running PyTorch
+      models on AMD MI300x systems, highlighting near drop-in
+      compatibility with code written for Nvidia GPUs.
+    - September 2025: AMD released a public preview of PyTorch on Windows,
+      enabling native AI inference on select consumer Radeon RX 7000 and
+      9000 series GPUs and Ryzen AI APUs, without needing workarounds like
+      WSL2.
+    - October 2024: AMD released a “how-to” guide for using Torchtune, a
+      PyTorch library for fine-tuning LLMs, on AMD GPUs.
+    - November 2025: Release of AMD Software: PyTorch on Windows Edition
+      7.1.1, featuring an update to AMD ROCm 7.1.1.
 - Future/Upcoming
-  - 2026: AMD is working on its next generation MI450X rack-scale
-    solution, which aims to be competitive with NVIDIA’s high-end
-    offerings by the second half of 2026.
-  - Post-2026: The company has also detailed plans for future MI500
-    series data center GPUs, targeting a significant increase in AI
-    performance
+    - 2026: AMD is working on its next generation MI450X rack-scale
+      solution, which aims to be competitive with NVIDIA’s high-end
+      offerings by the second half of 2026.
+    - Post-2026: The company has also detailed plans for future MI500
+      series data center GPUs, targeting a significant increase in AI
+      performance
 
 ## Intel Timeline
 
@@ -214,11 +151,14 @@ we were still in the early days of trying to run PyTorch on
 I’ve been working on the 🍋 [`ezpz`](https://ezpz.cool) package for a
 while now,
 
-[^1]: Even now, in 2026, a lot of code is still NVIDIA-centric and is
+[^1]:
+    Even now, in 2026, a lot of code is still NVIDIA-centric and is
     rarely designed with multi-platform support in mind.
 
-[^2]: [PyTorch 1.13
+[^2]:
+    [PyTorch 1.13
     release](https://pytorch.org/blog/pytorch-1-13-release/)
 
-[^3]: [Intel Joins the PyTorch
+[^3]:
+    [Intel Joins the PyTorch
     Foundation](https://www.edge-ai-vision.com/2023/08/driving-pytorch-and-ai-everywhere-intel-joins-the-pytorch-foundation/)

@@ -59,6 +59,9 @@
             'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace,
             'Symbols Nerd Font';
         --font-size: 17px;
+        --font-family-sans-serif:
+            'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace;
+        --font-family-monospace: 'Iosevka Web';
         --box-border-color: var(--background1);
         /* --background0: #fff; */
         /* --background1: #ddd; */
@@ -87,6 +90,7 @@
         /* margin: 0 1ch; */
         /* line-height: var(--line-height, 1.5); */
         font-variant-ligatures: common-ligatures;
+        margin: 0 1ch;
     }
 
     .flex-container {
@@ -123,18 +127,15 @@
         background-color: var(--foreground0);
         color: var(--background0);
     }
-    /* --h1: #333333; */
-    /* --h2: #ff5252; */
-    /* --h3: #6089de; */
-    /* --h4: #50fa7b; */
-    /* --h5: #fd971f; */
-    /* --h6: #bd93f9; */
-
     h1 {
-        color: oklch(from var(--h1, #838383) l c h);
-        background-color: oklch(
-            from var(--h1, #838383) calc(l * 0.85) c h / 0.1
-        );
+        color: oklch(from var(--h1, var(--red)) l c h);
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(
+                from var(--h1, var(--red)) calc(l * var(--oklch-scale, 0.85)) c
+                    h / 0.1
+            );
+        }
     }
 
     h2 {
