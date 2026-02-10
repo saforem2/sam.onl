@@ -1,3 +1,7 @@
 [build]
-  command = "bun run build"
+  # Netlify's Ubuntu build image already includes required system packages,
+  # so we only install the Chromium browser binary here.
+  command = "if [ ! -d \"$PLAYWRIGHT_BROWSERS_PATH\" ] || [ -z \"$(ls -A \"$PLAYWRIGHT_BROWSERS_PATH\" 2>/dev/null)\" ]; then bunx playwright install chromium; fi && bun run build"
   publish = "web/dist"
+[build.environment]
+  PLAYWRIGHT_BROWSERS_PATH = "node_modules/.cache/ms-playwright"

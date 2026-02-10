@@ -34,6 +34,7 @@ jobs:
               with:
                   bun-version: latest
             - run: bun install
+            - run: bunx playwright install chromium
             - run: bun run build
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
