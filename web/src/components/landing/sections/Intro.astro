@@ -20,12 +20,13 @@ import Widgets from '../widgets/Widgets.astro'
                 </p>
                 <div is-="separator"></div>
                 <row gap-="1">
-                    <span>[<a href="/landing"></a>]
-                    [<a href="/posts"></a>]
-                    [<a href="/talks">󰐨</a>]
-                    [<a href="/projects"></a>]
-                    [<a href="https://twitter.com/saforem2"></a>]
-                    [<a href="https://github.com/saforem2"></a></span>]
+                    <span
+                        >[<a href="/landing"></a>] [<a href="/posts"></a>] [<a
+                            href="/talks">󰐨</a
+                        >] [<a href="/projects"></a>] [<a
+                            href="https://twitter.com/saforem2"></a
+                        >] [<a href="https://github.com/saforem2"></a></span
+                    >]
                 </row>
             </column>
         </column>
@@ -68,37 +69,37 @@ import Widgets from '../widgets/Widgets.astro'
             justify-content: center;
 
             #content {
+                position: absolute;
+                background-color: var(--background1);
+                border: 1pt solid var(--background2);
+                max-width: 80%;
+                width: round(calc(100% - 2ch), 1ch);
+
                 nav {
                     padding: 1ch;
                     overflow-x: auto;
                 }
-                position: absolute;
-                background-color: var(--background1);
-                border: 1pt solid var(--background2);
-                /* background-color: oklch( */
-                /*     from var(--background1) calc(l * 0.85) c h / 1 */
-                /* ); */
-                max-width: 80%;
-                width: round(calc(100% - 2ch), 1ch);
 
                 #main {
                     padding: 1lh 2ch;
                     gap: 1lh;
                     --box-border-color: var(--foreground2);
+
                     a {
                         color: var(--foreground1);
-                text-decoration: none;
+                        text-decoration: none;
 
                         &:focus,
                         &:hover {
                             text-decoration: underline;
+                        }
                     }
-                }
 
-                h1 {
-                    color: var(--foreground0);
-                    display: inline-flex;
-                    gap: 1ch;
+                    h1 {
+                        color: var(--foreground0);
+                        display: inline-flex;
+                        gap: 1ch;
+                    }
                 }
             }
         }

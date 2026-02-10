@@ -79,7 +79,9 @@ import '@/styles/global.css'
         </style>
         <script is:inline>
             const normalizeMermaidSvgSize = () => {
-                const mermaidSvgs = document.querySelectorAll("svg[id^='mermaid-']")
+                const mermaidSvgs = document.querySelectorAll(
+                    "svg[id^='mermaid-']",
+                )
 
                 mermaidSvgs.forEach((node) => {
                     const viewBox = node.getAttribute('viewBox')
@@ -93,7 +95,8 @@ import '@/styles/global.css'
 
                     const width = parts[2]
                     const height = parts[3]
-                    if (!Number.isFinite(width) || !Number.isFinite(height)) return
+                    if (!Number.isFinite(width) || !Number.isFinite(height))
+                        return
                     if (width <= 0 || height <= 0) return
 
                     node.setAttribute('width', String(width))
@@ -109,8 +112,16 @@ import '@/styles/global.css'
                             ? renderedHeight
                             : height
 
-                    node.style.setProperty('height', `${resolvedHeight}px`, 'important')
-                    node.style.setProperty('min-height', `${resolvedHeight}px`, 'important')
+                    node.style.setProperty(
+                        'height',
+                        `${resolvedHeight}px`,
+                        'important',
+                    )
+                    node.style.setProperty(
+                        'min-height',
+                        `${resolvedHeight}px`,
+                        'important',
+                    )
                     node.style.setProperty('width', '100%', 'important')
                     node.style.setProperty('max-width', '100%', 'important')
                     node.style.setProperty('display', 'block', 'important')
@@ -118,14 +129,20 @@ import '@/styles/global.css'
             }
 
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', normalizeMermaidSvgSize, {
-                    once: true,
-                })
+                document.addEventListener(
+                    'DOMContentLoaded',
+                    normalizeMermaidSvgSize,
+                    {
+                        once: true,
+                    },
+                )
             } else {
                 normalizeMermaidSvgSize()
             }
 
-            window.addEventListener('load', normalizeMermaidSvgSize, { once: true })
+            window.addEventListener('load', normalizeMermaidSvgSize, {
+                once: true,
+            })
             setTimeout(normalizeMermaidSvgSize, 0)
             setTimeout(normalizeMermaidSvgSize, 50)
             setTimeout(normalizeMermaidSvgSize, 250)
@@ -181,7 +198,9 @@ import '@/styles/global.css'
             focusMainRegion()
 
             const stabilizeMermaidSvgLayout = () => {
-                const mermaidSvgs = document.querySelectorAll('svg[id^="mermaid-"]')
+                const mermaidSvgs = document.querySelectorAll(
+                    'svg[id^="mermaid-"]',
+                )
 
                 mermaidSvgs.forEach((node) => {
                     if (!(node instanceof SVGElement)) return
@@ -194,7 +213,10 @@ import '@/styles/global.css'
                         .split(/\s+/)
                         .map((value) => Number(value))
 
-                    if (!Number.isFinite(widthRaw) || !Number.isFinite(heightRaw)) {
+                    if (
+                        !Number.isFinite(widthRaw) ||
+                        !Number.isFinite(heightRaw)
+                    ) {
                         return
                     }
 
@@ -209,14 +231,23 @@ import '@/styles/global.css'
                         node.getBoundingClientRect().width ||
                         node.parentElement?.getBoundingClientRect().width ||
                         widthRaw
-                    const renderedHeight = (renderedWidth * heightRaw) / widthRaw
+                    const renderedHeight =
+                        (renderedWidth * heightRaw) / widthRaw
                     const resolvedHeight =
                         Number.isFinite(renderedHeight) && renderedHeight > 0
                             ? renderedHeight
                             : heightRaw
 
-                    node.style.setProperty('height', `${resolvedHeight}px`, 'important')
-                    node.style.setProperty('min-height', `${resolvedHeight}px`, 'important')
+                    node.style.setProperty(
+                        'height',
+                        `${resolvedHeight}px`,
+                        'important',
+                    )
+                    node.style.setProperty(
+                        'min-height',
+                        `${resolvedHeight}px`,
+                        'important',
+                    )
                     node.style.setProperty(
                         'aspect-ratio',
                         `${widthRaw} / ${heightRaw}`,
@@ -235,7 +266,9 @@ import '@/styles/global.css'
                 'pre[data-language="mermaid"] > code, pre > code.language-mermaid',
             )
             const legacyMermaidBlocks = Array.from(
-                document.querySelectorAll('pre.mermaid, pre.mermaid-js, .mermaid'),
+                document.querySelectorAll(
+                    'pre.mermaid, pre.mermaid-js, .mermaid',
+                ),
             ).filter((node) => {
                 if (!(node instanceof HTMLElement)) return false
                 if (node.matches('svg') || node.querySelector('svg, img')) {
@@ -245,12 +278,15 @@ import '@/styles/global.css'
                 const source = (node.textContent ?? '').trim()
                 if (source.length === 0) return false
 
-                return /^(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|quadrantChart|xychart-beta|requirementDiagram|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b/m.test(
+                return /^\s*(?:%%[^\n]*\n\s*)*(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|quadrantChart|xychart-beta|requirementDiagram|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b/.test(
                     source,
                 )
             })
 
-            if (mermaidCodeBlocks.length > 0 || legacyMermaidBlocks.length > 0) {
+            if (
+                mermaidCodeBlocks.length > 0 ||
+                legacyMermaidBlocks.length > 0
+            ) {
                 const toMermaidBlock = (codeEl) => {
                     const pre = codeEl.parentElement
                     if (!pre) return

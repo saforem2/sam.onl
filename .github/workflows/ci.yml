@@ -8,6 +8,8 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
+        env:
+            PLAYWRIGHT_BROWSERS_PATH: /home/runner/.cache/ms-playwright
 
         steps:
             - uses: actions/checkout@v4
@@ -21,6 +23,9 @@ jobs:
 
             - name: Check code style
               run: bun format:check
+
+            - name: Install Playwright Chromium
+              run: npx playwright install --with-deps chromium
 
             - name: Build Packages & Docs
               run: bun run build

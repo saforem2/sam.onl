@@ -57,6 +57,16 @@ export default defineConfig({
             rehypeHeadingIds,
             rehypeMarkdownTabIndex,
             rehypeKatex,
+            [
+                rehypeMermaid,
+                {
+                    strategy: 'img-svg',
+                    mermaidConfig: {
+                        fontFamily: 'var(--font-family)',
+                        fontSize: 'var(--font-size)',
+                    },
+                },
+            ],
             // rehypeMermaid,
         ],
         syntaxHighlight: {
@@ -68,13 +78,10 @@ export default defineConfig({
             // theme: 'one-dark-pro',
             themes: {
                 dark: 'one-dark-pro',
-                light: 'github-light-default',
+                light: 'min-light',
             },
             colorReplacements: {
-                'github-light-default': {
-                    '#FFFFFF': '#F8F8F8',
-                },
-                'one-light:': {
+                'one-light': {
                     '#986801': '#ee8f24',
                     '#C18401': '#eea724',
                 },
