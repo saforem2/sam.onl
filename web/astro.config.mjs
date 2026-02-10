@@ -81,7 +81,7 @@ export default defineConfig({
                 light: 'one-light',
             },
             colorReplacements: {
-                'one-light:': {
+                'one-light': {
                     '#986801': '#ee8f24',
                     '#C18401': '#eea724',
                 },
