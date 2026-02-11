@@ -4,7 +4,7 @@ import { getCollection } from 'astro:content'
 
 // if a category is not included in the array, it will be moved to the end
 export const categoryOrder = [
-    'home',
+    'landing',
     'posts',
     'talks',
     'projects',
@@ -20,16 +20,44 @@ export const categoryOrder = [
     // 'contributing',
 ]
 
+//                   
+//                   
+//                   
+//       
+// ------------
+//   Home
+//   Posts
+// 󰐨  Talks
+//   More
+//   Projects
+// ------------
+// <span><a href="/" id="home-link">[<span> </span>]</a></span>
+// <row id="links">
+// <a href="/posts" data-active={isOn === 'posts'}> Posts</a>
+// <a href="/talks" data-active={isOn === 'talks'}>󰐨 Talks</a>
+// <a href="/more" data-active={isOn === 'more'}> More</a>
+// <!-- <a href="/projects" data-active={isOn === 'projects'}>  Projects </a> -->
+// <a href="https://github.com/saforem2/sam.onl" target="_blank"
+//     > Github</a
+// >
+// <button id="theme-button" size-="small">  </button>
+// <button id="search-button" size-="small"> &#xea6d;</button>
+// home:   Home
+// posts:   Posts
+// talks 󰐨  Talks
+// more:   More
+// projects:   Projects
 export const categoryLabels: Record<(typeof categoryOrder)[number], string> = {
-    landing: '\uf015 Home',
-    posts: '\uf02d Posts',
-    talks: '  Talks',
-    projects: '\uf1c0 Projects',
-    about: '\uf128 About',
-    ideas: '\uf1b9 Ideas',
-    more: '\uf1c9 More',
-    webtui: '\uf1b2 WebTUI',
-    now: '\uf073 Now',
+    // landing: '  Landing',
+    landing: '󱠡  Hello!',
+    posts: '  Posts',
+    talks: '󰐨  Talks',
+    projects: '  Projects',
+    about: '  About',
+    ideas: '  Ideas',
+    more: '  More',
+    webtui: '  WebTUI',
+    now: '  Now',
     // start: '\uf024 Start',
     // installation: '\uf019 Installation',
     // components: '\uf121 Components',

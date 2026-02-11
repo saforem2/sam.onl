@@ -494,7 +494,7 @@ const { pathname: urlPath } = Astro.url
         color: var(--foreground2);
         font-weight: var(--font-weight-normal);
         display: list-item;
-        margin-block-start: 1ch;
+        /* margin-block-start: 1ch; */
         color: var(--foreground1);
         background-color: var(--background0);
     }
@@ -537,10 +537,9 @@ const { pathname: urlPath } = Astro.url
     }
 
     details {
+        margin-block-end: 1lh;
         summary {
             font-weight: 500;
-            /* -webkit-font-smoothing: antialiased; */
-            /* -moz-osx-font-smoothing: grayscale; */
             background-color: none;
             color: var(--foreground1);
             &::marker {
@@ -597,6 +596,7 @@ const { pathname: urlPath } = Astro.url
     import { applyVimNavigation } from '@/utils/vim'
 
     const sidebar = document.getElementById('sidebar')
+    let lastInteractionWasPointer = false
 
     const revealFocusedElement = (element: HTMLElement) => {
         let parent = element.parentElement
@@ -612,10 +612,26 @@ const { pathname: urlPath } = Astro.url
     }
 
     if (sidebar) {
+        sidebar.addEventListener('pointerdown', () => {
+            lastInteractionWasPointer = true
+        })
+
+        sidebar.addEventListener('keydown', () => {
+            lastInteractionWasPointer = false
+        })
+
         applyVimNavigation(
             sidebar,
             'details:not(.hidden)[open] a:not(.hidden), details:not(.hidden) summary',
             (element) => {
+                if (lastInteractionWasPointer) {
+                    return
+                }
+
+                if (element.tagName === 'SUMMARY') {
+                    return
+                }
+
                 revealFocusedElement(element)
             },
         )

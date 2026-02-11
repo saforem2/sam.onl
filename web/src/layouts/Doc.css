@@ -109,8 +109,6 @@ h6::before {
 #toc-list {
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
 }
 
 #main-content :is(h1, h2, h3, h4, h5, h6) {
@@ -128,26 +126,22 @@ h6::before {
 }
 
 #toc-list li {
-    list-style: none;
     margin: 0;
     padding: 0;
 
     &::before {
-        content: none !important;
-    }
-
-    &::marker {
-        content: '';
+        content: none;
     }
 }
 
 #toc-list a {
-    display: block;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0;
     color: var(--foreground2);
     text-decoration: none;
     outline: none;
-    border-left: 1px solid var(--background2);
-    padding-inline: 1ch;
+    padding-inline: 0.5ch;
     white-space: normal;
     overflow: visible;
     text-overflow: clip;
@@ -155,22 +149,17 @@ h6::before {
     line-height: 1.3;
 }
 
-#toc-list a.depth-3 {
-    margin-left: 1ch;
+#toc-list a .toc-tree-prefix {
+    white-space: pre;
+    color: var(--foreground1);
 }
 
-#toc-list a.depth-4 {
-    margin-left: 2ch;
-}
-
-#toc-list a.depth-5,
-#toc-list a.depth-6 {
-    margin-left: 3ch;
+#toc-list a .toc-tree-prefix::before {
+    content: attr(data-tree-prefix);
 }
 
 #toc-list a.active {
     color: var(--foreground0);
-    border-left-color: var(--foreground1);
     background-color: oklch(
         from var(--background1, var(--foreground, #838383))
             calc(l * var(--oklch-scale, 0.85)) c h / 0.1
