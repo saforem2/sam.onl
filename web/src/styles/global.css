@@ -71,10 +71,13 @@
         font-family: var(--font-family);
         --box-border-color: var(--background1);
         --focus-bg: var(--background1);
+        --focus-bg-strong: var(--background2);
         --focus-hover-bg: var(--background1);
         --focus-fg: var(--foreground0);
         --focus-border: var(--foreground0);
-        --focus-marker: var(--accent, var(--green));
+        --focus-marker: var(--foreground1, var(--green));
+        --focus-rail-size: 1pt;
+        --focus-region-border: var(--foreground0);
         /* --background0: #fff; */
         /* --background1: #ddd; */
         /* --background2: #bbb; */
@@ -480,22 +483,173 @@ p:has(> img) {
     }
 }
 
-html[data-webtui-theme='light'] .astro-code,
-html[data-webtui-theme='light'] .astro-code span {
-    background-color: oklch(from var(--code-bg, #f8f8f8) l c h) !important;
-    margin-block: 1ch;
+/* html[data-webtui-theme='light'] .astro-code, */
+/* html[data-webtui-theme='light'] .astro-code span { */
+/*     background-color: oklch(from var(--code-bg, #f8f8f8) l c h) !important; */
+/* } */
+
+html[data-webtui-theme='dark'] .astro-code code {
+    pre.astro-code {
+        display: flex !important;
+        overflow: unset !important;
+        position: relative;
+        background-color: var(--background2) !important;
+        padding-block: 0;
+        padding-inline: 1ch;
+
+        code {
+            background-color: var(--background1) !important;
+            text-indent: initial;
+            white-space: pre;
+            overflow-x: auto;
+            background-color: unset;
+            padding-inline: 0ch;
+            padding-left: 0ch;
+            padding-right: 0ch;
+            margin-block: 0;
+            /* Diff markers */
+            span.diff.add {
+                background-color: #a6e3a135;
+            }
+            span.diff.remove {
+                background-color: #f38ba845;
+            }
+        }
+    }
 }
 
 html[data-webtui-theme='dark'] .astro-code,
 html[data-webtui-theme='dark'] .astro-code span {
-    margin-block: 1ch;
     --shiki-dark-bg: var(--background1) !important;
     color: var(--shiki-dark) !important;
     /* background-color: var(--shiki-dark-bg) !important; */
-    background-color: var(--background0, var(--shiki-dark-bg, none)) !important;
+    background-color: var(--background1, var(--shiki-dark-bg, none)) !important;
+    /* background-color: oklch( */
+    /*     from var(--shiki-dark, var(--foreground0)) */
+    /*         calc(l * var(--oklch-scale, 1.15)) c h / 0.1 */
+    /* ) !important; */
     font-style: var(--shiki-dark-font-style) !important;
     font-weight: var(--shiki-dark-font-weight) !important;
     text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+pre.astro-code {
+    --code-line-number-gutter: 4ch;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    margin-block: 1ch;
+}
+
+pre.astro-code code {
+    counter-reset: line;
+    display: block;
+    white-space: pre;
+    margin-inline-start: var(--code-line-number-gutter);
+    overflow: visible;
+    border-left: 1pt solid var(--foreground2);
+}
+
+pre.astro-code code span.line {
+    display: inline-block;
+    min-width: 100%;
+    position: relative;
+    line-height: inherit;
+    margin: 0;
+    padding: 0;
+    background-color: transparent !important;
+}
+
+pre.astro-code code span.line::before {
+    counter-increment: line;
+    content: counter(line);
+    display: inline-block;
+    width: calc(var(--code-line-number-gutter) - 1ch);
+    margin-inline-start: calc(-1 * var(--code-line-number-gutter));
+    margin-inline-end: 1ch;
+    line-height: inherit;
+    text-align: right;
+    color: var(--foreground3);
+    background-color: transparent !important;
+    user-select: none;
+    /* border-right: 1px solid var(--foreground2); */
+    padding-right: 1ch;
+    opacity: 50%;
+}
+
+html[data-webtui-theme='catpuccin-*'] .astro-code,
+html[data-webtui-theme='catpuccin-*'] .astro-code span {
+    --shiki-catpuccin-*-bg: var(--crust) !important;
+    color: var(--shiki-catpuccin- *) !important;
+    /* background-color: var(--shiki-catpuccin-*-bg) !important; */
+    background-color: var(
+        --crust,
+        var(--shiki-catpuccin- * -bg, none)
+    ) !important;
+    font-style: var(--shiki-catpuccin- * -font-style) !important;
+    font-weight: var(--shiki-catpuccin- * -font-weight) !important;
+    text-decoration: var(--shiki-catpuccin- * -text-decoration) !important;
+}
+
+html[data-webtui-theme='catppuccin-*'] .astro-code code {
+    background-color: transparent !important;
+}
+
+html[data-webtui-theme='catppuccin-*'] {
+    --background0: var(--base);
+    --background1: var(--surface0);
+    --background2: var(--surface1);
+    --background3: var(--surface2);
+
+    --foreground0: var(--text);
+    --foreground1: var(--subtext1);
+    --foreground2: var(--overlay2);
+
+    /* Syntax Highlighting */
+    pre.astro-code {
+        display: flex !important;
+        overflow: unset !important;
+        position: relative;
+        background-color: var(--mantle) !important;
+        padding-block: 0;
+        padding-inline: 1ch;
+
+        code {
+            text-indent: initial;
+            white-space: pre;
+            overflow-x: auto;
+            background-color: unset;
+            padding-inline: 0ch;
+            padding-left: 0ch;
+            padding-right: 0ch;
+            margin-block: 0;
+            /* Diff markers */
+            span.diff.add {
+                background-color: #a6e3a135;
+            }
+            span.diff.remove {
+                background-color: #f38ba845;
+            }
+        }
+    }
+}
+
+html[data-webtui-theme] pre.astro-code {
+    background-color: transparent !important;
+    padding-inline-start: 0 !important;
+    padding-inline-end: 1ch !important;
+}
+
+html[data-webtui-theme] pre.astro-code code {
+    background-color: var(
+        --background1,
+        var(--shiki-dark-bg, var(--code-bg, transparent))
+    ) !important;
+}
+
+html[data-webtui-theme] pre.astro-code code span.line,
+html[data-webtui-theme] pre.astro-code code span.line::before {
+    background: transparent !important;
+    background-color: transparent !important;
 }
 
 /* strong { */

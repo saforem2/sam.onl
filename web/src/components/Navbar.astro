@@ -81,7 +81,7 @@ if (url.pathname === '/') {
         z-index: 10;
 
         &:focus-within {
-            --box-border-color: var(--foreground0);
+            --box-border-color: var(--focus-region-border);
         }
 
         :is(a[href], button:not([disabled])) {
@@ -90,21 +90,30 @@ if (url.pathname === '/') {
         }
 
         :is(a[href], button:not([disabled]))::after {
-            content: '> ';
+            content: '>';
             position: absolute;
-            inset-inline-start: -2ch;
+            inset-inline-start: -1ch;
             inset-block-start: 0;
             color: transparent;
-            width: 2ch;
+            width: 1ch;
             pointer-events: none;
+        }
+
+        :is(a[href], button:not([disabled])) {
+            transition:
+                background-color 100ms linear,
+                color 100ms linear,
+                box-shadow 100ms linear;
         }
 
         :is(a[href], button:not([disabled])):focus-visible,
         :is(a[href], button:not([disabled]))[data-vim-focused='true']:focus {
-            background-color: var(--focus-bg);
+            background-color: var(--focus-bg-strong);
             color: var(--focus-fg);
-            outline: 1px solid var(--focus-border);
-            outline-offset: -1px;
+            box-shadow:
+                inset var(--focus-rail-size) 0 0 0 var(--focus-marker),
+                inset 0 0 0 1px var(--focus-border);
+            outline: none;
             text-decoration: none;
         }
 
