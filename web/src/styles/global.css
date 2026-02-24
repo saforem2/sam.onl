@@ -14,6 +14,8 @@
 
 @import '@/styles/flexbox.css';
 @import '@/styles/padding.css';
+@import '@/styles/material.css';
+@import '@/styles/lastfm.css';
 @import '@webtui/plugin-nf';
 @import '@/styles/themes/custom.css';
 @import '@webtui/theme-catppuccin';
@@ -66,7 +68,13 @@
         --font-family-sans-serif:
             'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace;
         --font-family-monospace: 'Iosevka Web';
+        font-family: var(--font-family);
         --box-border-color: var(--background1);
+        --focus-bg: var(--background1);
+        --focus-hover-bg: var(--background1);
+        --focus-fg: var(--foreground0);
+        --focus-border: var(--foreground0);
+        --focus-marker: var(--accent, var(--green));
         /* --background0: #fff; */
         /* --background1: #ddd; */
         /* --background2: #bbb; */
@@ -92,7 +100,7 @@
         /* margin-inline: calc(2vw; */
         /* add a 1ch margin to the left and right of the body to prevent content from touching the edges of the viewport */
         /* margin: 0 1ch; */
-        /* line-height: var(--line-height, 1.5); */
+        line-height: var(--line-height, 1.227);
         font-variant-ligatures: common-ligatures;
         margin: 0 1ch;
     }
@@ -100,6 +108,7 @@
     .flex-container {
         display: flex;
         flex-direction: row;
+        flex-wrap: wrap;
     }
 
     li > p {
@@ -143,21 +152,21 @@
     }
 
     h2 {
-        color: oklch(from var(--h2, #ff5252) l c h);
+        color: oklch(from var(--h2, #fd971f) l c h);
         &:hover,
         &:focus-visible {
             background-color: oklch(
-                from var(--h2, #ff5252) calc(l * 0.85) c h / 0.1
+                from var(--h2, #fd971f) calc(l * 0.85) c h / 0.1
             );
         }
     }
 
     h3 {
-        color: oklch(from var(--h3, #6089de) l c h);
+        color: oklch(from var(--h3, var(--green)) l c h);
         &:hover,
         &:focus-visible {
             background-color: oklch(
-                from var(--h3, #6089de) calc(l * 0.85) c h / 0.1
+                from var(--h3, var(--green)) calc(l * 0.85) c h / 0.1
             );
         }
     }
@@ -250,11 +259,115 @@
     button:not([size-]):not([box-]) {
         margin-inline: 1ch;
     }
-    .callout-tip {
-        background-color: oklch(
-            from var(--background2) calc(l * var(--oklch-scale, 1.15)) c h / 0.1
+
+    :is(
+        button,
+        input[type='button'],
+        input[type='submit'],
+        input[type='reset'],
+        [is-~='button']
+    ) {
+        &[variant-='red'] {
+            --button-primary: var(--red);
+            --button-secondary: var(--background0);
+        }
+
+        &[variant-='orange'] {
+            --button-primary: var(--orange);
+            --button-secondary: var(--background0);
+        }
+
+        &[variant-='yellow'] {
+            --button-primary: var(--yellow);
+            --button-secondary: var(--background0);
+        }
+
+        &[variant-='green'] {
+            --button-primary: var(--green);
+            --button-secondary: var(--background0);
+        }
+
+        &[variant-='blue'] {
+            --button-primary: var(--blue);
+            --button-secondary: var(--background0);
+        }
+
+        &[variant-='purple'] {
+            --button-primary: var(--purple);
+            --button-secondary: var(--background0);
+        }
+
+        &[variant-='pink'] {
+            --button-primary: var(--pink);
+            --button-secondary: var(--background0);
+        }
+
+        &[variant-='dim'] {
+            --button-primary: var(--foreground2);
+            --button-secondary: var(--background0);
+        }
+
+        &[variant-='bright'] {
+            --button-primary: var(--foreground0);
+            --button-secondary: var(--background0);
+        }
+    }
+
+    .callout {
+        --callout-color: var(--blue, #118cc2);
+        --callout-bg: oklch(
+            from var(--callout-color) calc(l * var(--oklch-scale, 1.12)) c h /
+                0.1
         );
-        /* color: oklch(from var(--background2) l c h); */
+        --callout-summary-bg: oklch(
+            from var(--callout-color) calc(l * var(--oklch-scale, 1.08)) c h /
+                0.18
+        );
+    }
+
+    .callout-tip {
+        --callout-color: var(--background3, #838383);
+    }
+    .callout-note {
+        --callout-color: var(--blue, #118cc2);
+    }
+
+    .callout-important {
+        --callout-color: var(--purple, #9a76ce);
+    }
+
+    .callout-warning,
+    .callout-caution {
+        --callout-color: var(--orange, #ee8f24);
+    }
+
+    .callout-error,
+    .callout-danger {
+        --callout-color: var(--red, #e05560);
+    }
+
+    .callout-success {
+        --callout-color: var(--green, #1da811);
+    }
+
+    details[is-~='accordion']:is(
+            .callout,
+            .callout-tip,
+            .callout-note,
+            .callout-important,
+            .callout-warning,
+            .callout-caution,
+            .callout-error,
+            .callout-danger,
+            .callout-success
+        ) {
+        background-color: var(--callout-bg);
+
+        summary {
+            background-color: var(--callout-summary-bg);
+            color: var(--callout-color);
+            font-weight: var(--font-weight-bold);
+        }
     }
     details[is-~='accordion'] {
         /* only apply background-color to the summary element */
@@ -290,12 +403,64 @@
 
         /* ... */
     }
+
+    /* Keep unordered sublists indented under ordered list items. */
+    ol li > ul {
+        margin-left: 3ch;
+    }
 }
 
 @media (max-width: 480px) {
     :root {
         --font-size: 16px;
     }
+
+    body,
+    html {
+        width: auto;
+        height: 100vh;
+        overflow-y: scroll;
+        /* display: flex; */
+        /* flex-direction: column; */
+        font-variant-ligatures: common-ligatures;
+        margin: 0 1ch;
+    }
+}
+
+@media (max-width: 768px) {
+    .flex-container {
+        flex-direction: column;
+    }
+}
+
+.light-content {
+    display: none !important;
+}
+
+@media (prefers-color-scheme: light) {
+    .light-content {
+        display: revert !important;
+    }
+
+    .dark-content {
+        display: none !important;
+    }
+}
+
+html[data-webtui-theme='light'] .light-content {
+    display: revert !important;
+}
+
+html[data-webtui-theme='light'] .dark-content {
+    display: none !important;
+}
+
+html[data-webtui-theme='dark'] .light-content {
+    display: none !important;
+}
+
+html[data-webtui-theme='dark'] .dark-content {
+    display: revert !important;
 }
 
 p:has(> img) {

@@ -7,6 +7,7 @@ import VimNavigation from './landing/VimNavigation.astro'
 const categories = makeSortedCategoryEntries()
 
 const yearGroupedCategories = new Set(['posts', 'talks'])
+const linkedCategorySlugs = new Set(['posts', 'talks', 'projects'])
 const dateGroupedCategories = new Set(['posts', 'talks'])
 const yearPattern = /^\d{4}$/
 const datePattern = /(^|\n)(\d{4})-(\d{2})-(\d{2})\b/m
@@ -218,13 +219,58 @@ const { pathname: urlPath } = Astro.url
 ---
 
 <nav box-="square" shear-="top" id="sidebar">
+    <button
+        id="sidebar-toggle"
+        type="button"
+        size-="small"
+        variant-="background1"
+        aria-expanded="true"
+        aria-controls="sidebar-container"
+        aria-label="Collapse left sidebar (Ctrl+H)">
+        <code>&lt;C-h&gt;</code>
+    </button>
     <div id="category-container">
         <div id="category-list">
             {
                 categories.map(([slug, pages]) => {
+                    if (slug === 'landing') {
+                        const landingPage =
+                            pages.find(({ id }) => id === 'landing') ?? pages[0]
+
+                        if (!landingPage) {
+                            return null
+                        }
+
+                        return (
+                            <a
+                                href={`/${landingPage.id}`}
+                                class={
+                                    compareUrlPaths(urlPath, landingPage.id)
+                                        ? 'sidebar-direct-link active'
+                                        : 'sidebar-direct-link'
+                                }
+                                data-slug={landingPage.id}>
+                                {categoryLabels[slug]}
+                            </a>
+                        )
+                    }
+
+                    const categoryIndexPage = pages.find(
+                        ({ id }) => id === slug,
+                    )
+                    const shouldLinkCategory =
+                        linkedCategorySlugs.has(slug) &&
+                        Boolean(categoryIndexPage)
+                    const categoryPages = shouldLinkCategory
+                        ? pages.filter(({ id }) => id !== slug)
+                        : pages
+                    const isCategoryActive = pages.some(({ id }) =>
+                        compareUrlPaths(urlPath, id),
+                    )
+
                     if (yearGroupedCategories.has(slug)) {
                         const { years, grouped, misc } = groupPagesByYear(
-                            pages,
+                            categoryPages,
                             slug,
                         )
                         const mergedYears =
@@ -236,14 +282,23 @@ const { pathname: urlPath } = Astro.url
                                       ]),
                                   ).sort((a, b) => b.localeCompare(a))
                                 : years
-                        const isCategoryActive = pages.some(({ id }) =>
-                            compareUrlPaths(urlPath, id),
-                        )
 
                         return (
                             <details open={isCategoryActive}>
-                                <summary>{categoryLabels[slug]}</summary>
-                                <ul>
+                                <summary>
+                                    {shouldLinkCategory ? (
+                                        <a
+                                            href={`/${slug}`}
+                                            class="sidebar-category-link"
+                                            onclick="event.stopPropagation()"
+                                            data-slug={slug}>
+                                            {categoryLabels[slug]}
+                                        </a>
+                                    ) : (
+                                        categoryLabels[slug]
+                                    )}
+                                </summary>
+                                <ul marker-="tree open">
                                     {mergedYears.map((year) => {
                                         const yearPages =
                                             grouped.get(year) ?? []
@@ -303,41 +358,45 @@ const { pathname: urlPath } = Astro.url
                                                 is-="accordion"
                                                 class="sidebar-year">
                                                 <summary>{year}</summary>
-                                                <ul>
+                                                <ul marker-="tree open">
                                                     {entries.map((entry) => (
-                                                        <a
-                                                            href={entry.href}
-                                                            class={
-                                                                entry.isActive
-                                                                    ? 'active'
-                                                                    : entry.type ===
-                                                                        'external'
-                                                                      ? 'external'
-                                                                      : ''
-                                                            }
-                                                            data-slug={
-                                                                entry.type ===
-                                                                'page'
-                                                                    ? entry.href.replace(
-                                                                          /^\//,
-                                                                          '',
-                                                                      )
-                                                                    : undefined
-                                                            }
-                                                            target={
-                                                                entry.type ===
-                                                                'external'
-                                                                    ? '_blank'
-                                                                    : undefined
-                                                            }
-                                                            rel={
-                                                                entry.type ===
-                                                                'external'
-                                                                    ? 'noreferrer'
-                                                                    : undefined
-                                                            }>
-                                                            {entry.title}
-                                                        </a>
+                                                        <li>
+                                                            <a
+                                                                href={
+                                                                    entry.href
+                                                                }
+                                                                class={
+                                                                    entry.isActive
+                                                                        ? 'active'
+                                                                        : entry.type ===
+                                                                            'external'
+                                                                          ? 'external'
+                                                                          : ''
+                                                                }
+                                                                data-slug={
+                                                                    entry.type ===
+                                                                    'page'
+                                                                        ? entry.href.replace(
+                                                                              /^\//,
+                                                                              '',
+                                                                          )
+                                                                        : undefined
+                                                                }
+                                                                target={
+                                                                    entry.type ===
+                                                                    'external'
+                                                                        ? '_blank'
+                                                                        : undefined
+                                                                }
+                                                                rel={
+                                                                    entry.type ===
+                                                                    'external'
+                                                                        ? 'noreferrer'
+                                                                        : undefined
+                                                                }>
+                                                                {entry.title}
+                                                            </a>
+                                                        </li>
                                                     ))}
                                                 </ul>
                                             </details>
@@ -351,25 +410,27 @@ const { pathname: urlPath } = Astro.url
                                             is-="accordion"
                                             class="sidebar-year">
                                             <summary>Other</summary>
-                                            <ul>
+                                            <ul marker-="tree open">
                                                 {misc.map(
                                                     ({
                                                         id,
                                                         data: { title },
                                                     }) => (
-                                                        <a
-                                                            href={`/${id}`}
-                                                            class={
-                                                                compareUrlPaths(
-                                                                    urlPath,
-                                                                    id,
-                                                                )
-                                                                    ? 'active'
-                                                                    : ''
-                                                            }
-                                                            data-slug={id}>
-                                                            {title}
-                                                        </a>
+                                                        <li>
+                                                            <a
+                                                                href={`/${id}`}
+                                                                class={
+                                                                    compareUrlPaths(
+                                                                        urlPath,
+                                                                        id,
+                                                                    )
+                                                                        ? 'active'
+                                                                        : ''
+                                                                }
+                                                                data-slug={id}>
+                                                                {title}
+                                                            </a>
+                                                        </li>
                                                     ),
                                                 )}
                                             </ul>
@@ -380,26 +441,53 @@ const { pathname: urlPath } = Astro.url
                         )
                     }
 
-                    const isCategoryActive = pages.some(({ id }) =>
-                        compareUrlPaths(urlPath, id),
-                    )
+                    if (shouldLinkCategory && categoryPages.length === 0) {
+                        return (
+                            <a
+                                href={`/${slug}`}
+                                class={
+                                    isCategoryActive
+                                        ? 'sidebar-direct-link active'
+                                        : 'sidebar-direct-link'
+                                }
+                                data-slug={slug}>
+                                {categoryLabels[slug]}
+                            </a>
+                        )
+                    }
 
                     return (
                         <details open={isCategoryActive}>
-                            <summary>{categoryLabels[slug]}</summary>
-                            <ul>
-                                {pages.map(({ id, data: { title } }) => (
+                            <summary>
+                                {shouldLinkCategory ? (
                                     <a
-                                        href={`/${id}`}
-                                        class={
-                                            compareUrlPaths(urlPath, id)
-                                                ? 'active'
-                                                : ''
-                                        }
-                                        data-slug={id}>
-                                        {title}
+                                        href={`/${slug}`}
+                                        class="sidebar-category-link"
+                                        onclick="event.stopPropagation()"
+                                        data-slug={slug}>
+                                        {categoryLabels[slug]}
                                     </a>
-                                ))}
+                                ) : (
+                                    categoryLabels[slug]
+                                )}
+                            </summary>
+                            <ul marker-="tree open">
+                                {categoryPages.map(
+                                    ({ id, data: { title } }) => (
+                                        <li>
+                                            <a
+                                                href={`/${id}`}
+                                                class={
+                                                    compareUrlPaths(urlPath, id)
+                                                        ? 'active'
+                                                        : ''
+                                                }
+                                                data-slug={id}>
+                                                {title}
+                                            </a>
+                                        </li>
+                                    ),
+                                )}
                             </ul>
                         </details>
                     )
@@ -422,20 +510,76 @@ const { pathname: urlPath } = Astro.url
         flex-direction: row;
     }
     #sidebar {
+        position: relative;
         display: flex;
         flex-direction: column;
         overflow: hidden;
         flex-grow: 1;
-        line-height: 1.3;
+        line-height: 1.5;
+        /* line-height: var(--line-height, 1.227); */
+
+        #sidebar-toggle {
+            position: absolute;
+            z-index: 3;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+
+            code {
+                background-color: transparent;
+            }
+        }
 
         &:focus-within {
             --box-border-color: var(--foreground0);
         }
 
+        :is(a[href], summary, button:not([disabled])) {
+            position: relative;
+            outline: none;
+        }
+
+        :is(a[href], summary, button:not([disabled]))::after {
+            content: '> ';
+            position: absolute;
+            inset-inline-start: -2ch;
+            inset-block-start: 0;
+            color: transparent;
+            width: 2ch;
+            pointer-events: none;
+        }
+
+        :is(a[href], summary, button:not([disabled])):focus-visible,
+        :is(
+                a[href],
+                summary,
+                button:not([disabled])
+            )[data-vim-focused='true']:focus {
+            background-color: var(--focus-bg);
+            color: var(--focus-fg);
+            outline: 1px solid var(--focus-border);
+            outline-offset: -1px;
+            text-decoration: none;
+        }
+
+        :is(a[href], summary, button:not([disabled])):focus-visible::after,
+        :is(
+                a[href],
+                summary,
+                button:not([disabled])
+            )[data-vim-focused='true']:focus::after {
+            color: var(--focus-marker);
+        }
+
+        :is(a[href], summary, button:not([disabled])):hover {
+            background-color: var(--focus-hover-bg);
+        }
+
         #category-container {
             position: relative;
             flex-grow: 1;
-            margin-top: 1lh;
+            margin-top: 2lh;
         }
 
         #category-list {
@@ -445,25 +589,25 @@ const { pathname: urlPath } = Astro.url
             flex-direction: column;
             gap: 0lh;
             overflow-y: auto;
-            margin-inline: 1ch;
+            /* margin-inline: 1ch; */
         }
     }
 
-    ul > a[href] {
+    details > summary > a.sidebar-category-link {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    li {
+        padding-inline-start: 0ch;
+    }
+
+    ul > li > a[href] {
         color: var(--foreground2);
         text-decoration: none;
         outline: none;
-        display: list-item;
-        margin-inline-start: 2ch;
-        text-indent: 2ch hanging;
-
-        &::before {
-            content: '├ ';
-        }
-
-        &:last-of-type::before {
-            content: '└ ';
-        }
+        display: block;
+        min-width: 0;
 
         &.active {
             background-color: oklch(
@@ -471,18 +615,30 @@ const { pathname: urlPath } = Astro.url
                     calc(l * var(--oklch-scale, 0.85)) c h / 0.1
             );
         }
-
-        &:focus {
-            background-color: oklch(
-                from var(--background-active, var(--background2, #838383))
-                    calc(l * var(--oklch-scale, 0.85)) c h / 0.1
-            );
-        }
     }
 
-    ul > a.external {
+    ul > li > a.external {
         color: var(--foreground2);
         font-style: italic;
+    }
+
+    #sidebar ul[marker-~='tree'] > li {
+        display: grid;
+        grid-template-columns: 3ch minmax(0, 1fr);
+        align-items: start;
+    }
+
+    #sidebar ul[marker-~='tree'] > li::before {
+        grid-column: 1;
+        content: '├─ ';
+    }
+
+    #sidebar ul[marker-~='tree'] > li:last-of-type::before {
+        content: '└─ ';
+    }
+
+    #sidebar ul[marker-~='tree'] > li > a {
+        grid-column: 2;
     }
 
     ul > details {
@@ -499,24 +655,45 @@ const { pathname: urlPath } = Astro.url
         background-color: var(--background0);
     }
     ul > details > summary::marker {
-        content: '\eab6\ ';
+        content: '\eab6';
         /* margin-inline-start: -1ch; */
 
         &[open] {
             summary {
                 &::marker {
-                    content: '\eab4\ ';
+                    content: '\eab4';
                 }
             }
         }
     }
 
-    ul > details > summary {
+    #category-list > a.sidebar-direct-link {
+        color: var(--foreground1);
+        text-decoration: none;
         margin-inline-start: 1ch;
+        outline: none;
+        display: block;
+        /* margin-inline-start: 1ch; */
+        /* margin-block-end: 1lh; */
+        &:hover {
+            background-color: var(--background1);
+        }
+
+        &.active {
+            background-color: oklch(
+                from var(--background-active, var(--background2, #838383))
+                    calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+            );
+        }
     }
 
-    ul > details:last-of-type > summary::marker {
-        content: '\eab4\ ';
+    #category-list > a.sidebar-direct-link::before {
+        content: ' ';
+        margin-inline: 1ch;
+    }
+
+    ul > details > summary {
+        padding-inline-start: 0ch;
     }
 
     /* ul > details > summary::before { */
@@ -537,18 +714,17 @@ const { pathname: urlPath } = Astro.url
     }
 
     details {
-        margin-block-end: 1lh;
+        /* margin-block-end: 1lh; */
         summary {
             font-weight: 500;
             background-color: none;
             color: var(--foreground1);
             &::marker {
                 color: var(--foreground2);
-                content: '\eab6\ ';
+                content: '\eab6';
             }
 
-            &:hover,
-            &:focus {
+            &:hover {
                 background-color: var(--background1);
             }
         }
@@ -556,7 +732,7 @@ const { pathname: urlPath } = Astro.url
         &[open] {
             summary {
                 &::marker {
-                    content: '\eab4\ ';
+                    content: '\eab4';
                 }
             }
         }
@@ -569,15 +745,16 @@ const { pathname: urlPath } = Astro.url
     }
 
     ul > details {
+        /* margin-block-end: 1ch; */
+        padding-inline-start: 1ch;
         summary {
             font-weight: var(--font-weight-bold);
             &::marker {
                 color: var(--foreground2);
-                content: '\eab6\ ';
+                content: '\eab6';
             }
 
-            &:hover,
-            &:focus {
+            &:hover {
                 background-color: var(--background1);
             }
         }
@@ -585,7 +762,7 @@ const { pathname: urlPath } = Astro.url
         &[open] {
             summary {
                 &::marker {
-                    content: '\eab4\ ';
+                    content: '\eab4';
                 }
             }
         }
@@ -622,7 +799,7 @@ const { pathname: urlPath } = Astro.url
 
         applyVimNavigation(
             sidebar,
-            'details:not(.hidden)[open] a:not(.hidden), details:not(.hidden) summary',
+            '#category-list > a:not(.hidden), details:not(.hidden)[open] a:not(.hidden), details:not(.hidden) summary',
             (element) => {
                 if (lastInteractionWasPointer) {
                     return

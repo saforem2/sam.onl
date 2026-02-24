@@ -49,7 +49,9 @@ export const categoryOrder = [
 // projects:   Projects
 export const categoryLabels: Record<(typeof categoryOrder)[number], string> = {
     // landing: '  Landing',
-    landing: '󱠡  Hello!',
+    // landing: '󱠡  Hello!',
+    // landing: '󱠡  Hello!',
+    landing: '  About',
     posts: '  Posts',
     talks: '󰐨  Talks',
     projects: '  Projects',

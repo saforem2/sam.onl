@@ -305,10 +305,17 @@ const themeOptions = {
     window.addEventListener('keydown', (e) => {
         if (isUserTyping()) return
 
-        if (e.key === 'k' && e.ctrlKey) {
+        if (e.key === 'p' && e.ctrlKey) {
             e.preventDefault()
             e.stopImmediatePropagation()
             commandDialog.showModal()
+            return
+        }
+
+        if (e.key === 'x' && e.ctrlKey) {
+            e.preventDefault()
+            e.stopImmediatePropagation()
+            themeDialog.showModal()
             return
         }
 

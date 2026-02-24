@@ -12,6 +12,7 @@ let isOn:
     | 'projects'
     | 'about'
     | 'ideas'
+    | 'more'
     | 'home' = 'docs'
 
 if (url.pathname.startsWith('/posts')) {
@@ -38,6 +39,10 @@ if (url.pathname.startsWith('/ideas')) {
     isOn = 'ideas'
 }
 
+if (url.pathname.startsWith('/more')) {
+    isOn = 'more'
+}
+
 if (url.pathname.startsWith('/webtui') || url.pathname.startsWith('/start')) {
     isOn = 'docs'
 }
@@ -47,7 +52,7 @@ if (url.pathname === '/') {
 }
 ---
 
-<nav box-="square">
+<nav id="top-navbar" box-="square">
     <!--                                                                                 -->
     <span><a href="/" id="home-link">[<span> </span>]</a></span>
     <row id="links">
@@ -74,6 +79,47 @@ if (url.pathname === '/') {
         container-name: navbar;
         white-space: nowrap;
         z-index: 10;
+
+        &:focus-within {
+            --box-border-color: var(--foreground0);
+        }
+
+        :is(a[href], button:not([disabled])) {
+            position: relative;
+            outline: none;
+        }
+
+        :is(a[href], button:not([disabled]))::after {
+            content: '> ';
+            position: absolute;
+            inset-inline-start: -2ch;
+            inset-block-start: 0;
+            color: transparent;
+            width: 2ch;
+            pointer-events: none;
+        }
+
+        :is(a[href], button:not([disabled])):focus-visible,
+        :is(a[href], button:not([disabled]))[data-vim-focused='true']:focus {
+            background-color: var(--focus-bg);
+            color: var(--focus-fg);
+            outline: 1px solid var(--focus-border);
+            outline-offset: -1px;
+            text-decoration: none;
+        }
+
+        :is(a[href], button:not([disabled])):focus-visible::after,
+        :is(
+                a[href],
+                button:not([disabled])
+            )[data-vim-focused='true']:focus::after {
+            color: var(--focus-marker);
+        }
+
+        :is(a[href], button:not([disabled])):hover {
+            background-color: var(--focus-hover-bg);
+        }
+
         #github-link {
             display: inline-flex;
             align-items: center;
@@ -88,7 +134,6 @@ if (url.pathname === '/') {
                 display: block;
             }
 
-            &:focus,
             &:hover {
                 text-decoration: underline;
             }
@@ -107,7 +152,6 @@ if (url.pathname === '/') {
                 display: block;
             }
 
-            &:focus,
             &:hover {
                 text-decoration: underline;
             }
@@ -118,7 +162,8 @@ if (url.pathname === '/') {
         row-gap: 2ch;
         column-gap: 1lh;
         margin-inline-start: 1ch;
-        overflow-x: auto;
+        /* overflow-x: auto; */
+        width: max-content;
 
         a {
             display: inline-flex;
@@ -137,14 +182,12 @@ if (url.pathname === '/') {
                 text-decoration: none;
             }
 
-            &:focus,
             &:hover {
                 text-decoration: underline;
             }
         }
 
         & #home-link {
-            &:focus,
             &:hover {
                 text-decoration: none;
                 background-color: oklch(
@@ -163,7 +206,7 @@ if (url.pathname === '/') {
                 from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
                     0.1
             );
-            &:focus,
+
             &:hover {
                 background-color: oklch(
                     from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h /
@@ -176,7 +219,7 @@ if (url.pathname === '/') {
             display: inline-flex;
             gap: 1ch;
             background-color: var(--foreground0);
-            &:focus,
+
             &:hover {
                 background-color: oklch(
                     from var(--green) calc(l * var(--oklch-scale, 0.85)) c h /
