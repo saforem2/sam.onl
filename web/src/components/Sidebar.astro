@@ -226,8 +226,8 @@ const { pathname: urlPath } = Astro.url
         variant-="background1"
         aria-expanded="true"
         aria-controls="sidebar-container"
-        aria-label="Collapse left sidebar (Ctrl+H)">
-        <code>&lt;C-h&gt;</code>
+        aria-label="Collapse left sidebar (zh)">
+        <code>&lt;zh&gt;</code>
     </button>
     <div id="category-container">
         <div id="category-list">
@@ -624,17 +624,14 @@ const { pathname: urlPath } = Astro.url
 
     #sidebar ul[marker-~='tree'] > li {
         display: grid;
-        grid-template-columns: 3ch minmax(0, 1fr);
+        grid-template-columns: 2ch minmax(0, 1fr);
         align-items: start;
     }
 
     #sidebar ul[marker-~='tree'] > li::before {
         grid-column: 1;
-        content: '├─ ';
-    }
-
-    #sidebar ul[marker-~='tree'] > li:last-of-type::before {
-        content: '└─ ';
+        content: '- ';
+        color: var(--foreground2);
     }
 
     #sidebar ul[marker-~='tree'] > li > a {

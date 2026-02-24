@@ -178,8 +178,8 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                     variant-="background1"
                                     aria-expanded="true"
                                     aria-controls="toc-container"
-                                    aria-label="Collapse right sidebar (Ctrl+L)">
-                                    <code>&lt;C-l&gt;</code>
+                                    aria-label="Collapse right sidebar (zl)">
+                                    <code>&lt;zl&gt;</code>
                                 </button>
                                 <div id="toc-list-container">
                                     <ul id="toc-list">
@@ -409,11 +409,9 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
     window.addEventListener('keydown', (e) => {
         if (e.defaultPrevented) return
 
-        const commandDialog = document.getElementById(
-            'command-dialog',
-        ) as HTMLDialogElement | null
-
-        if (commandDialog?.open) return
+        const hasOpenDialog =
+            document.querySelector('dialog[open]') instanceof HTMLDialogElement
+        if (hasOpenDialog) return
 
         // Don't navigate if the user is typing
         if (isUserTyping()) {
@@ -430,6 +428,45 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         if (e.key === 'i' && e.ctrlKey) {
             e.preventDefault()
             window.history.forward()
+        }
+
+        const isShiftRegionKey =
+            e.shiftKey &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            ['h', 'j', 'k', 'l'].includes(e.key.toLowerCase())
+
+        if (isShiftRegionKey) {
+            const shiftedKey = e.key.toLowerCase()
+            let target: HTMLElement | null = null
+
+            if (shiftedKey === 'h') {
+                target = getSidebarTarget() as HTMLElement | null
+            }
+
+            if (shiftedKey === 'j') {
+                target =
+                    getVisibleMainElements()[0] ??
+                    findFirstFocusableElement() ??
+                    currentElement ??
+                    null
+            }
+
+            if (shiftedKey === 'k') {
+                target = getNavbarTarget() as HTMLElement | null
+            }
+
+            if (shiftedKey === 'l') {
+                target = getTocTarget() as HTMLElement | null
+            }
+
+            if (target instanceof HTMLElement) {
+                e.preventDefault()
+                vimFocusElement(target)
+            }
+
+            return
         }
 
         if (e.key === 'h' && !e.ctrlKey && !e.metaKey && !e.altKey) {
@@ -614,24 +651,24 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
     const setSidebarToggleLabel = (collapsed: boolean) => {
         if (!sidebarToggle) return
 
-        sidebarToggle.innerHTML = '<code>&lt;C-h&gt;</code>'
+        sidebarToggle.innerHTML = '<code>&lt;zh&gt;</code>'
         sidebarToggle.setAttribute(
             'aria-label',
             collapsed
-                ? 'Expand left sidebar (Ctrl+H)'
-                : 'Collapse left sidebar (Ctrl+H)',
+                ? 'Expand left sidebar (zh)'
+                : 'Collapse left sidebar (zh)',
         )
     }
 
     const setTocToggleLabel = (collapsed: boolean) => {
         if (!tocToggle) return
 
-        tocToggle.innerHTML = '<code>&lt;C-l&gt;</code>'
+        tocToggle.innerHTML = '<code>&lt;zl&gt;</code>'
         tocToggle.setAttribute(
             'aria-label',
             collapsed
-                ? 'Expand right sidebar (Ctrl+L)'
-                : 'Collapse right sidebar (Ctrl+L)',
+                ? 'Expand right sidebar (zl)'
+                : 'Collapse right sidebar (zl)',
         )
     }
 
@@ -652,6 +689,16 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         localStorage.setItem('toc-collapsed', String(collapsed))
         setTocToggleLabel(collapsed)
     }
+
+    const getSidebarFocusTarget = () =>
+        document.querySelector(
+            '#sidebar a.active, #sidebar details summary, #sidebar a[href]',
+        ) as HTMLElement | null
+
+    const getTocFocusTarget = () =>
+        document.querySelector(
+            '#toc-sidebar a.active, #toc-sidebar a[href]',
+        ) as HTMLElement | null
 
     const isElementVisible = (element: HTMLElement) => {
         if (element.hidden) return false
@@ -710,8 +757,76 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
     }
 
     if (sidebarContainer || tocContainer || navbar || mainContent) {
+        let pendingZAt = 0
+
         window.addEventListener('keydown', (e) => {
             if (isUserTyping()) return
+
+            const hasOpenDialog =
+                document.querySelector('dialog[open]') instanceof
+                HTMLDialogElement
+            if (hasOpenDialog) return
+
+            const isPlainKey =
+                !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey
+
+            if (isPlainKey) {
+                const now = Date.now()
+
+                if (e.key === 'z') {
+                    if (pendingZAt && now - pendingZAt <= 700) {
+                        pendingZAt = 0
+                        return
+                    }
+
+                    pendingZAt = now
+                    return
+                }
+
+                const hasPendingZChord =
+                    pendingZAt > 0 && now - pendingZAt <= 700
+                pendingZAt = 0
+
+                if (hasPendingZChord) {
+                    if (e.key === 'h') {
+                        e.preventDefault()
+                        setSidebarCollapsed(
+                            !sidebarContainer?.classList.contains('collapsed'),
+                        )
+                        return
+                    }
+
+                    if (e.key === 'l') {
+                        e.preventDefault()
+                        setTocCollapsed(
+                            !tocContainer?.classList.contains('collapsed'),
+                        )
+                        return
+                    }
+
+                    if (e.key === 'j') {
+                        e.preventDefault()
+
+                        const mainTarget = getMainFocusTarget()
+                        if (mainTarget instanceof HTMLElement) {
+                            vimFocusElement(mainTarget)
+                        }
+                        return
+                    }
+
+                    if (e.key === 'k') {
+                        e.preventDefault()
+
+                        const navbarTarget = getNavbarFocusTarget()
+                        if (navbarTarget instanceof HTMLElement) {
+                            vimFocusElement(navbarTarget)
+                        }
+                    }
+                    return
+                }
+            } else {
+                pendingZAt = 0
+            }
 
             if (!e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
 
@@ -719,14 +834,20 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
 
             if (key === 'h') {
                 e.preventDefault()
-                setSidebarCollapsed(
-                    !sidebarContainer?.classList.contains('collapsed'),
-                )
+                const sidebarTarget = getSidebarFocusTarget()
+                if (sidebarTarget instanceof HTMLElement) {
+                    vimFocusElement(sidebarTarget)
+                }
+                return
             }
 
             if (key === 'l') {
                 e.preventDefault()
-                setTocCollapsed(!tocContainer?.classList.contains('collapsed'))
+                const tocTarget = getTocFocusTarget()
+                if (tocTarget instanceof HTMLElement) {
+                    vimFocusElement(tocTarget)
+                }
+                return
             }
 
             if (key === 'j') {

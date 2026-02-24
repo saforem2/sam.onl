@@ -50,8 +50,10 @@ const themeOptions = {
             <section class="command-section" box-="round">
                 <span is-="badge" variant-="background0">Site Info</span>
                 <p>
-                    WebTUI docs and showcase for the terminal-inspired CSS
-                    library.
+                    sam.onl is a terminal-style knowledge base and notes hub,
+                    built with Astro + WebTUI. Use the keybinds below to move
+                    between navbar, content, and sidebars, then customize the
+                    look with the theme picker.
                 </p>
             </section>
             <section class="command-section" box-="round">
@@ -67,13 +69,72 @@ const themeOptions = {
             </section>
             <section class="command-section" box-="round">
                 <span is-="badge" variant-="background0">Keybinds</span>
-                <div class="keybind-grid" role="list">
-                    <code role="listitem">&#x2303;K</code>
-                    <span>Command palette</span>
-                    <code role="listitem">/</code>
-                    <span>Search</span>
-                    <code role="listitem">?</code>
-                    <span>Show keybinds</span>
+                <div class="keybind-columns">
+                    <div class="keybind-group" box-="round">
+                        <span is-="badge" variant-="background1"
+                            >Navigation</span
+                        >
+                        <div class="keybind-grid" role="list">
+                            <code role="listitem">j / ↓</code>
+                            <span>Next item</span>
+                            <code role="listitem">k / ↑</code>
+                            <span>Previous item</span>
+                            <code role="listitem">g</code>
+                            <span>First item in region</span>
+                            <code role="listitem">G</code>
+                            <span>Last item in region</span>
+                            <code role="listitem">zz</code>
+                            <span>Center focused item</span>
+                            <code role="listitem">h / l</code>
+                            <span>Move left/right region</span>
+                        </div>
+                    </div>
+
+                    <div class="keybind-group" box-="round">
+                        <span is-="badge" variant-="background1">Layout</span>
+                        <div class="keybind-grid" role="list">
+                            <code role="listitem">&lt;zh&gt; / &lt;zl&gt;</code>
+                            <span>Toggle left/right sidebar</span>
+                            <code role="listitem">&lt;zj&gt; / &lt;zk&gt;</code>
+                            <span>Focus main/navbar</span>
+                            <code role="listitem">&lt;S-h/j/k/l&gt;</code>
+                            <span>Focus left/main/navbar/right</span>
+                            <code role="listitem">&#x2303;H / &#x2303;L</code>
+                            <span>Focus left/right sidebar</span>
+                            <code role="listitem">&#x2303;J / &#x2303;K</code>
+                            <span>Focus main/navbar</span>
+                        </div>
+                    </div>
+
+                    <div class="keybind-group" box-="round">
+                        <span is-="badge" variant-="background1">Dialogs</span>
+                        <div class="keybind-grid" role="list">
+                            <code role="listitem">&#x2303;P / :</code>
+                            <span>Command palette</span>
+                            <code role="listitem">&#x2303;X</code>
+                            <span>Theme picker</span>
+                            <code role="listitem">/</code>
+                            <span>Search</span>
+                            <code role="listitem">?</code>
+                            <span>Show keybinds</span>
+                            <code role="listitem">Esc / &#x2303;C</code>
+                            <span>Close dialog</span>
+                        </div>
+                    </div>
+
+                    <div class="keybind-group" box-="round">
+                        <span is-="badge" variant-="background1">History</span>
+                        <div class="keybind-grid" role="list">
+                            <code role="listitem">&#x2303;N</code>
+                            <span>Next document</span>
+                            <code role="listitem">&#x2303;B</code>
+                            <span>Previous document</span>
+                            <code role="listitem">&#x2303;O</code>
+                            <span>History back</span>
+                            <code role="listitem">&#x2303;I</code>
+                            <span>History forward</span>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>
@@ -130,6 +191,12 @@ const themeOptions = {
                 >x</button
             >
         </row>
+        <row id="theme-meta" align-="between" gap-="1">
+            <span is-="badge" variant-="background1"
+                >Current: <span id="theme-current-value">Light</span></span
+            >
+            <span is-="badge" variant-="background1">j/k or ↑/↓ + Enter</span>
+        </row>
         <div id="theme-options">
             {
                 Object.entries(themeOptions).map(([key, value]) => (
@@ -160,6 +227,53 @@ const themeOptions = {
                 transparent
             );
         }
+    }
+
+    #command-dialog {
+        --dialog-offset-x: 1ch;
+        --dialog-offset-y: 1lh;
+        --dialog-max-width: calc(100vw - 2ch);
+        --dialog-max-height: calc(100vh - 2lh);
+    }
+
+    @media (min-width: 576px) {
+        #command-dialog {
+            --dialog-offset-x: 2ch;
+            --dialog-offset-y: 2lh;
+            --dialog-max-width: min(92vw, 80ch);
+            --dialog-max-height: min(88vh, 52lh);
+        }
+    }
+
+    @media (min-width: 768px) {
+        #command-dialog {
+            --dialog-max-width: min(90vw, 96ch);
+            --dialog-max-height: min(88vh, 60lh);
+        }
+    }
+
+    @media (min-width: 1024px) {
+        #command-dialog {
+            --dialog-max-width: min(88vw, 112ch);
+            --dialog-max-height: min(88vh, 64lh);
+        }
+    }
+
+    @media (min-width: 1280px) {
+        #command-dialog {
+            --dialog-max-width: min(86vw, 128ch);
+            --dialog-max-height: min(86vh, 68lh);
+        }
+    }
+
+    #search-dialog {
+        width: min(92vw, 112ch);
+        height: min(88vh, 58lh);
+    }
+
+    #theme-dialog {
+        width: min(86vw, 80ch);
+        height: min(82vh, 46lh);
     }
 
     #command-content,
@@ -193,6 +307,25 @@ const themeOptions = {
         column-gap: 1ch;
         row-gap: 0.25lh;
         align-items: baseline;
+    }
+
+    .keybind-columns {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1ch;
+    }
+
+    .keybind-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5lh;
+        padding: 1ch;
+    }
+
+    @media (min-width: 768px) {
+        .keybind-columns {
+            grid-template-columns: 1fr 1fr;
+        }
     }
 
     #command-theme-dropdown,
@@ -249,6 +382,10 @@ const themeOptions = {
         padding: 1ch;
     }
 
+    #theme-meta {
+        padding-inline: 1ch;
+    }
+
     .theme-option {
         display: flex;
         justify-content: flex-start;
@@ -256,6 +393,12 @@ const themeOptions = {
         /* background-color: oklch( */
         /*     from var(--background1) calc(l * var(--oklch-scale, 0.85)) c h / 1 */
         /* ); */
+    }
+
+    .theme-option:focus-visible {
+        outline: 1px solid var(--foreground0);
+        outline-offset: -1px;
+        background-color: var(--background2);
     }
 
     .theme-option[aria-selected='true'] {
@@ -286,7 +429,19 @@ const themeOptions = {
     const themeDialog = document.getElementById(
         'theme-dialog',
     ) as HTMLDialogElement
+    const themeCurrentValue = document.getElementById(
+        'theme-current-value',
+    ) as HTMLElement | null
     const focusableLinks = document.querySelectorAll('.search-result')
+    const themeLabels: Record<string, string> = {
+        light: 'Light',
+        dark: 'Dark',
+        catppuccin: 'Catppuccin',
+        nord: 'Nord',
+        gruvbox: 'Gruvbox',
+        'vitesse-dark': 'Vitesse',
+        everforest: 'Everforest',
+    }
 
     let activeLink: HTMLAnchorElement | null =
         (focusableLinks[0] as HTMLAnchorElement | null) ?? null
@@ -302,20 +457,59 @@ const themeOptions = {
         currentNode = treeWalker.nextNode()
     }
 
+    const isPrimaryModifier = (event: KeyboardEvent) =>
+        (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey
+
+    const updateThemeCurrentValue = () => {
+        if (!themeCurrentValue) return
+
+        const activeTheme =
+            document.documentElement.getAttribute('data-webtui-theme') ??
+            'light'
+        const label = themeLabels[activeTheme] ?? activeTheme
+        themeCurrentValue.textContent = label
+    }
+
+    const getThemeButtons = () =>
+        Array.from(
+            document.querySelectorAll(
+                '[data-theme-option]',
+            ) as NodeListOf<HTMLButtonElement>,
+        )
+
+    const focusThemeButton = (button: HTMLButtonElement | undefined) => {
+        if (!button) return
+        button.focus()
+        button.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+    }
+
+    const focusActiveThemeOption = () => {
+        const themeButtons = getThemeButtons()
+        const selectedThemeButton = themeButtons.find(
+            (button) => button.getAttribute('aria-selected') === 'true',
+        )
+        const target = selectedThemeButton ?? themeButtons[0]
+        focusThemeButton(target)
+    }
+
     window.addEventListener('keydown', (e) => {
         if (isUserTyping()) return
 
-        if (e.key === 'p' && e.ctrlKey) {
+        if ((e.key === 'p' && isPrimaryModifier(e)) || e.key === ':') {
             e.preventDefault()
             e.stopImmediatePropagation()
             commandDialog.showModal()
             return
         }
 
-        if (e.key === 'x' && e.ctrlKey) {
+        if (e.key === 'x' && isPrimaryModifier(e)) {
             e.preventDefault()
             e.stopImmediatePropagation()
             themeDialog.showModal()
+            requestAnimationFrame(() => {
+                updateThemeCurrentValue()
+                focusActiveThemeOption()
+            })
             return
         }
 
@@ -330,6 +524,64 @@ const themeOptions = {
             commandDialog.showModal()
         }
     })
+
+    themeDialog.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' || (e.key === 'c' && isPrimaryModifier(e))) {
+            e.preventDefault()
+            themeDialog.close()
+            return
+        }
+
+        const themeButtons = getThemeButtons()
+        if (themeButtons.length === 0) return
+
+        const activeElement = document.activeElement as HTMLElement | null
+        const currentIndex = themeButtons.findIndex(
+            (button) => button === activeElement,
+        )
+        const index = currentIndex === -1 ? 0 : currentIndex
+
+        if (e.key === 'j' || e.key === 'ArrowDown') {
+            e.preventDefault()
+            const nextIndex = (index + 1) % themeButtons.length
+            focusThemeButton(themeButtons[nextIndex])
+            return
+        }
+
+        if (e.key === 'k' || e.key === 'ArrowUp') {
+            e.preventDefault()
+            const prevIndex =
+                (index - 1 + themeButtons.length) % themeButtons.length
+            focusThemeButton(themeButtons[prevIndex])
+            return
+        }
+
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            themeButtons[index]?.click()
+        }
+    })
+
+    new MutationObserver(() => {
+        if (themeDialog.open) {
+            updateThemeCurrentValue()
+            requestAnimationFrame(() => {
+                focusActiveThemeOption()
+            })
+        }
+    }).observe(themeDialog, {
+        attributes: true,
+        attributeFilter: ['open'],
+    })
+
+    new MutationObserver(() => {
+        updateThemeCurrentValue()
+    }).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-webtui-theme'],
+    })
+
+    updateThemeCurrentValue()
 
     searchInput.addEventListener('input', () => {
         const value = searchInput.value.trim()
