@@ -226,8 +226,8 @@ const { pathname: urlPath } = Astro.url
         variant-="background1"
         aria-expanded="true"
         aria-controls="sidebar-container"
-        aria-label="Collapse left sidebar (zh)">
-        <code>&lt;zh&gt;</code>
+        aria-label="Collapse left sidebar ([ key)">
+        <code>&lt;[&gt;</code>
     </button>
     <div id="category-container">
         <div id="category-list">
@@ -541,7 +541,7 @@ const { pathname: urlPath } = Astro.url
         }
 
         :is(a[href], summary, button:not([disabled]))::after {
-            content: '>';
+            content: '';
             position: absolute;
             inset-inline-start: -1ch;
             inset-block-start: 0;
@@ -565,11 +565,19 @@ const { pathname: urlPath } = Astro.url
             )[data-vim-focused='true']:focus {
             background-color: var(--focus-bg-strong);
             color: var(--focus-fg);
-            box-shadow:
-                inset var(--focus-rail-size) 0 0 0 var(--focus-marker),
-                inset 0 0 0 1px var(--focus-border);
-            outline: none;
+            border-left: 1px solid var(--accent);
             text-decoration: none;
+            /* box-shadow: */
+            /*     inset var(--focus-rail-size) 0 0 0 var(--focus-marker), */
+            /*     inset 0 0 0 1px var(--focus-border); */
+            /* outline: 1px solid var(--focus-border); */
+            /* background-color: var(--focus-bg-strong); */
+            /* color: var(--focus-fg); */
+            /* box-shadow: */
+            /*     inset var(--focus-rail-size) 0 0 0 var(--focus-marker), */
+            /*     inset 0 0 0 1px var(--focus-border); */
+            /* outline: none; */
+            /* text-decoration: none; */
         }
 
         :is(a[href], summary, button:not([disabled])):focus-visible::after,
@@ -661,13 +669,13 @@ const { pathname: urlPath } = Astro.url
         background-color: var(--background0);
     }
     ul > details > summary::marker {
-        content: '\eab6';
+        content: '\ \ ';
         /* margin-inline-start: -1ch; */
 
         &[open] {
             summary {
                 &::marker {
-                    content: '\eab4';
+                    content: '\ \ ';
                 }
             }
         }
@@ -727,7 +735,7 @@ const { pathname: urlPath } = Astro.url
             color: var(--foreground1);
             &::marker {
                 color: var(--foreground2);
-                content: '\eab6';
+                content: '>';
             }
 
             &:hover {
@@ -738,7 +746,7 @@ const { pathname: urlPath } = Astro.url
         &[open] {
             summary {
                 &::marker {
-                    content: '\eab4';
+                    content: 'v';
                 }
             }
         }
@@ -757,7 +765,7 @@ const { pathname: urlPath } = Astro.url
             font-weight: var(--font-weight-bold);
             &::marker {
                 color: var(--foreground2);
-                content: '\eab6';
+                content: '\ ';
             }
 
             &:hover {
@@ -768,7 +776,7 @@ const { pathname: urlPath } = Astro.url
         &[open] {
             summary {
                 &::marker {
-                    content: '\eab4';
+                    content: '\ ';
                 }
             }
         }

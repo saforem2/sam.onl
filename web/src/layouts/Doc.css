@@ -39,7 +39,9 @@ h6::before {
     justify-content: center;
     white-space: nowrap;
     box-sizing: border-box;
-    max-inline-size: calc(100% - 2ch);
+    max-inline-size: calc(100% - 0ch);
+    /* width: round(calc(100% - 2ch), 1ch); */
+
     top: 0;
     z-index: 3;
 }
@@ -100,21 +102,41 @@ h6::before {
 /*     font-size: 0.9em; */
 /* } */
 
-#sidebar-resizer {
+/* #sidebar-resizer { */
+/*     flex: 0 0 0.5ch; */
+/*     align-self: stretch; */
+/*     height: auto; */
+/*     cursor: col-resize; */
+/*     background: var(--background1); */
+/*     border-left: 1px solid var(--background2); */
+/*     border-right: 1px solid var(--background2); */
+/*     margin-block: 0.5lh; */
+/* } */
+/**/
+/* #sidebar-resizer:hover, */
+/* #sidebar-resizer.dragging { */
+/*     background: var(--background0); */
+/*     border-color: var(--foreground2); */
+/* } */
+
+#sidebar-resizer,
+#toc-resizer {
     flex: 0 0 0.5ch;
     align-self: stretch;
     height: auto;
     cursor: col-resize;
-    background: var(--background1);
-    border-left: 1px solid var(--background2);
-    border-right: 1px solid var(--background2);
     margin-block: 0.5lh;
 }
 
 #sidebar-resizer:hover,
-#sidebar-resizer.dragging {
+#sidebar-resizer.dragging,
+#toc-resizer:hover,
+#toc-resizer.dragging {
     background: var(--background0);
     border-color: var(--foreground2);
+    background: var(--accent);
+    border-left: 1px solid var(--accent);
+    border-right: 1px solid var(--accent);
 }
 
 #toc-container {
@@ -159,22 +181,22 @@ h6::before {
     font-size: 0.9em;
 }
 
-#toc-resizer {
-    flex: 0 0 0.5ch;
-    align-self: stretch;
-    height: auto;
-    cursor: col-resize;
-    background: var(--background1);
-    border-left: 1px solid var(--background2);
-    border-right: 1px solid var(--background2);
-    margin-block: 0.5lh;
-}
-
-#toc-resizer:hover,
-#toc-resizer.dragging {
-    background: var(--background0);
-    border-color: var(--foreground2);
-}
+/* #toc-resizer { */
+/*     flex: 0 0 0.5ch; */
+/*     align-self: stretch; */
+/*     height: auto; */
+/*     cursor: col-resize; */
+/*     background: var(--background1); */
+/*     border-left: 1px solid var(--background2); */
+/*     border-right: 1px solid var(--background2); */
+/*     margin-block: 0.5lh; */
+/* } */
+/**/
+/* #toc-resizer:hover, */
+/* #toc-resizer.dragging { */
+/*     background: var(--background0); */
+/*     border-color: var(--foreground2); */
+/* } */
 
 #toc-sidebar {
     /* margin-inline: 1ch; */
@@ -195,7 +217,7 @@ h6::before {
 #toc-list-container {
     position: absolute;
     inset: 0;
-    padding: 1lh 1ch 1lh;
+    padding: 1lh 1ch;
     overflow-y: auto;
     /* margin-inline: 1ch; */
 }
@@ -391,15 +413,20 @@ h6::before {
 #scroll-container {
     position: relative;
     flex-grow: 1;
+    overflow-y: auto;
+    height: auto;
 
     #main-content {
         position: absolute;
-        inset: 0;
+        inset: 1lh 1ch;
         display: flex;
         flex-direction: column;
-        gap: 1lh;
-        padding: 1lh 1ch;
-        overflow-y: auto;
+        gap: 1ch;
+        /* margin-block-end:  */
+        /* padding: 1lh 1ch; */
+        /* min-width: 0; */
+        /* overflow-x: hidden; */
+        /* overflow-y: visible; */
         color: var(--foreground1);
 
         strong {
@@ -459,29 +486,21 @@ h6::before {
             content: none;
         }
 
-        li
-            > :is(
-                [is-~='typography-block'],
-                blockquote,
-                details[is-~='accordion']
-            ) {
+        li > :where(* + *):not(ul):not(ol):not(code) {
             margin-inline-start: var(--li-text-offset, 0ch);
-            padding-inline-start: 0;
         }
 
         li > :is(pre, [is-~='pre']) {
-            margin-inline-start: var(--li-text-offset, 0ch);
             padding-block: 0;
-            padding-inline: 1ch;
         }
 
         ul li {
             --li-text-offset: 2ch;
-            text-indent: 2ch hanging;
+            /* text-indent: 2ch hanging; */
         }
         ol li {
             --li-text-offset: 3ch;
-            text-indent: 3ch hanging;
+            /* text-indent: 3ch hanging; */
         }
 
         :is(ul, ol) {
@@ -490,10 +509,6 @@ h6::before {
 
         li > :is(ul, ol) {
             margin-block: 0;
-        }
-
-        li > details[is-~='accordion'] {
-            margin-left: var(--li-text-offset, 0ch);
         }
 
         #doc-pagination {
@@ -519,6 +534,7 @@ article {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    overflow-y: auto;
 
     &:focus-within {
         --box-border-color: var(--focus-region-border);
@@ -575,52 +591,21 @@ article {
     }
 }
 
-/* Syntax Highlighting */
-pre.astro-code {
-    display: flex !important;
-    overflow: unset !important;
-    position: relative;
-    --code-line-number-gutter: 4ch;
-    padding-block: 1ch;
-    margin-block: 1ch;
-    padding-inline-start: 0;
-    padding-inline-end: 1ch;
-    /* background-color: var(--background1) !important; */
-
-    code {
-        text-indent: initial;
-        white-space: pre;
-        overflow: visible;
-        width: calc(100% - var(--code-line-number-gutter));
-        margin-inline-start: var(--code-line-number-gutter);
-        /* background-color: unset; */
-        padding-inline: 0ch;
-        padding-left: 0ch;
-        padding-right: 0ch;
-        margin-block: 0;
-    padding-block: 1ch;
-        /* Diff markers */
-        span.diff.add {
-            background-color: #a6e3a135;
-        }
-        span.diff.remove {
-            background-color: #f38ba845;
-        }
-    }
-}
-
 p:has(> img) {
-    display: flex;
-
-    max-width: 48ch;
-    max-height: 24lh;
-    width: 100%;
-
     img {
         object-fit: contain;
         max-width: 100%;
-        max-height: 100%;
-        width: auto;
         height: auto;
     }
+}
+
+img {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    object-fit: contain;
+    max-width: round(calc(100% - 2ch), 1ch);
+    padding: 1ch;
+    height: auto;
 }

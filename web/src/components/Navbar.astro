@@ -74,10 +74,14 @@ if (url.pathname === '/') {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+        gap: 1ch;
         padding: 1lh 2ch;
         container-type: inline-size;
         container-name: navbar;
         white-space: nowrap;
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
         z-index: 10;
 
         &:focus-within {
@@ -90,7 +94,8 @@ if (url.pathname === '/') {
         }
 
         :is(a[href], button:not([disabled]))::after {
-            content: '>';
+            /*   ┃ ⦚ 𜰊 ︳  */
+            content: '';
             position: absolute;
             inset-inline-start: -1ch;
             inset-block-start: 0;
@@ -110,10 +115,11 @@ if (url.pathname === '/') {
         :is(a[href], button:not([disabled]))[data-vim-focused='true']:focus {
             background-color: var(--focus-bg-strong);
             color: var(--focus-fg);
-            box-shadow:
-                inset var(--focus-rail-size) 0 0 0 var(--focus-marker),
-                inset 0 0 0 1px var(--focus-border);
-            outline: none;
+            /* box-shadow: */
+            /*     inset var(--focus-rail-size) 0 0 0 var(--focus-marker), */
+            /*     inset 0 0 0 1px var(--focus-border); */
+            /* outline: 1px solid var(--focus-border); */
+            border-left: 2px solid var(--accent);
             text-decoration: none;
         }
 
@@ -167,12 +173,30 @@ if (url.pathname === '/') {
         }
     }
 
+    nav > span {
+        flex: 0 0 auto;
+    }
+
     #links {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        flex: 1 1 auto;
         row-gap: 2ch;
         column-gap: 1lh;
         margin-inline-start: 1ch;
-        /* overflow-x: auto; */
-        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        width: auto;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: thin;
+        justify-content: flex-end;
+        align-content: center;
+
+        :is(a, button) {
+            flex: 0 0 auto;
+        }
 
         a {
             display: inline-flex;

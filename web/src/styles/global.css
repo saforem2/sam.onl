@@ -1,16 +1,47 @@
-@layer base, utils, components;
+/* @layer base, utils, components; */
 
+/* @import '@webtui/css/base.css'; */
+/* @import '@webtui/css/utils/box.css'; */
+/* @import '@webtui/css/components/button.css'; */
+/* @import '@webtui/css/components/typography.css'; */
+/* @import '@webtui/css/components/badge.css'; */
+/* @import '@webtui/css/components/input.css'; */
+/* @import '@webtui/css/components/textarea.css'; */
+/* @import '@webtui/css/components/popover.css'; */
+/* @import '@webtui/css/components/separator.css'; */
+/* @import '@webtui/css/components/pre.css'; */
+/* @import '@webtui/css/components/dialog.css'; */
+
+/* Contains all core base styles, utilities, and components */
+@layer base, utils, components;
 @import '@webtui/css/base.css';
 @import '@webtui/css/utils/box.css';
+
+/* Base Styles */
+/* @import '@/base.css'; */
+
+/* Utilities */
+/* @import '@/utils/box.css'; */
+
+/* Components */
 @import '@webtui/css/components/button.css';
-@import '@webtui/css/components/typography.css';
-@import '@webtui/css/components/badge.css';
+@import '@webtui/css//components/typography.css';
+@import '@webtui/css//components/badge.css';
 @import '@webtui/css/components/input.css';
 @import '@webtui/css/components/textarea.css';
 @import '@webtui/css/components/popover.css';
+@import '@webtui/css/components/checkbox.css';
 @import '@webtui/css/components/separator.css';
+@import '@webtui/css/components/radio.css';
 @import '@webtui/css/components/pre.css';
+@import '@webtui/css/components/tooltip.css';
+@import '@webtui/css/components/table.css';
+@import '@webtui/css/components/switch.css';
+@import '@webtui/css/components/range.css';
 @import '@webtui/css/components/dialog.css';
+@import '@webtui/css/components/spinner.css';
+@import '@webtui/css/components/progress.css';
+@import '@webtui/css/components/accordion.css';
 
 @import '@/styles/flexbox.css';
 @import '@/styles/padding.css';
@@ -25,87 +56,127 @@
 @import '@webtui/theme-everforest';
 
 @layer base {
-    /* :where(a, button, summary, [tabindex]:not([tabindex='-1'])):focus-visible { */
-    /*     outline: 2px solid var(--foreground0); */
-    /*     outline-offset: 2px; */
-    /*     background-color: var(--red); */
-    /*     text-decoration: underline; */
-    /* } */
-    /**/
-    /* #scroll-container { */
-    /*     & #main-content { */
-    /*         & > [tabindex='0'], */
-    /*         & > ul > li[tabindex='0'] { */
-    /*             &:focus { */
-    /*                 background-color: var(--background1); */
-    /*             } */
-    /*         } */
-    /*     } */
-    /* } */
-    /**/
-    ::highlight(vim) {
-        background-color: color-mix(
-            in oklch,
-            var(--background1) 60%,
-            transparent
-        );
-        color: var(--foreground0);
-    }
     strong {
         font-weight: 600;
         -moz-osx-font-smoothing: grayscale;
         -webkit-font-smoothing: antialiased;
     }
     :root {
-        /* --font-family: */
-        /*     'Iosevka Web', 'JetBrains Mono', 'Roboto Mono', 'Iosevka', */
-        /*     'Iosevka Web Font', 'Hack Nerd Font Mono', 'Julia Mono', */
-        /*     'JetBrains Mono', Menlo, Monaco, monospace, 'Symbols Nerd Font'; */
         --font-family:
             'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace,
             'Symbols Nerd Font';
-        --font-size: 17px;
-        --font-family-sans-serif:
-            'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace;
-        --font-family-monospace: 'Iosevka Web';
+        --font-size: 16px;
+        --font-family-sans-serif: var(--font-family);
+        --font-family-monospace: var(--font-family);
         font-family: var(--font-family);
         --box-border-color: var(--background1);
-        --focus-bg: var(--background1);
-        --focus-bg-strong: var(--background2);
-        --focus-hover-bg: var(--background1);
-        --focus-fg: var(--foreground0);
-        --focus-border: var(--foreground0);
-        --focus-marker: var(--foreground1, var(--green));
-        --focus-rail-size: 1pt;
+        --focus-bg: oklch(
+            from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
+                h / 0.1
+        );
+        --focus-bg-strong: oklch(
+            from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
+                h / 0.18
+        );
+        --focus-hover-bg: oklch(
+            from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
+                h / 0.1
+        );
+        --focus-fg: var(--accent, var(--red));
+        --focus-border: oklch(
+            from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
+                h / 0.05
+        );
+        --focus-marker: var(--accent, var(--red));
+        --focus-rail-size: 0pt;
         --focus-region-border: var(--foreground0);
-        /* --background0: #fff; */
-        /* --background1: #ddd; */
-        /* --background2: #bbb; */
-        /* --background3: #999; */
-        /**/
-        /* --foreground0: #000; */
-        /* --foreground1: #444; */
-        /* --foreground2: #888; */
-        /**/
-        /* --box-border-color: var(--foreground0); */
-        /* --table-border-color: var(--foreground0); */
-        /* --separator-color: var(--foreground0); */
+    }
+    ::highlight(vim) {
+        background-color: var(--foreground0);
+        color: var(--background0);
+    }
+    h1 {
+        color: oklch(from var(--h1, var(--red)) l c h);
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(
+                from var(--h1, var(--red)) calc(l * var(--oklch-scale, 0.85)) c
+                    h / 0.1
+            );
+        }
+    }
+    h1:hover,
+    h1:focus-visible {
+        text-decoration: none !important;
+        background-color: oklch(
+            from var(--h1, var(--red)) calc(l * var(--oklch-scale, 0.85)) c h /
+                0.1
+        );
+    }
+
+    h2 {
+        color: oklch(from var(--h2, var(--orange)) l c h);
+        margin-block: 1ch;
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(
+                from var(--h2, var(--orange)) calc(l * var(--oklch-scale, 0.85))
+                    c h / 0.1
+            ) !important;
+        }
+    }
+
+    h3 {
+        color: oklch(from var(--h3, var(--green)) l c h);
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(
+                from var(--h3, var(--green)) calc(l * 0.85) c h / 0.1
+            );
+        }
+    }
+    h4 {
+        color: oklch(from var(--h4, #50fa7b) l c h);
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(
+                from var(--h4, #50fa7b) calc(l * 0.85) c h / 0.1
+            );
+        }
+    }
+    h5 {
+        color: oklch(from var(--h5, #fd971f) l c h);
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(
+                from var(--h5, #fd971f) calc(l * 0.85) c h / 0.1
+            );
+        }
+    }
+    h6 {
+        color: oklch(from var(--h6, #f92672) l c h);
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(
+                from var(--h6, #f92672) calc(l * 0.85) c h / 0.1
+            );
+        }
     }
 
     body,
     html {
         width: auto;
         height: 100vh;
-        overflow-y: scroll;
+        /* overflow-y: scroll; */
         /* overflow-x: hidden; */
         display: flex;
         flex-direction: column;
+        line-height: var(--line-height);
         /* margin-inline: calc(2vw; */
         /* add a 1ch margin to the left and right of the body to prevent content from touching the edges of the viewport */
         /* margin: 0 1ch; */
-        line-height: var(--line-height, 1.227);
         font-variant-ligatures: common-ligatures;
-        margin: 0 1ch;
+        /* margin: 0 1ch; */
     }
 
     .flex-container {
@@ -204,10 +275,19 @@
     pre:not([size-]),
     [is-~='pre']:not([size-]) {
         background-color: transparent;
+        background-color: var(--code-bg);
+        overflow: visible !important;
+        padding: 1ch 1ch;
     }
 
     code {
         font-family: var(--font-family);
+        background-color: var(--code-bg);
+    }
+
+    .line {
+        width: auto;
+        display: -webkit-inline-block;
     }
 
     pre,
@@ -218,7 +298,7 @@
         line-height: var(--line-height);
     }
     .sidebar-tree-summary::marker {
-        content: '';
+        content: '';
     }
 
     body .fa-li {
@@ -259,6 +339,11 @@
 }
 
 @layer components {
+    pre:not([size-]),
+    [is-~='pre']:not([size-]) {
+        background-color: transparent !important;
+        background-image: none;
+    }
     button:not([size-]):not([box-]) {
         margin-inline: 1ch;
     }
@@ -422,7 +507,7 @@
     html {
         width: auto;
         height: 100vh;
-        overflow-y: scroll;
+        /* overflow-y: scroll; */
         /* display: flex; */
         /* flex-direction: column; */
         font-variant-ligatures: common-ligatures;
@@ -466,135 +551,36 @@ html[data-webtui-theme='dark'] .dark-content {
     display: revert !important;
 }
 
-p:has(> img) {
-    display: flow-root;
-
-    max-width: 100%;
-    max-height: 24lh;
-    width: auto;
-
-    overflow-x: scroll;
-    img {
-        object-fit: contain;
-        max-width: 100%;
-        max-height: 100%;
-        width: auto;
-        height: auto;
-    }
-}
-
 /* html[data-webtui-theme='light'] .astro-code, */
 /* html[data-webtui-theme='light'] .astro-code span { */
 /*     background-color: oklch(from var(--code-bg, #f8f8f8) l c h) !important; */
 /* } */
 
-html[data-webtui-theme='dark'] .astro-code code {
-    pre.astro-code {
-        display: flex !important;
-        overflow: unset !important;
-        position: relative;
-        background-color: var(--background2) !important;
-        padding-block: 0;
-        padding-inline: 1ch;
-
-        code {
-            background-color: var(--background1) !important;
-            text-indent: initial;
-            white-space: pre;
-            overflow-x: auto;
-            background-color: unset;
-            padding-inline: 0ch;
-            padding-left: 0ch;
-            padding-right: 0ch;
-            margin-block: 0;
-            /* Diff markers */
-            span.diff.add {
-                background-color: #a6e3a135;
-            }
-            span.diff.remove {
-                background-color: #f38ba845;
-            }
-        }
-    }
-}
-
 html[data-webtui-theme='dark'] .astro-code,
 html[data-webtui-theme='dark'] .astro-code span {
     --shiki-dark-bg: var(--background1) !important;
     color: var(--shiki-dark) !important;
-    /* background-color: var(--shiki-dark-bg) !important; */
-    background-color: var(--background1, var(--shiki-dark-bg, none)) !important;
-    /* background-color: oklch( */
-    /*     from var(--shiki-dark, var(--foreground0)) */
-    /*         calc(l * var(--oklch-scale, 1.15)) c h / 0.1 */
-    /* ) !important; */
+    background-color: var(--code-bg, var(--shiki-dark-bg, none)) !important;
     font-style: var(--shiki-dark-font-style) !important;
     font-weight: var(--shiki-dark-font-weight) !important;
     text-decoration: var(--shiki-dark-text-decoration) !important;
 }
 
 pre.astro-code {
-    --code-line-number-gutter: 4ch;
-    overflow-x: auto !important;
-    overflow-y: visible !important;
-    margin-block: 1ch;
+    /* width: 100%; */
+    /* max-width: 100%; */
+    padding: 0ch;
 }
 
-pre.astro-code code {
-    counter-reset: line;
+pre.astro-code > code {
     display: block;
-    white-space: pre;
-    margin-inline-start: var(--code-line-number-gutter);
-    overflow: visible;
-    border-left: 1pt solid var(--foreground2);
+    width: round(calc(100% - 0ch), 1ch);
+    padding: 1ch 1ch;
+    white-space: break-spaces;
+    word-break: break-word;
 }
 
-pre.astro-code code span.line {
-    display: inline-block;
-    min-width: 100%;
-    position: relative;
-    line-height: inherit;
-    margin: 0;
-    padding: 0;
-    background-color: transparent !important;
-}
-
-pre.astro-code code span.line::before {
-    counter-increment: line;
-    content: counter(line);
-    display: inline-block;
-    width: calc(var(--code-line-number-gutter) - 1ch);
-    margin-inline-start: calc(-1 * var(--code-line-number-gutter));
-    margin-inline-end: 1ch;
-    line-height: inherit;
-    text-align: right;
-    color: var(--foreground3);
-    background-color: transparent !important;
-    user-select: none;
-    /* border-right: 1px solid var(--foreground2); */
-    padding-right: 1ch;
-    opacity: 50%;
-}
-
-html[data-webtui-theme='catpuccin-*'] .astro-code,
-html[data-webtui-theme='catpuccin-*'] .astro-code span {
-    --shiki-catpuccin-*-bg: var(--crust) !important;
-    color: var(--shiki-catpuccin- *) !important;
-    /* background-color: var(--shiki-catpuccin-*-bg) !important; */
-    background-color: var(
-        --crust,
-        var(--shiki-catpuccin- * -bg, none)
-    ) !important;
-    font-style: var(--shiki-catpuccin- * -font-style) !important;
-    font-weight: var(--shiki-catpuccin- * -font-weight) !important;
-    text-decoration: var(--shiki-catpuccin- * -text-decoration) !important;
-}
-
-html[data-webtui-theme='catppuccin-*'] .astro-code code {
-    background-color: transparent !important;
-}
-
-html[data-webtui-theme='catppuccin-*'] {
+html[data-webtui-theme='catppuccin'] {
     --background0: var(--base);
     --background1: var(--surface0);
     --background2: var(--surface1);
@@ -603,64 +589,30 @@ html[data-webtui-theme='catppuccin-*'] {
     --foreground0: var(--text);
     --foreground1: var(--subtext1);
     --foreground2: var(--overlay2);
+}
 
-    /* Syntax Highlighting */
-    pre.astro-code {
-        display: flex !important;
-        overflow: unset !important;
-        position: relative;
-        background-color: var(--mantle) !important;
-        padding-block: 0;
-        padding-inline: 1ch;
+p:has(> img) {
+    /* display: flow-root; */
 
-        code {
-            text-indent: initial;
-            white-space: pre;
-            overflow-x: auto;
-            background-color: unset;
-            padding-inline: 0ch;
-            padding-left: 0ch;
-            padding-right: 0ch;
-            margin-block: 0;
-            /* Diff markers */
-            span.diff.add {
-                background-color: #a6e3a135;
-            }
-            span.diff.remove {
-                background-color: #f38ba845;
-            }
-        }
+    max-width: 100%;
+    height: auto;
+    /* max-height: 24lh; */
+    /* width: auto; */
+
+    overflow-x: scroll;
+    img {
+        object-fit: contain;
+        max-width: 100%;
+        height: auto;
     }
 }
 
-html[data-webtui-theme] pre.astro-code {
-    background-color: transparent !important;
-    padding-inline-start: 0 !important;
-    padding-inline-end: 1ch !important;
+html[data-webtui-theme='catppuccin'] {
+    --background0: var(--base);
+    --background1: var(--surface0);
+    --background2: var(--surface1);
+    --background3: var(--surface2);
+    --foreground0: var(--text);
+    --foreground1: var(--subtext1);
+    --foreground2: var(--overlay2);
 }
-
-html[data-webtui-theme] pre.astro-code code {
-    background-color: var(
-        --background1,
-        var(--shiki-dark-bg, var(--code-bg, transparent))
-    ) !important;
-}
-
-html[data-webtui-theme] pre.astro-code code span.line,
-html[data-webtui-theme] pre.astro-code code span.line::before {
-    background: transparent !important;
-    background-color: transparent !important;
-}
-
-/* strong { */
-/*     color: var(--foreground0); */
-/*     -moz-osx-font-smoothing: grayscale; */
-/*     -webkit-font-smoothing: subpixel-antialiased; */
-/* } */
-
-/* pre.astro-code { */
-/*     background-color: transparent !important; */
-/* } */
-/* icon { */
-/*   max-height: 1.5ch; */
-/* } */

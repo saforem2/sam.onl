@@ -178,8 +178,8 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                     variant-="background1"
                                     aria-expanded="true"
                                     aria-controls="toc-container"
-                                    aria-label="Collapse right sidebar (zl)">
-                                    <code>&lt;zl&gt;</code>
+                                    aria-label="Collapse right sidebar (] key)">
+                                    <code>&lt;]&gt;</code>
                                 </button>
                                 <div id="toc-list-container">
                                     <ul id="toc-list">
@@ -651,24 +651,24 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
     const setSidebarToggleLabel = (collapsed: boolean) => {
         if (!sidebarToggle) return
 
-        sidebarToggle.innerHTML = '<code>&lt;zh&gt;</code>'
+        sidebarToggle.innerHTML = '<code>&lt;[&gt;</code>'
         sidebarToggle.setAttribute(
             'aria-label',
             collapsed
-                ? 'Expand left sidebar (zh)'
-                : 'Collapse left sidebar (zh)',
+                ? 'Expand left sidebar ([ key)'
+                : 'Collapse left sidebar ([ key)',
         )
     }
 
     const setTocToggleLabel = (collapsed: boolean) => {
         if (!tocToggle) return
 
-        tocToggle.innerHTML = '<code>&lt;zl&gt;</code>'
+        tocToggle.innerHTML = '<code>&lt;]&gt;</code>'
         tocToggle.setAttribute(
             'aria-label',
             collapsed
-                ? 'Expand right sidebar (zl)'
-                : 'Collapse right sidebar (zl)',
+                ? 'Expand right sidebar (] key)'
+                : 'Collapse right sidebar (] key)',
         )
     }
 
@@ -780,6 +780,24 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                     }
 
                     pendingZAt = now
+                    return
+                }
+
+                if (e.key === '[') {
+                    pendingZAt = 0
+                    e.preventDefault()
+                    setSidebarCollapsed(
+                        !sidebarContainer?.classList.contains('collapsed'),
+                    )
+                    return
+                }
+
+                if (e.key === ']') {
+                    pendingZAt = 0
+                    e.preventDefault()
+                    setTocCollapsed(
+                        !tocContainer?.classList.contains('collapsed'),
+                    )
                     return
                 }
 
