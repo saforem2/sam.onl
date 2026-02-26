@@ -72,7 +72,7 @@ Add the `is:global` modifier to the `<style>` tag if you intend to import a CSS 
 
 ### Full Library Import
 
-Modify `astro.config.mjs` and enable `noExternal` for `@webtui/css` if you intend to import the [Full Library](/start/installation#full-library-import) [[docs](https://docs.astro.build/en/guides/styling/#import-a-stylesheet-from-an-npm-package)]
+Modify `astro.config.mjs` and enable `noExternal` for `@webtui/css` if you intend to import the [Full Library](/webtui/start/installation#full-library-import) [[docs](https://docs.astro.build/en/guides/styling/#import-a-stylesheet-from-an-npm-package)]
 
 ```js
 import { defineConfig } from 'astro/config'

@@ -46,9 +46,15 @@ const { showHL = false } = Astro.props as Props
 </style>
 
 <script>
-    import { isUserTyping } from '@/utils/vim'
+    import {
+        isUserTyping,
+        applyVimNavigation,
+        vimFocusElement,
+    } from '@/utils/vim'
 
     const content = document.querySelector('main') as HTMLElement
+    const vimQuery =
+        '[tabindex="0"], a[href], summary, button:not(#btn-j):not(#btn-k):not(#btn-h):not(#btn-l):not(#btn-slash)'
     const buttonH = document.querySelector('#btn-h') as HTMLButtonElement
     const buttonJ = document.querySelector('#btn-j') as HTMLButtonElement
     const buttonK = document.querySelector('#btn-k') as HTMLButtonElement
@@ -57,10 +63,65 @@ const { showHL = false } = Astro.props as Props
         '#btn-slash',
     ) as HTMLButtonElement
 
-    buttonJ.addEventListener('click', () => content?.scrollBy(0, 1))
-    buttonK.addEventListener('click', () => content?.scrollBy(0, -1))
+    // Apply vim-style j/k navigation to cycle through focusable links in main.
+    // Skip when Doc.astro manages the page (it applies its own handler with
+    // a richer query that includes [tabindex="0"] content elements).
+    if (content && !content.id) {
+        applyVimNavigation(content, vimQuery)
+    }
+
+    // Bootstrap: when j/k is pressed and focus is outside <main>,
+    // focus the first visible tabbable element inside <main> so
+    // the container-scoped applyVimNavigation can take over.
+    // Skip when Doc.astro manages the page (it has its own bootstrap).
+    const isDocManaged = content?.id === 'main-content'
+    if (!isDocManaged) {
+        window.addEventListener('keydown', (e) => {
+            if (e.defaultPrevented || isUserTyping()) return
+            if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
+            if (
+                e.key !== 'j' &&
+                e.key !== 'k' &&
+                e.key !== 'ArrowDown' &&
+                e.key !== 'ArrowUp'
+            )
+                return
+            if (!content) return
+
+            const active = document.activeElement
+            if (active && content.contains(active)) {
+                // Focus is already inside <main>; let applyVimNavigation handle it
+                // UNLESS the active element is not in the query set (e.g. header
+                // with tabindex="-1"), in which case the container handler will
+                // handle it via the activeIndex === -1 path. We still need to
+                // make sure the event reaches <main>. If activeElement is inside
+                // <main>, the event WILL bubble there, so nothing to do.
+                return
+            }
+
+            // Focus is outside <main> (body, nav button, etc.)
+            // Find the first visible tabbable element in the current viewport
+            const elements = Array.from(
+                content.querySelectorAll(vimQuery) as NodeListOf<HTMLElement>,
+            ).filter((el) => {
+                const rect = el.getBoundingClientRect()
+                return (
+                    rect.width > 0 &&
+                    rect.height > 0 &&
+                    rect.bottom > 0 &&
+                    rect.top < window.innerHeight
+                )
+            })
+
+            const target = elements[0]
+            if (target) {
+                e.preventDefault()
+                vimFocusElement(target)
+            }
+        })
+    }
+
     buttonSlash.addEventListener('click', () => {
-        // Execute / key press
         content?.dispatchEvent(
             new KeyboardEvent('keydown', {
                 key: '/',
@@ -70,13 +131,14 @@ const { showHL = false } = Astro.props as Props
         )
     })
 
+    // Visual feedback on keydown
     window.addEventListener('keydown', (event) => {
         if (isUserTyping()) return
 
         if (event.key === 'h' || event.key === 'ArrowLeft') {
-            buttonH.setAttribute('variant-', 'foreground1')
+            buttonH?.setAttribute('variant-', 'foreground1')
         } else if (event.key === 'l' || event.key === 'ArrowRight') {
-            buttonL.setAttribute('variant-', 'foreground1')
+            buttonL?.setAttribute('variant-', 'foreground1')
         } else if (event.key === 'j' || event.key === 'ArrowDown') {
             buttonJ.setAttribute('variant-', 'foreground1')
         } else if (event.key === 'k' || event.key === 'ArrowUp') {
@@ -84,21 +146,20 @@ const { showHL = false } = Astro.props as Props
         }
     })
 
+    // Reset visual feedback on keyup (j/k handled by applyVimNavigation)
     window.addEventListener('keyup', (event) => {
         if (isUserTyping()) return
 
         if (event.key === 'h' || event.key === 'ArrowLeft') {
-            buttonH.setAttribute('variant-', 'background2')
-            buttonH.click()
+            buttonH?.setAttribute('variant-', 'background2')
+            buttonH?.click()
         } else if (event.key === 'l' || event.key === 'ArrowRight') {
-            buttonL.setAttribute('variant-', 'background2')
-            buttonL.click()
+            buttonL?.setAttribute('variant-', 'background2')
+            buttonL?.click()
         } else if (event.key === 'j' || event.key === 'ArrowDown') {
             buttonJ.setAttribute('variant-', 'background2')
-            buttonJ.click()
         } else if (event.key === 'k' || event.key === 'ArrowUp') {
             buttonK.setAttribute('variant-', 'background2')
-            buttonK.click()
         }
     })
 </script>

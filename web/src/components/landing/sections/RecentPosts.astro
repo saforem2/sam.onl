@@ -1,0 +1,115 @@
+---
+import { getCollection } from 'astro:content'
+
+const docs = await getCollection('docs')
+const posts = docs
+    .filter((doc) => doc.id.startsWith('posts/'))
+    .filter((doc) => !doc.data.draft)
+    .filter((doc) => doc.data.date)
+    .sort((a, b) => {
+        const da = a.data.date ? new Date(a.data.date).getTime() : 0
+        const db = b.data.date ? new Date(b.data.date).getTime() : 0
+        return db - da
+    })
+    .slice(0, 6)
+
+function formatDate(date: Date): string {
+    return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    }).format(date)
+}
+---
+
+<section id="recent-posts">
+    <column class="content" align-="center">
+        <h2 is-="badge" variant-="green">&#xf0219; Recent Posts</h2>
+        <p>Latest writing and notes</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {
+                    posts.map((post) => (
+                        <tr>
+                            <td>
+                                <a href={`/${post.id}`}>{post.data.title}</a>
+                                {post.data.description && (
+                                    <span class="post-desc">
+                                        {post.data.description}
+                                    </span>
+                                )}
+                            </td>
+                            <td class="post-date">
+                                {post.data.date
+                                    ? formatDate(new Date(post.data.date))
+                                    : ''}
+                            </td>
+                        </tr>
+                    ))
+                }
+            </tbody>
+        </table>
+        <row>
+            <a href="/posts" is-="badge" variant-="background1">
+                View all posts &#x2192;
+            </a>
+        </row>
+    </column>
+
+    <style>
+        #recent-posts {
+            background-color: var(--background0);
+            align-items: center;
+            justify-content: center;
+            padding: 1lh 2ch;
+
+            .content {
+                max-width: 80ch;
+                width: round(calc(100% - 2ch), 1ch);
+                gap: 0.5lh;
+            }
+
+            table {
+                width: 100%;
+            }
+
+            td a {
+                color: var(--foreground0);
+                text-decoration: none;
+                font-weight: 600;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+
+            .post-desc {
+                display: block;
+                color: var(--foreground2);
+                margin-top: 0.5lh;
+            }
+
+            .post-date {
+                color: var(--foreground2);
+                white-space: nowrap;
+                text-align: right;
+                vertical-align: top;
+            }
+
+            a[is-='badge'] {
+                text-decoration: none;
+                color: var(--foreground1);
+
+                &:hover {
+                    color: var(--foreground0);
+                }
+            }
+        }
+    </style>
+</section>

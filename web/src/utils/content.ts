@@ -51,7 +51,7 @@ export const categoryLabels: Record<(typeof categoryOrder)[number], string> = {
     // landing: '  Landing',
     // landing: '󱠡  Hello!',
     // landing: '󱠡  Hello!',
-    landing: '  About',
+    landing: '  Landing',
     posts: '  Posts',
     talks: '󰐨  Talks',
     projects: '  Projects',

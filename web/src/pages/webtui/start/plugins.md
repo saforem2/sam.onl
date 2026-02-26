@@ -8,15 +8,15 @@ Plugins are external stylesheets that are designed to work alongside `@webtui/cs
 
 ## Official Plugins
 
-- [Nerd Font Plugin](/plugins/plugin-nf)
+- [Nerd Font Plugin](/webtui/plugins/plugin-nf)
 
 ### Themes
 
-- [Catppuccin Theme](/plugins/theme-catppuccin)
-- [Nord Theme](/plugins/theme-nord)
-- [Gruvbox Theme](/plugins/theme-gruvbox)
-- [Vitesse Theme](/plugins/theme-vitesse)
-  [Everforest Theme](/plugins/theme-everforest)
+- [Catppuccin Theme](/webtui/plugins/theme-catppuccin)
+- [Nord Theme](/webtui/plugins/theme-nord)
+- [Gruvbox Theme](/webtui/plugins/theme-gruvbox)
+- [Vitesse Theme](/webtui/plugins/theme-vitesse)
+- [Everforest Theme](/webtui/plugins/theme-everforest)
 
 ## Community Plugins
 

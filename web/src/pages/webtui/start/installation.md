@@ -6,7 +6,7 @@ order: 3
 
 This guide covers how to install WebTUI with CSS, ESM, and CDN imports
 
-For framework-specific guides, check out the [Installation](/installation/nextjs) section
+For framework-specific guides, check out the [Installation](/webtui/installation/nextjs) section
 
 ## Installation
 

@@ -165,6 +165,7 @@ const rehypeMarkdownTabIndex = () => {
 
 // https://astro.build/config
 export default defineConfig({
+    site: 'https://samforeman.me',
     compressHTML: false,
     markdown: {
         remarkPlugins: [remarkMath],

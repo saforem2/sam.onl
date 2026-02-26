@@ -515,7 +515,8 @@ const { pathname: urlPath } = Astro.url
         flex-direction: column;
         overflow: hidden;
         flex-grow: 1;
-        line-height: 1.5;
+        padding-inline: 1ch;
+        /* line-height: 1.5; */
         /* line-height: var(--line-height, 1.227); */
 
         #sidebar-toggle {
@@ -643,11 +644,16 @@ const { pathname: urlPath } = Astro.url
         display: grid;
         grid-template-columns: 2ch minmax(0, 1fr);
         align-items: start;
+        margin-inline-start: 2ch;
+        /* margin-block-end: 1ch; */
     }
 
+    #sidebar ul[marker-~='tree'] ul > li {
+        margin-inline-start: 0ch !important;
+    }
     #sidebar ul[marker-~='tree'] > li::before {
         grid-column: 1;
-        content: '- ';
+        content: '~';
         color: var(--foreground2);
     }
 
@@ -663,19 +669,19 @@ const { pathname: urlPath } = Astro.url
     ul > details > summary {
         color: var(--foreground2);
         font-weight: var(--font-weight-normal);
-        display: list-item;
+        /* display: list-item; */
         /* margin-block-start: 1ch; */
         color: var(--foreground1);
         background-color: var(--background0);
     }
     ul > details > summary::marker {
-        content: '\ \ ';
+        content: '\ ';
         /* margin-inline-start: -1ch; */
 
         &[open] {
             summary {
                 &::marker {
-                    content: '\ \ ';
+                    content: '\ ';
                 }
             }
         }
@@ -684,7 +690,7 @@ const { pathname: urlPath } = Astro.url
     #category-list > a.sidebar-direct-link {
         color: var(--foreground1);
         text-decoration: none;
-        margin-inline-start: 1ch;
+        /* margin-inline-start: 1ch; */
         outline: none;
         display: block;
         /* margin-inline-start: 1ch; */
@@ -702,8 +708,8 @@ const { pathname: urlPath } = Astro.url
     }
 
     #category-list > a.sidebar-direct-link::before {
-        content: ' ';
-        margin-inline: 1ch;
+        content: '';
+        padding-inline: 1ch;
     }
 
     ul > details > summary {
@@ -719,13 +725,16 @@ const { pathname: urlPath } = Astro.url
     /* } */
 
     ul ul {
-        padding-left: 2ch;
+        padding-left: 1ch;
         margin: 0;
     }
 
     details.sidebar-year {
         margin: 0;
     }
+    /* ul > details > summary::marker { */
+    /*   content: '+'; */
+    /* } */
 
     details {
         /* margin-block-end: 1lh; */
@@ -735,7 +744,7 @@ const { pathname: urlPath } = Astro.url
             color: var(--foreground1);
             &::marker {
                 color: var(--foreground2);
-                content: '>';
+                content: '+';
             }
 
             &:hover {
@@ -746,7 +755,7 @@ const { pathname: urlPath } = Astro.url
         &[open] {
             summary {
                 &::marker {
-                    content: 'v';
+                    content: '-';
                 }
             }
         }
@@ -765,7 +774,6 @@ const { pathname: urlPath } = Astro.url
             font-weight: var(--font-weight-bold);
             &::marker {
                 color: var(--foreground2);
-                content: '\ ';
             }
 
             &:hover {
@@ -776,7 +784,6 @@ const { pathname: urlPath } = Astro.url
         &[open] {
             summary {
                 &::marker {
-                    content: '\ ';
                 }
             }
         }

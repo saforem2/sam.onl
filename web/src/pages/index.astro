@@ -1,25 +1,43 @@
 ---
 import Layout from '@/layouts/Layout.astro'
 import Intro from '@/components/landing/sections/Intro.astro'
+import RecentPosts from '@/components/landing/sections/RecentPosts.astro'
+import RecentTalks from '@/components/landing/sections/RecentTalks.astro'
 import VimNavigation from '@/components/landing/VimNavigation.astro'
-// import FeaturePureCss from '@/components/landing/sections/FeaturePureCss.astro'
-// import FeatureSemantic from '@/components/landing/sections/FeatureSemantic.astro'
-// import FeatureThemes from '@/components/landing/sections/FeatureThemes.astro'
-// import Gallery from '@/components/landing/sections/Gallery.astro'
-// import Sponsors from '@/components/landing/sections/Sponsors.astro'
-// import Cta from '@/components/landing/sections/Cta.astro'
 ---
 
 <Layout>
-    <main>
+    <main data-landing>
         <Intro />
-        <!-- <FeatureSemantic /> -->
-        <!-- <FeaturePureCss /> -->
-        <!-- <FeatureThemes /> -->
-        <!-- <Gallery /> -->
-        <!-- <Sponsors /> -->
-        <!-- <Cta /> -->
+        <RecentPosts />
+        <RecentTalks />
     </main>
+    <column id="statusline">
+        <row>
+            <span
+                is-="badge"
+                variant-="blue"
+                style="--badge-text: var(--accent)">NORMAL</span
+            >
+            <span
+                is-="badge"
+                variant-="background1"
+                style="--badge-text: var(--blue)">&#xe725; main</span
+            >
+            <row self-="grow">
+                <span is-="badge" variant-="background0">sam.onl</span>
+            </row>
+            <row id="statusline-right">
+                <span is-="badge" variant-="background0">utf-8</span>
+                <span is-="badge" variant-="background1">Top</span>
+                <span
+                    is-="badge"
+                    variant-="blue"
+                    style="--badge-text: var(--accent)">1:1</span
+                >
+            </row>
+        </row>
+    </column>
     <div id="vim-navigation-container">
         <VimNavigation />
     </div>
@@ -32,19 +50,34 @@ import VimNavigation from '@/components/landing/VimNavigation.astro'
         right: 2ch;
     }
 
-    @layer base {
-        :root {
-            --font-size: 20px;
-        }
+    #statusline {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2lh;
+        z-index: 100;
+        background-color: var(--background1);
+        /* box-shadow: 0 -1lh 0 0 var(--background1); */
+    }
 
-        @media (max-width: 100ch) {
-            :root {
-                --font-size: 18px;
-            }
+    #statusline [is-~='badge'][variant-='background0'] {
+        --badge-color: var(--mantle);
+        --badge-text: var(--foreground1);
+    }
+
+    #statusline [is-~='badge'][variant-='background1'] {
+        --badge-color: var(--crust);
+        --badge-text: var(--foreground0);
+    }
+
+    @media (max-width: 50ch) {
+        #statusline-right {
+            display: none;
         }
     }
 
-    main {
+    main[data-landing] {
         height: 100vh;
         scroll-snap-type: y mandatory;
         display: flex;
@@ -53,17 +86,18 @@ import VimNavigation from '@/components/landing/VimNavigation.astro'
         overflow-x: hidden;
         scrollbar-width: thin;
         scrollbar-color: var(--foreground1) var(--background2);
+        padding-bottom: 2lh;
     }
 
-    section,
-    header {
-        min-height: 100vh;
+    main[data-landing] section,
+    main[data-landing] header {
         scroll-snap-align: start;
         display: flex;
         flex-direction: column;
+        min-height: 100vh;
     }
 
-    section .content {
+    main[data-landing] section .content {
         max-width: 80ch;
         width: round(calc(100% - 2ch), 1ch);
         row-gap: 2ch;
@@ -71,7 +105,7 @@ import VimNavigation from '@/components/landing/VimNavigation.astro'
     }
 
     @media (max-width: 1000px) {
-        section .content {
+        main[data-landing] section .content {
             flex-direction: column-reverse;
         }
     }

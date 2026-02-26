@@ -13,10 +13,22 @@ import Widgets from '../widgets/Widgets.astro'
             </h1>
             <column>
                 <p>
-                    Currently: training large models on supercomputers at
-                    <a href="https://www.anl.gov/alcf" target="_blank"
+                    I'm a Computational Scientist in the
+                    <a
+                        href="https://www.alcf.anl.gov/about/people/group/506"
+                        target="_blank">AI / ML Group</a
+                    > at the
+                    <a href="https://www.alcf.anl.gov/" target="_blank"
                         >Argonne Leadership Computing Facility</a
-                    >.<br />
+                    >.
+                </p>
+                <p>
+                    My work focuses on large-scale distributed training of
+                    foundation models for scientific applications. I co-lead the
+                    Models &amp; Pre-Training team for the
+                    <a href="https://auroragpt.anl.gov" target="_blank"
+                        >AuroraGPT</a
+                    > project.
                 </p>
                 <div is-="separator"></div>
                 <row gap-="1">
@@ -31,32 +43,6 @@ import Widgets from '../widgets/Widgets.astro'
             </column>
         </column>
     </column>
-    <column id="statusline">
-        <row>
-            <span
-                is-="badge"
-                variant-="blue"
-                style="--badge-text: var(--background0)">NORMAL</span
-            >
-            <span
-                is-="badge"
-                variant-="background1"
-                style="--badge-text: var(--blue)">&#xe725; main</span
-            >
-            <row self-="grow">
-                <span is-="badge" variant-="background0">sam.onl</span>
-            </row>
-            <row id="statusline-right">
-                <span is-="badge" variant-="background0">utf-8</span>
-                <span is-="badge" variant-="background1">Top</span>
-                <span
-                    is-="badge"
-                    variant-="blue"
-                    style="--badge-text: var(--background0)">1:1</span
-                >
-            </row>
-        </row>
-    </column>
 
     <style>
         #intro {
@@ -68,6 +54,15 @@ import Widgets from '../widgets/Widgets.astro'
             align-items: center;
             justify-content: center;
 
+            h1::before {
+                content: '';
+                margin-inline-start: -1ch;
+            }
+            h2::before {
+                content: '';
+                margin-inline-start: -1ch;
+            }
+
             #content {
                 position: absolute;
                 background-color: var(--background1);
@@ -76,7 +71,7 @@ import Widgets from '../widgets/Widgets.astro'
                 width: round(calc(100% - 2ch), 1ch);
 
                 nav {
-                    padding: 1ch;
+                    padding: 2ch 1ch;
                     /* overflow-x: auto; */
                 }
 
@@ -104,25 +99,12 @@ import Widgets from '../widgets/Widgets.astro'
             }
         }
 
-        #statusline {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 2lh;
-            background-color: var(--background0);
-            box-shadow: 0 -1lh 0 0 var(--mantle);
-        }
-
         @media (max-width: 50ch) {
             #container {
                 #content,
                 #main {
                     padding: 1lh 1ch;
                 }
-            }
-
-            #statusline-right {
-                display: none;
             }
         }
 

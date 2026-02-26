@@ -112,7 +112,20 @@ export function vimFocusElement(element: HTMLElement) {
         setVimFocusedElement(element)
     }
 
-    element.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+    // Temporarily disable scroll-snap so scrollIntoView doesn't fight
+    // with mandatory snap points
+    const scrollContainer = element.closest('main')
+    if (scrollContainer) {
+        scrollContainer.style.scrollSnapType = 'none'
+        element.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+        // Re-enable snap after the browser has finished the scroll
+        requestAnimationFrame(() => {
+            scrollContainer.style.scrollSnapType = ''
+        })
+    } else {
+        element.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+    }
+
     applyVimCursorHighlight(element)
 }
 
@@ -157,7 +170,9 @@ export function applyVimNavigation(
         ).filter(isElementVisible)
 
         for (const el of vimTabbableElements) {
-            el.onfocus = () => {
+            el.onfocus = (e: FocusEvent) => {
+                // Only handle direct focus, not bubbled focus from children
+                if (e.target !== el) return
                 vimFocusElement(el)
                 onElementFocus?.(el)
             }
@@ -171,6 +186,12 @@ export function applyVimNavigation(
         startIndex: number,
         direction: 1 | -1,
     ) => {
+        // Disable scroll-snap before focusing to prevent mandatory snap
+        // from fighting with the focus scroll
+        const scrollContainer = element.closest('main') ?? element
+        const prevSnap = scrollContainer.style.scrollSnapType
+        scrollContainer.style.scrollSnapType = 'none'
+
         for (
             let index = startIndex;
             index >= 0 && index < elements.length;
@@ -180,11 +201,39 @@ export function applyVimNavigation(
             candidate.focus()
 
             if (document.activeElement === candidate) {
+                candidate.scrollIntoView({
+                    block: 'nearest',
+                    inline: 'nearest',
+                })
+                requestAnimationFrame(() => {
+                    scrollContainer.style.scrollSnapType = prevSnap
+                })
                 return candidate
             }
         }
 
+        scrollContainer.style.scrollSnapType = prevSnap
         return null
+    }
+
+    // Find the index of the first element that is within (or nearest after)
+    // the current viewport, so j/k start from the visible region rather
+    // than from DOM index 0.
+    const findFirstViewportIndex = (elements: HTMLElement[]) => {
+        for (let i = 0; i < elements.length; i++) {
+            const rect = elements[i].getBoundingClientRect()
+
+            if (
+                rect.width > 0 &&
+                rect.height > 0 &&
+                rect.bottom > 0 &&
+                rect.top < window.innerHeight
+            ) {
+                return i
+            }
+        }
+
+        return 0
     }
 
     reattachTabbableElements()
@@ -209,9 +258,13 @@ export function applyVimNavigation(
                 now - lastZKeyAt <= 600
             ) {
                 e.preventDefault()
+                element.style.scrollSnapType = 'none'
                 activeElement.scrollIntoView({
                     block: 'center',
                     inline: 'nearest',
+                })
+                requestAnimationFrame(() => {
+                    element.style.scrollSnapType = ''
                 })
                 lastZKeyAt = 0
                 return
@@ -243,10 +296,20 @@ export function applyVimNavigation(
         if (activeIndex === -1) {
             e.preventDefault()
 
-            if (isPrevKey || isLastKey) {
-                focusFromIndex(activeElements, activeElements.length - 1, -1)
-            } else {
+            // Start from the first element visible in the viewport,
+            // mirroring how Tab / Shift-Tab begin from the current
+            // scroll position rather than from the DOM boundary.
+            const viewportIndex = findFirstViewportIndex(activeElements)
+
+            if (isNextKey) {
+                focusFromIndex(activeElements, viewportIndex, 1)
+            } else if (isPrevKey) {
+                // k mirrors Shift-Tab: start at the same visible element
+                focusFromIndex(activeElements, viewportIndex, -1)
+            } else if (isFirstKey) {
                 focusFromIndex(activeElements, 0, 1)
+            } else if (isLastKey) {
+                focusFromIndex(activeElements, activeElements.length - 1, -1)
             }
 
             return

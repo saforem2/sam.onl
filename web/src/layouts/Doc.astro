@@ -334,11 +334,17 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         !event.altKey
 
     const applyMainContentTabIndex = () => {
+        // List containers are navigated via their <li> children,
+        // so skip them to avoid a parent-child focus trap.
+        const isListContainer = (el: Element) =>
+            el.tagName === 'UL' || el.tagName === 'OL'
+
         const children = Array.from(mainContent.children)
         children.forEach((child) => {
             if (!(child instanceof HTMLElement)) return
             if (isFocusableElement(child)) return
             if (child.hasAttribute('tabindex')) return
+            if (isListContainer(child)) return
             child.setAttribute('tabindex', '0')
         })
 
@@ -416,6 +422,36 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         // Don't navigate if the user is typing
         if (isUserTyping()) {
             return
+        }
+
+        // Bootstrap focus into main content when j/k is pressed with nothing focused
+        const activeElement = document.activeElement
+        const isUnfocused =
+            !activeElement ||
+            activeElement === document.body ||
+            activeElement === document.documentElement
+
+        if (
+            isUnfocused &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            !e.shiftKey
+        ) {
+            if (e.key === 'j' || e.key === 'ArrowDown') {
+                e.preventDefault()
+                const firstEl =
+                    getVisibleMainElements()[0] ?? findFirstFocusableElement()
+                if (firstEl) vimFocusElement(firstEl)
+                return
+            }
+            if (e.key === 'k' || e.key === 'ArrowUp') {
+                e.preventDefault()
+                const elements = getVisibleMainElements()
+                const lastEl = elements[elements.length - 1]
+                if (lastEl) vimFocusElement(lastEl)
+                return
+            }
         }
 
         // ctrl-o -> "navigate out"
