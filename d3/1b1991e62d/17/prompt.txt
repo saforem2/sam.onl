@@ -1,0 +1,67 @@
+I need to gather date and title information from ALL blog posts under /Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ to add `date` and `description` frontmatter fields.
+
+For each post (NOT index/listing pages like posts/index.mdx, posts/2025/index.mdx, posts/auroragpt/index.mdx, posts/ai-for-physics/index.mdx, posts/jupyter/index.mdx -- skip these), I need:
+1. The file path
+2. The current title from frontmatter
+3. The date -- look for it in:
+   - The URL path for date-based posts (e.g. posts/2025/09/17/ -> 2025-09-17)
+   - Body text on lines 6-8 (typically "Sam Foreman\n2025-09-17" pattern)
+   - Or any other date-like string near the top of the file
+4. A 1-sentence description based on the first paragraph or heading content of the post
+
+Read the first 30 lines of EVERY post's index.mdx (or index.md) file. The posts are:
+
+Date-based:
+- posts/2026/01/10/index.mdx
+- posts/2026/01/07/index.mdx
+- posts/2025/11/12/index.mdx
+- posts/2025/10/06/index.mdx
+- posts/2025/09/17/index.mdx
+- posts/2025/09/12/index.mdx
+- posts/2025/06/14/index.mdx
+- posts/2025/06/02/index.mdx
+- posts/2025/06/01/index.mdx
+- posts/2025/05/03/index.mdx
+- posts/2025/04/28/index.mdx
+
+Slug-based (top-level):
+- posts/dope-slides/index.mdx
+- posts/ezpz-v1/index.mdx
+- posts/ezpz-at-alcf/index.mdx
+- posts/torchtune-aurora/index.mdx
+- posts/torchtune-patch-aurora/index.mdx
+- posts/resume/index.mdx
+- posts/svgbob/index.mdx
+
+Nested (auroragpt/*):
+- posts/auroragpt/aurora-gpt/index.mdx
+- posts/auroragpt/checkpoints/index.mdx
+- posts/auroragpt/flash-attn-sunspot/index.mdx
+- posts/auroragpt/long-sequences/index.mdx
+- posts/auroragpt/mpi4py-reproducer/index.mdx
+- posts/auroragpt/spike-skipper/index.mdx
+- posts/auroragpt/startup-times/index.mdx
+
+Nested (ai-for-physics/*):
+- posts/ai-for-physics/diffusion/index.mdx
+- posts/ai-for-physics/l2hmc-qcd/index.mdx
+- posts/ai-for-physics/l2hmc-qcd/2dU1/index.mdx
+
+Nested (jupyter/*):
+- posts/jupyter/test/index.mdx
+- posts/jupyter/l2hmc-4dSU3/index.mdx
+- posts/jupyter/l2hmc/4dSU3/index.mdx
+
+Draft (include but note it's a draft):
+- posts/drafts/2025/09/22/index.mdx
+
+Also check if posts/auroragpt/determinstic-flash-attn/ has an index.mdx.
+
+Return a complete table with columns:
+- File path (relative to web/src/pages/)
+- Title (from frontmatter)
+- Date (YYYY-MM-DD format, extracted from path or body)
+- Suggested description (1 concise sentence)
+- Whether it's a draft
+
+If any file doesn't exist, note that.

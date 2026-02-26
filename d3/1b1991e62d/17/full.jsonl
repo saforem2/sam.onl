@@ -1,0 +1,1347 @@
+{
+  "info": {
+    "id": "ses_36aaef78bffezx85VkcuVnHgsG",
+    "slug": "quiet-star",
+    "projectID": "b5be0511ce8471c191329d8707367f25d90d9422",
+    "directory": "/Users/samforeman/projects/saforem2/sam.onl",
+    "parentID": "ses_36ac81ea8ffeWzP8xePB9yxQoG",
+    "title": "Gather all post frontmatter (@explore subagent)",
+    "version": "1.2.13",
+    "summary": {
+      "additions": 0,
+      "deletions": 0,
+      "files": 0
+    },
+    "permission": [
+      {
+        "permission": "todowrite",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "todoread",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "task",
+        "pattern": "*",
+        "action": "deny"
+      }
+    ],
+    "time": {
+      "created": 1772031641716,
+      "updated": 1772031682835
+    }
+  },
+  "messages": [
+    {
+      "info": {
+        "role": "user",
+        "time": {
+          "created": 1772031641730
+        },
+        "summary": {
+          "diffs": []
+        },
+        "agent": "explore",
+        "model": {
+          "providerID": "github-copilot",
+          "modelID": "claude-opus-4.6"
+        },
+        "tools": {
+          "todowrite": false,
+          "todoread": false,
+          "task": false
+        },
+        "id": "msg_c95510880001v4cPZ58uSKOY88",
+        "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG"
+      },
+      "parts": [
+        {
+          "type": "text",
+          "text": "I need to gather date and title information from ALL blog posts under /Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ to add `date` and `description` frontmatter fields.\n\nFor each post (NOT index/listing pages like posts/index.mdx, posts/2025/index.mdx, posts/auroragpt/index.mdx, posts/ai-for-physics/index.mdx, posts/jupyter/index.mdx -- skip these), I need:\n1. The file path\n2. The current title from frontmatter\n3. The date -- look for it in:\n   - The URL path for date-based posts (e.g. posts/2025/09/17/ -> 2025-09-17)\n   - Body text on lines 6-8 (typically \"Sam Foreman\\n2025-09-17\" pattern)\n   - Or any other date-like string near the top of the file\n4. A 1-sentence description based on the first paragraph or heading content of the post\n\nRead the first 30 lines of EVERY post's index.mdx (or index.md) file. The posts are:\n\nDate-based:\n- posts/2026/01/10/index.mdx\n- posts/2026/01/07/index.mdx\n- posts/2025/11/12/index.mdx\n- posts/2025/10/06/index.mdx\n- posts/2025/09/17/index.mdx\n- posts/2025/09/12/index.mdx\n- posts/2025/06/14/index.mdx\n- posts/2025/06/02/index.mdx\n- posts/2025/06/01/index.mdx\n- posts/2025/05/03/index.mdx\n- posts/2025/04/28/index.mdx\n\nSlug-based (top-level):\n- posts/dope-slides/index.mdx\n- posts/ezpz-v1/index.mdx\n- posts/ezpz-at-alcf/index.mdx\n- posts/torchtune-aurora/index.mdx\n- posts/torchtune-patch-aurora/index.mdx\n- posts/resume/index.mdx\n- posts/svgbob/index.mdx\n\nNested (auroragpt/*):\n- posts/auroragpt/aurora-gpt/index.mdx\n- posts/auroragpt/checkpoints/index.mdx\n- posts/auroragpt/flash-attn-sunspot/index.mdx\n- posts/auroragpt/long-sequences/index.mdx\n- posts/auroragpt/mpi4py-reproducer/index.mdx\n- posts/auroragpt/spike-skipper/index.mdx\n- posts/auroragpt/startup-times/index.mdx\n\nNested (ai-for-physics/*):\n- posts/ai-for-physics/diffusion/index.mdx\n- posts/ai-for-physics/l2hmc-qcd/index.mdx\n- posts/ai-for-physics/l2hmc-qcd/2dU1/index.mdx\n\nNested (jupyter/*):\n- posts/jupyter/test/index.mdx\n- posts/jupyter/l2hmc-4dSU3/index.mdx\n- posts/jupyter/l2hmc/4dSU3/index.mdx\n\nDraft (include but note it's a draft):\n- posts/drafts/2025/09/22/index.mdx\n\nAlso check if posts/auroragpt/determinstic-flash-attn/ has an index.mdx.\n\nReturn a complete table with columns:\n- File path (relative to web/src/pages/)\n- Title (from frontmatter)\n- Date (YYYY-MM-DD format, extracted from path or body)\n- Suggested description (1 concise sentence)\n- Whether it's a draft\n\nIf any file doesn't exist, note that.",
+          "id": "prt_c95510882001Z03L5vDpwtLXnB",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c95510880001v4cPZ58uSKOY88"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772031641737,
+          "completed": 1772031652526
+        },
+        "parentID": "msg_c95510880001v4cPZ58uSKOY88",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 8966,
+          "input": 7951,
+          "output": 1015,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c955108890014TXglIz9SGn1GL",
+        "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "1032c9ec081d77a39ab6b7dad7f9d28082f2778c",
+          "id": "prt_c95511251001E3Lck80LwX7KN7",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955108890014TXglIz9SGn1GL"
+        },
+        {
+          "type": "text",
+          "text": "\n\nI'll systematically read the first 30 lines of every post file. Let me start by reading them all in parallel batches.",
+          "time": {
+            "start": 1772031652391,
+            "end": 1772031652391
+          },
+          "id": "prt_c95511251002uoV02dgVsuTZnA",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955108890014TXglIz9SGn1GL"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2026/01/10/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2026/01/10/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🍋 ezpz'\n4: ---\n5: \n6: Sam Foreman\n7: 2026-01-10\n8: \n9: - [AMD Timeline](#amd-timeline)\n10: - [Intel Timeline](#intel-timeline)\n11: \n12: In ancient times[^1], back in ~ 2022–2023, virtually all (production)\n13: PyTorch code was designed to run on NVIDIA GPUs.\n14: \n15: In April 2023, AMD announced day-zero support for PyTorch 2.0 within the\n16: ROCm 6.0 ecosystem, leveraging new features like TorchDynamo for\n17: performance\n18: \n19: ```mermaid\n20: %%{init: {'themeCSS': '.titleText{color:var(--foreground1)!important;fill:var(--foreground1)!important;font-size:0.95rem!important;font-weight:700;}.taskText{font-weight:600;font-size:0.74rem!important;}.taskText,.taskTextOutsideLeft,.taskTextOutsideRight,.sectionTitle,.tick text{fill:var(--foreground0)!important;}.taskTextOutsideLeft,.taskTextOutsideRight,.sectionTitle{font-size:0.74rem!important;}.tick text{font-size:0.7rem!important;}.taskTextOutsideRight{text-anchor:start;transform:translateX(0.45ch);}.taskTextOutsideLeft{text-anchor:end;transform:translateX(-0.45ch);}.todayMarker{stroke:var(--red)!important;stroke-width:0.12rem;opacity:0.9;}.grid .tick line{stroke:var(--background3)!important;opacity:0.6;}.section0{fill:color-mix(in oklch,var(--background1) 72%,transparent)!important;}.section1{fill:color-mix(in oklch,var(--blue) 38%,transparent)!important;}.active,.done{fill:color-mix(in srgb,var(--blue) 72%,white 28%)!important;}.crit,.milestone{fill:var(--red)!important;stroke:var(--red)!important;}'}}%%\n21: gantt\n22:     title AMD and Intel PyTorch Enablement Timeline\n23:     dateFormat  YYYY\n24:     axisFormat  %Y\n25: \n26:     section AMD ROCm and PyTorch\n27:       Torch7 era and early CUDA to HIP ports        :amd1, 2012, 2016\n28:       ROCm 1.0 and HIPIFY tooling                   :amd2, 2016, 2020\n29:       Official PyTorch ROCm Python packages         :amd3, 2021, 2022\n30:       PyTorch Foundation governance participation   :amd4, 2022, 2023\n\n(Showing lines 1-30 of 164. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/2026/01/10/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🍋 ezpz'\n---\n\nSam Foreman\n2026-01-10\n\n- [AMD Timeline](#amd-timeline)\n- [Intel Timeline](#intel-timeline)\n\nIn ancient times[^1], back in ~ 2022–2023, virtually all (production)\nPyTorch code was designed to run on NVIDIA GPUs.\n\nIn April 2023, AMD announced day-zero support for PyTorch 2.0 within the\nROCm 6.0 ecosystem, leveraging new features like TorchDynamo for\nperformance\n\n```mermaid\n%%{init: {'themeCSS': '.titleText{color:var(--foreground1)!important;fill:var(--foreground1)!important;font-size:0.95rem!important;font-weight:700;}.taskText{font-weight:600;font-size:0.74rem!important;}.taskText,.taskTextOutsideLeft,.taskTextOutsideRight,.sectionTitle,.tick text{fill:var(--foreground0)!important;}.taskTextOutsideLeft,.taskTextOutsideRight,.sectionTitle{font-size:0.74rem!important;}.tick text{font-size:0.7rem!important;}.taskTextOutsideRight{text-anchor:start;transform:translateX(0.45ch);}.taskTextOutsideLeft{text-anchor:end;transform:translateX(-0.45ch);}.todayMarker{stroke:var(--red)!important;stroke-width:0.12rem;opacity:0.9;}.grid .tick line{stroke:var(--background3)!important;opacity:0.6;}.section0{fill:color-mix(in oklch,var(--background1) 72%,transparent)!important;}.section1{fill:color-mix(in oklch,var(--blue) 38%,transparent)!important;}.active,.done{fill:color-mix(in srgb,var(--blue) 72%,white 28%)!important;}.crit,.milestone{fill:var(--red)!important;stroke:var(--red)!important;}'}}%%",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031645668,
+              "end": 1772031645672
+            }
+          },
+          "id": "prt_c9551157b001z2b91i3RFcaJOT",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955108890014TXglIz9SGn1GL"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_uI84AsHzdFKA77d1jWReRX",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2026/01/07/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2026/01/07/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🎉 Happy New Year!'\n4: ---\n5: \n6: Sam Foreman\n7: 2026-01-07\n8: \n9: - [Ongoing Projects](#ongoing-projects)\n10: - [Additional Involvements](#additional-involvements)\n11: \n12: I’d like to try and post more this year.\n13: \n14: Ideally these would be less-polished, more-frequent updates on what I’m\n15: thinking about / working on.\n16: \n17: ## Ongoing Projects\n18: \n19: - [**AuroraGPT**](https://auroragpt.anl.gov): Large Language Models for\n20:   Scientific Applications on leadership-class supercomputers[^1].\n21: \n22:   Additional details can be found in some of my recent talks:\n23:     - [AuroraGPT: Training Foundation Models on\n24:       Supercomputers](https://samforeman.me/talks/2025/12/16/)\n25:     - [Training Foundation Models on\n26:       Supercomputers](https://samforeman.me/talks/2025/10/24/)\n27: \n28: - [**AERIS**: Argonne Earth Systems Model for Reliable and Skillful\n29:   Predictions](https://arxiv.org/abs/2509.13523) (Hatanpää et al.\n30:   (2025)).\n\n(Showing lines 1-30 of 119. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/2026/01/07/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🎉 Happy New Year!'\n---\n\nSam Foreman\n2026-01-07\n\n- [Ongoing Projects](#ongoing-projects)\n- [Additional Involvements](#additional-involvements)\n\nI’d like to try and post more this year.\n\nIdeally these would be less-polished, more-frequent updates on what I’m\nthinking about / working on.\n\n## Ongoing Projects\n\n- [**AuroraGPT**](https://auroragpt.anl.gov): Large Language Models for\n  Scientific Applications on leadership-class supercomputers[^1].",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031646408,
+              "end": 1772031646410
+            }
+          },
+          "id": "prt_c955117e50014NRd97YGPbv7ui",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955108890014TXglIz9SGn1GL"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/11/12/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/11/12/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: \"🧊 Cooling Down Checkpoints: Best Practices for Model Evaluation\"\n4: ---\n5: \n6: Sam Foreman\n7: 2025-11-12\n8: \n9: - [📉 Simple Experiment to Compare Validation\n10:   Loss](#chart_with_downwards_trend-simple-experiment-to-compare-validation-loss)\n11: - [☃️ Cooling Down](#snowman_with_snow-cooling-down)\n12: - [♻️ Convert to Universal\n13:   (Optional)](#recycle-convert-to-universal-optional)\n14: - [📄 W&B Report](#page_facing_up-wb-report)\n15: \n16: ## 📉 Simple Experiment to Compare Validation Loss\n17: \n18: <div class=\"light-content\">\n19: \n20: ![Cool Down Comparison](./assets/cooldown.png)\n21: \n22: </div>\n23: \n24: <div class=\"dark-content\">\n25: \n26: ![Cool Down Comparison](./assets/cooldown-dark.png)\n27: \n28: </div>\n29: \n30: ## ☃️ Cooling Down\n\n(Showing lines 1-30 of 75. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/2025/11/12/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: \"🧊 Cooling Down Checkpoints: Best Practices for Model Evaluation\"\n---\n\nSam Foreman\n2025-11-12\n\n- [📉 Simple Experiment to Compare Validation\n  Loss](#chart_with_downwards_trend-simple-experiment-to-compare-validation-loss)\n- [☃️ Cooling Down](#snowman_with_snow-cooling-down)\n- [♻️ Convert to Universal\n  (Optional)](#recycle-convert-to-universal-optional)\n- [📄 W&B Report](#page_facing_up-wb-report)\n\n## 📉 Simple Experiment to Compare Validation Loss\n\n<div class=\"light-content\">\n\n![Cool Down Comparison](./assets/cooldown.png)",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031646883,
+              "end": 1772031646886
+            }
+          },
+          "id": "prt_c95511ac9001tXQXhY2pcFOfF9",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955108890014TXglIz9SGn1GL"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/10/06/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/10/06/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🎨 Mixing Between Distributions While Training'\n4: ---\n5: \n6: Sam Foreman\n7: 2025-10-06\n8: \n9: - [Motivation](#motivation)\n10: - [Mathematical Framework](#mathematical-framework)\n11: - [Mixing Definition](#mixing-definition)\n12: - [Incremental Difference](#incremental-difference)\n13: - [Interpretation](#interpretation)\n14: - [Implementation](#implementation)\n15: - [Original Notes](#original-notes)\n16: \n17: ## Motivation\n18: \n19: When training on multiple data sources or domains, it is often desirable\n20: to _smoothly interpolate_ between two distributions rather than\n21: switching abruptly. This ensures stable optimization and avoids sudden\n22: shifts in gradient statistics.\n23: \n24: We can achieve this with an **annealing schedule** that gradually shifts\n25: probability mass from one distribution to another.\n26: \n27: ## Mathematical Framework\n28: \n29: We introduce an annealing schedule during the mixing phase:\n30: \n\n(Showing lines 1-30 of 146. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/2025/10/06/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🎨 Mixing Between Distributions While Training'\n---\n\nSam Foreman\n2025-10-06\n\n- [Motivation](#motivation)\n- [Mathematical Framework](#mathematical-framework)\n- [Mixing Definition](#mixing-definition)\n- [Incremental Difference](#incremental-difference)\n- [Interpretation](#interpretation)\n- [Implementation](#implementation)\n- [Original Notes](#original-notes)\n\n## Motivation\n\nWhen training on multiple data sources or domains, it is often desirable\nto _smoothly interpolate_ between two distributions rather than",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031647888,
+              "end": 1772031647890
+            }
+          },
+          "id": "prt_c95511ca40011jJR50FcIOYMYx",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955108890014TXglIz9SGn1GL"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_IWuZMk60xLOkgfSWJzRfkB",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/09/17/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/09/17/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: \"📊 `pbs-tui`: TUI for PBS Job Scheduler Monitoring\"\n4: ---\n5: \n6: Sam Foreman\n7: 2025-09-17\n8: \n9: - [👀 Overview](#eyes-overview)\n10: - [🐣 Getting Started](#hatching_chick-getting-started)\n11: - [✨ Features](#sparkles-features)\n12:     - [🎹 Key bindings](#musical_keyboard-key-bindings)\n13:     - [🧪 Sample mode](#test_tube-sample-mode)\n14:     - [Headless / automated runs](#headless--automated-runs)\n15:     - [Inline snapshot mode](#inline-snapshot-mode)\n16: - [Architecture](#architecture)\n17: - [Development notes](#development-notes)\n18: - [Screenshots](#screenshots)\n19: \n20: <div style=\"text-align: center;\">\n21: \n22: `pbs-tui`\n23: \n24: </div>\n25: \n26: <div id=\"fig-pbs-tui\">\n27: \n28: <img width=\"49%\" src=\"https://github.com/user-attachments/assets/49bbdd98-9670-4064-bea1-948dda949b64\" /> <img width=\"49%\" src=\"https://github.com/user-attachments/assets/4f1c4503-2478-436e-91da-13c421da7523\" /> \n29: \n30: Figure 1: A terminal dashboard for monitoring PBS Pro schedulers\n\n(Showing lines 1-30 of 193. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/2025/09/17/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: \"📊 `pbs-tui`: TUI for PBS Job Scheduler Monitoring\"\n---\n\nSam Foreman\n2025-09-17\n\n- [👀 Overview](#eyes-overview)\n- [🐣 Getting Started](#hatching_chick-getting-started)\n- [✨ Features](#sparkles-features)\n    - [🎹 Key bindings](#musical_keyboard-key-bindings)\n    - [🧪 Sample mode](#test_tube-sample-mode)\n    - [Headless / automated runs](#headless--automated-runs)\n    - [Inline snapshot mode](#inline-snapshot-mode)\n- [Architecture](#architecture)\n- [Development notes](#development-notes)\n- [Screenshots](#screenshots)\n\n<div style=\"text-align: center;\">",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031648754,
+              "end": 1772031648759
+            }
+          },
+          "id": "prt_c95512091001Wo318Eaz1yEPNQ",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955108890014TXglIz9SGn1GL"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_7jSwBIuOubMBnu2SjfH7Dw",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/09/12/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/09/12/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🍹 BlendCorpus + TorchTitan @ ALCF'\n4: ---\n5: \n6: Sam Foreman\n7: 2025-09-12\n8: \n9: - [📌 Source Repositories](#pushpin-source-repositories)\n10: - [🏃‍♂️ Running](#running_man-running)\n11: \n12: ## 📌 Source Repositories\n13: \n14: Things are changing _quickly_, so to avoid confusion, here are the exact\n15: branches used for this demo:\n16: \n17: - Using:\n18:     - [auroraGPT-ANL/`torchtitan` @\n19:       saforem2/blendcorpus](https://github.com/auroraGPT-ANL/torchtitan/tree/saforem2/blendcorpus)\n20:     - [saforem2/`blendcorpus` @\n21:       saforem2/reorg-imports](https://github.com/saforem2/blendcorpus/tree/saforem2/reorg-imports)[^1]\n22: \n23: ## 🏃‍♂️ Running\n24: \n25: - Clone repo:\n26: \n27:     ```bash\n28:     git clone https://github.com/auroraGPT-ANL/torchtitan\n29:     cd torchtitan\n30:     checkout saforem2/blendcorpus\n\n(Showing lines 1-30 of 708. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/2025/09/12/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🍹 BlendCorpus + TorchTitan @ ALCF'\n---\n\nSam Foreman\n2025-09-12\n\n- [📌 Source Repositories](#pushpin-source-repositories)\n- [🏃‍♂️ Running](#running_man-running)\n\n## 📌 Source Repositories\n\nThings are changing _quickly_, so to avoid confusion, here are the exact\nbranches used for this demo:\n\n- Using:\n    - [auroraGPT-ANL/`torchtitan` @\n      saforem2/blendcorpus](https://github.com/auroraGPT-ANL/torchtitan/tree/saforem2/blendcorpus)\n    - [saforem2/`blendcorpus` @",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031649272,
+              "end": 1772031649275
+            }
+          },
+          "id": "prt_c955123f2001koq2RQoq11xPxG",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955108890014TXglIz9SGn1GL"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/06/14/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/06/14/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🏗️ Building PyTorch 2.8 from Source on Aurora'\n4: ---\n5: \n6: Sam Foreman\n7: 2025-06-14\n8: \n9: - [📦 GitHub Project](#package-github-project)\n10: - [🏖️ Shell Environment](#beach_umbrella-shell-environment)\n11: - [🔨 Build Libraries](#hammer-build-libraries)\n12:     - [PyTorch](#pytorch)\n13:     - [Intel Libraries](#intel-libraries)\n14:     - [`mpi4py`](#mpi4py)\n15:     - [`h5py`](#h5py)\n16:     - [torch / `ao`](#torch--ao)\n17:     - [TorchTune](#torchtune)\n18: - [✅ Verify Installation](#white_check_mark-verify-installation)\n19: \n20: ## 📦 GitHub Project\n21: \n22: See:\n23: \n24: - [argonne-lcf/frameworks-standalone](https://github.com/argonne-lcf/frameworks-standalone)\n25:     - [Aurora/pytorch/README.md](https://github.com/argonne-lcf/frameworks-standalone/blob/main/Aurora/pytorch/README.md)\n26:       for additional details.\n27: \n28: ## 🏖️ Shell Environment\n29: \n30: 1.  Helper function to get timestamp:\n\n(Showing lines 1-30 of 259. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/2025/06/14/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🏗️ Building PyTorch 2.8 from Source on Aurora'\n---\n\nSam Foreman\n2025-06-14\n\n- [📦 GitHub Project](#package-github-project)\n- [🏖️ Shell Environment](#beach_umbrella-shell-environment)\n- [🔨 Build Libraries](#hammer-build-libraries)\n    - [PyTorch](#pytorch)\n    - [Intel Libraries](#intel-libraries)\n    - [`mpi4py`](#mpi4py)\n    - [`h5py`](#h5py)\n    - [torch / `ao`](#torch--ao)\n    - [TorchTune](#torchtune)\n- [✅ Verify Installation](#white_check_mark-verify-installation)\n\n## 📦 GitHub Project",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031649852,
+              "end": 1772031649854
+            }
+          },
+          "id": "prt_c955125f9001LJLq0CG5i35G5N",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955108890014TXglIz9SGn1GL"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/06/02/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/06/02/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🧜‍♀️ Mermaid'\n4: ---\n5: \n6: Sam Foreman\n7: 2025-06-02\n8: \n9: ```mermaid\n10: flowchart LR\n11:     subgraph D[\"`Data`\"]\n12:         direction TB\n13:         x(\"`x₀`\")\n14:         x1(\"`x₁`\")\n15:         x2(\"`x₂`\")\n16:     end\n17:     direction LR\n18:     subgraph G0[\"`GPU0`\"]\n19:         direction LR\n20:         subgraph N0[\"`NN`\"]\n21:         end\n22:         L0[\"`L0`\"]\n23:     end\n24:     subgraph G1[\"`GPU1`\"]\n25:         direction LR\n26:         subgraph N1[\"`NN`\"]\n27:         end\n28:         L1[\"`L1`\"]\n29:     end\n30:     subgraph G2[\"`GPU2`\"]\n\n(Showing lines 1-30 of 88. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/2025/06/02/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🧜‍♀️ Mermaid'\n---\n\nSam Foreman\n2025-06-02\n\n```mermaid\nflowchart LR\n    subgraph D[\"`Data`\"]\n        direction TB\n        x(\"`x₀`\")\n        x1(\"`x₁`\")\n        x2(\"`x₂`\")\n    end\n    direction LR\n    subgraph G0[\"`GPU0`\"]\n        direction LR\n        subgraph N0[\"`NN`\"]",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031650496,
+              "end": 1772031650498
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955108890014TXglIz9SGn1GL"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_AWVtwtnk1y6GO1ZfJoMGWh",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/06/01/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/06/01/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '📰 Nice Headings'\n4: ---\n5: \n6: Sam Foreman\n7: 2025-06-01\n8: \n9: - [Heading 1](#heading-1)\n10:   - [Heading 2](#heading-2)\n11:     - [Heading 3](#heading-3)\n12: \n13: I like headings. They help organize content and make it easier to read.\n14: \n15: Inspired by my neovim config, I wanted to recreate a similar style for\n16: headings in my website.\n17: \n18: <div id=\"fig-headings-neovim\">\n19: \n20: ![Light Theme](../../../../assets/nvim-headings-light.png)\n21: \n22: ![Dark Theme](../../../../assets/nvim-headings-dark.png)\n23: \n24: Figure 1: My neovim headings in light and dark themes.\n25: \n26: </div>\n27: \n28: I think they turned out pretty well!\n29: \n30: # Heading 1\n\n(Showing lines 1-30 of 40. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/2025/06/01/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '📰 Nice Headings'\n---\n\nSam Foreman\n2025-06-01\n\n- [Heading 1](#heading-1)\n  - [Heading 2](#heading-2)\n    - [Heading 3](#heading-3)\n\nI like headings. They help organize content and make it easier to read.\n\nInspired by my neovim config, I wanted to recreate a similar style for\nheadings in my website.\n\n<div id=\"fig-headings-neovim\">\n\n![Light Theme](../../../../assets/nvim-headings-light.png)",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031651192,
+              "end": 1772031651194
+            }
+          },
+          "id": "prt_c95512ac100168ZOgasqXk5HP7",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955108890014TXglIz9SGn1GL"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/05/03/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/05/03/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🚧 Frameworks Issue with numpy \\> 2'\n4: ---\n5: \n6: Sam Foreman\n7: 2025-05-03\n8: \n9: - [Reinstall Modules built with\n10:   `numpy < 2`](#reinstall-modules-built-with-numpy--2)\n11: - [Profiles and Timing Comparisons](#profiles-and-timing-comparisons)\n12:     - [DEFAULT BEHAVIOR](#default-behavior)\n13:     - [WITH `USE_TORCH=1` and\n14:       `numpy==2.2.5`](#with-use_torch1-and-numpy225)\n15: - [Stack Trace from `numpy > 2` issue](#stack-trace-from-numpy--2-issue)\n16: \n17: Something I just learned\n18: \n19: The TensorFlow that is included in the new frameworks module\n20: (`aurora_nre_models_frameworks-2025.0.0`) was built with\n21: `numpy==1.26.4 (< 2)`.\n22: \n23: Unfortunately, if you then (for whatever reason) then tries to install /\n24: upgrade a package[^1] that has `numpy` in its dependencies, e.g.:\n25: \n26: ```bash\n27: python3 -m pip install --upgrade transformers\n28: ```\n29: \n30: This will pull in `numpy > 2`, effectively breaking the frameworks\n\n(Showing lines 1-30 of 259. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/2025/05/03/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🚧 Frameworks Issue with numpy \\> 2'\n---\n\nSam Foreman\n2025-05-03\n\n- [Reinstall Modules built with\n  `numpy < 2`](#reinstall-modules-built-with-numpy--2)\n- [Profiles and Timing Comparisons](#profiles-and-timing-comparisons)\n    - [DEFAULT BEHAVIOR](#default-behavior)\n    - [WITH `USE_TORCH=1` and\n      `numpy==2.2.5`](#with-use_torch1-and-numpy225)\n- [Stack Trace from `numpy > 2` issue](#stack-trace-from-numpy--2-issue)\n\nSomething I just learned\n\nThe TensorFlow that is included in the new frameworks module\n(`aurora_nre_models_frameworks-2025.0.0`) was built with",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031651964,
+              "end": 1772031651966
+            }
+          },
+          "id": "prt_c95512d79001hLcRc0UnJ34iwe",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955108890014TXglIz9SGn1GL"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/04/28/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/04/28/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🔥 Building PyTorch 2.6 from Source on Aurora'\n4: ---\n5: \n6: Sam Foreman\n7: 2025-04-28\n8: \n9: - [PyTorch 2.6 on Aurora](#pytorch-26-on-aurora)\n10: \n11: ## PyTorch 2.6 on Aurora\n12: \n13: ```bash\n14: ; source <(curl -L https://bit.ly/ezpz-utils) && ezpz_setup_env\n15: ; export CXX=$(which g++)\n16: ; export CC=$(which gcc)\n17: ; export REL_WITH_DEB_INFO=1\n18: ; export USE_CUDA=0\n19: ; export USE_ROCM=0\n20: ; export USE_MKLDNN=1\n21: ; export USE_MKL=1\n22: ; export USE_ROCM=0\n23: ; export USE_CUDNN=0\n24: ; export USE_FBGEMM=0\n25: ; export USE_NNPACK=0\n26: ; export USE_QNNPACK=0\n27: ; export USE_NCCL=0\n28: ; export USE_CUDA=0\n29: ; export BUILD_CAFFE2_OPS=0\n30: ; export BUILD_TEST=0\n\n(Showing lines 1-30 of 54. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/2025/04/28/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🔥 Building PyTorch 2.6 from Source on Aurora'\n---\n\nSam Foreman\n2025-04-28\n\n- [PyTorch 2.6 on Aurora](#pytorch-26-on-aurora)\n\n## PyTorch 2.6 on Aurora\n\n```bash\n; source <(curl -L https://bit.ly/ezpz-utils) && ezpz_setup_env\n; export CXX=$(which g++)\n; export CC=$(which gcc)\n; export REL_WITH_DEB_INFO=1\n; export USE_CUDA=0\n; export USE_ROCM=0\n; export USE_MKLDNN=1",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031652390,
+              "end": 1772031652393
+            }
+          },
+          "id": "prt_c9551307d001Mra5PcBQTWcn95",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955108890014TXglIz9SGn1GL"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "1032c9ec081d77a39ab6b7dad7f9d28082f2778c",
+          "cost": 0,
+          "tokens": {
+            "total": 8966,
+            "input": 7951,
+            "output": 1015,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_c9551322b001vCV9bH1IA9MoOd",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955108890014TXglIz9SGn1GL"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772031652527,
+          "completed": 1772031665106
+        },
+        "parentID": "msg_c95510880001v4cPZ58uSKOY88",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 15388,
+          "input": 14291,
+          "output": 1097,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "REDACTED",
+        "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "1032c9ec081d77a39ab6b7dad7f9d28082f2778c",
+          "id": "prt_c95513d7b001k7sVts9IFzXtnA",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "text",
+          "text": "Now let me read the slug-based and nested posts:",
+          "time": {
+            "start": 1772031664936,
+            "end": 1772031664936
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/dope-slides/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/dope-slides/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '💅 How to Make Dope Slides'\n4: ---\n5: \n6: Sam Foreman\n7: 2024-08-13\n8: \n9: - [Quarto 🤝 Reveal.js](#quarto-handshake-revealjs)\n10: - [Getting Started](#getting-started)\n11:     - [🎁 Install Extensions](#gift-install-extensions)\n12: - [Metadata](#metadata)\n13: - [Title Slide](#title-slide)\n14: - [Single-Column Slides](#single-column-slides)\n15: - [Centered Slides](#centered-slides)\n16: - [Multi-Column Slides](#multi-column-slides)\n17: - [💅 CSS](#nail_care-css)\n18: - [📃 GitHub Page](#page_with_curl-github-page)\n19: - [📓 References](#notebook-references)\n20: \n21: ## Quarto 🤝 Reveal.js\n22: \n23: So, after making a promise some time ago on [twitter\n24: ](https://twitter.com/saforem2/status/1689676452235759616?s=20)[^1], and\n25: having many questions following my talk on [Parallel Training\n26: Techniques](https://github.com/saforem2/parallel-training-slides:) last\n27: week, I’m finally getting around to writing this up.\n28: \n29: The slides are written using [Quarto](https://quarto.org/), a _flavor_\n30: of Markdown, and uses the built-in [Quarto +\n\n(Showing lines 1-30 of 500. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/dope-slides/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '💅 How to Make Dope Slides'\n---\n\nSam Foreman\n2024-08-13\n\n- [Quarto 🤝 Reveal.js](#quarto-handshake-revealjs)\n- [Getting Started](#getting-started)\n    - [🎁 Install Extensions](#gift-install-extensions)\n- [Metadata](#metadata)\n- [Title Slide](#title-slide)\n- [Single-Column Slides](#single-column-slides)\n- [Centered Slides](#centered-slides)\n- [Multi-Column Slides](#multi-column-slides)\n- [💅 CSS](#nail_care-css)\n- [📃 GitHub Page](#page_with_curl-github-page)\n- [📓 References](#notebook-references)\n",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031656865,
+              "end": 1772031656866
+            }
+          },
+          "id": "prt_c95514014001QuVzV2F97KcFUq",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ezpz-v1/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ezpz-v1/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '📝 ezpz-v1'\n4: ---\n5: \n6: Sam Foreman\n7: 2024-08-23\n8: \n9: - [🍋 `ezpz` v1](#lemon-ezpz-v1)\n10:     - [👀 Overview](#eyes-overview)\n11: - [`test_dist.py`](#test_distpy)\n12: - [ezpz](#ezpz)\n13:     - [Setup](#setup)\n14:     - [Tests](#tests)\n15:     - [Helper Utilities](#helper-utilities)\n16: - [Complete Example](#complete-example)\n17:     - [Gist](#gist)\n18:     - [📦 Clone Repo(s)](#package-clone-repos)\n19:     - [🛜 Setup Job](#wireless-setup-job)\n20:     - [🐍 Setup Python](#snake-setup-python)\n21:     - [📝 Test Setup](#pencil-test-setup)\n22: \n23: > [!NOTE]\n24: >\n25: > See [🍋 ezpz docs](https://saforem2.github.io/ezpz/) for more details.\n26: \n27: 🍋 `ezpz` v1\n28: \n29: ## 🍋 `ezpz` v1\n30: \n\n(Showing lines 1-30 of 1727. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/ezpz-v1/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '📝 ezpz-v1'\n---\n\nSam Foreman\n2024-08-23\n\n- [🍋 `ezpz` v1](#lemon-ezpz-v1)\n    - [👀 Overview](#eyes-overview)\n- [`test_dist.py`](#test_distpy)\n- [ezpz](#ezpz)\n    - [Setup](#setup)\n    - [Tests](#tests)\n    - [Helper Utilities](#helper-utilities)\n- [Complete Example](#complete-example)\n    - [Gist](#gist)\n    - [📦 Clone Repo(s)](#package-clone-repos)\n    - [🛜 Setup Job](#wireless-setup-job)\n    - [🐍 Setup Python](#snake-setup-python)",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031657441,
+              "end": 1772031657444
+            }
+          },
+          "id": "prt_c955143a1001KVBwGQsOaChW0O",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ezpz-at-alcf/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ezpz-at-alcf/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🍋 ezpz @ ALCF'\n4: ---\n5: \n6: Sam Foreman\n7: 2024-08-23\n8: \n9: - [🐣 Getting Started](#hatching_chick-getting-started)\n10: - [🐚 Shell Utilities](#shell-shell-utilities)\n11:     - [⚙️ Setup Environment](#gear-setup-environment)\n12:     - [📝 Example](#pencil-example)\n13: - [🐍 Python Library](#snake-python-library)\n14: \n15: > _Work smarter, not harder_.\n16: \n17: ## 🐣 Getting Started\n18: \n19: There are two main, distinct components of `ezpz`:\n20: \n21: 1.  🐍 [**Python Library**](#python-library)\n22: 2.  🐚 [**Shell Utilities**](#shell-utilities)\n23: \n24: ## 🐚 Shell Utilities\n25: \n26: The Shell Utilities can be roughly broken up further into two main\n27: components\n28: \n29: 1.  [Setup Environment](#setup-environment):\n30:     1.  [Setup Python](#setup-python):\n\n(Showing lines 1-30 of 930. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/ezpz-at-alcf/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🍋 ezpz @ ALCF'\n---\n\nSam Foreman\n2024-08-23\n\n- [🐣 Getting Started](#hatching_chick-getting-started)\n- [🐚 Shell Utilities](#shell-shell-utilities)\n    - [⚙️ Setup Environment](#gear-setup-environment)\n    - [📝 Example](#pencil-example)\n- [🐍 Python Library](#snake-python-library)\n\n> _Work smarter, not harder_.\n\n## 🐣 Getting Started\n\nThere are two main, distinct components of `ezpz`:\n",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031658148,
+              "end": 1772031658150
+            }
+          },
+          "id": "prt_c955145e2001Km6WCvRt9VQE2Z",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/torchtune-aurora/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/torchtune-aurora/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🪛 Torchtune on Aurora'\n4: ---\n5: \n6: Sam Foreman\n7: 2025-03-23\n8: \n9: - [Patch on Aurora](#patch-on-aurora)\n10: - [Using PyTorch 2.5](#using-pytorch-25)\n11: - [Using PyTorch 2.3](#using-pytorch-23)\n12: \n13: ## Patch on Aurora\n14: \n15: ``` diff\n16: diff --git a/torchtune/training/_distributed.py b/torchtune/training/_distributed.py\n17: index ff959c5f..c3966290 100644\n18: --- a/torchtune/training/_distributed.py\n19: +++ b/torchtune/training/_distributed.py\n20: @@ -14,7 +14,11 @@ import torch\n21:  import torch.distributed as dist\n22:  from torch import nn\n23: \n24: -from torch.distributed._composable.fsdp import CPUOffloadPolicy, fully_shard\n25: +try:\n26: +    from torch.distributed._composable.fsdp import fully_shard\n27: +except (ImportError, ModuleNotFoundError):\n28: +    from torch.distributed._composable.fsdp.fully_shard import fully_shard\n29: +\n30:  from torch.distributed._tensor import distribute_tensor, DTensor\n\n(Showing lines 1-30 of 380. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/torchtune-aurora/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🪛 Torchtune on Aurora'\n---\n\nSam Foreman\n2025-03-23\n\n- [Patch on Aurora](#patch-on-aurora)\n- [Using PyTorch 2.5](#using-pytorch-25)\n- [Using PyTorch 2.3](#using-pytorch-23)\n\n## Patch on Aurora\n\n``` diff\ndiff --git a/torchtune/training/_distributed.py b/torchtune/training/_distributed.py\nindex ff959c5f..c3966290 100644\n--- a/torchtune/training/_distributed.py\n+++ b/torchtune/training/_distributed.py\n@@ -14,7 +14,11 @@ import torch",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031658966,
+              "end": 1772031658969
+            }
+          },
+          "id": "prt_c955148a4001WTRzp3hr0rvuzu",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_ieRpzICvx4ZRHWaBWpZNwZ",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/torchtune-patch-aurora/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/torchtune-patch-aurora/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🚑 Torchtune Patch on Aurora'\n4: ---\n5: \n6: Sam Foreman\n7: 2025-03-23\n8: \n9: - [Patch to get `torchtune` working on\n10:   Aurora](#patch-to-get-torchtune-working-on-aurora)\n11: \n12: ## Patch to get `torchtune` working on Aurora\n13: \n14: ```diff\n15: diff --git a/torchtune/training/_distributed.py b/torchtune/training/_distributed.py\n16: index ff959c5f..c3966290 100644\n17: --- a/torchtune/training/_distributed.py\n18: +++ b/torchtune/training/_distributed.py\n19: @@ -14,7 +14,11 @@ import torch\n20:  import torch.distributed as dist\n21:  from torch import nn\n22: \n23: -from torch.distributed._composable.fsdp import CPUOffloadPolicy, fully_shard\n24: +try:\n25: +    from torch.distributed._composable.fsdp import fully_shard\n26: +except (ImportError, ModuleNotFoundError):\n27: +    from torch.distributed._composable.fsdp.fully_shard import fully_shard\n28: +\n29:  from torch.distributed._tensor import distribute_tensor, DTensor\n30:  from torch.distributed._tensor.placement_types import DTensorSpec, TensorMeta\n\n(Showing lines 1-30 of 44. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/torchtune-patch-aurora/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🚑 Torchtune Patch on Aurora'\n---\n\nSam Foreman\n2025-03-23\n\n- [Patch to get `torchtune` working on\n  Aurora](#patch-to-get-torchtune-working-on-aurora)\n\n## Patch to get `torchtune` working on Aurora\n\n```diff\ndiff --git a/torchtune/training/_distributed.py b/torchtune/training/_distributed.py\nindex ff959c5f..c3966290 100644\n--- a/torchtune/training/_distributed.py\n+++ b/torchtune/training/_distributed.py\n@@ -14,7 +14,11 @@ import torch\n import torch.distributed as dist",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031659664,
+              "end": 1772031659666
+            }
+          },
+          "id": "prt_c95514bd7001Kp5ESRIYgRdyRY",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_bjetpgxtnSZQyWV0u3Yc5y",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/resume/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/resume/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🧑🏻‍💻 Sam Foreman’s Résumé'\n4: ---\n5: \n6: Sam Foreman\n7: 2025-04-26\n8: \n9: - [👤 About](#bust_in_silhouette-about)\n10: - [🎓 Education](#mortar_board-education)\n11: - [👔 Professional Experience](#necktie-professional-experience)\n12: - [📚 Publications](#books-publications)\n13: - [🏆 Awards and Honors](#trophy-awards-and-honors)\n14: - [🦜 Talks](#parrot-talks)\n15: - [🎪 Events](#circus_tent-events)\n16: - [📓 References](#notebook-references)\n17: \n18: ## 👤 About\n19: \n20: Computational Scientist at Argonne National Laboratory.  \n21: Scaling AI for science on supercomputers.  \n22: [samforeman.me](https://samforeman.me)\n23: [GitHub](https://github.com/saforem2) • [Google\n24: Scholar](https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en) •\n25: [ORCID](https://orcid.org/0000-0002-9981-0876) •\n26: [Twitter](https://twitter.com/saforem2)\n27: \n28: ## 🎓 Education\n29: \n30: - **Ph.D., Physics**  \n\n(Showing lines 1-30 of 776. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/resume/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🧑🏻‍💻 Sam Foreman’s Résumé'\n---\n\nSam Foreman\n2025-04-26\n\n- [👤 About](#bust_in_silhouette-about)\n- [🎓 Education](#mortar_board-education)\n- [👔 Professional Experience](#necktie-professional-experience)\n- [📚 Publications](#books-publications)\n- [🏆 Awards and Honors](#trophy-awards-and-honors)\n- [🦜 Talks](#parrot-talks)\n- [🎪 Events](#circus_tent-events)\n- [📓 References](#notebook-references)\n\n## 👤 About\n\nComputational Scientist at Argonne National Laboratory.  ",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031660317,
+              "end": 1772031660320
+            }
+          },
+          "id": "prt_c95514e91001utSGWxT8zRsEPz",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/svgbob/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/svgbob/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🫥 svgbob'\n4: ---\n5: \n6: Sam Foreman\n7: 2024-11-15\n8: \n9: Playing with [ivanceras/`svgbob`](https://github.com/ivanceras/svgbob)\n10: as an alternative to Mermaid\n11: \n12: ```svg\n13: <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"456\" height=\"304\" class=\"svgbob\">\n14: \n15:   &lt;defs>\n16:     &lt;marker id=\"arrow\" viewBox=\"-2 -2 8 8\" refX=\"4\" refY=\"2\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\">\n17:       <polygon points=\"0,0 0,4 4,2 0,0\"></polygon>\n18:     &lt;/marker>\n19:     &lt;marker id=\"diamond\" viewBox=\"-2 -2 8 8\" refX=\"4\" refY=\"2\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\">\n20:       <polygon points=\"0,2 2,0 4,2 2,4 0,2\"></polygon>\n21:     &lt;/marker>\n22:     &lt;marker id=\"circle\" viewBox=\"0 0 8 8\" refX=\"4\" refY=\"4\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\">\n23:       <circle cx=\"4\" cy=\"4\" r=\"2\" class=\"filled\"></circle>\n24:     &lt;/marker>\n25:     &lt;marker id=\"open_circle\" viewBox=\"0 0 8 8\" refX=\"4\" refY=\"4\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\">\n26:       <circle cx=\"4\" cy=\"4\" r=\"2\" class=\"bg_filled\"></circle>\n27:     &lt;/marker>\n28:     &lt;marker id=\"big_open_circle\" viewBox=\"0 0 8 8\" refX=\"4\" refY=\"4\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\">\n29:       <circle cx=\"4\" cy=\"4\" r=\"3\" class=\"bg_filled\"></circle>\n30:     &lt;/marker>\n\n(Showing lines 1-30 of 3703. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/svgbob/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🫥 svgbob'\n---\n\nSam Foreman\n2024-11-15\n\nPlaying with [ivanceras/`svgbob`](https://github.com/ivanceras/svgbob)\nas an alternative to Mermaid\n\n```svg\n<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"456\" height=\"304\" class=\"svgbob\">\n\n  &lt;defs>\n    &lt;marker id=\"arrow\" viewBox=\"-2 -2 8 8\" refX=\"4\" refY=\"2\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\">\n      <polygon points=\"0,0 0,4 4,2 0,0\"></polygon>\n    &lt;/marker>\n    &lt;marker id=\"diamond\" viewBox=\"-2 -2 8 8\" refX=\"4\" refY=\"2\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\">\n      <polygon points=\"0,2 2,0 4,2 2,4 0,2\"></polygon>",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031661083,
+              "end": 1772031661087
+            }
+          },
+          "id": "prt_c9551511e001GuAGqQKt2pqiYD",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_L0nzxgCPzFwi0WeL5H6yzt",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/auroragpt/aurora-gpt/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/auroragpt/aurora-gpt/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🏎️ Megatron-DeepSpeed on Intel XPU'\n4: ---\n5: \n6: Sam Foreman\n7: 2024-06-15\n8: \n9: [Install / Setup](#install--setup)\n10: [Running](#running) - [Using `launch`](#using-launch)\n11: [Using `deepspeed`](#using-deepspeed)\n12: \n13: ## Install / Setup\n14: \n15: Setup script / history:\n16: \n17: **Interactive Session**\n18: \n19:     ```bash\n20:     $ export HTTP_PROXY=http://proxy.alcf.anl.gov:3128\n21:     $ export HTTPS_PROXY=http://proxy.alcf.anl.gov:3128\n22:     $ export http_proxy=http://proxy.alcf.anl.gov:3128\n23:     $ export https_proxy=http://proxy.alcf.anl.gov:3128\n24: \n25:     $ export DRM_LIB=\"$(pwd)/usr/include/libdrm\"\n26:     # $ export PATH=\"${HOME}/miniconda3/bin:$PATH\"\n27: \n28:     $ conda create --name anl_release_q4 python=3.9 --y\n29:     $ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh\n30:     $ bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3\n\n(Showing lines 1-30 of 593. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/auroragpt/aurora-gpt/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🏎️ Megatron-DeepSpeed on Intel XPU'\n---\n\nSam Foreman\n2024-06-15\n\n[Install / Setup](#install--setup)\n[Running](#running) - [Using `launch`](#using-launch)\n[Using `deepspeed`](#using-deepspeed)\n\n## Install / Setup\n\nSetup script / history:\n\n**Interactive Session**\n\n    ```bash\n    $ export HTTP_PROXY=http://proxy.alcf.anl.gov:3128",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031661963,
+              "end": 1772031661967
+            }
+          },
+          "id": "prt_c9551541c001VwQvjq7NMaCBGp",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_7qr2iP4oFAvHllrlmfuGE3",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/auroragpt/checkpoints/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/auroragpt/checkpoints/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '💾 Converting Checkpoints'\n4: ---\n5: \n6: Sam Foreman\n7: 2024-10-17\n8: \n9: - [MDS –\\> HF](#mds--hf)\n10: - [🚧 HF to Meg-DS](#construction-hf-to-meg-ds)\n11:   - [2024-10-17](#2024-10-17)\n12:   - [Older](#older)\n13: \n14: ## MDS –\\> HF\n15: \n16: ``` bash\n17: convert_mds_to_hf() {\n18:  # GLOBAL_STEP=$1\n19:  CKPT_ROOT=$2\n20: \n21:  CKPT_ROOT=\"/flare/Aurora_deployment/AuroraGPT-Testing/foremans/rollback-41k8/Megatron-DeepSpeed-41800/checkpoints/ws768_ds_stage1_nl32_hs4096_mb4_seq4096_gb3072_sp1_pp1_tp1_bf16_optadamw_lr0.00020_lwf0.05/\";\n22:  SRC=\"${CKPT_ROOT}/global_step${GLOBAL_STEP}\"\n23:  if [[ -d \"${SRC}\" ]]; then\n24:         echo \"Converting checkpoint @ global step ${GLOBAL_STEP}\"\n25:         echo \"\\tsrc=${SRC}\"\n26:         DST=\"/flare/Aurora_deployment/AuroraGPT-Checkpoints/Megatron-DeepSpeed/checkpoints-to-convert/ws768_ds_stage1_nl32_hs4096_mb4_seq4096_gb3072_sp1_pp1_tp1_bf16_optadamw_lr0.00020_lwf0.05/global_step${GLOBAL_STEP}_hf\"\n27:         echo \"\\tdst=${DST}\"\n28:         python3 mds_to_hf.py --mds_checkpoint \"${SRC}/mp_rank_00_model_states.pt\" --output_dir \"${DST}\" --cache_dir \"./.cache\"\n29:  else\n30:         echo \"Unable to locate directory ${SRC}. Exiting\"\n\n(Showing lines 1-30 of 2583. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/auroragpt/checkpoints/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '💾 Converting Checkpoints'\n---\n\nSam Foreman\n2024-10-17\n\n- [MDS –\\> HF](#mds--hf)\n- [🚧 HF to Meg-DS](#construction-hf-to-meg-ds)\n  - [2024-10-17](#2024-10-17)\n  - [Older](#older)\n\n## MDS –\\> HF\n\n``` bash\nconvert_mds_to_hf() {\n # GLOBAL_STEP=$1\n CKPT_ROOT=$2\n",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031662511,
+              "end": 1772031662515
+            }
+          },
+          "id": "prt_c9551578d001ZvfxXMXZXefdEw",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_O3wRQKu2BsPXSOcsMt8lCh",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/auroragpt/flash-attn-sunspot/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/auroragpt/flash-attn-sunspot/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '📸 `flash-attn` on Sunspot'\n4: ---\n5: \n6: Sam Foreman\n7: 2024-06-17\n8: \n9: - [Update: 2024-06-16](#update-2024-06-16)\n10: - [🐛 Impact on Loss \\[Bug?\\]](#bug-impact-on-loss-bug)\n11: - [📦 LLM Framework Release](#package-llm-framework-release)\n12:     - [📸 flash 🤝 📷\n13:       no-flash](#camera_flash-flash-handshake-camera-no-flash)\n14:     - [🚧 Broken MPI](#construction-broken-mpigremlins)\n15: - [🕵🏻‍ Framework Comparison](#-framework-comparison)\n16:     - [🥸 Fix in Disguise](#disguised_face-fix-in-disguise)\n17:     - [✅ `2024.0` Fix](#white_check_mark-20240-fix)\n18:     - [📊 `lr-decay-iters`\n19:       Comparison](#bar_chart-lr-decay-iters-comparison)\n20: - [📈 `lr-decay-iters`\n21:   dependence](#chart_with_upwards_trend-lr-decay-iters-dependence)\n22: - [🏎️ Performance Improvement in\n23:   `2024.1`](#racing_car-performance-improvement-in-20241)\n24: \n25: ## Update: 2024-06-16\n26: \n27: After an interactive debug session with Intel, the root behavior of the\n28: apparent discrepancy was identified.\n29: \n30: In particular, we found that the\n\n(Showing lines 1-30 of 465. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/auroragpt/flash-attn-sunspot/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '📸 `flash-attn` on Sunspot'\n---\n\nSam Foreman\n2024-06-17\n\n- [Update: 2024-06-16](#update-2024-06-16)\n- [🐛 Impact on Loss \\[Bug?\\]](#bug-impact-on-loss-bug)\n- [📦 LLM Framework Release](#package-llm-framework-release)\n    - [📸 flash 🤝 📷\n      no-flash](#camera_flash-flash-handshake-camera-no-flash)\n    - [🚧 Broken MPI](#construction-broken-mpigremlins)\n- [🕵🏻‍ Framework Comparison](#-framework-comparison)\n    - [🥸 Fix in Disguise](#disguised_face-fix-in-disguise)\n    - [✅ `2024.0` Fix](#white_check_mark-20240-fix)\n    - [📊 `lr-decay-iters`\n      Comparison](#bar_chart-lr-decay-iters-comparison)\n- [📈 `lr-decay-iters`",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031663451,
+              "end": 1772031663455
+            }
+          },
+          "id": "prt_c955159b0001CVzj7bzlL56r8c",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/auroragpt/long-sequences/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/auroragpt/long-sequences/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🚂 Loooooooong Sequence Lengths'\n4: ---\n5: \n6: Sam Foreman\n7: 2024-02-12\n8: \n9: - [DeepSpeed4Science (09/2023)](#deepspeed4science-092023)\n10:   - [New Features](#new-features)\n11:   - [New optimizations](#new-optimizations)\n12:   - [Initial Results](#initial-results)\n13: - [Installation](#installation)\n14:   - [Using `install.sh`](#using-installsh)\n15:   - [Step-by-Step](#step-by-step)\n16: - [Running](#running)\n17: - [ZeRO Offloading](#zero-offloading)\n18: \n19: <div id=\"fig-ds4sci\">\n20: \n21: <span class=\"stretch\">![](https://raw.githubusercontent.com/saforem2/llm-lunch-talk/main/docs/assets/ds4sci.svg)</span>\n22: \n23: Figure 1: This work was done as part of the DeepSpeed4Science project,\n24: in collaboration with Microsoft.\n25: \n26: </div>\n27: \n28: The new\n29: [Megatron-DeepSpeed](https://github.com/microsoft/Megatron-DeepSpeed)\n30: release contains a variety of improvements / optimizations to enable\n\n(Showing lines 1-30 of 485. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/auroragpt/long-sequences/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🚂 Loooooooong Sequence Lengths'\n---\n\nSam Foreman\n2024-02-12\n\n- [DeepSpeed4Science (09/2023)](#deepspeed4science-092023)\n  - [New Features](#new-features)\n  - [New optimizations](#new-optimizations)\n  - [Initial Results](#initial-results)\n- [Installation](#installation)\n  - [Using `install.sh`](#using-installsh)\n  - [Step-by-Step](#step-by-step)\n- [Running](#running)\n- [ZeRO Offloading](#zero-offloading)\n\n<div id=\"fig-ds4sci\">\n",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031664313,
+              "end": 1772031664321
+            }
+          },
+          "id": "prt_c95515d5c0012NIgDoXBO1oyXy",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_JO4VlGgVA0UXmHcVXq3Je2",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/auroragpt/mpi4py-reproducer/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/auroragpt/mpi4py-reproducer/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🐛 `mpi4py` bug on Sunspot'\n4: ---\n5: \n6: Sam Foreman\n7: 2024-05-25\n8: \n9: Simple reproducer:\n10: \n11: 1.  Load my `anl_24_q2_release` conda environment:\n12: \n13:     ```bash\n14:     #[08:42:38 AM][foremans@x1922c2s3b0n0][~]\n15:     $ eval \"$(~/miniconda3/bin/conda shell.zsh hook)\" ; conda activate anl_24_q2_release\n16:     ```\n17: \n18: 2.  Try `python3 -c 'from mpi4py import MPI'`\n19:     - fails ❌\n20: \n21:     ```bash\n22:     # [08:44:41 AM][foremans@x1922c2s3b0n0][~][anl_24_q2_release]\n23:     $ python3 -c 'from mpi4py import MPI'\n24:     Traceback (most recent call last):\n25:       File \"<string>\", line 1, in <module>\n26:     ImportError: /home/foremans/miniconda3/envs/anl_24_q2_release/lib/python3.9/site-packages/mpi4py/MPI.cpython-39-x86_64-linux-gnu.so: undefined symbol: MPI_Message_c2f\n27:     [1]    14910 exit 1     python3 -c 'from mpi4py import MPI'\n28:     ```\n29: \n30: 3.  Load correct modules:\n\n(Showing lines 1-30 of 52. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/auroragpt/mpi4py-reproducer/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🐛 `mpi4py` bug on Sunspot'\n---\n\nSam Foreman\n2024-05-25\n\nSimple reproducer:\n\n1.  Load my `anl_24_q2_release` conda environment:\n\n    ```bash\n    #[08:42:38 AM][foremans@x1922c2s3b0n0][~]\n    $ eval \"$(~/miniconda3/bin/conda shell.zsh hook)\" ; conda activate anl_24_q2_release\n    ```\n\n2.  Try `python3 -c 'from mpi4py import MPI'`\n    - fails ❌\n",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031664934,
+              "end": 1772031664937
+            }
+          },
+          "id": "prt_c955160bb001uQlWhpzELZ1Btn",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "1032c9ec081d77a39ab6b7dad7f9d28082f2778c",
+          "cost": 0,
+          "tokens": {
+            "total": 15388,
+            "input": 14291,
+            "output": 1097,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_c9551632c00127YdbQk0zDDLRq",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772031665108,
+          "completed": 1772031678111
+        },
+        "parentID": "msg_c95510880001v4cPZ58uSKOY88",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 22844,
+          "input": 15152,
+          "output": 1029,
+          "reasoning": 0,
+          "cache": {
+            "read": 6663,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "REDACTED",
+        "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "1032c9ec081d77a39ab6b7dad7f9d28082f2778c",
+          "id": "prt_c95517319001IIupm3XoErDXal",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_oVClf4ZQR1wZMYt4IuPkBx",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/auroragpt/spike-skipper/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/auroragpt/spike-skipper/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🏔️ Spike Skipper'\n4: ---\n5: \n6: Sam Foreman\n7: 2024-09-17\n8: \n9: - [📝 Example](#pencil-example)\n10: - [🧪 Implementation](#test_tube-implementation)\n11: - [✅ Sanity Check](#white_check_mark-sanity-check)\n12:   - [🔍 Details](#mag-details)\n13: \n14: > [!CAUTION]\n15: >\n16: > ### Details\n17: >\n18: > We describe below our implementation for skipping individual steps\n19: > during training.\n20: \n21: ## 📝 Example\n22: \n23: Suppose we observe a large spike in our loss curve, as shown below:\n24: \n25: ![spike-skipper](./assets/spike-skipper.png)\n26: \n27: Seemingly, this spike is being caused by a batch of “bad data”. In order\n28: to prevent this “bad data” sample from corrupting our training, we would\n29: like to “skip” that particular training step.\n30: \n\n(Showing lines 1-30 of 541. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/auroragpt/spike-skipper/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🏔️ Spike Skipper'\n---\n\nSam Foreman\n2024-09-17\n\n- [📝 Example](#pencil-example)\n- [🧪 Implementation](#test_tube-implementation)\n- [✅ Sanity Check](#white_check_mark-sanity-check)\n  - [🔍 Details](#mag-details)\n\n> [!CAUTION]\n>\n> ### Details\n>\n> We describe below our implementation for skipping individual steps\n> during training.\n",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031669543,
+              "end": 1772031669546
+            }
+          },
+          "id": "prt_c9551731a001obm1XsCOORgRgy",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_LfmpsvcMADhhEX1Uchogx8",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/auroragpt/startup-times/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/auroragpt/startup-times/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🐢 Starting Up Distributed Training on Aurora'\n4: ---\n5: \n6: Sam Foreman\n7: 2024-03-21\n8: \n9: - [Response](#response)\n10:   - [Measuring / Calculating Startup Time](#sec-measurements)\n11: - [Minimal Working Example](#minimal-working-example)\n12: \n13: > [!TIP]\n14: >\n15: > ### <span class=\"dim-text\"> Application Startup Time</span>\n16: >\n17: > - Request:\n18: >\n19: >   > Hi Sam and Corey,\n20: >   >\n21: >   > Thanks for your comments on measuring the application start up\n22: >   > time last week.\n23: >   >\n24: >   > Typically, we report the throughput performance after the start-up\n25: >   > and warm-up during the “steady” state of the training.\n26: >   >\n27: >   > We have a few follow-up questions so that we establish a\n28: >   > methodology to address the issue brought up by Argonne.\n29: >   >\n30: >   > 1.  We can set a few timestamps in the model scripts and job\n\n(Showing lines 1-30 of 428. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/auroragpt/startup-times/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🐢 Starting Up Distributed Training on Aurora'\n---\n\nSam Foreman\n2024-03-21\n\n- [Response](#response)\n  - [Measuring / Calculating Startup Time](#sec-measurements)\n- [Minimal Working Example](#minimal-working-example)\n\n> [!TIP]\n>\n> ### <span class=\"dim-text\"> Application Startup Time</span>\n>\n> - Request:\n>\n>   > Hi Sam and Corey,\n>   >",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031670517,
+              "end": 1772031670520
+            }
+          },
+          "id": "prt_c955175280011QahYGljvVdpJc",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ai-for-physics/diffusion/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ai-for-physics/diffusion/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🎲 MCMC + Diffusion Sampling'\n4: ---\n5: \n6: Sam Foreman\n7: 2024-04-15\n8: \n9: - [Denoising Diffusion Probabilistic\n10:   Models](#denoising-diffusion-probabilistic-models)\n11: - [Imports / Setup](#imports--setup)\n12: - [2D $U(1)$](#2d-u1)\n13: - [Train Diffusion Model](#train-diffusion-model)\n14: - [Build Diffusion Model with UNet\n15:   Architecure](#build-diffusion-model-with-unet-architecure)\n16:     - [Perform initial training on HMC\n17:       samples](#perform-initial-training-on-hmc-samples)\n18: - [HMC Sampling with Diffusion](#hmc-sampling-with-diffusion)\n19: - [Alternate](#alternate)\n20: \n21: ## Denoising Diffusion Probabilistic Models\n22: \n23: ## Imports / Setup\n24: \n25: ```python\n26: from __future__ import absolute_import, print_function, annotations, division\n27: from dataclasses import dataclass\n28: \n29: import sys\n30: import os\n\n(Showing lines 1-30 of 1562. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/ai-for-physics/diffusion/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🎲 MCMC + Diffusion Sampling'\n---\n\nSam Foreman\n2024-04-15\n\n- [Denoising Diffusion Probabilistic\n  Models](#denoising-diffusion-probabilistic-models)\n- [Imports / Setup](#imports--setup)\n- [2D $U(1)$](#2d-u1)\n- [Train Diffusion Model](#train-diffusion-model)\n- [Build Diffusion Model with UNet\n  Architecure](#build-diffusion-model-with-unet-architecure)\n    - [Perform initial training on HMC\n      samples](#perform-initial-training-on-hmc-samples)\n- [HMC Sampling with Diffusion](#hmc-sampling-with-diffusion)\n- [Alternate](#alternate)\n",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031671452,
+              "end": 1772031671457
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_ayAYiFCMa56Ts4BYtpWur6",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ai-for-physics/l2hmc-qcd/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ai-for-physics/l2hmc-qcd/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🎢 L2HMC for LQCD'\n4: ---\n5: \n6: Sam Foreman\n\n(End of file - total 6 lines)\n</content>",
+            "title": "web/src/pages/posts/ai-for-physics/l2hmc-qcd/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🎢 L2HMC for LQCD'\n---\n\nSam Foreman",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031672325,
+              "end": 1772031672327
+            }
+          },
+          "id": "prt_c95517c9d001wr5PB141ZB46tn",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ai-for-physics/l2hmc-qcd/2dU1/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ai-for-physics/l2hmc-qcd/2dU1/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🎢 l2hmc-qcd Example: 2D U(1)'\n4: ---\n5: \n6: Sam Foreman\n7: 2023-12-14\n8: \n9: - [`l2hmc-qcd`: 2D $U(1)$ Example](#l2hmc-qcd-2d-u1-example)\n10:     - [Contents](#contents)\n11: - [`l2hmc`: Example](#l2hmc-example)\n12:     - [Imports / Setup](#imports--setup)\n13: - [Initialize and Build `Experiment`\n14:   objects:](#initialize-and-build-experiment-objects)\n15:     - [PyTorch](#pytorch)\n16:         - [Training](#training)\n17:         - [Inference](#inference)\n18:     - [TensorFlow](#tensorflow)\n19:         - [Train](#train)\n20:         - [Inference](#inference-1)\n21: - [Model Performance](#model-performance)\n22: - [Comparisons](#comparisons)\n23:     - [TensorFlow Results](#tensorflow-results)\n24:         - [PyTorch Results](#pytorch-results)\n25:     - [Comparisons](#comparisons-1)\n26: \n27: # `l2hmc-qcd`: 2D $U(1)$ Example\n28: \n29: ## Contents\n30: \n\n(Showing lines 1-30 of 1334. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/ai-for-physics/l2hmc-qcd/2dU1/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🎢 l2hmc-qcd Example: 2D U(1)'\n---\n\nSam Foreman\n2023-12-14\n\n- [`l2hmc-qcd`: 2D $U(1)$ Example](#l2hmc-qcd-2d-u1-example)\n    - [Contents](#contents)\n- [`l2hmc`: Example](#l2hmc-example)\n    - [Imports / Setup](#imports--setup)\n- [Initialize and Build `Experiment`\n  objects:](#initialize-and-build-experiment-objects)\n    - [PyTorch](#pytorch)\n        - [Training](#training)\n        - [Inference](#inference)\n    - [TensorFlow](#tensorflow)\n        - [Train](#train)\n        - [Inference](#inference-1)",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031672861,
+              "end": 1772031672863
+            }
+          },
+          "id": "prt_c95518006001vlTxbRdNdcxTEs",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_4Zf33H0H0BnQAnnYeo1xV1",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/jupyter/test/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/jupyter/test/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: \"🏁 `l2hmc` Example: 2D $U(1)$\"\n4: ---\n5: \n6: Sam Foreman\n7: 2024-02-12\n8: \n9: - [Imports / Setup](#imports--setup)\n10: - [Initialize and Build `Experiment`\n11:   objects:](#initialize-and-build-experiment-objects)\n12:   - [PyTorch](#pytorch)\n13:     - [Training](#training)\n14:     - [Inference](#inference)\n15:   - [TensorFlow](#tensorflow)\n16:     - [Train](#train)\n17:     - [Inference](#inference-1)\n18: - [Model Performance](#model-performance)\n19: - [Comparisons](#comparisons)\n20:   - [TensorFlow Results](#tensorflow-results)\n21:     - [PyTorch Results](#pytorch-results)\n22:   - [Comparisons](#comparisons-1)\n23: \n24: Sam Foreman\n25: [<span class=\"orcid-green\"></span>](https://orcid.org/0000-0002-9981-0876)\n26: 2023-12-14\n27: \n28: <span style=\"text-align:left;\">[![](https://img.shields.io/badge/-View%20on%20GitHub-333333?style=flat&logo=github&labelColor=gray.png)](https://github.com/saforem2/l2hmc-qcd/blob/main/reports/l2hmc-2dU1/README.md)</span>\n29: \n30: This notebook will (attempt) to walk through the steps needed to\n\n(Showing lines 1-30 of 2402. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/jupyter/test/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: \"🏁 `l2hmc` Example: 2D $U(1)$\"\n---\n\nSam Foreman\n2024-02-12\n\n- [Imports / Setup](#imports--setup)\n- [Initialize and Build `Experiment`\n  objects:](#initialize-and-build-experiment-objects)\n  - [PyTorch](#pytorch)\n    - [Training](#training)\n    - [Inference](#inference)\n  - [TensorFlow](#tensorflow)\n    - [Train](#train)\n    - [Inference](#inference-1)\n- [Model Performance](#model-performance)\n- [Comparisons](#comparisons)\n  - [TensorFlow Results](#tensorflow-results)",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031673916,
+              "end": 1772031673920
+            }
+          },
+          "id": "prt_c9551829b001bvEXrxQGGN4bNf",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/jupyter/l2hmc-4dSU3/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/jupyter/l2hmc-4dSU3/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🔳 `l2hmc-qcd` Example: 4D SU(3)'\n4: ---\n5: \n6: Sam Foreman\n7: 2024-07-24\n8: \n9: - [Load config + build Experiment](#load-config--build-experiment)\n10: - [HMC](#hmc)\n11: - [Training](#training)\n12: - [Evaluation](#evaluation)\n13: \n14: ```python\n15: # %matplotlib inline\n16: import matplotlib_inline\n17: matplotlib_inline.backend_inline.set_matplotlib_formats('svg')\n18: import os\n19: os.environ['COLORTERM'] = 'truecolor'\n20: import lovely_tensors as lt\n21: lt.monkey_patch()\n22: lt.set_config(color=False)\n23: # automatically detect and reload local changes to modules\n24: %load_ext autoreload\n25: %autoreload 2\n26: import ezpz\n27: import numpy as np\n28: import matplotlib.pyplot as plt\n29: from l2hmc.utils.plot_helpers import FigAxes\n30: import ambivalent\n\n(Showing lines 1-30 of 1146. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/jupyter/l2hmc-4dSU3/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🔳 `l2hmc-qcd` Example: 4D SU(3)'\n---\n\nSam Foreman\n2024-07-24\n\n- [Load config + build Experiment](#load-config--build-experiment)\n- [HMC](#hmc)\n- [Training](#training)\n- [Evaluation](#evaluation)\n\n```python\n# %matplotlib inline\nimport matplotlib_inline\nmatplotlib_inline.backend_inline.set_matplotlib_formats('svg')\nimport os\nos.environ['COLORTERM'] = 'truecolor'\nimport lovely_tensors as lt",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031674823,
+              "end": 1772031674826
+            }
+          },
+          "id": "prt_c9551863d001IaUuc0cY8cGLk3",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/jupyter/l2hmc/4dSU3/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/jupyter/l2hmc/4dSU3/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: \"🔳 l2hmc-qcd Example: 4D SU(3)\"\n4: ---\n5: \n6: Sam Foreman\n7: 2023-12-06\n8: \n9: - [Imports](#imports)\n10: - [Load config + build Experiment](#load-config--build-experiment)\n11: - [HMC](#hmc)\n12: - [Training](#training)\n13: - [Evaluation](#evaluation)\n14: \n15: ## Imports\n16: \n17: ``` python\n18: # %matplotlib inline\n19: import matplotlib_inline\n20: matplotlib_inline.backend_inline.set_matplotlib_formats('svg')\n21: import os\n22: os.environ['COLORTERM'] = 'truecolor'\n23: import lovely_tensors as lt\n24: lt.monkey_patch()\n25: lt.set_config(color=False)\n26: # automatically detect and reload local changes to modules\n27: %load_ext autoreload\n28: %autoreload 2\n29: import ezpz\n30: import numpy as np\n\n(Showing lines 1-30 of 1719. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/jupyter/l2hmc/4dSU3/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: \"🔳 l2hmc-qcd Example: 4D SU(3)\"\n---\n\nSam Foreman\n2023-12-06\n\n- [Imports](#imports)\n- [Load config + build Experiment](#load-config--build-experiment)\n- [HMC](#hmc)\n- [Training](#training)\n- [Evaluation](#evaluation)\n\n## Imports\n\n``` python\n# %matplotlib inline\nimport matplotlib_inline\nmatplotlib_inline.backend_inline.set_matplotlib_formats('svg')",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031675599,
+              "end": 1772031675601
+            }
+          },
+          "id": "prt_c955189c8001HBrcxuQWMnHbeA",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/drafts/2025/09/22/index.mdx",
+              "limit": 30
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/drafts/2025/09/22/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '📝 2025 Annual Report'\n4: ---\n5: \n6: Sam Foreman\n7: 2025-09-22\n8: \n9: - [Goals for Next Year (2026)](#goals-for-next-year-2026)\n10: - [Goals from Last Year (2024)](#goals-from-last-year-2024)\n11: - [Contributions to ALCF](#contributions-to-alcf)\n12: - [Publications](#publications)\n13: - [Presentations](#presentations)\n14: - [Posts](#posts)\n15: - [Organizational Efforts](#organizational-efforts)\n16: - [Mentoring](#mentoring)\n17: - [Scientific / Technical\n18:   Accomplishments](#scientific--technical-accomplishments)\n19: - [References](#references)\n20: \n21: ## Goals for Next Year (2026)\n22: \n23: - [ ] Build out generic training services for science teams\n24: - [ ] Continue to push on resilient / fault-tolerant training techniques\n25: \n26: ## Goals from Last Year (2024)\n27: \n28: - [x] Continue to contribute to division(/lab)-wide efforts\n29: - [x] Continue to work with application teams to efficiently scale on\n30:       ALCF systems\n\n(Showing lines 1-30 of 235. Use offset=31 to continue.)\n</content>",
+            "title": "web/src/pages/posts/drafts/2025/09/22/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '📝 2025 Annual Report'\n---\n\nSam Foreman\n2025-09-22\n\n- [Goals for Next Year (2026)](#goals-for-next-year-2026)\n- [Goals from Last Year (2024)](#goals-from-last-year-2024)\n- [Contributions to ALCF](#contributions-to-alcf)\n- [Publications](#publications)\n- [Presentations](#presentations)\n- [Posts](#posts)\n- [Organizational Efforts](#organizational-efforts)\n- [Mentoring](#mentoring)\n- [Scientific / Technical\n  Accomplishments](#scientific--technical-accomplishments)\n- [References](#references)\n",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031676579,
+              "end": 1772031676581
+            }
+          },
+          "id": "prt_c95518cd0001QXEBaB02q0aNwv",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_c3s3HzjI4E72eTVVaEfP2f",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "posts/auroragpt/determinstic-flash-attn/index.mdx",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "No files found",
+            "title": "web/src/pages",
+            "metadata": {
+              "count": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772031677239,
+              "end": 1772031677264
+            }
+          },
+          "id": "prt_c955190a4001o4WTlSAU7gYnNe",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_5o5cGB59SYcKj99Hgv1YKa",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "posts/auroragpt/determinstic-flash-attn/index.*",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "No files found",
+            "title": "web/src/pages",
+            "metadata": {
+              "count": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772031677989,
+              "end": 1772031678007
+            }
+          },
+          "id": "prt_c95519343001vJj7NF2uh29GH4",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "1032c9ec081d77a39ab6b7dad7f9d28082f2778c",
+          "cost": 0,
+          "tokens": {
+            "total": 22844,
+            "input": 15152,
+            "output": 1029,
+            "reasoning": 0,
+            "cache": {
+              "read": 6663,
+              "write": 0
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "REDACTED"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772031678112,
+          "completed": 1772031682809
+        },
+        "parentID": "msg_c95510880001v4cPZ58uSKOY88",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 26799,
+          "input": 19917,
+          "output": 219,
+          "reasoning": 0,
+          "cache": {
+            "read": 6663,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c955196a0001jJjrWFRxBR9LSX",
+        "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "1032c9ec081d77a39ab6b7dad7f9d28082f2778c",
+          "id": "prt_c9551a02c001JlouD11xUgtRbS",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955196a0001jJjrWFRxBR9LSX"
+        },
+        {
+          "type": "text",
+          "text": "Let me also check if the `l2hmc-qcd/index.mdx` has a date further down since it was only 6 lines:",
+          "time": {
+            "start": 1772031682678,
+            "end": 1772031682678
+          },
+          "id": "prt_c9551a02d001ZSHC9LzHIdgBl5",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955196a0001jJjrWFRxBR9LSX"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ai-for-physics/l2hmc-qcd/index.mdx"
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ai-for-physics/l2hmc-qcd/index.mdx</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: '🎢 L2HMC for LQCD'\n4: ---\n5: \n6: Sam Foreman\n\n(End of file - total 6 lines)\n</content>",
+            "title": "web/src/pages/posts/ai-for-physics/l2hmc-qcd/index.mdx",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: '🎢 L2HMC for LQCD'\n---\n\nSam Foreman",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772031681936,
+              "end": 1772031681938
+            }
+          },
+          "id": "prt_c9551a320001qpGttxlaJtKPy7",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955196a0001jJjrWFRxBR9LSX"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages",
+              "pattern": "posts/auroragpt/deterministic-flash-attn/index.*"
+            },
+            "output": "No files found",
+            "title": "web/src/pages",
+            "metadata": {
+              "count": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772031682672,
+              "end": 1772031682693
+            }
+          },
+          "id": "prt_c9551a590001IEEtPpJTB5xRFk",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955196a0001jJjrWFRxBR9LSX"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "1032c9ec081d77a39ab6b7dad7f9d28082f2778c",
+          "cost": 0,
+          "tokens": {
+            "total": 26799,
+            "input": 19917,
+            "output": 219,
+            "reasoning": 0,
+            "cache": {
+              "read": 6663,
+              "write": 0
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c955196a0001jJjrWFRxBR9LSX"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772031682810,
+          "completed": 1772031736518
+        },
+        "parentID": "msg_c95510880001v4cPZ58uSKOY88",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 29940,
+          "input": 410,
+          "output": 2951,
+          "reasoning": 0,
+          "cache": {
+            "read": 26579,
+            "write": 0
+          }
+        },
+        "finish": "stop",
+        "id": "msg_c9551a8fa001ASYqeyvfN5yhdf",
+        "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "1032c9ec081d77a39ab6b7dad7f9d28082f2778c",
+          "id": "prt_c9551b2760014njfpp6ZjLt57G",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c9551a8fa001ASYqeyvfN5yhdf"
+        },
+        {
+          "type": "text",
+          "text": "Now I have all the data. Here is the complete table:\n\n---\n\n## Complete Blog Post Inventory\n\n| # | File Path (relative to `web/src/pages/`) | Title | Date | Suggested Description | Draft? |\n|---|---|---|---|---|---|\n| **Date-based posts** | | | | | |\n| 1 | `posts/2026/01/10/index.mdx` | `🍋 ezpz` | 2026-01-10 | A history and overview of ezpz, covering AMD and Intel PyTorch enablement timelines for portable distributed training across GPU vendors. | No |\n| 2 | `posts/2026/01/07/index.mdx` | `🎉 Happy New Year!` | 2026-01-07 | A New Year update summarizing ongoing projects including AuroraGPT, AERIS, and other involvements at Argonne. | No |\n| 3 | `posts/2025/11/12/index.mdx` | `🧊 Cooling Down Checkpoints: Best Practices for Model Evaluation` | 2025-11-12 | Best practices for cooling down model checkpoints before evaluation to improve validation loss comparisons. | No |\n| 4 | `posts/2025/10/06/index.mdx` | `🎨 Mixing Between Distributions While Training` | 2025-10-06 | A mathematical framework for smoothly interpolating between data distributions during training using an annealing schedule. | No |\n| 5 | `posts/2025/09/17/index.mdx` | `📊 \\`pbs-tui\\`: TUI for PBS Job Scheduler Monitoring` | 2025-09-17 | A terminal dashboard for monitoring PBS Pro job schedulers with interactive keybindings and snapshot modes. | No |\n| 6 | `posts/2025/09/12/index.mdx` | `🍹 BlendCorpus + TorchTitan @ ALCF` | 2025-09-12 | A walkthrough of running BlendCorpus with TorchTitan for multi-source data training at ALCF. | No |\n| 7 | `posts/2025/06/14/index.mdx` | `🏗️ Building PyTorch 2.8 from Source on Aurora` | 2025-06-14 | Step-by-step instructions for building PyTorch 2.8 and related Intel libraries from source on Aurora. | No |\n| 8 | `posts/2025/06/02/index.mdx` | `🧜‍♀️ Mermaid` | 2025-06-02 | Experiments with Mermaid diagram rendering for flowcharts depicting distributed GPU training. | No |\n| 9 | `posts/2025/06/01/index.mdx` | `📰 Nice Headings` | 2025-06-01 | Recreating neovim-style heading aesthetics for website content in both light and dark themes. | No |\n| 10 | `posts/2025/05/03/index.mdx` | `🚧 Frameworks Issue with numpy > 2` | 2025-05-03 | Documenting a breaking issue where upgrading numpy beyond version 2 breaks TensorFlow in the ALCF frameworks module. | No |\n| 11 | `posts/2025/04/28/index.mdx` | `🔥 Building PyTorch 2.6 from Source on Aurora` | 2025-04-28 | Build instructions for compiling PyTorch 2.6 from source on Intel Aurora using environment variables and ezpz. | No |\n| **Slug-based (top-level) posts** | | | | | |\n| 12 | `posts/dope-slides/index.mdx` | `💅 How to Make Dope Slides` | 2024-08-13 | A guide to creating polished presentation slides using Quarto and Reveal.js with custom CSS. | No |\n| 13 | `posts/ezpz-v1/index.mdx` | `📝 ezpz-v1` | 2024-08-23 | Documentation and usage guide for ezpz v1, a library for simplifying distributed training setup and testing. | No |\n| 14 | `posts/ezpz-at-alcf/index.mdx` | `🍋 ezpz @ ALCF` | 2024-08-23 | Getting started with the ezpz Python library and shell utilities for streamlined environment setup at ALCF. | No |\n| 15 | `posts/torchtune-aurora/index.mdx` | `🪛 Torchtune on Aurora` | 2025-03-23 | Patches and instructions for getting torchtune working on Intel Aurora with PyTorch 2.3 and 2.5. | No |\n| 16 | `posts/torchtune-patch-aurora/index.mdx` | `🚑 Torchtune Patch on Aurora` | 2025-03-23 | A specific diff patch to resolve torchtune import issues with FSDP on Aurora. | No |\n| 17 | `posts/resume/index.mdx` | `🧑🏻‍💻 Sam Foreman's Résumé` | 2025-04-26 | Sam Foreman's professional resume covering education, experience, publications, and talks. | No |\n| 18 | `posts/svgbob/index.mdx` | `🫥 svgbob` | 2024-11-15 | Experimenting with svgbob as an ASCII-art-to-SVG alternative to Mermaid diagrams. | No |\n| **Nested (auroragpt/*) posts** | | | | | |\n| 19 | `posts/auroragpt/aurora-gpt/index.mdx` | `🏎️ Megatron-DeepSpeed on Intel XPU` | 2024-06-15 | Setup and running instructions for Megatron-DeepSpeed on Intel XPU hardware for AuroraGPT. | No |\n| 20 | `posts/auroragpt/checkpoints/index.mdx` | `💾 Converting Checkpoints` | 2024-10-17 | Scripts and procedures for converting Megatron-DeepSpeed checkpoints to HuggingFace format and back. | No |\n| 21 | `posts/auroragpt/flash-attn-sunspot/index.mdx` | `📸 \\`flash-attn\\` on Sunspot` | 2024-06-17 | Debugging flash attention discrepancies on Sunspot and documenting framework comparison results with Intel. | No |\n| 22 | `posts/auroragpt/long-sequences/index.mdx` | `🚂 Loooooooong Sequence Lengths` | 2024-02-12 | Optimizations for extremely long sequence lengths in Megatron-DeepSpeed as part of the DeepSpeed4Science project. | No |\n| 23 | `posts/auroragpt/mpi4py-reproducer/index.mdx` | `🐛 \\`mpi4py\\` bug on Sunspot` | 2024-05-25 | A minimal reproducer for an mpi4py import error on Sunspot caused by missing MPI symbols. | No |\n| 24 | `posts/auroragpt/spike-skipper/index.mdx` | `🏔️ Spike Skipper` | 2024-09-17 | Implementation of a mechanism to skip bad-data training steps that cause loss spikes during LLM training. | No |\n| 25 | `posts/auroragpt/startup-times/index.mdx` | `🐢 Starting Up Distributed Training on Aurora` | 2024-03-21 | Methodology for measuring and reducing distributed training startup times on Aurora. | No |\n| **Nested (ai-for-physics/*) posts** | | | | | |\n| 26 | `posts/ai-for-physics/diffusion/index.mdx` | `🎲 MCMC + Diffusion Sampling` | 2024-04-15 | Combining denoising diffusion probabilistic models with HMC sampling for 2D U(1) lattice gauge theory. | No |\n| 27 | `posts/ai-for-physics/l2hmc-qcd/index.mdx` | `🎢 L2HMC for LQCD` | **NO DATE FOUND** | Placeholder/index page for the L2HMC lattice QCD project (file is only 6 lines with no body content or date). | No |\n| 28 | `posts/ai-for-physics/l2hmc-qcd/2dU1/index.mdx` | `🎢 l2hmc-qcd Example: 2D U(1)` | 2023-12-14 | A walkthrough of the l2hmc-qcd framework applied to 2D U(1) gauge theory with PyTorch and TensorFlow. | No |\n| **Nested (jupyter/*) posts** | | | | | |\n| 29 | `posts/jupyter/test/index.mdx` | `🏁 \\`l2hmc\\` Example: 2D $U(1)$` | 2024-02-12 (line 7); also shows 2023-12-14 (line 26) | A Jupyter notebook walkthrough of the l2hmc framework for 2D U(1) gauge theory experiments. | No |\n| 30 | `posts/jupyter/l2hmc-4dSU3/index.mdx` | `🔳 \\`l2hmc-qcd\\` Example: 4D SU(3)` | 2024-07-24 | A Jupyter notebook demonstrating l2hmc-qcd training and evaluation on 4D SU(3) lattice gauge theory. | No |\n| 31 | `posts/jupyter/l2hmc/4dSU3/index.mdx` | `🔳 l2hmc-qcd Example: 4D SU(3)` | 2023-12-06 | An earlier version of the l2hmc-qcd 4D SU(3) example notebook with training and evaluation steps. | No |\n| **Draft post** | | | | | |\n| 32 | `posts/drafts/2025/09/22/index.mdx` | `📝 2025 Annual Report` | 2025-09-22 | Draft annual report covering scientific accomplishments, publications, presentations, and goals at ALCF. | **YES (draft)** |\n\n---\n\n### Additional check requested:\n\n- **`posts/auroragpt/determinstic-flash-attn/index.mdx`** -- **DOES NOT EXIST** (checked both the misspelled `determinstic` and correctly-spelled `deterministic` variants; neither exists).\n\n### Notes:\n\n1. **Date source consistency**: All date-based posts have dates confirmed in both the URL path and line 7 of the body text (they match). All slug-based and nested posts have dates on line 7 of the body text.\n\n2. **One post with NO date**: `posts/ai-for-physics/l2hmc-qcd/index.mdx` is a stub file (only 6 lines total: frontmatter + \"Sam Foreman\" and nothing else). It has no date anywhere.\n\n3. **One post with two dates**: `posts/jupyter/test/index.mdx` has `2024-02-12` on line 7 (the standard author/date position) and also `2023-12-14` on line 26 (appears to be the original notebook creation date). I recommend using `2024-02-12` as the canonical date.\n\n4. **None of these posts currently have `date` or `description` fields in their frontmatter** -- all frontmatter blocks contain only `layout` and `title`.",
+          "time": {
+            "start": 1772031736371,
+            "end": 1772031736371
+          },
+          "id": "prt_c9551b276002Y62u95yWUXtPgT",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c9551a8fa001ASYqeyvfN5yhdf"
+        },
+        {
+          "type": "step-finish",
+          "reason": "stop",
+          "snapshot": "1032c9ec081d77a39ab6b7dad7f9d28082f2778c",
+          "cost": 0,
+          "tokens": {
+            "total": 29940,
+            "input": 410,
+            "output": 2951,
+            "reasoning": 0,
+            "cache": {
+              "read": 26579,
+              "write": 0
+            }
+          },
+          "id": "prt_c95527a3900195JT8aV5dznkkO",
+          "sessionID": "ses_36aaef78bffezx85VkcuVnHgsG",
+          "messageID": "msg_c9551a8fa001ASYqeyvfN5yhdf"
+        }
+      ]
+    }
+  ]
+}
