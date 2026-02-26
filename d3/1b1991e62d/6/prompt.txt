@@ -1,0 +1,159 @@
+What changed in the vim scroll / navigation on the content pages ?
+
+tab successfully focuses the next element but j does not
+
+---
+
+y
+
+---
+
+Still broken; pressing `j` repeatedly in the first screenshot shown doesn't do anything (i.e. the Computational Scientist link is never selected); similarly, pressing `k` sends me to the bottom and then gets stuck there when repeatedly pressing `k` as seen in the second screenshot
+
+[Image 1] [Image 2]
+
+---
+
+essentially I want the j/k binds to mirror tab, shift-tab
+
+---
+
+I think the issue came from messing with the snap scroll  but I only want that applied on the root page but not the content pages (e.g. snap-scroll) should only be applied to @web/src/pages/index.astro; 
+Called the Read tool with the following input: {"filePath":"/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/index.astro"}
+<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/index.astro</path>
+<type>file</type>
+<content>1: ---
+2: import Layout from '@/layouts/Layout.astro'
+3: import Intro from '@/components/landing/sections/Intro.astro'
+4: import RecentPosts from '@/components/landing/sections/RecentPosts.astro'
+5: import RecentTalks from '@/components/landing/sections/RecentTalks.astro'
+6: import VimNavigation from '@/components/landing/VimNavigation.astro'
+7: ---
+8: 
+9: <Layout>
+10:     <main>
+11:         <Intro />
+12:         <RecentPosts />
+13:         <RecentTalks />
+14:     </main>
+15:     <column id="statusline">
+16:         <row>
+17:             <span
+18:                 is-="badge"
+19:                 variant-="blue"
+20:                 style="--badge-text: var(--accent)">NORMAL</span
+21:             >
+22:             <span
+23:                 is-="badge"
+24:                 variant-="background1"
+25:                 style="--badge-text: var(--blue)">&#xe725; main</span
+26:             >
+27:             <row self-="grow">
+28:                 <span is-="badge" variant-="background0">sam.onl</span>
+29:             </row>
+30:             <row id="statusline-right">
+31:                 <span is-="badge" variant-="background0">utf-8</span>
+32:                 <span is-="badge" variant-="background1">Top</span>
+33:                 <span
+34:                     is-="badge"
+35:                     variant-="blue"
+36:                     style="--badge-text: var(--accent)">1:1</span
+37:                 >
+38:             </row>
+39:         </row>
+40:     </column>
+41:     <div id="vim-navigation-container">
+42:         <VimNavigation />
+43:     </div>
+44: </Layout>
+45: 
+46: <style is:global>
+47:     #vim-navigation-container {
+48:         position: fixed;
+49:         top: 1lh;
+50:         right: 2ch;
+51:     }
+52: 
+53:     #statusline {
+54:         position: fixed;
+55:         bottom: 0;
+56:         left: 0;
+57:         width: 100%;
+58:         height: 2lh;
+59:         z-index: 100;
+60:         background-color: var(--background1);
+61:         /* box-shadow: 0 -1lh 0 0 var(--background1); */
+62:     }
+63: 
+64:     #statusline [is-~='badge'][variant-='background0'] {
+65:         --badge-color: var(--mantle);
+66:         --badge-text: var(--foreground1);
+67:     }
+68: 
+69:     #statusline [is-~='badge'][variant-='background1'] {
+70:         --badge-color: var(--crust);
+71:         --badge-text: var(--foreground0);
+72:     }
+73: 
+74:     @media (max-width: 50ch) {
+75:         #statusline-right {
+76:             display: none;
+77:         }
+78:     }
+79: 
+80:     main {
+81:         height: 100vh;
+82:         scroll-snap-type: y mandatory;
+83:         display: flex;
+84:         flex-direction: column;
+85:         overflow-y: auto;
+86:         overflow-x: hidden;
+87:         scrollbar-width: thin;
+88:         scrollbar-color: var(--foreground1) var(--background2);
+89:         padding-bottom: 2lh;
+90:     }
+91: 
+92:     section,
+93:     header {
+94:         scroll-snap-align: start;
+95:         display: flex;
+96:         flex-direction: column;
+97:         min-height: 100vh;
+98:     }
+99: 
+100:     section .content {
+101:         max-width: 80ch;
+102:         width: round(calc(100% - 2ch), 1ch);
+103:         row-gap: 2ch;
+104:         column-gap: 1lh;
+105:     }
+106: 
+107:     @media (max-width: 1000px) {
+108:         section .content {
+109:             flex-direction: column-reverse;
+110:         }
+111:     }
+112: </style>
+
+(End of file - total 112 lines)
+</content>
+
+---
+
+when pressing 'j' for the first time the 2024 link is selected as shown below:
+
+[Image 1] 
+
+pressing 'k' brings me up to the 2025 list item, but _it should_ focus the 2025 link first; pressing k again should send me to the 2025 _line_;
+
+pressing 'j' does not focus the next element, it just stays on 2025
+
+---
+
+when pressing 'j' for the first time the 2024 link is selected as shown below:
+
+[Image 1] 
+
+pressing 'k' brings me up to the 2025 list item, but _it should_ focus the 2025 link first; pressing k again should send me to the 2025 _line_;
+
+pressing 'j' does not focus the next element, it just stays on 2024
