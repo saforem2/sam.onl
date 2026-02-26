@@ -1,0 +1,26 @@
+Explore the Astro site at /Users/samforeman/projects/saforem2/sam.onl/ to understand how to add RSS feed support. I need to know:
+
+1. Check if there's already any RSS/feed setup:
+   - Look for @astrojs/rss in package.json (in web/ and root)
+   - Look for any feed.xml, rss.xml, or similar files
+   - Check for any existing feed routes in web/src/pages/
+
+2. Understand the content structure:
+   - What's in web/src/pages/posts/ — are these the blog posts?
+   - How are posts structured (frontmatter fields like title, date, description, etc.)?
+   - Read 3-4 representative post index.mdx files to see the frontmatter schema
+   - Is there a content collection defined in web/src/content/ or similar?
+
+3. Check the Astro config:
+   - Read web/astro.config.mjs (or .ts) for the site URL and any relevant config
+   - Check what integrations are already installed
+
+4. Check web/package.json for existing dependencies
+
+Return:
+- Whether @astrojs/rss is already a dependency
+- The site URL from astro config
+- The frontmatter schema used by blog posts (all fields)
+- Whether content collections are used
+- The full list of post directories/slugs under web/src/pages/posts/
+- Any existing feed-related files or routes
