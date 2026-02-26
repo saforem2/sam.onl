@@ -1,0 +1,1486 @@
+{
+  "info": {
+    "id": "ses_36ac24f7fffebBpckcBypMcmXc",
+    "slug": "calm-tiger",
+    "projectID": "b5be0511ce8471c191329d8707367f25d90d9422",
+    "directory": "/Users/samforeman/projects/saforem2/sam.onl",
+    "parentID": "ses_36ac81ea8ffeWzP8xePB9yxQoG",
+    "title": "Find all embedded slide URLs (@explore subagent)",
+    "version": "1.2.13",
+    "summary": {
+      "additions": 0,
+      "deletions": 0,
+      "files": 0
+    },
+    "permission": [
+      {
+        "permission": "todowrite",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "todoread",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "task",
+        "pattern": "*",
+        "action": "deny"
+      }
+    ],
+    "time": {
+      "created": 1772030374016,
+      "updated": 1772030433232
+    }
+  },
+  "messages": [
+    {
+      "info": {
+        "role": "user",
+        "time": {
+          "created": 1772030374018
+        },
+        "summary": {
+          "diffs": []
+        },
+        "agent": "explore",
+        "model": {
+          "providerID": "github-copilot",
+          "modelID": "claude-opus-4.6"
+        },
+        "tools": {
+          "todowrite": false,
+          "todoread": false,
+          "task": false
+        },
+        "id": "msg_c953db082001ioEyd7yucda81T",
+        "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc"
+      },
+      "parts": [
+        {
+          "type": "text",
+          "text": "In the repo at /Users/samforeman/projects/saforem2/sam.onl, find ALL embedded slide URLs in the web/src/pages/ directory.\n\nSearch for:\n1. All iframe elements with src attributes\n2. All embed elements \n3. Any references to slides.html, reveal.js presentations, or similar\n\nFor each one found, report:\n- The file path\n- The line number  \n- The full iframe/embed tag or at minimum the src URL\n- Whether the src URL is a local path or external URL\n- For local paths, check if the referenced file actually exists\n\nI particularly need to know about:\n- Any iframe src pointing to local slides.html files that don't exist\n- Any iframe src pointing to external slide URLs (samforeman.me, saforem2.github.io, slides.com, etc.)\n\nReturn exact file paths, line numbers, and the full src URLs.",
+          "id": "prt_c953db082002ck7SrqlRxksw7P",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953db082001ioEyd7yucda81T"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772030374021,
+          "completed": 1772030383122
+        },
+        "parentID": "msg_c953db082001ioEyd7yucda81T",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 7724,
+          "input": 7189,
+          "output": 535,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c953db0850010qtLSa6EWV84Zb",
+        "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "id": "prt_c953dc138001IEcph1rtwCt0O4",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953db0850010qtLSa6EWV84Zb"
+        },
+        {
+          "type": "text",
+          "text": "\n\nI'll systematically search for all embedded slide URLs in the `web/src/pages/` directory. Let me run multiple searches in parallel.",
+          "time": {
+            "start": 1772030382985,
+            "end": 1772030382985
+          },
+          "id": "prt_c953dc139001JTD7epG103YIfA",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953db0850010qtLSa6EWV84Zb"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_T0QAPO5JRSCvoG8rwLsGJJ",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "<iframe[^>]*src",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "Found 59 matches\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx:\n  Line 1623: <iframe loading=\"lazy\" width=\"auto\" src=\"https://descent.live/saforem2\" style=\"width: 100%; border: none; height: min(800px, calc(0.8*100vh)); border-radius: 4pt;\">\n  Line 1663: <iframe loading=\"lazy\" width=\"auto\" src=\"https://descent.live/saforem2\" style=\"width: 100%; border: none; height: min(800px, calc(0.8*100vh)); border-radius: 4pt;\">\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx copy:\n  Line 1770: <iframe loading=\"lazy\" width=\"auto\" src=\"https://descent.live/saforem2\" style=\"width: 100%; border: none; height: min(800px, calc(0.8*100vh)); border-radius: 4pt;\">\n  Line 1810: <iframe loading=\"lazy\" width=\"auto\" src=\"https://descent.live/saforem2\" style=\"width: 100%; border: none; height: min(800px, calc(0.8*100vh)); border-radius: 4pt;\">\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/index.xml:\n  Line 28: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 125: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 936: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 1085: <iframe loading=\"lazy\" src=\"https://api.wandb.ai/links/aurora_gpt/dek99dmd\" align=\"center\" frameborder=\"0\" webkitallowfullscreen=\"\" allowfullscreen=\"\" style=\"border:none;height:1024px;width:100%\">\n  Line 1119: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 2145: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 3711: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 4280: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 4704: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 14582: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 14786: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 21673: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 22384: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 27351: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 28063: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 29914: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 30035: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 30115: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 31098: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 40649: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 41583: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/index.xml:\n  Line 28: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 125: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 274: <iframe loading=\"lazy\" src=\"https://api.wandb.ai/links/aurora_gpt/dek99dmd\" align=\"center\" frameborder=\"0\" webkitallowfullscreen=\"\" allowfullscreen=\"\" style=\"border:none;height:1024px;width:100%\">\n  Line 308: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 732: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 912: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 1116: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 8003: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 9854: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 9975: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 10055: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 10989: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 11457: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 11896: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 13965: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 14064: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 18433: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 47744: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 53437: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 59089: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 71759: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/06/index.xml:\n  Line 28: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 1879: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 2000: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/index.xml:\n  Line 28: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 177: <iframe loading=\"lazy\" src=\"https://api.wandb.ai/links/aurora_gpt/dek99dmd\" align=\"center\" frameborder=\"0\" webkitallowfullscreen=\"\" allowfullscreen=\"\" style=\"border:none;height:1024px;width:100%\">\n  Line 211: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 635: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 839: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 7726: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 9577: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 9698: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 9778: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n  Line 10712: <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-TC329HJ\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>",
+            "title": "<iframe[^>]*src",
+            "metadata": {
+              "matches": 59,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030379579,
+              "end": 1772030379644
+            }
+          },
+          "id": "prt_c953dc436001GPH8b1lQ8ErePw",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953db0850010qtLSa6EWV84Zb"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_Dsyy2NByOHAZWZXhXMZqlY",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "<embed[^>]*",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "Found 6 matches\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/more/index.mdx:\n  Line 126: > <embed src=\"https://wakatime.com/share/@saforem2/720ce003-bc7f-4c57-8f4c-92f0c7f24975.svg\">\n  Line 134: > <embed src=\"https://wakatime.com/share/@saforem2/4a58bb04-4212-4b5c-8f97-1ac59f2e3250.svg\">\n  Line 142: > <embed src=\"https://wakatime.com/share/@saforem2/c8e0da32-52d1-485f-b4ca-22645f25ea3f.svg\" style=\"max-width:95%;\">\n  Line 150: > <embed src=\"https://wakatime.com/share/@saforem2/8a8894dd-519b-4bd5-b521-d09bee799b57.svg\">\n  Line 158: > <embed src=\"https://wakatime.com/share/@saforem2/d5fd1e4b-0c8f-44be-8173-59d780fe22c8.svg\" />\n  Line 164: > <embed src=\"https://wakatime.com/share/@saforem2/c052a705-7ccf-4028-90ca-adcde26de94d.svg\" />",
+            "title": "<embed[^>]*",
+            "metadata": {
+              "matches": 6,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030380079,
+              "end": 1772030380169
+            }
+          },
+          "id": "prt_c953dc63c001DE2aOlfUk1Lsmm",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953db0850010qtLSa6EWV84Zb"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "slides\\.html",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "Found 91 matches\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx:\n  Line 434: >     src=\"https://samforeman.me/talks/2025/12/16/slides.html?view=scroll\"\n  Line 451: >     src=\"https://samforeman.me/talks/2025/10/24/slides.html?view=scroll\"\n  Line 468: >     src=\"https://samforeman.me/talks/2025/10/15/slides.html?view=scroll\"\n  Line 485: >     src=\"https://samforeman.me/talks/2025/10/08/slides.html?view=scroll\"\n  Line 502: >     src=\"https://samforeman.me/talks/2025/09/24/slides.html?view=scroll\"\n  Line 519: >     src=\"https://samforeman.me/talks/openskai25/ai4science/slides.html?view=scroll\"\n  Line 536: >     src=\"https://samforeman.me/talks/openskai25/training/slides.html?view=scroll\"\n  Line 553: >     src=\"https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html?view=scroll\"\n  Line 608: >     src=\"/talks/aurora-gpt-fm-for-electric-grid/slides.html?view=scroll\"\n  Line 629: >     src=\"/talks/ai-for-science-2024/slides.html?view=scroll\"\n  Line 648: >     src=\"/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html?view=scroll\"\n  Line 680: >     src=\"/talks/hpc-user-forum/slides.html?view=scroll\"\n  Line 693: >     src=\"/talks/llms-at-scale/slides.html?view=scroll\"\n  Line 706: >     src=\"/talks/llms-on-polaris/slides.html?view=scroll\"\n  Line 1799: [AuroraGPT: Training Foundation Models on Supercomputers]: ./talks/2025/12/16/slides.html\n  Line 1800: [Training Foundation Models on Supercomputers]: ./talks/2025/10/24/slides.html\n  Line 1801: [1]: ./talks/2025/10/15/slides.html\n  Line 1827: [LLMs on Polaris]: https://samforeman.me/talks/llms-on-polaris/slides.html\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx copy:\n  Line 455:     src=\"https://samforeman.me/talks/2025/12/16/slides.html?view=scroll\"\n  Line 475:     src=\"https://samforeman.me/talks/2025/10/24/slides.html?view=scroll\"\n  Line 495:     src=\"https://samforeman.me/talks/2025/10/15/slides.html?view=scroll\"\n  Line 515:     src=\"https://samforeman.me/talks/2025/10/08/slides.html?view=scroll\"\n  Line 535:     src=\"https://samforeman.me/talks/2025/09/24/slides.html?view=scroll\"\n  Line 555:     src=\"https://samforeman.me/talks/openskai25/ai4science/slides.html?view=scroll\"\n  Line 575:     src=\"https://samforeman.me/talks/openskai25/training/slides.html?view=scroll\"\n  Line 595:     src=\"https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html?view=scroll\"\n  Line 659:     src=\"/talks/aurora-gpt-fm-for-electric-grid/slides.html?view=scroll\"\n  Line 683:     src=\"/talks/ai-for-science-2024/slides.html?view=scroll\"\n  Line 705:     src=\"/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html?view=scroll\"\n  Line 743:     src=\"/talks/hpc-user-forum/slides.html?view=scroll\"\n  Line 759:     src=\"/talks/llms-at-scale/slides.html?view=scroll\"\n  Line 775:     src=\"/talks/llms-on-polaris/slides.html?view=scroll\"\n  Line 1958: [AuroraGPT: Training Foundation Models on Supercomputers]: ./talks/2025/12/16/slides.html\n  Line 1959: [Training Foundation Models on Supercomputers]: ./talks/2025/10/24/slides.html\n  Line 1960: [1]: ./talks/2025/10/15/slides.html\n  Line 1986: [LLMs on Polaris]: https://samforeman.me/talks/llms-on-polaris/slides.html\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/llms-at-scale/index.mdx:\n  Line 52:           \\[[slides](https://samforeman.me/talks/llms-at-scale/slides.html)\\]\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/index.mdx:\n  Line 34: <summary><span class=\"dim-text\">[AuroraGPT: Training Foundation Models on Supercomputers](../talks/2025/12/16/slides.html) @ ANL \\[12/2025\\]</span></summary>\n  Line 41:     src=\"https://samforeman.me/talks/2025/12/16/slides.html?view=scroll\"\n  Line 54: <summary><span class=\"dim-text\">[Training Foundation Models on Supercomputers](../talks/2025/10/24/slides.html) @ UIUC \\[10/2025\\]</span></summary>\n  Line 61:     src=\"https://samforeman.me/talks/2025/10/24/slides.html?view=scroll\"\n  Line 74: <summary><span class=\"dim-text\">[Training Foundation Models on Supercomputers](../talks/2025/10/15/slides.html) @ Georgia Institute of Technology \\[10/2025\\]</span></summary>\n  Line 81:     src=\"https://samforeman.me/talks/2025/10/15/slides.html?view=scroll\"\n  Line 101:     src=\"https://samforeman.me/talks/2025/10/08/slides.html?view=scroll\"\n  Line 121:     src=\"https://samforeman.me/talks/2025/09/24/slides.html?view=scroll\"\n  Line 141:     src=\"https://samforeman.me/talks/openskai25/ai4science/slides.html?view=scroll\"\n  Line 161:     src=\"https://samforeman.me/talks/openskai25/training/slides.html?view=scroll\"\n  Line 181:     src=\"https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html?view=scroll\"\n  Line 245:     src=\"/talks/aurora-gpt-fm-for-electric-grid/slides.html?view=scroll\"\n  Line 269:     src=\"/talks/ai-for-science-2024/slides.html?view=scroll\"\n  Line 291:     src=\"/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html?view=scroll\"\n  Line 329:     src=\"/talks/hpc-user-forum/slides.html?view=scroll\"\n  Line 345:     src=\"/talks/llms-at-scale/slides.html?view=scroll\"\n  Line 356: <summary><span class=\"dim-text\">[LLMs on Polaris](https://samforeman.me/talks/llms-on-polaris/slides.html) @ [_Center for Scientific Foundation Models_, Summer School 24’](https://scifm.ai/summer_school.html) \\[07/2024\\]</span></summary>\n  Line 361:     src=\"/talks/llms-on-polaris/slides.html?view=scroll\"\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/hpc-user-forum/AuroraGPT.mdx:\n  Line 575:           \\[[slides](https://samforeman.me/talks/hpc-user-forum/slides.html)\\]\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/sitemap.xml:\n  Line 12:     <loc>https://samforeman.me/talks/openskai25/training/slides.html</loc>\n  Line 16:     <loc>https://samforeman.me/talks/openskai25/ai4science/slides.html</loc>\n  Line 28:     <loc>https://samforeman.me/talks/llms-at-scale/slides.html</loc>\n  Line 36:     <loc>https://samforeman.me/talks/incite-hackathon-2025/ezpz/slides.html</loc>\n  Line 48:     <loc>https://samforeman.me/talks/hpc-user-forum/slides.html</loc>\n  Line 56:     <loc>https://samforeman.me/talks/alcf-hpc-workshop-2024/slides.html</loc>\n  Line 64:     <loc>https://samforeman.me/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html</loc>\n  Line 72:     <loc>https://samforeman.me/talks/2025/12/16/slides.html</loc>\n  Line 80:     <loc>https://samforeman.me/talks/2025/10/15/slides.html</loc>\n  Line 88:     <loc>https://samforeman.me/talks/2025/09/24/slides.html</loc>\n  Line 172:     <loc>https://samforeman.me/ideas/slides.html</loc>\n  Line 256:     <loc>https://samforeman.me/talks/2025/10/08/slides.html</loc>\n  Line 264:     <loc>https://samforeman.me/talks/2025/10/24/slides.html</loc>\n  Line 276:     <loc>https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html</loc>\n  Line 280:     <loc>https://samforeman.me/talks/ai-for-science-2024/slides.html</loc>\n  Line 292:     <loc>https://samforeman.me/talks/aurora-gpt-fm-for-electric-grid/slides.html</loc>\n  Line 300:     <loc>https://samforeman.me/talks/incite-hackathon-2025/AuroraGPT/slides.html</loc>\n  Line 308:     <loc>https://samforeman.me/talks/lattice23/slides.html</loc>\n  Line 320:     <loc>https://samforeman.me/talks/llms-on-polaris/slides.html</loc>\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/index.xml:\n  Line 915:   url = {https://samforeman.me/talks/2025/12/16/slides.html},\n  Line 920: Supercomputers.”</span> December 16. <a href=\"https://samforeman.me/talks/2025/12/16/slides.html\">https://samforeman.me/talks/2025/12/16/slides.html</a>.\n  Line 2124:   url = {https://samforeman.me/talks/2025/10/24/slides.html},\n  Line 2129: Supercomputers.”</span> October 24. <a href=\"https://samforeman.me/talks/2025/10/24/slides.html\">https://samforeman.me/talks/2025/10/24/slides.html</a>.\n  Line 3690:   url = {https://samforeman.me/talks/2025/10/15/slides.html},\n  Line 3695: Supercomputers.”</span> October 15. <a href=\"https://samforeman.me/talks/2025/10/15/slides.html\">https://samforeman.me/talks/2025/10/15/slides.html</a>.\n  Line 4262:   url = {https://samforeman.me/talks/2025/10/08/slides.html},\n  Line 4267: October 8. <a href=\"https://samforeman.me/talks/2025/10/08/slides.html\">https://samforeman.me/talks/2025/10/08/slides.html</a>.\n  Line 14564:   url = {https://samforeman.me/talks/2025/09/24/slides.html},\n  Line 14569: Supercomputers.”</span> September 24. <a href=\"https://samforeman.me/talks/2025/09/24/slides.html\">https://samforeman.me/talks/2025/09/24/slides.html</a>.\n  Line 22366:   url = {https://samforeman.me/talks/openskai25/ai4science/slides.html},\n  Line 22371: September 2. <a href=\"https://samforeman.me/talks/openskai25/ai4science/slides.html\">https://samforeman.me/talks/openskai25/ai4science/slides.html</a>.\n  Line 28046:   url = {https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html},\n  Line 28050: Foreman, Sam. 2025. <span>“AuroraGPT.”</span> July 31. <a href=\"https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html\">https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html</a>.\n  Line 31081:   url = {https://samforeman.me/talks/incite-hackathon-2025/AuroraGPT/slides.html},\n  Line 31085: Foreman, Sam. 2025. <span>“LLMs on Aurora: Overview.”</span> May 21. <a href=\"https://samforeman.me/talks/incite-hackathon-2025/AuroraGPT/slides.html\">https://samforeman.me/talks/incite-hackathon-2025/AuroraGPT/slides.html</a>.",
+            "title": "slides\\.html",
+            "metadata": {
+              "matches": 91,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030380609,
+              "end": 1772030380668
+            }
+          },
+          "id": "prt_c953dc830001kUv3wNvKA0wyW5",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953db0850010qtLSa6EWV84Zb"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_Uy4qB4pUJ4f02xk4MJRNSA",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "reveal\\.js|revealjs|reveal-js",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "Found 32 matches\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/dope-slides/index.mdx:\n  Line 9: - [Quarto 🤝 Reveal.js](#quarto-handshake-revealjs)\n  Line 31: Reveal.js](https://quarto.org/docs/presentations/revealjs)\n  Line 94:     Revealjs](https://quarto.org/docs/presentations/revealjs/):\n  Line 95:     1.  [Reveal Basics](https://quarto.org/docs/presentations/revealjs/)\n  Line 97:         Slides](https://quarto.org/docs/presentations/revealjs/presenting.html)\n  Line 99:         Reveal](https://quarto.org/docs/presentations/revealjs/advanced.html)\n  Line 101:         Themes](https://quarto.org/docs/presentations/revealjs/themes.html)\n  Line 190:     revealjs:\n  Line 230: Options](https://quarto.org/docs/reference/formats/presentations/revealjs.html)\n  Line 276:       Background](https://quarto.org/docs/presentations/revealjs/#iframe-backgrounds)\n  Line 341:     revealjs:\n  Line 468:   Themes](https://quarto.org/docs/presentations/revealjs/themes.html)\n  Line 476:   Theme](https://github.com/grantmcdermott/quarto-revealjs-clean)\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/search.json:\n  Line 1748:     \"objectID\": \"posts/dope-slides/index.html#quarto-reveal.js\",\n  Line 1749:     \"href\": \"posts/dope-slides/index.html#quarto-reveal.js\",\n  Line 1778:     \"text\": \"Metadata\\nThe first section of our index.qmd contains the YAML metadata for the Quarto document.\\nExplicitly, we see this consists of:\\n\\n\\nExpand for yaml\\n\\n---\\nformat:\\n  revealjs:\\n    title-block-style: none\\n    slide-number: c\\n    title-slide-style: default\\n    chalkboard:\\n      buttons: false\\n    auto-animate: true\\n    reference-location: section\\n    touch: true\\n    pause: false\\n    footnotes-hover: true\\n    citations-hover: true\\n    preview-links: true\\n    controls-tutorial: true\\n    controls: false\\n    logo: \\\"https://raw.githubusercontent.com/saforem2/anl-job-talk/main/docs/assets/anl.svg\\\"\\n    history: false\\n    theme: [dark, css/dark.scss]\\n    css: [css/default.css, css/callouts.css]\\n    self-contained: false\\n    embed-resources: false\\n    self-contained-math: false\\n    center: true\\n    highlight-style: \\\"atom-one\\\"\\n    default-image-extension: svg\\n    code-line-numbers: true\\n    code-overflow: scroll\\n    html-math-method: katex\\n    fig-align: center\\n    mermaid:\\n      theme: dark\\n  gfm:\\n    output-file: \\\"lattice23.md\\\"\\n---\\n\\nThe complete list of Reveal.js options are listed, with descriptions at: Quarto – Revealjs Options\",\n  Line 1817:     \"text\": \"Centered Slides\\nWe can center all the text on a slide by adding the {.centeredslide} class to the slide header, e.g.\\n\\nindex.qmdstyle.scss\\n\\n\\n---\\nformat:\\n  revealjs:\\n    theme: [style.scss]\\n---\\n\\n# Title {.centeredslide}\\n\\n\\n.centeredslide {\\n  text-align: center;\\n}\",\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/index.xml:\n  Line 71765: <section id=\"quarto-reveal.js\" class=\"level2\">\n  Line 71766: <h2 class=\"anchored\" data-anchor-id=\"quarto-reveal.js\">Quarto 🤝 Reveal.js</h2>\n  Line 71768: <p>The slides are written using <a href=\"https://quarto.org/\">Quarto</a>, a <em>flavor</em> of Markdown, and uses the built-in <a href=\"https://quarto.org/docs/presentations/revealjs\">Quarto + Reveal.js</a> functionality.</p>\n  Line 71861: <li><a href=\"https://quarto.org/docs/presentations/revealjs/\">Quarto / Presentations / Revealjs</a>:\n  Line 71863: <li><a href=\"https://quarto.org/docs/presentations/revealjs/\">Reveal Basics</a></li>\n  Line 71864: <li><a href=\"https://quarto.org/docs/presentations/revealjs/presenting.html\">Presenting Slides</a></li>\n  Line 71865: <li><a href=\"https://quarto.org/docs/presentations/revealjs/advanced.html\">Advanced Reveal</a></li>\n  Line 71866: <li><a href=\"https://quarto.org/docs/presentations/revealjs/themes.html\">Reveal Themes</a></li>\n  Line 71982: font-style: inherit;\">revealjs</span><span class=\"kw\" style=\"color: #003B4F;\n  Line 72366: <p>The complete list of Reveal.js options are listed, with descriptions at: <a href=\"https://quarto.org/docs/reference/formats/presentations/revealjs.html\">Quarto – Revealjs Options</a></p>\n  Line 72460: <li><p>This static GitHub page is then used as an <a href=\"https://quarto.org/docs/presentations/revealjs/#iframe-backgrounds\">IFrame Background</a> natively in Quarto with Reveal.js</p></li>\n  Line 72595: font-style: inherit;\">  revealjs:</span></span>\n  Line 72807: <li><a href=\"https://quarto.org/docs/presentations/revealjs/themes.html\">Reveal Themes</a></li>\n  Line 72811: <li><a href=\"https://github.com/grantmcdermott/quarto-revealjs-clean\"><i class=\"fa-brands fa-github\" aria-label=\"github\"></i> Quarto Clean Theme</a></li>\n  Line 72863:   <category>revealjs</category>",
+            "title": "reveal\\.js|revealjs|reveal-js",
+            "metadata": {
+              "matches": 32,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030381360,
+              "end": 1772030381402
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953db0850010qtLSa6EWV84Zb"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_WkHQHRALRHBUHC1Xw9AW7I",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "slides\\.com|slideshare|speakerdeck|speaker-deck",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "Found 11 matches\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx:\n  Line 941: >     src=\"https://slides.com/samforeman/dlhmc/embed\"\n  Line 956: >     src=\"https://slides.com/samforeman/l2hmc-qcd/embed\"\n  Line 1859: [Machine Learning for Lattice QCD]: https://slides.com/samforeman/l2hmc-qcd/embed\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx copy:\n  Line 1078:     src=\"https://slides.com/samforeman/dlhmc/embed\"\n  Line 1096:     src=\"https://slides.com/samforeman/l2hmc-qcd/embed\"\n  Line 2018: [Machine Learning for Lattice QCD]: https://slides.com/samforeman/l2hmc-qcd/embed\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/index.mdx:\n  Line 657:     src=\"https://slides.com/samforeman/dlhmc/embed\"\n  Line 670: <summary><span class=\"dim-text\">[Machine Learning for Lattice QCD](https://slides.com/samforeman/l2hmc-qcd/embed) @ U. Iowa \\[2020\\]</span></summary>\n  Line 675:     src=\"https://slides.com/samforeman/l2hmc-qcd/embed\"\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/resume/index.mdx:\n  Line 551:     QCD](https://slides.com/samforeman/l2hmc-qcd/embed) @ U. Iowa\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/index.xml:\n  Line 11763: <li>02: <a href=\"https://slides.com/samforeman/l2hmc-qcd/embed\">Machine Learning for Lattice QCD</a> @ U. Iowa [2020]</li>",
+            "title": "slides\\.com|slideshare|speakerdeck|speaker-deck",
+            "metadata": {
+              "matches": 11,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030382317,
+              "end": 1772030382368
+            }
+          },
+          "id": "prt_c953dcd42001VpoVFqIN8dGTo5",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953db0850010qtLSa6EWV84Zb"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_Sx0518I77tnXo8QmZvoqhU",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "samforeman\\.me|saforem2\\.github\\.io",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "Found 950 matches (showing first 100)\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx:\n  Line 11:         <a style=\"color: #838383\" href=\"https://samforeman.me\">\n  Line 248:     url: 'https://samforeman.me',\n  Line 249:     art: 'https://samforeman.me/assets/avi-small.webp'\n  Line 394: >     src=\"https://hitscounter.dev/api/hit?url=samforeman.me&label=samforeman.me&icon=check2-square&color=%236c757d\"\n  Line 418: > - HTML: [https://samforeman.me/talks/ai-for-science-2024/](https://samforeman.me/talks/ai-for-science-2024/)\n  Line 419: > - Slides: [https://samforeman.me/talks/ai-for-science-2024/slides](https://samforeman.me/talks/ai-for-science-2024/slides)\n  Line 434: >     src=\"https://samforeman.me/talks/2025/12/16/slides.html?view=scroll\"\n  Line 451: >     src=\"https://samforeman.me/talks/2025/10/24/slides.html?view=scroll\"\n  Line 468: >     src=\"https://samforeman.me/talks/2025/10/15/slides.html?view=scroll\"\n  Line 485: >     src=\"https://samforeman.me/talks/2025/10/08/slides.html?view=scroll\"\n  Line 502: >     src=\"https://samforeman.me/talks/2025/09/24/slides.html?view=scroll\"\n  Line 519: >     src=\"https://samforeman.me/talks/openskai25/ai4science/slides.html?view=scroll\"\n  Line 536: >     src=\"https://samforeman.me/talks/openskai25/training/slides.html?view=scroll\"\n  Line 553: >     src=\"https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html?view=scroll\"\n  Line 572: >     src=\"https://samforeman.me/talks/incite-hackathon-2025/auroragpt/slides?view=scroll/section#/section\"\n  Line 591: >     src=\"https://samforeman.me/talks/incite-hackathon-2025/ezpz/slides?view=scroll/section#/section\"\n  Line 665: >     src=\"https://samforeman.me/talks/alcf-hpc-workshop-2024/slides?view=scroll/section#/section\"\n  Line 719: >     src=\"https://saforem2.github.io/parallel-training-slides?view=scroll\"\n  Line 732: >     src=\"https://saforem2.github.io/llm-workshop-talk\"\n  Line 747: >     src=\"https://saforem2.github.io/LLM-tutorial\"\n  Line 759: >     src=\"https://saforem2.github.io/oneapi-talk\"\n  Line 773: >     src=\"https://saforem2.github.io/llm-lunch-talk/#/section\"\n  Line 786: >     src=\"https://saforem2.github.io/scaling4science/#/section\"\n  Line 799: >     src=\"https://saforem2.github.io/lattice23/#/title-slide\"\n  Line 812: >     src=\"https://saforem2.github.io/lqcd-pasc23/\"\n  Line 825: >     src=\"https://saforem2.github.io/deep-fridays/\"\n  Line 840: >     src=\"https://saforem2.github.io/ai4sci-large-scale-training/#\"\n  Line 853: >     src=\"https://saforem2.github.io/hparam-management-sdl2022\"\n  Line 868: >     src=\"https://saforem2.github.io/ATPESC-StatisticalLearning/#/\"\n  Line 881: >     src=\"https://saforem2.github.io/anl-job-talk\"\n  Line 896: >     src=\"https://saforem2.github.io/physicsSeminar\"\n  Line 911: >     src=\"https://saforem2.github.io/l2hmc-dwq25/\"\n  Line 924: >     src=\"https://saforem2.github.io/l2hmc_talk_ect2021\"\n  Line 1102: > ClimRR.” August 7. [https://saforem2.github.io/climate-analysis](https://saforem2.github.io/climate-analysis).\n  Line 1752: >     src=\"https://hitscounter.dev/api/hit?url=samforeman.me&label=samforeman.me&icon=check2-square&color=%236c757d\"\n  Line 1789: [Foundation models for long term climate forecasting]: https://saforem2.github.io/climate-analysis\n  Line 1792: [current research]: https://saforem2.github.io/l2hmc-qcd\n  Line 1797: [Sam Foreman]: https://samforeman.me\n  Line 1827: [LLMs on Polaris]: https://samforeman.me/talks/llms-on-polaris/slides.html\n  Line 1831: [LLMs from Scratch]: https://saforem2.github.io/llm-workshop-talk\n  Line 1833: [Creating Small(-ish) LLMs]: https://saforem2.github.io/LLM-tutorial\n  Line 1835: [Exascale Science on Aurora]: https://saforem2.github.io/oneapi-talk\n  Line 1837: [LLM Lunch Talk]: https://saforem2.github.io/llm-lunch-talk\n  Line 1839: [Scaling LLMs for Science]: https://saforem2.github.io/scaling4science\n  Line 1841: [MLMC: Machine Learning Monte Carlo]: https://saforem2.github.io/lattice23\n  Line 1843: [Generative Modeling and Efficient Sampling]: https://saforem2.github.io/lqcd-pasc23/\n  Line 1845: [Efficient Sampling for LGT]: https://saforem2.github.io/deep-fridays\n  Line 1847: [Large Scale Training]: https://saforem2.github.io/ai4sci-large-scale-training\n  Line 1849: [Hyperparameter Management]: https://saforem2.github.io/hparam-management-sdl2022/\n  Line 1851: [Statistical Learning]: https://saforem2.github.io/ATPESC-StatisticalLearning\n  Line 1854: [Machine Learning in HEP]: https://saforem2.github.io/physicsSeminar\n  Line 1855: [Training Topological Samplers for LGT]: https://saforem2.github.io/l2hmc_talk_ect2021\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ezpz-v1/index.mdx:\n  Line 25: > See [🍋 ezpz docs](https://saforem2.github.io/ezpz/) for more details.\n  Line 31: [Sam Foreman](https://samforeman.me)  \n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/2025/09/24/index.mdx:\n  Line 80:       Training](https://samforeman.me/talks/openskai25/training/)\n  Line 828:       Hands-On](https://samforeman.me/talks/incite-hackathon-2025/ezpz/)\n  Line 829:     - [ezpz docs](https://saforem2.github.io/ezpz)\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/dope-slides/index.mdx:\n  Line 241:     Slide](https://saforem2.github.io/lattice23/#/section)\n  Line 251:         # {.title-slide .centeredslide background-iframe=\"https://saforem2.github.io/grid-worms-animation/\" loading=\"lazy\"}\n  Line 258:         [](https://samforeman.me) Sam Foreman  \n  Line 282:         # {.title-slide .centeredslide background-iframe=\"https://saforem2.github.io/grid-worms-animation/\" loading=\"lazy\"}\n  Line 321: Slide](https://saforem2.github.io/lattice23/#/overview)\n  Line 410:     [ `saforem2/lattice23`](https://saforem2.github.io/lattice23)\n  Line 463: https://saforem2.github.io/lattice23\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/more/index.mdx:\n  Line 39: >   forecasting](https://saforem2.github.io/climate-analysis)\n  Line 53: > My [current research](https://saforem2.github.io/l2hmc-qcd) focuses on\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/about/index.mdx:\n  Line 96: - Website: [samforeman.me]\n  Line 117: [samforeman.me]: https://samforeman.me\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx copy:\n  Line 11:         src=\"https://samforeman.me/assets/avi-small.webp\"\n  Line 27:         <a style=\"color: #838383\" href=\"https://samforeman.me\">\n  Line 310:   .attr(\"href\", \"https://samforeman.me\");\n  Line 406:     src=\"https://hitscounter.dev/api/hit?url=samforeman.me&label=samforeman.me&icon=check2-square&color=%236c757d\"\n  Line 436: - HTML: [https://samforeman.me/talks/ai-for-science-2024/](https://samforeman.me/talks/ai-for-science-2024/)\n  Line 437: - Slides: [https://samforeman.me/talks/ai-for-science-2024/slides](https://samforeman.me/talks/ai-for-science-2024/slides)\n  Line 455:     src=\"https://samforeman.me/talks/2025/12/16/slides.html?view=scroll\"\n  Line 475:     src=\"https://samforeman.me/talks/2025/10/24/slides.html?view=scroll\"\n  Line 495:     src=\"https://samforeman.me/talks/2025/10/15/slides.html?view=scroll\"\n  Line 515:     src=\"https://samforeman.me/talks/2025/10/08/slides.html?view=scroll\"\n  Line 535:     src=\"https://samforeman.me/talks/2025/09/24/slides.html?view=scroll\"\n  Line 555:     src=\"https://samforeman.me/talks/openskai25/ai4science/slides.html?view=scroll\"\n  Line 575:     src=\"https://samforeman.me/talks/openskai25/training/slides.html?view=scroll\"\n  Line 595:     src=\"https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html?view=scroll\"\n  Line 617:     src=\"https://samforeman.me/talks/incite-hackathon-2025/auroragpt/slides?view=scroll/section#/section\"\n  Line 639:     src=\"https://samforeman.me/talks/incite-hackathon-2025/ezpz/slides?view=scroll/section#/section\"\n  Line 725:     src=\"https://samforeman.me/talks/alcf-hpc-workshop-2024/slides?view=scroll/section#/section\"\n  Line 791:     src=\"https://saforem2.github.io/parallel-training-slides?view=scroll\"\n  Line 807:     src=\"https://saforem2.github.io/llm-workshop-talk\"\n  Line 825:     src=\"https://saforem2.github.io/LLM-tutorial\"\n  Line 842:     src=\"https://saforem2.github.io/oneapi-talk\"\n  Line 861:     src=\"https://saforem2.github.io/llm-lunch-talk/#/section\"\n  Line 877:     src=\"https://saforem2.github.io/scaling4science/#/section\"\n  Line 893:     src=\"https://saforem2.github.io/lattice23/#/title-slide\"\n  Line 909:     src=\"https://saforem2.github.io/lqcd-pasc23/\"\n  Line 925:     src=\"https://saforem2.github.io/deep-fridays/\"\n  Line 943:     src=\"https://saforem2.github.io/ai4sci-large-scale-training/#\"\n  Line 959:     src=\"https://saforem2.github.io/hparam-management-sdl2022\"\n  Line 977:     src=\"https://saforem2.github.io/ATPESC-StatisticalLearning/#/\"\n  Line 991:             Symbiosis](https://saforem2.github.io/anl-job-talk/) @ ANL [05/2022]\n  Line 998:     src=\"https://saforem2.github.io/anl-job-talk\"\n  Line 1016:     src=\"https://saforem2.github.io/physicsSeminar\"\n\n(Results truncated: showing 100 of 950 matches (850 hidden). Consider using a more specific path or pattern.)",
+            "title": "samforeman\\.me|saforem2\\.github\\.io",
+            "metadata": {
+              "matches": 950,
+              "truncated": true
+            },
+            "time": {
+              "start": 1772030382984,
+              "end": 1772030383038
+            }
+          },
+          "id": "prt_c953dd102001YbgAF86U6343pL",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953db0850010qtLSa6EWV84Zb"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "cost": 0,
+          "tokens": {
+            "total": 7724,
+            "input": 7189,
+            "output": 535,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_c953dd3bf001Ns1m9WzBteEtLN",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953db0850010qtLSa6EWV84Zb"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772030383123,
+          "completed": 1772030389221
+        },
+        "parentID": "msg_c953db082001ioEyd7yucda81T",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 21974,
+          "input": 15063,
+          "output": 248,
+          "reasoning": 0,
+          "cache": {
+            "read": 6663,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c953dd413001gMc46lGgQafABO",
+        "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "id": "prt_c953ddd68001C4R4jS2vJdjKGY",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953dd413001gMc46lGgQafABO"
+        },
+        {
+          "type": "text",
+          "text": "Now let me get the exact iframe src URLs from the key content files (not the XML feeds). Let me read the specific lines from the main content files.",
+          "time": {
+            "start": 1772030389084,
+            "end": 1772030389084
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953dd413001gMc46lGgQafABO"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages",
+              "pattern": "^\\s*>?\\s*src=",
+              "include": "*.mdx"
+            },
+            "output": "Found 219 matches (showing first 100)\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx:\n  Line 394: >     src=\"https://hitscounter.dev/api/hit?url=samforeman.me&label=samforeman.me&icon=check2-square&color=%236c757d\"\n  Line 434: >     src=\"https://samforeman.me/talks/2025/12/16/slides.html?view=scroll\"\n  Line 451: >     src=\"https://samforeman.me/talks/2025/10/24/slides.html?view=scroll\"\n  Line 468: >     src=\"https://samforeman.me/talks/2025/10/15/slides.html?view=scroll\"\n  Line 485: >     src=\"https://samforeman.me/talks/2025/10/08/slides.html?view=scroll\"\n  Line 502: >     src=\"https://samforeman.me/talks/2025/09/24/slides.html?view=scroll\"\n  Line 519: >     src=\"https://samforeman.me/talks/openskai25/ai4science/slides.html?view=scroll\"\n  Line 536: >     src=\"https://samforeman.me/talks/openskai25/training/slides.html?view=scroll\"\n  Line 553: >     src=\"https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html?view=scroll\"\n  Line 572: >     src=\"https://samforeman.me/talks/incite-hackathon-2025/auroragpt/slides?view=scroll/section#/section\"\n  Line 591: >     src=\"https://samforeman.me/talks/incite-hackathon-2025/ezpz/slides?view=scroll/section#/section\"\n  Line 608: >     src=\"/talks/aurora-gpt-fm-for-electric-grid/slides.html?view=scroll\"\n  Line 629: >     src=\"/talks/ai-for-science-2024/slides.html?view=scroll\"\n  Line 648: >     src=\"/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html?view=scroll\"\n  Line 665: >     src=\"https://samforeman.me/talks/alcf-hpc-workshop-2024/slides?view=scroll/section#/section\"\n  Line 680: >     src=\"/talks/hpc-user-forum/slides.html?view=scroll\"\n  Line 693: >     src=\"/talks/llms-at-scale/slides.html?view=scroll\"\n  Line 706: >     src=\"/talks/llms-on-polaris/slides.html?view=scroll\"\n  Line 719: >     src=\"https://saforem2.github.io/parallel-training-slides?view=scroll\"\n  Line 732: >     src=\"https://saforem2.github.io/llm-workshop-talk\"\n  Line 747: >     src=\"https://saforem2.github.io/LLM-tutorial\"\n  Line 759: >     src=\"https://saforem2.github.io/oneapi-talk\"\n  Line 773: >     src=\"https://saforem2.github.io/llm-lunch-talk/#/section\"\n  Line 786: >     src=\"https://saforem2.github.io/scaling4science/#/section\"\n  Line 799: >     src=\"https://saforem2.github.io/lattice23/#/title-slide\"\n  Line 812: >     src=\"https://saforem2.github.io/lqcd-pasc23/\"\n  Line 825: >     src=\"https://saforem2.github.io/deep-fridays/\"\n  Line 840: >     src=\"https://saforem2.github.io/ai4sci-large-scale-training/#\"\n  Line 853: >     src=\"https://saforem2.github.io/hparam-management-sdl2022\"\n  Line 868: >     src=\"https://saforem2.github.io/ATPESC-StatisticalLearning/#/\"\n  Line 881: >     src=\"https://saforem2.github.io/anl-job-talk\"\n  Line 896: >     src=\"https://saforem2.github.io/physicsSeminar\"\n  Line 911: >     src=\"https://saforem2.github.io/l2hmc-dwq25/\"\n  Line 924: >     src=\"https://saforem2.github.io/l2hmc_talk_ect2021\"\n  Line 941: >     src=\"https://slides.com/samforeman/dlhmc/embed\"\n  Line 956: >     src=\"https://slides.com/samforeman/l2hmc-qcd/embed\"\n  Line 1606:         src=\"https://spotify-github-profile.kittinanx.com/api/view?uid=saforem2&cover_image=true&loading=lazy&theme=default&show_offline=false&background_color=f8f8f8&interchange=false\"\n  Line 1614:         src=\"https://music-profile.rayriffy.com/theme/light.svg?uid=002028.5a338f21979147c78f6193b6138a1ec7.1532\"\n  Line 1630:         src=\"https://lastfm-recently-played.vercel.app/api?user=saforem2\"\n  Line 1646:         src=\"https://spotify-github-profile.kittinanx.com/api/view?uid=saforem2&cover_image=true&loading=lazy&theme=default&show_offline=false&background_color=1c1c1c&interchange=false\"\n  Line 1654:         src=\"https://music-profile.rayriffy.com/theme/dark.svg?uid=002028.5a338f21979147c78f6193b6138a1ec7.1532\"\n  Line 1670:         src=\"https://lastfm-recently-played.vercel.app/api?user=saforem2\"\n  Line 1752: >     src=\"https://hitscounter.dev/api/hit?url=samforeman.me&label=samforeman.me&icon=check2-square&color=%236c757d\"\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ezpz-v1/index.mdx:\n  Line 235:     src=\"https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white\"\n  Line 240:         src=\"https://img.shields.io/badge/TensorFlow-%23FF6F00.svg?&logo=TensorFlow&logoColor=white\"\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/more/index.mdx:\n  Line 93: >         src=\"https://raw.githubusercontent.com/saforem2/github-stats/master/generated/overview.svg\"\n  Line 99: >         src=\"https://raw.githubusercontent.com/saforem2/github-stats/refs/heads/master/generated/languages.svg\"\n  Line 112: >         src=\"https://streak-stats.demolab.com?user=saforem2&theme=shadow-blue&hide_border=true&card_width=800&card_height=200&stroke=838383&currStreakNum=838383&dates=838383&currStreakLabel=838383&ring=838383&fire=FF5252&sideNums=838383&sideLabels=838383&date_format=n%2Fj%5B%2FY%5D&background=EB545400\"\n  Line 121: >     src=\"https://github-readme-activity-graph.vercel.app/graph?username=saforem2&theme=minimal&bg_color=00000000&line=838383&color=838383&days=30&point=838383&hide_border=true&hide_title=true&area=true\"\n  Line 181: >         src=\"https://github-readme-stats.vercel.app/api/wakatime?username=saforem2&show_icons=true&include_all_commits=true&title_color=838383&hide_border=true&layout=compact&theme=transparent&text_color=838383\"\n  Line 189: >     src=\"https://raw.githubusercontent.com/saforem2/saforem2/main/github-metrics.svg\"\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/2025/12/16/index.mdx:\n  Line 90:     src=\"../../../../assets/team/rick-stevens.png\"\n  Line 96:     src=\"../../../../assets/team/ian-foster.png\"\n  Line 102:     src=\"../../../../assets/team/rinku-gupta.png\"\n  Line 108:     src=\"../../../../assets/team/mike-papka.png\"\n  Line 114:     src=\"../../../../assets/team/arvind-ramanathan.png\"\n  Line 120:     src=\"../../../../assets/team/fangfang-xia.png\"\n  Line 134:     src=\"../../../../assets/team/ian-foster.png\"\n  Line 140:     src=\"../../../../assets/team/robert-underwood.png\"\n  Line 152:     src=\"../../../../assets/team/venkat-vishwanath.png\"\n  Line 158:     src=\"../../../../assets/team/sam-foreman.png\"\n  Line 170:     src=\"../../../../assets/team/franck-cappello.png\"\n  Line 176:     src=\"../../../../assets/team/sandeep-madireddy.png\"\n  Line 190:     src=\"../../../../assets/team/eliu-huerta.png\"\n  Line 196:     src=\"../../../../assets/team/azton-wells.png\"\n  Line 208:     src=\"../../../../assets/team/rajeev-thakur.png\"\n  Line 220:     src=\"../../../../assets/team/charlie-catlett.png\"\n  Line 226:     src=\"../../../../assets/team/david-martin.png\"\n  Line 238:     src=\"../../../../assets/team/brad-ullrich.png\"\n  Line 356:     src=\"../../../../assets/aeris/diffusion.gif\"\n  Line 362:     src=\"../../../../assets/aeris/diffusion_forward.png\"\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/ai-for-physics/l2hmc-qcd/2dU1/index.mdx:\n  Line 52:         src=\"http://img.shields.io/badge/arXiv-2105.03418-B31B1B.svg\"\n  Line 59:         src=\"http://img.shields.io/badge/arXiv-2112.01582-B31B1B.svg\"\n  Line 355:     src=\"assets/8272861d462b935cd19269560b692eb9277eba43.png\"\n  Line 481:     src=\"assets/90a5e478cf73243724cacc3e8e49941e608b669d.png\"\n  Line 578:     src=\"assets/7e8b44441613e03b2963cbfaca8a46568844755e.png\"\n  Line 649:     src=\"assets/9fbb0ed154d423574fb6a62d67f630750261f07b.png\"\n  Line 786:     src=\"assets/eb44c97aabe9785f673264745fefb2b83ea99d23.png\"\n  Line 891:     src=\"assets/f34f47c948373d280dfd39c87e3215635e3e4eec.png\"\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/openskai25/training/index.mdx:\n  Line 1246:     src=\"./assets/hf_assisted_generation.mov\"\n  Line 1259:     src=\"./assets/hf_assisted_generation2.mov\"\n  Line 1328:     src=\"https://asciinema.org/a/668460.js\"\n  Line 1691:     src=\"https://asciinema.org/a/668462.js\"\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/openskai25/ai4science/index.mdx:\n  Line 466:     src=\"./assets/mprot-3p5B-scaling-2.svg\"\n  Line 521:     src=\"../../../assets/anl.svg\"\n  Line 528:     src=\"../../../assets/deepspeed-logo-transparent.svg\"\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/llms-on-polaris/index.mdx:\n  Line 340:     src=\"https://github.com/saforem2/llm-lunch-talk/blob/main/docs/assets/emergent-abilities.gif?raw=true\"\n  Line 563:     src=\"https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/parallelism-zero.png\"\n  Line 587:     src=\"https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/parallelism-tp-parallel_gemm.png\"\n  Line 1183:     src=\"https://asciinema.org/a/668460.js\"\n  Line 1531:     src=\"https://asciinema.org/a/668462.js\"\n  Line 1568:     src=\"https://raw.githubusercontent.com/saforem2/llm-lunch-talk/main/docs/assets/diagrams/transformer.svg\"\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/llms-at-scale/index.mdx:\n  Line 873:     src=\"https://asciinema.org/a/668460.js\"\n  Line 1221:     src=\"https://asciinema.org/a/668462.js\"\n  Line 1273:     src=\"https://www.microsoft.com/en-us/research/uploads/prod/2020/02/REDACTED.gif\"\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/index.mdx:\n  Line 41:     src=\"https://samforeman.me/talks/2025/12/16/slides.html?view=scroll\"\n  Line 61:     src=\"https://samforeman.me/talks/2025/10/24/slides.html?view=scroll\"\n  Line 81:     src=\"https://samforeman.me/talks/2025/10/15/slides.html?view=scroll\"\n  Line 101:     src=\"https://samforeman.me/talks/2025/10/08/slides.html?view=scroll\"\n  Line 121:     src=\"https://samforeman.me/talks/2025/09/24/slides.html?view=scroll\"\n\n(Results truncated: showing 100 of 219 matches (119 hidden). Consider using a more specific path or pattern.)",
+            "title": "^\\s*>?\\s*src=",
+            "metadata": {
+              "matches": 219,
+              "truncated": true
+            },
+            "time": {
+              "start": 1772030387943,
+              "end": 1772030387961
+            }
+          },
+          "id": "prt_c953de2bf001gVthjgzHq1yq2p",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953dd413001gMc46lGgQafABO"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages",
+              "pattern": "<iframe[^>]*src=",
+              "include": "*.mdx"
+            },
+            "output": "Found 2 matches\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx:\n  Line 1623: <iframe loading=\"lazy\" width=\"auto\" src=\"https://descent.live/saforem2\" style=\"width: 100%; border: none; height: min(800px, calc(0.8*100vh)); border-radius: 4pt;\">\n  Line 1663: <iframe loading=\"lazy\" width=\"auto\" src=\"https://descent.live/saforem2\" style=\"width: 100%; border: none; height: min(800px, calc(0.8*100vh)); border-radius: 4pt;\">",
+            "title": "<iframe[^>]*src=",
+            "metadata": {
+              "matches": 2,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030389072,
+              "end": 1772030389093
+            }
+          },
+          "id": "prt_c953de6e9001JbTbqlcpSJe5Fg",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953dd413001gMc46lGgQafABO"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "cost": 0,
+          "tokens": {
+            "total": 21974,
+            "input": 15063,
+            "output": 248,
+            "reasoning": 0,
+            "cache": {
+              "read": 6663,
+              "write": 0
+            }
+          },
+          "id": "prt_c953deb66001tpFgaN5OFzJrBY",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953dd413001gMc46lGgQafABO"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772030389223,
+          "completed": 1772030395299
+        },
+        "parentID": "msg_c953db082001ioEyd7yucda81T",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 26261,
+          "input": 4296,
+          "output": 240,
+          "reasoning": 0,
+          "cache": {
+            "read": 21725,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c953debe7001fdFld7sz082oiK",
+        "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "id": "prt_c953df6a9001YF6kKfI0LM8V0Q",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953debe7001fdFld7sz082oiK"
+        },
+        {
+          "type": "text",
+          "text": "Now let me get the complete iframe/embed tags from the key content files. Let me read the critical sections with the slide iframes.",
+          "time": {
+            "start": 1772030395179,
+            "end": 1772030395179
+          },
+          "id": "prt_c953df6a9002h5uzV0GvyNtszy",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953debe7001fdFld7sz082oiK"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/index.mdx",
+              "offset": 27,
+              "limit": 680
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/index.mdx</path>\n<type>file</type>\n<content>27: <div id=\"listing-talks-default\">\n28: \n29: </div>\n30: \n31: ## 📆 2025\n32: \n33: <details is-=\"accordion\" class=\"callout-tip\">\n34: <summary><span class=\"dim-text\">[AuroraGPT: Training Foundation Models on Supercomputers](../talks/2025/12/16/slides.html) @ ANL \\[12/2025\\]</span></summary>\n35: \n36: <div class=\"reveal-full-page\">\n37: \n38: <iframe\n39:     class=\"slide-deck reveal-full-page\"\n40:     loading=\"lazy\"\n41:     src=\"https://samforeman.me/talks/2025/12/16/slides.html?view=scroll\"\n42:     title=\"Training Foundation Models on Supercomputers\"\n43:     align=\"center\"\n44:     frameborder=\"0\"\n45:     webkitallowfullscreen\n46:     allowfullscreen\n47:     style=\"aspect-ratio:1.3671875;\"></iframe>\n48: \n49: </div>\n50: \n51: </details>\n52: \n53: <details is-=\"accordion\" class=\"callout-tip\">\n54: <summary><span class=\"dim-text\">[Training Foundation Models on Supercomputers](../talks/2025/10/24/slides.html) @ UIUC \\[10/2025\\]</span></summary>\n55: \n56: <div class=\"reveal-full-page\">\n57: \n58: <iframe\n59:     class=\"slide-deck reveal-full-page\"\n60:     loading=\"lazy\"\n61:     src=\"https://samforeman.me/talks/2025/10/24/slides.html?view=scroll\"\n62:     title=\"Training Foundation Models on Supercomputers\"\n63:     align=\"center\"\n64:     frameborder=\"0\"\n65:     webkitallowfullscreen\n66:     allowfullscreen\n67:     style=\"aspect-ratio:1.3671875;\"></iframe>\n68: \n69: </div>\n70: \n71: </details>\n72: \n73: <details is-=\"accordion\" class=\"callout-tip\">\n74: <summary><span class=\"dim-text\">[Training Foundation Models on Supercomputers](../talks/2025/10/15/slides.html) @ Georgia Institute of Technology \\[10/2025\\]</span></summary>\n75: \n76: <div class=\"reveal-full-page\">\n77: \n78: <iframe\n79:     class=\"slide-deck reveal-full-page\"\n80:     loading=\"lazy\"\n81:     src=\"https://samforeman.me/talks/2025/10/15/slides.html?view=scroll\"\n82:     title=\"Training Foundation Models on Supercomputers\"\n83:     align=\"center\"\n84:     frameborder=\"0\"\n85:     webkitallowfullscreen\n86:     allowfullscreen\n87:     style=\"aspect-ratio:1.3671875;\"></iframe>\n88: \n89: </div>\n90: \n91: </details>\n92: \n93: <details is-=\"accordion\" class=\"callout-tip\">\n94: <summary><span class=\"dim-text\">[AERIS: Argonne Earth Systems Model](../talks/2025/10/08/index.html) @ [2025 ALCF Hands On HPC Workshop](https://www.alcf.anl.gov/events/2025-alcf-hands-hpc-workshop) \\[10/2025\\]</span></summary>\n95: \n96: <div class=\"reveal-full-page\">\n97: \n98: <iframe\n99:     class=\"slide-deck reveal-full-page\"\n100:     loading=\"lazy\"\n101:     src=\"https://samforeman.me/talks/2025/10/08/slides.html?view=scroll\"\n102:     title=\"AERIS: Argonne Earth Systems Model\"\n103:     align=\"center\"\n104:     frameborder=\"0\"\n105:     webkitallowfullscreen\n106:     allowfullscreen\n107:     style=\"aspect-ratio:1.3671875;\"></iframe>\n108: \n109: </div>\n110: \n111: </details>\n112: \n113: <details is-=\"accordion\" class=\"callout-tip\">\n114: <summary><span class=\"dim-text\">[Training Foundation Models on Supercomputers](../talks/2025/09/24/index.html) @ [2025 ALCF Hands On HPC Workshop](https://www.alcf.anl.gov/events/2025-alcf-hands-hpc-workshop) \\[09/2025\\]</span></summary>\n115: \n116: <div class=\"reveal-full-page\">\n117: \n118: <iframe\n119:     class=\"slide-deck reveal-full-page\"\n120:     loading=\"lazy\"\n121:     src=\"https://samforeman.me/talks/2025/09/24/slides.html?view=scroll\"\n122:     title=\"Training Foundation Models on Supercomputers\"\n123:     align=\"center\"\n124:     frameborder=\"0\"\n125:     webkitallowfullscreen\n126:     allowfullscreen\n127:     style=\"aspect-ratio:1.3671875;\"></iframe>\n128: \n129: </div>\n130: \n131: </details>\n132: \n133: <details is-=\"accordion\" class=\"callout-tip\">\n134: <summary><span class=\"dim-text\">[Scientific AI at Scale: AI for Science](../talks/openskai25/ai4science/index.html) @ [Open SkAI 2025](https://www.openskai-conference.org) \\[09/2025\\]</span></summary>\n135: \n136: <div class=\"reveal-full-page\">\n137: \n138: <iframe\n139:     class=\"slide-deck reveal-full-page\"\n140:     loading=\"lazy\"\n141:     src=\"https://samforeman.me/talks/openskai25/ai4science/slides.html?view=scroll\"\n142:     title=\"Scientific AI at Scale: AI for Science\"\n143:     align=\"center\"\n144:     frameborder=\"0\"\n145:     webkitallowfullscreen\n146:     allowfullscreen\n147:     style=\"aspect-ratio:1.3671875;\"></iframe>\n148: \n149: </div>\n150: \n151: </details>\n152: \n153: <details is-=\"accordion\" class=\"callout-tip\">\n154: <summary><span class=\"dim-text\">[Scientific AI at Scale: Distributed Training](../talks/openskai25/training/index.html) @ [Open SkAI 2025](https://www.openskai-conference.org/) \\[09/2025\\]</span></summary>\n155: \n156: <div class=\"reveal-full-page\">\n157: \n158: <iframe\n159:     class=\"slide-deck reveal-full-page\"\n160:     loading=\"lazy\"\n161:     src=\"https://samforeman.me/talks/openskai25/training/slides.html?view=scroll\"\n162:     title=\"Scientific AI at Scale: Distributed Training\"\n163:     align=\"center\"\n164:     frameborder=\"0\"\n165:     webkitallowfullscreen\n166:     allowfullscreen\n167:     style=\"aspect-ratio:1.3671875;\"></iframe>\n168: \n169: </div>\n170: \n171: </details>\n172: \n173: <details is-=\"accordion\" class=\"callout-tip\">\n174: <summary><span class=\"dim-text\">[Large Scale Training on Diverse Accelerators](../talks/AuroraGPT-SIAM25/index.html) @ [Scalable Deep Learning, _SIAM AN2025_](https://meetings.siam.org/sess/dsp_programsess.cfm?SESSIONCODE=84772) \\[07/2025\\]</span></summary>\n175: \n176: <div class=\"reveal-full-page\">\n177: \n178: <iframe\n179:     class=\"slide-deck reveal-full-page\"\n180:     loading=\"lazy\"\n181:     src=\"https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html?view=scroll\"\n182:     title=\"AuroraGPT: Large Scale Training on Diverse Accelerators\"\n183:     align=\"center\"\n184:     frameborder=\"0\"\n185:     webkitallowfullscreen\n186:     allowfullscreen\n187:     style=\"aspect-ratio:1.3671875;\"></iframe>\n188: \n189: </div>\n190: \n191: </details>\n192: \n193: <details is-=\"accordion\" class=\"callout-tip\">\n194: <summary><span class=\"dim-text\">[LLMs on Aurora: 🌌 AuroraGPT](../talks/incite-hackathon-2025/AuroraGPT/index.html) @ [_2025 ALCF INCITE GPU Hackathon_](https://www.alcf.anl.gov/events/alcf-incite-gpu-hackathon) \\[05/2025\\]</span></summary>\n195: \n196: - [🎥 video](https://www.youtube.com/watch?v=KJBbR_oFO2E)\n197: \n198: <div class=\"reveal-full-page\">\n199: \n200: <iframe\n201:     class=\"slide-deck reveal-full-page\"\n202:     loading=\"lazy\"\n203:     src=\"https://samforeman.me/talks/incite-hackathon-2025/auroragpt/slides?view=scroll/section#/section\"\n204:     title=\"LLMs on Aurora: AuroraGPT\"\n205:     align=\"center\"\n206:     frameborder=\"0\"\n207:     webkitallowfullscreen\n208:     allowfullscreen\n209:     style=\"aspect-ratio:1.3671875;\"></iframe>\n210: \n211: </div>\n212: \n213: </details>\n214: \n215: <details is-=\"accordion\" class=\"callout-tip\">\n216: <summary><span class=\"dim-text\">[LLMs on Aurora: 🍋 ezpz](../talks/incite-hackathon-2025/ezpz/index.html) @ [_2025 ALCF INCITE GPU Hackathon_](https://www.alcf.anl.gov/events/alcf-incite-gpu-hackathon) \\[05/2025\\]</span></summary>\n217: \n218: - [🎥 video](https://www.youtube.com/watch?v=15ZK9REQiBo)\n219: \n220: <div class=\"reveal-full-page\">\n221: \n222: <iframe\n223:     class=\"slide-deck reveal-full-page\"\n224:     loading=\"lazy\"\n225:     src=\"https://samforeman.me/talks/incite-hackathon-2025/ezpz/slides?view=scroll/section#/section\"\n226:     title=\"🍋 ezpz on Aurora\"\n227:     align=\"center\"\n228:     frameborder=\"0\"\n229:     webkitallowfullscreen\n230:     allowfullscreen\n231:     style=\"aspect-ratio:1.3671875;\"></iframe>\n232: \n233: </div>\n234: \n235: </details>\n236: \n237: <details is-=\"accordion\" class=\"callout-tip\">\n238: <summary><span class=\"dim-text\">[AuroraGPT: Foundation Models for Science](../talks/aurora-gpt-fm-for-electric-grid/index.html) @ [_Foundation Models for the Electric Grid_](https://www.alcf.anl.gov/alcf-ai-science-training-series) \\[02/2025\\]</span></summary>\n239: \n240: <div class=\"reveal-full-page\">\n241: \n242: <iframe\n243:     class=\"slide-deck reveal-full-page\"\n244:     loading=\"lazy\"\n245:     src=\"/talks/aurora-gpt-fm-for-electric-grid/slides.html?view=scroll\"\n246:     title=\"AuroraGPT: Foundation Models for Science\"\n247:     align=\"center\"\n248:     frameborder=\"0\"\n249:     webkitallowfullscreen\n250:     allowfullscreen\n251:     style=\"aspect-ratio:1.3671875;\"></iframe>\n252: \n253: </div>\n254: \n255: </details>\n256: \n257: ## 📆 2024\n258: \n259: <details is-=\"accordion\" class=\"callout-tip\">\n260: <summary><span class=\"dim-text\">[Parallel Training Methods](../talks/ai-for-science-2024/index.html) @ [_AI-for-Science on Supercomputers_](https://www.alcf.anl.gov/alcf-ai-science-training-series) \\[11/2024\\]</span></summary>\n261: \n262: - [🎥 video](https://www.youtube.com/watch?v=4ltulBj4oVk)\n263: \n264: <div class=\"reveal-full-page\">\n265: \n266: <iframe\n267:     class=\"slide-deck reveal-full-page\"\n268:     loading=\"lazy\"\n269:     src=\"/talks/ai-for-science-2024/slides.html?view=scroll\"\n270:     title=\"Parallel Training Methods\"\n271:     align=\"center\"\n272:     frameborder=\"0\"\n273:     webkitallowfullscreen\n274:     allowfullscreen\n275:     style=\"aspect-ratio:1.3671875;\"></iframe>\n276: \n277: </div>\n278: \n279: </details>\n280: \n281: <details is-=\"accordion\" class=\"callout-tip\">\n282: <summary><span class=\"dim-text\">[AuroraGPT](../talks/AuroraGPT/alcf-hpc-workshop-2024/index.html) @ [_2024 ALCF Hands-On HPC Workshop_](https://www.alcf.anl.gov/events/2024-alcf-hands-hpc-workshop) \\[10/2024\\]</span></summary>\n283: \n284: - [🎥 video](https://www.youtube.com/watch?v=15ZK9REQiBo)\n285: \n286: <div class=\"reveal-full-page\">\n287: \n288: <iframe\n289:     class=\"slide-deck\"\n290:     loading=\"lazy\"\n291:     src=\"/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html?view=scroll\"\n292:     title=\"AuroraGPT\"\n293:     align=\"center\"\n294:     frameborder=\"0\"\n295:     webkitallowfullscreen\n296:     allowfullscreen\n297:     style=\"aspect-ratio:1.3671875;\"></iframe>\n298: \n299: </div>\n300: \n301: </details>\n302: \n303: <details is-=\"accordion\" class=\"callout-tip\">\n304: <summary><span class=\"dim-text\">[Machine Learning and Foundation Models at Scale](../talks/alcf-hpc-workshop-2024/index.html) @ [_2024 ALCF Hands-On HPC Workshop_](https://www.alcf.anl.gov/events/2024-alcf-hands-hpc-workshop) \\[10/2024\\]</span></summary>\n305: \n306: <div class=\"reveal-full-page\">\n307: \n308: <iframe\n309:     class=\"slide-deck\"\n310:     loading=\"lazy\"\n311:     src=\"https://samforeman.me/talks/alcf-hpc-workshop-2024/slides?view=scroll/section#/section\"\n312:     title=\"Machine Learning and Foundation Models at Scale\"\n313:     align=\"center\"\n314:     frameborder=\"0\"\n315:     webkitallowfullscreen\n316:     allowfullscreen\n317:     style=\"aspect-ratio:1.3671875;\"></iframe>\n318: \n319: </div>\n320: \n321: </details>\n322: \n323: <details is-=\"accordion\" class=\"callout-tip\">\n324: <summary><span class=\"dim-text\">[AuroraGPT](../talks/hpc-user-forum/index.html) @ [_HPC User Forum_, 2024](https://www.hpcuserforum.com/hpc-user-forum-fall-2024/) \\[09/2024\\]</span></summary>\n325: \n326: <iframe\n327:     class=\"slide-deck reveal-full-page\"\n328:     loading=\"lazy\"\n329:     src=\"/talks/hpc-user-forum/slides.html?view=scroll\"\n330:     title=\"AuroraGPT\"\n331:     align=\"center\"\n332:     frameborder=\"0\"\n333:     webkitallowfullscreen\n334:     allowfullscreen\n335:     style=\"aspect-ratio:1.3671875;\"></iframe>\n336: \n337: </details>\n338: \n339: <details is-=\"accordion\" class=\"callout-tip\">\n340: <summary><span class=\"dim-text\">[Training LLMs at Scale](../talks/llms-at-scale/) @ [_ATPESC_, 2024](https://extremecomputingtraining.anl.gov/atpesc-2024/) \\[08/2024\\]</span></summary>\n341: \n342: <iframe\n343:     class=\"slide-deck\"\n344:     loading=\"lazy\"\n345:     src=\"/talks/llms-at-scale/slides.html?view=scroll\"\n346:     title=\"Training LLMs at Scale\"\n347:     align=\"center\"\n348:     frameborder=\"0\"\n349:     webkitallowfullscreen\n350:     allowfullscreen\n351:     style=\"aspect-ratio:1.3671875;\"></iframe>\n352: \n353: </details>\n354: \n355: <details is-=\"accordion\" class=\"callout-tip\">\n356: <summary><span class=\"dim-text\">[LLMs on Polaris](https://samforeman.me/talks/llms-on-polaris/slides.html) @ [_Center for Scientific Foundation Models_, Summer School 24’](https://scifm.ai/summer_school.html) \\[07/2024\\]</span></summary>\n357: \n358: <iframe\n359:     class=\"slide-deck\"\n360:     loading=\"lazy\"\n361:     src=\"/talks/llms-on-polaris/slides.html?view=scroll\"\n362:     title=\"LLMs on Polaris\"\n363:     align=\"center\"\n364:     frameborder=\"0\"\n365:     webkitallowfullscreen\n366:     allowfullscreen\n367:     style=\"aspect-ratio:1.3671875;\"></iframe>\n368: \n369: </details>\n370: \n371: <details is-=\"accordion\" class=\"callout-tip\">\n372: <summary><span class=\"dim-text\">[Parallel Training Techniques](https://github.com/saforem2/parallel-training-slides) @ [_AI-4-Science Training Series_](https://github.com/argonne-lcf/ai-science-training-series/tree/main/06_parallel_training) \\[03/2024\\]</span></summary>\n373: \n374: <iframe\n375:     class=\"slide-deck\"\n376:     loading=\"lazy\"\n377:     src=\"https://saforem2.github.io/parallel-training-slides?view=scroll\"\n378:     title=\"Parallel Training Techniques\"\n379:     align=\"center\"\n380:     frameborder=\"0\"\n381:     webkitallowfullscreen\n382:     allowfullscreen\n383:     style=\"aspect-ratio:1.3671875;\"></iframe>\n384: \n385: </details>\n386: \n387: <details is-=\"accordion\" class=\"callout-tip\">\n388: <summary><span class=\"dim-text\">[LLMs from Scratch](https://saforem2.github.io/llm-workshop-talk) @ [LLM Tutorial Workshop](https://github.com/argonne-lcf/llm-workshop) \\[02/2024\\]</span></summary>\n389: \n390: <iframe\n391:     class=\"slide-deck\"\n392:     loading=\"lazy\"\n393:     src=\"https://saforem2.github.io/llm-workshop-talk\"\n394:     title=\"LLMs from Scratch\"\n395:     align=\"center\"\n396:     frameborder=\"0\"\n397:     webkitallowfullscreen\n398:     allowfullscreen\n399:     style=\"aspect-ratio:1.3671875;\"></iframe>\n400: \n401: </details>\n402: \n403: ## 📆 2023\n404: \n405: <details is-=\"accordion\" class=\"callout-tip\">\n406: <summary><span class=\"dim-text\">[Creating Small(-ish) LLMs](https://saforem2.github.io/LLM-tutorial) @ [LLM Tutorial Workshop (1)](https://github.com/brettin/llm_tutorial) \\[11/2023\\]</span></summary>\n407: \n408: <iframe\n409:     class=\"slide-deck\"\n410:     loading=\"lazy\"\n411:     src=\"https://saforem2.github.io/LLM-tutorial\"\n412:     title=\"Creating Small(-ish) LLMs\"\n413:     align=\"center\"\n414:     frameborder=\"0\"\n415:     webkitallowfullscreen\n416:     allowfullscreen>\n417:     {' '}\n418: </iframe>\n419: \n420: </details>\n421: \n422: <details is-=\"accordion\" class=\"callout-tip\">\n423: <summary><span class=\"dim-text\">[Exascale Science on Aurora](https://saforem2.github.io/oneapi-talk) @ [Intel oneAPI Workshop @ UIC](https://www.alcf.anl.gov/events/alcf-hands-hpc-workshop) \\[10/2023\\]</span></summary>\n424: \n425: <iframe\n426:     class=\"slide-deck\"\n427:     loading=\"lazy\"\n428:     src=\"https://saforem2.github.io/oneapi-talk\"\n429:     title=\"Exascale Science on Aurora\"\n430:     align=\"center\"\n431:     frameborder=\"0\"\n432:     webkitallowfullscreen\n433:     allowfullscreen>\n434:     {' '}\n435: </iframe>\n436: \n437: </details>\n438: \n439: <details is-=\"accordion\" class=\"callout-tip\">\n440: <summary><span class=\"dim-text\">[LLM Lunch Talk](https://saforem2.github.io/llm-lunch-talk) @ [ALCF Hands On HPC Workshop](https://www.alcf.anl.gov/events/alcf-hands-hpc-workshop) \\[10/2023\\]</span></summary>\n441: \n442: - [🎥 video](https://www.youtube.com/watch?v=mSx9RVd00xU)\n443: \n444: <iframe\n445:     class=\"slide-deck\"\n446:     loading=\"lazy\"\n447:     src=\"https://saforem2.github.io/llm-lunch-talk/#/section\"\n448:     title=\"LLMs on Polaris\"\n449:     align=\"center\"\n450:     frameborder=\"0\"\n451:     webkitallowfullscreen\n452:     allowfullscreen\n453:     style=\"aspect-ratio:1.3671875;\"></iframe>\n454: \n455: </details>\n456: \n457: <details is-=\"accordion\" class=\"callout-tip\">\n458: <summary><span class=\"dim-text\">[Scaling LLMs for Science](https://saforem2.github.io/scaling4science) @ [Data-Intensive Computing + AI/ML at Scale](https://events.cels.anl.gov/event/426/overview) \\[08/2023\\]</span></summary>\n459: \n460: <iframe\n461:     class=\"slide-deck\"\n462:     loading=\"lazy\"\n463:     src=\"https://saforem2.github.io/scaling4science/#/section\"\n464:     title=\"Scaling LLMs for Science and Ongoing Collaborations\"\n465:     align=\"center\"\n466:     frameborder=\"0\"\n467:     webkitallowfullscreen\n468:     allowfullscreen\n469:     style=\"aspect-ratio:1.3671875;\"></iframe>\n470: \n471: </details>\n472: \n473: <details is-=\"accordion\" class=\"callout-tip\">\n474: <summary><span class=\"dim-text\">[MLMC: Machine Learning Monte Carlo](https://saforem2.github.io/lattice23) @ [Lattice 2023](https://indico.fnal.gov/event/57249/contributions/271305/) \\[07/2023\\]</span></summary>\n475: \n476: <iframe\n477:     class=\"slide-deck\"\n478:     loading=\"lazy\"\n479:     src=\"https://saforem2.github.io/lattice23/#/title-slide\"\n480:     title=\"MLMC: Machine Learning Monte Carlo\"\n481:     align=\"center\"\n482:     frameborder=\"0\"\n483:     webkitallowfullscreen\n484:     allowfullscreen\n485:     style=\"aspect-ratio:1.3671875;\"></iframe>\n486: \n487: </details>\n488: \n489: <details is-=\"accordion\" class=\"callout-tip\">\n490: <summary><span class=\"dim-text\">[Generative Modeling and Efficient Sampling](https://saforem2.github.io/lqcd-pasc23/) @ [PASC23](https://pasc23.pasc-conference.org/) \\[07/2023\\]</span></summary>\n491: \n492: <iframe\n493:     class=\"slide-deck\"\n494:     loading=\"lazy\"\n495:     src=\"https://saforem2.github.io/lqcd-pasc23/\"\n496:     title=\"Generative Modeling and Efficient Sampling\"\n497:     align=\"center\"\n498:     frameborder=\"0\"\n499:     webkitallowfullscreen\n500:     allowfullscreen\n501:     style=\"aspect-ratio:1.3671875;\"></iframe>\n502: \n503: </details>\n504: \n505: <details is-=\"accordion\" class=\"callout-tip\">\n506: <summary><span class=\"dim-text\">[Efficient Sampling for LGT](https://saforem2.github.io/deep-fridays) @ [Deep Fridays @ U. Bologna](https://www.cs.unibo.it/~asperti/deep_fridays.html) \\[04/2023\\]</span></summary>\n507: \n508: <iframe\n509:     class=\"slide-deck\"\n510:     loading=\"lazy\"\n511:     src=\"https://saforem2.github.io/deep-fridays/\"\n512:     title=\"Efficient Sampling for LGT\"\n513:     align=\"center\"\n514:     frameborder=\"0\"\n515:     webkitallowfullscreen\n516:     allowfullscreen\n517:     style=\"aspect-ratio:1.3671875;\"></iframe>\n518: \n519: </details>\n520: \n521: ## 📆 2022\n522: \n523: <details is-=\"accordion\" class=\"callout-tip\">\n524: <summary><span class=\"dim-text\">[Large Scale Training](https://saforem2.github.io/ai4sci-large-scale-training) @ [AI4Science on Supercomputers (ALCF)](https://github.com/argonne-lcf/ai-science-training-series) \\[11/2022\\]</span></summary>\n525: \n526: <iframe\n527:     class=\"slide-deck\"\n528:     loading=\"lazy\"\n529:     src=\"https://saforem2.github.io/ai4sci-large-scale-training/#\"\n530:     title=\"Large Scale Training\"\n531:     align=\"center\"\n532:     frameborder=\"0\"\n533:     webkitallowfullscreen\n534:     allowfullscreen\n535:     style=\"aspect-ratio:1.3671875;\"></iframe>\n536: \n537: </details>\n538: \n539: <details is-=\"accordion\" class=\"callout-tip\">\n540: <summary><span class=\"dim-text\">[Hyperparameter Management](https://saforem2.github.io/hparam-management-sdl2022/) @ [ALCF SDL Workshop](https://www.alcf.anl.gov/events/2022-alcf-simulation-data-and-learning-workshop) \\[10/2022\\]</span></summary>\n541: \n542: <iframe\n543:     class=\"slide-deck\"\n544:     loading=\"lazy\"\n545:     src=\"https://saforem2.github.io/hparam-management-sdl2022\"\n546:     title=\"Hyperparameter Management\"\n547:     align=\"center\"\n548:     frameborder=\"0\"\n549:     webkitallowfullscreen\n550:     allowfullscreen\n551:     style=\"aspect-ratio:1.3671875;\"></iframe>\n552: \n553: </details>\n554: \n555: <details is-=\"accordion\" class=\"callout-tip\">\n556: <summary><span class=\"dim-text\">[Statistical Learning](https://saforem2.github.io/ATPESC-StatisticalLearning) @ [ATPESC 2022](https://extremecomputingtraining.anl.gov/) \\[08/2022\\]</span></summary>\n557: \n558: - [📕 accompanying\n559:   notebook](https://github.com/argonne-lcf/ATPESC_MachineLearning/blob/master/00_statisticalLearning/src/atpesc/notebooks/statistical_learning.ipynb)\n560: \n561: <iframe\n562:     class=\"slide-deck\"\n563:     loading=\"lazy\"\n564:     src=\"https://saforem2.github.io/ATPESC-StatisticalLearning/#/\"\n565:     title=\"Statistical Learning\"\n566:     align=\"center\"\n567:     frameborder=\"0\"\n568:     webkitallowfullscreen\n569:     allowfullscreen\n570:     style=\"aspect-ratio:1.3671875;\"></iframe>\n571: \n572: </details>\n573: \n574: <details is-=\"accordion\" class=\"callout-tip\" style=\"width:100%;background-color: rgba(0,0,0,0.0)!important;\">\n575: <summary>Scientific Data Science: An Emerging Symbiosis @ ANL (05/2022)</summary>\n576: \n577: <iframe\n578:     class=\"slide-deck\"\n579:     loading=\"lazy\"\n580:     src=\"https://saforem2.github.io/anl-job-talk\"\n581:     title=\"Scientific Data Science\"\n582:     align=\"center\"\n583:     frameborder=\"0\"\n584:     webkitallowfullscreen\n585:     allowfullscreen\n586:     style=\"aspect-ratio:1.3671875;\"></iframe>\n587: \n588: <details is-=\"accordion\" class=\"callout-tip\">\n589: <summary><span class=\"dim-text\">[Machine Learning in HEP](https://saforem2.github.io/physicsSeminar) @ UNC Greensboro \\[03/2022\\]</span></summary>\n590: \n591: - [Machine Learning in\n592:   HEP](https://saforem2.github.io/physicsSeminar), at UNC Greensboro,\n593:   March 2022\n594: \n595: <iframe\n596:     class=\"slide-deck\"\n597:     loading=\"lazy\"\n598:     src=\"https://saforem2.github.io/physicsSeminar\"\n599:     title=\"Machine Learning in HEP\"\n600:     align=\"center\"\n601:     frameborder=\"0\"\n602:     webkitallowfullscreen\n603:     allowfullscreen\n604:     style=\"width:100%!important; \"></iframe>\n605: \n606: </details>\n607: \n608: </details>\n609: ## 📆 2021\n610: \n611: <details is-=\"accordion\" class=\"callout-tip\" style=\"width:100%; background-color: rgba(0,0,0,0.0)!important;\">\n612: <summary>Accelerated Sampling Methods for LGT @ DWQ @ 25 [BNL] (12/2021)</summary>\n613: \n614: <iframe\n615:     class=\"slide-deck\"\n616:     loading=\"lazy\"\n617:     src=\"https://saforem2.github.io/l2hmc-dwq25/\"\n618:     title=\"Accelerated Sampling Methods for LGT\"\n619:     align=\"center\"\n620:     frameborder=\"0\"\n621:     webkitallowfullscreen\n622:     allowfullscreen\n623:     style=\"aspect-ratio:1.3671875;\"></iframe>\n624: \n625: <details is-=\"accordion\" class=\"callout-tip\">\n626: <summary><span class=\"dim-text\">[Training Topological Samplers for LGT](https://saforem2.github.io/l2hmc_talk_ect2021) @ [ML4HEP, ECT\\* Trento](https://indico.ectstar.eu/event/77/contributions/2349/) \\[09/2021\\]</span></summary>\n627: \n628: <iframe\n629:     class=\"slide-deck\"\n630:     loading=\"lazy\"\n631:     src=\"https://saforem2.github.io/l2hmc_talk_ect2021\"\n632:     title=\"Training Topological Samplers for LGT\"\n633:     align=\"center\"\n634:     frameborder=\"0\"\n635:     webkitallowfullscreen\n636:     allowfullscreen\n637:     style=\"aspect-ratio:1.3671875;\"></iframe>\n638: \n639: </details>\n640: \n641: </details>\n642: \n643: <details is-=\"accordion\" class=\"callout-tip\">\n644: <summary><span class=\"dim-text\">[l2hmc-qcd](https://github.com/saforem2/l2hmc-qcd) @ MIT Lattice Group Seminar \\[2021\\]</span></summary>\n645: \n646: [l2hmc-qcd](https://github.com/saforem2/l2hmc-qcd) at the _MIT Lattice Group\n647: Seminar_, 2021\n648: \n649: </details>\n650: \n651: <details is-=\"accordion\" class=\"callout-tip\">\n652: <summary><span class=\"dim-text\">[Deep Learning HMC for Improved Gauge Generation](https://bit.ly/mainz21) @ [ML in LQCD Workshop](https://bit.ly/mainz21_overview) \\[2021\\]</span></summary>\n653: \n654: <iframe\n655:     class=\"slide-deck\"\n656:     loading=\"lazy\"\n657:     src=\"https://slides.com/samforeman/dlhmc/embed\"\n658:     title=\"Deep Learning HMC for Improved Gauge Generation\"\n659:     scrolling=\"no\"\n660:     frameborder=\"0\"\n661:     webkitallowfullscreen\n662:     allowfullscreen\n663:     style=\"aspect-ratio:1.3671875;\"></iframe>\n664: \n665: </details>\n666: \n667: ## 📆 2020\n668: \n669: <details is-=\"accordion\" class=\"callout-tip\">\n670: <summary><span class=\"dim-text\">[Machine Learning for Lattice QCD](https://slides.com/samforeman/l2hmc-qcd/embed) @ U. Iowa \\[2020\\]</span></summary>\n671: \n672: <iframe\n673:     class=\"slide-deck\"\n674:     loading=\"lazy\"\n675:     src=\"https://slides.com/samforeman/l2hmc-qcd/embed\"\n676:     title=\"Machine Learning for Lattice QCD\"\n677:     align=\"center\"\n678:     frameborder=\"0\"\n679:     webkitallowfullscreen\n680:     allowfullscreen\n681:     style=\"aspect-ratio:1.3671875;\"></iframe>\n682: \n683: </details>\n\n(End of file - total 683 lines)\n</content>",
+            "title": "web/src/pages/talks/index.mdx",
+            "metadata": {
+              "preview": "<div id=\"listing-talks-default\">\n\n</div>\n\n## 📆 2025\n\n<details is-=\"accordion\" class=\"callout-tip\">\n<summary><span class=\"dim-text\">[AuroraGPT: Training Foundation Models on Supercomputers](../talks/2025/12/16/slides.html) @ ANL \\[12/2025\\]</span></summary>\n\n<div class=\"reveal-full-page\">\n\n<iframe\n    class=\"slide-deck reveal-full-page\"\n    loading=\"lazy\"\n    src=\"https://samforeman.me/talks/2025/12/16/slides.html?view=scroll\"\n    title=\"Training Foundation Models on Supercomputers\"\n    align=\"center\"\n    frameborder=\"0\"\n    webkitallowfullscreen\n    allowfullscreen",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772030394270,
+              "end": 1772030394275
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953debe7001fdFld7sz082oiK"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_xDHDPo6AwJTNA7bTQhqoiP",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx",
+              "offset": 425,
+              "limit": 560
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx</path>\n<type>file</type>\n<content>425: ### 📆 2025\n426: \n427: > [!TIP] AuroraGPT: Training Foundation Models on Supercomputers @ ANL 12/2025\n428: >\n429: > <div class=\"reveal-full-page\">\n430: >\n431: > <iframe\n432: >     class=\"slide-deck reveal-full-page\"\n433: >     loading=\"lazy\"\n434: >     src=\"https://samforeman.me/talks/2025/12/16/slides.html?view=scroll\"\n435: >     title=\"Training Foundation Models on Supercomputers\"\n436: >     align=\"center\"\n437: >     frameborder=\"0\"\n438: >     webkitallowfullscreen\n439: >     allowfullscreen\n440: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n441: >\n442: > </div>\n443: \n444: > [!TIP] Training Foundation Models on Supercomputers @ UIUC 10/2025\n445: >\n446: > <div class=\"reveal-full-page\">\n447: >\n448: > <iframe\n449: >     class=\"slide-deck reveal-full-page\"\n450: >     loading=\"lazy\"\n451: >     src=\"https://samforeman.me/talks/2025/10/24/slides.html?view=scroll\"\n452: >     title=\"Training Foundation Models on Supercomputers\"\n453: >     align=\"center\"\n454: >     frameborder=\"0\"\n455: >     webkitallowfullscreen\n456: >     allowfullscreen\n457: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n458: >\n459: > </div>\n460: \n461: > [!TIP] Training Foundation Models on Supercomputers @ Georgia Institute of Technology 10/2025\n462: >\n463: > <div class=\"reveal-full-page\">\n464: >\n465: > <iframe\n466: >     class=\"slide-deck reveal-full-page\"\n467: >     loading=\"lazy\"\n468: >     src=\"https://samforeman.me/talks/2025/10/15/slides.html?view=scroll\"\n469: >     title=\"Training Foundation Models on Supercomputers\"\n470: >     align=\"center\"\n471: >     frameborder=\"0\"\n472: >     webkitallowfullscreen\n473: >     allowfullscreen\n474: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n475: >\n476: > </div>\n477: \n478: > [!TIP] AERIS: Argonne Earth Systems Model @ 2025 ALCF Hands On HPC Workshop 10/2025\n479: >\n480: > <div class=\"reveal-full-page\">\n481: >\n482: > <iframe\n483: >     class=\"slide-deck reveal-full-page\"\n484: >     loading=\"lazy\"\n485: >     src=\"https://samforeman.me/talks/2025/10/08/slides.html?view=scroll\"\n486: >     title=\"AERIS: Argonne Earth Systems Model\"\n487: >     align=\"center\"\n488: >     frameborder=\"0\"\n489: >     webkitallowfullscreen\n490: >     allowfullscreen\n491: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n492: >\n493: > </div>\n494: \n495: > [!TIP] Training Foundation Models on Supercomputers @ 2025 ALCF Hands On HPC Workshop 09/2025\n496: >\n497: > <div class=\"reveal-full-page\">\n498: >\n499: > <iframe\n500: >     class=\"slide-deck reveal-full-page\"\n501: >     loading=\"lazy\"\n502: >     src=\"https://samforeman.me/talks/2025/09/24/slides.html?view=scroll\"\n503: >     title=\"Training Foundation Models on Supercomputers\"\n504: >     align=\"center\"\n505: >     frameborder=\"0\"\n506: >     webkitallowfullscreen\n507: >     allowfullscreen\n508: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n509: >\n510: > </div>\n511: \n512: > [!TIP] Scientific AI at Scale: AI for Science @ Open SkAI 2025 09/2025\n513: >\n514: > <div class=\"reveal-full-page\">\n515: >\n516: > <iframe\n517: >     class=\"slide-deck reveal-full-page\"\n518: >     loading=\"lazy\"\n519: >     src=\"https://samforeman.me/talks/openskai25/ai4science/slides.html?view=scroll\"\n520: >     title=\"Scientific AI at Scale: AI for Science\"\n521: >     align=\"center\"\n522: >     frameborder=\"0\"\n523: >     webkitallowfullscreen\n524: >     allowfullscreen\n525: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n526: >\n527: > </div>\n528: \n529: > [!TIP] Scientific AI at Scale: Distributed Training @ Open SkAI 2025 09/2025\n530: >\n531: > <div class=\"reveal-full-page\">\n532: >\n533: > <iframe\n534: >     class=\"slide-deck reveal-full-page\"\n535: >     loading=\"lazy\"\n536: >     src=\"https://samforeman.me/talks/openskai25/training/slides.html?view=scroll\"\n537: >     title=\"Scientific AI at Scale: Distributed Training\"\n538: >     align=\"center\"\n539: >     frameborder=\"0\"\n540: >     webkitallowfullscreen\n541: >     allowfullscreen\n542: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n543: >\n544: > </div>\n545: \n546: > [!TIP] Large Scale Training on Diverse Accelerators @ Scalable Deep Learning, SIAM AN2025 07/2025\n547: >\n548: > <div class=\"reveal-full-page\">\n549: >\n550: > <iframe\n551: >     class=\"slide-deck reveal-full-page\"\n552: >     loading=\"lazy\"\n553: >     src=\"https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html?view=scroll\"\n554: >     title=\"AuroraGPT: Large Scale Training on Diverse Accelerators\"\n555: >     align=\"center\"\n556: >     frameborder=\"0\"\n557: >     webkitallowfullscreen\n558: >     allowfullscreen\n559: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n560: >\n561: > </div>\n562: \n563: > [!TIP] LLMs on Aurora: 🌌 AuroraGPT @ 2025 ALCF INCITE GPU Hackathon 05/2025\n564: >\n565: > - [🎥 video]\n566: >\n567: > <div class=\"reveal-full-page\">\n568: >\n569: > <iframe\n570: >     class=\"slide-deck reveal-full-page\"\n571: >     loading=\"lazy\"\n572: >     src=\"https://samforeman.me/talks/incite-hackathon-2025/auroragpt/slides?view=scroll/section#/section\"\n573: >     title=\"LLMs on Aurora: AuroraGPT\"\n574: >     align=\"center\"\n575: >     frameborder=\"0\"\n576: >     webkitallowfullscreen\n577: >     allowfullscreen\n578: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n579: >\n580: > </div>\n581: \n582: > [!TIP] LLMs on Aurora: 🍋 ezpz @ 2025 ALCF INCITE GPU Hackathon 05/2025\n583: >\n584: > - [🎥 video][4]\n585: >\n586: > <div class=\"reveal-full-page\">\n587: >\n588: > <iframe\n589: >     class=\"slide-deck reveal-full-page\"\n590: >     loading=\"lazy\"\n591: >     src=\"https://samforeman.me/talks/incite-hackathon-2025/ezpz/slides?view=scroll/section#/section\"\n592: >     title=\"🍋 ezpz on Aurora\"\n593: >     align=\"center\"\n594: >     frameborder=\"0\"\n595: >     webkitallowfullscreen\n596: >     allowfullscreen\n597: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n598: >\n599: > </div>\n600: \n601: > [!TIP] AuroraGPT: Foundation Models for Science @ Foundation Models for the Electric Grid 02/2025\n602: >\n603: > <div class=\"reveal-full-page\">\n604: >\n605: > <iframe\n606: >     class=\"slide-deck reveal-full-page\"\n607: >     loading=\"lazy\"\n608: >     src=\"/talks/aurora-gpt-fm-for-electric-grid/slides.html?view=scroll\"\n609: >     title=\"AuroraGPT: Foundation Models for Science\"\n610: >     align=\"center\"\n611: >     frameborder=\"0\"\n612: >     webkitallowfullscreen\n613: >     allowfullscreen\n614: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n615: >\n616: > </div>\n617: \n618: ### 📆 2024\n619: \n620: > [!TIP] Parallel Training Methods @ AI-for-Science on Supercomputers 11/2024\n621: >\n622: > - [🎥 video][5]\n623: >\n624: > <div class=\"reveal-full-page\">\n625: >\n626: > <iframe\n627: >     class=\"slide-deck reveal-full-page\"\n628: >     loading=\"lazy\"\n629: >     src=\"/talks/ai-for-science-2024/slides.html?view=scroll\"\n630: >     title=\"Parallel Training Methods\"\n631: >     align=\"center\"\n632: >     frameborder=\"0\"\n633: >     webkitallowfullscreen\n634: >     allowfullscreen\n635: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n636: >\n637: > </div>\n638: \n639: > [!TIP] AuroraGPT @ 2024 ALCF Hands-On HPC Workshop 10/2024\n640: >\n641: > - [🎥 video][4]\n642: >\n643: > <div class=\"reveal-full-page\">\n644: >\n645: > <iframe\n646: >     class=\"slide-deck\"\n647: >     loading=\"lazy\"\n648: >     src=\"/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html?view=scroll\"\n649: >     title=\"AuroraGPT\"\n650: >     align=\"center\"\n651: >     frameborder=\"0\"\n652: >     webkitallowfullscreen\n653: >     allowfullscreen\n654: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n655: >\n656: > </div>\n657: \n658: > [!TIP] Machine Learning and Foundation Models at Scale @ 2024 ALCF Hands-On HPC Workshop 10/2024\n659: >\n660: > <div class=\"reveal-full-page\">\n661: >\n662: > <iframe\n663: >     class=\"slide-deck\"\n664: >     loading=\"lazy\"\n665: >     src=\"https://samforeman.me/talks/alcf-hpc-workshop-2024/slides?view=scroll/section#/section\"\n666: >     title=\"Machine Learning and Foundation Models at Scale\"\n667: >     align=\"center\"\n668: >     frameborder=\"0\"\n669: >     webkitallowfullscreen\n670: >     allowfullscreen\n671: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n672: >\n673: > </div>\n674: \n675: > [!TIP] AuroraGPT @ HPC User Forum, 2024 09/2024\n676: >\n677: > <iframe\n678: >     class=\"slide-deck reveal-full-page\"\n679: >     loading=\"lazy\"\n680: >     src=\"/talks/hpc-user-forum/slides.html?view=scroll\"\n681: >     title=\"AuroraGPT\"\n682: >     align=\"center\"\n683: >     frameborder=\"0\"\n684: >     webkitallowfullscreen\n685: >     allowfullscreen\n686: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n687: \n688: > [!TIP] Training LLMs at Scale @ ATPESC, 2024 08/2024\n689: >\n690: > <iframe\n691: >     class=\"slide-deck\"\n692: >     loading=\"lazy\"\n693: >     src=\"/talks/llms-at-scale/slides.html?view=scroll\"\n694: >     title=\"Training LLMs at Scale\"\n695: >     align=\"center\"\n696: >     frameborder=\"0\"\n697: >     webkitallowfullscreen\n698: >     allowfullscreen\n699: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n700: \n701: > [!TIP] LLMs on Polaris @ Center for Scientific Foundation Models, Summer School 24’ 07/2024\n702: >\n703: > <iframe\n704: >     class=\"slide-deck\"\n705: >     loading=\"lazy\"\n706: >     src=\"/talks/llms-on-polaris/slides.html?view=scroll\"\n707: >     title=\"LLMs on Polaris\"\n708: >     align=\"center\"\n709: >     frameborder=\"0\"\n710: >     webkitallowfullscreen\n711: >     allowfullscreen\n712: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n713: \n714: > [!TIP] Parallel Training Techniques @ AI-4-Science Training Series 03/2024\n715: >\n716: > <iframe\n717: >     class=\"slide-deck\"\n718: >     loading=\"lazy\"\n719: >     src=\"https://saforem2.github.io/parallel-training-slides?view=scroll\"\n720: >     title=\"Parallel Training Techniques\"\n721: >     align=\"center\"\n722: >     frameborder=\"0\"\n723: >     webkitallowfullscreen\n724: >     allowfullscreen\n725: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n726: \n727: > [!TIP] LLMs from Scratch @ LLM Tutorial Workshop 02/2024\n728: >\n729: > <iframe\n730: >     class=\"slide-deck\"\n731: >     loading=\"lazy\"\n732: >     src=\"https://saforem2.github.io/llm-workshop-talk\"\n733: >     title=\"LLMs from Scratch\"\n734: >     align=\"center\"\n735: >     frameborder=\"0\"\n736: >     webkitallowfullscreen\n737: >     allowfullscreen\n738: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n739: \n740: ### 📆 2023\n741: \n742: > [!TIP] Creating Small(-ish) LLMs @ LLM Tutorial Workshop (1) 11/2023\n743: >\n744: > <iframe\n745: >     class=\"slide-deck\"\n746: >     loading=\"lazy\"\n747: >     src=\"https://saforem2.github.io/LLM-tutorial\"\n748: >     title=\"Creating Small(-ish) LLMs\"\n749: >     align=\"center\"\n750: >     frameborder=\"0\"\n751: >     webkitallowfullscreen\n752: >     allowfullscreen></iframe>\n753: \n754: > [!TIP] Exascale Science on Aurora @ Intel oneAPI Workshop @ UIC 10/2023\n755: >\n756: > <iframe\n757: >     class=\"slide-deck\"\n758: >     loading=\"lazy\"\n759: >     src=\"https://saforem2.github.io/oneapi-talk\"\n760: >     title=\"Exascale Science on Aurora\"\n761: >     align=\"center\"\n762: >     frameborder=\"0\"\n763: >     webkitallowfullscreen\n764: >     allowfullscreen></iframe>\n765: \n766: > [!TIP] LLM Lunch Talk @ Intel oneAPI Workshop @ UIC 10/2023\n767: >\n768: > - [🎥 video][8]\n769: >\n770: > <iframe\n771: >     class=\"slide-deck\"\n772: >     loading=\"lazy\"\n773: >     src=\"https://saforem2.github.io/llm-lunch-talk/#/section\"\n774: >     title=\"LLMs on Polaris\"\n775: >     align=\"center\"\n776: >     frameborder=\"0\"\n777: >     webkitallowfullscreen\n778: >     allowfullscreen\n779: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n780: \n781: > [!TIP] Scaling LLMs for Science @ Data-Intensive Computing + AI/ML at Scale 08/2023\n782: >\n783: > <iframe\n784: >     class=\"slide-deck\"\n785: >     loading=\"lazy\"\n786: >     src=\"https://saforem2.github.io/scaling4science/#/section\"\n787: >     title=\"Scaling LLMs for Science and Ongoing Collaborations\"\n788: >     align=\"center\"\n789: >     frameborder=\"0\"\n790: >     webkitallowfullscreen\n791: >     allowfullscreen\n792: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n793: \n794: > [!TIP] MLMC: Machine Learning Monte Carlo @ Lattice 2023 07/2023\n795: >\n796: > <iframe\n797: >     class=\"slide-deck\"\n798: >     loading=\"lazy\"\n799: >     src=\"https://saforem2.github.io/lattice23/#/title-slide\"\n800: >     title=\"MLMC: Machine Learning Monte Carlo\"\n801: >     align=\"center\"\n802: >     frameborder=\"0\"\n803: >     webkitallowfullscreen\n804: >     allowfullscreen\n805: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n806: \n807: > [!TIP] Generative Modeling and Efficient Sampling @ PASC23 07/2023\n808: >\n809: > <iframe\n810: >     class=\"slide-deck\"\n811: >     loading=\"lazy\"\n812: >     src=\"https://saforem2.github.io/lqcd-pasc23/\"\n813: >     title=\"Generative Modeling and Efficient Sampling\"\n814: >     align=\"center\"\n815: >     frameborder=\"0\"\n816: >     webkitallowfullscreen\n817: >     allowfullscreen\n818: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n819: \n820: > [!TIP] Efficient Sampling for LGT @ Deep Fridays @ U. Bologna 04/2023\n821: >\n822: > <iframe\n823: >     class=\"slide-deck\"\n824: >     loading=\"lazy\"\n825: >     src=\"https://saforem2.github.io/deep-fridays/\"\n826: >     title=\"Efficient Sampling for LGT\"\n827: >     align=\"center\"\n828: >     frameborder=\"0\"\n829: >     webkitallowfullscreen\n830: >     allowfullscreen\n831: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n832: \n833: ### 📆 2022\n834: \n835: > [!TIP] Large Scale Training @ AI4Science on Supercomputers (ALCF) 11/2022\n836: >\n837: > <iframe\n838: >     class=\"slide-deck\"\n839: >     loading=\"lazy\"\n840: >     src=\"https://saforem2.github.io/ai4sci-large-scale-training/#\"\n841: >     title=\"Large Scale Training\"\n842: >     align=\"center\"\n843: >     frameborder=\"0\"\n844: >     webkitallowfullscreen\n845: >     allowfullscreen\n846: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n847: \n848: > [!TIP] Hyperparameter Management @ ALCF SDL Workshop 10/2022\n849: >\n850: > <iframe\n851: >     class=\"slide-deck\"\n852: >     loading=\"lazy\"\n853: >     src=\"https://saforem2.github.io/hparam-management-sdl2022\"\n854: >     title=\"Hyperparameter Management\"\n855: >     align=\"center\"\n856: >     frameborder=\"0\"\n857: >     webkitallowfullscreen\n858: >     allowfullscreen\n859: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n860: \n861: > [!TIP] Statistical Learning @ ATPESC 2022 08/2022\n862: >\n863: > - [📕 accompanying notebook]\n864: >\n865: > <iframe\n866: >     class=\"slide-deck\"\n867: >     loading=\"lazy\"\n868: >     src=\"https://saforem2.github.io/ATPESC-StatisticalLearning/#/\"\n869: >     title=\"Statistical Learning\"\n870: >     align=\"center\"\n871: >     frameborder=\"0\"\n872: >     webkitallowfullscreen\n873: >     allowfullscreen\n874: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n875: \n876: > [!TIP] Scientific Data Science: An Emerging Symbiosis @ ANL 05/2022\n877: >\n878: > <iframe\n879: >     class=\"slide-deck\"\n880: >     loading=\"lazy\"\n881: >     src=\"https://saforem2.github.io/anl-job-talk\"\n882: >     title=\"Scientific Data Science\"\n883: >     align=\"center\"\n884: >     frameborder=\"0\"\n885: >     webkitallowfullscreen\n886: >     allowfullscreen\n887: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n888: \n889: > [!TIP] Machine Learning in HEP @ UNC Greensboro 03/2022\n890: >\n891: > - [Machine Learning in HEP], at UNC Greensboro, March 2022\n892: >\n893: > <iframe\n894: >     class=\"slide-deck\"\n895: >     loading=\"lazy\"\n896: >     src=\"https://saforem2.github.io/physicsSeminar\"\n897: >     title=\"Machine Learning in HEP\"\n898: >     align=\"center\"\n899: >     frameborder=\"0\"\n900: >     webkitallowfullscreen\n901: >     allowfullscreen\n902: >     style=\"width:100%!important; \"></iframe>\n903: \n904: ### 📆 2021\n905: \n906: > [!TIP] Accelerated Sampling Methods for LGT @ DWQ @ 25 BNL 12/2021\n907: >\n908: > <iframe\n909: >     class=\"slide-deck\"\n910: >     loading=\"lazy\"\n911: >     src=\"https://saforem2.github.io/l2hmc-dwq25/\"\n912: >     title=\"Accelerated Sampling Methods for LGT\"\n913: >     align=\"center\"\n914: >     frameborder=\"0\"\n915: >     webkitallowfullscreen\n916: >     allowfullscreen\n917: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n918: \n919: > [!TIP] Training Topological Samplers for LGT @ ML4HEP, ECT Trento 09/2021\n920: >\n921: > <iframe\n922: >     class=\"slide-deck\"\n923: >     loading=\"lazy\"\n924: >     src=\"https://saforem2.github.io/l2hmc_talk_ect2021\"\n925: >     title=\"Training Topological Samplers for LGT\"\n926: >     align=\"center\"\n927: >     frameborder=\"0\"\n928: >     webkitallowfullscreen\n929: >     allowfullscreen\n930: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n931: \n932: > [!TIP] l2hmc-qcd @ MIT Lattice Group Seminar 2021\n933: >\n934: > [l2hmc-qcd][`l2hmc-qcd`] at the _MIT Lattice Group Seminar_, 2021\n935: \n936: > [!TIP] Deep Learning HMC for Improved Gauge Generation @ ML in LQCD Workshop 2021\n937: >\n938: > <iframe\n939: >     class=\"slide-deck\"\n940: >     loading=\"lazy\"\n941: >     src=\"https://slides.com/samforeman/dlhmc/embed\"\n942: >     title=\"Deep Learning HMC for Improved Gauge Generation\"\n943: >     scrolling=\"no\"\n944: >     frameborder=\"0\"\n945: >     webkitallowfullscreen\n946: >     allowfullscreen\n947: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n948: \n949: ### 📆 2020\n950: \n951: > [!TIP] Machine Learning for Lattice QCD @ U. Iowa 2020\n952: >\n953: > <iframe\n954: >     class=\"slide-deck\"\n955: >     loading=\"lazy\"\n956: >     src=\"https://slides.com/samforeman/l2hmc-qcd/embed\"\n957: >     title=\"Machine Learning for Lattice QCD\"\n958: >     align=\"center\"\n959: >     frameborder=\"0\"\n960: >     webkitallowfullscreen\n961: >     allowfullscreen\n962: >     style=\"aspect-ratio:1.3671875;\"></iframe>\n963: \n964: ## 📝 Work\n965: \n966: > [!NOTE] Note\n967: >\n968: > <span style=\"color:#4582ec;\">\n969: >     You can find a full list of my publications on my [Google Scholar]\n970: > </span>\n971: \n972: 1.  🌎 [<span class=\"highlight-green\">**AERIS**</span>: **Argonne Earth\n973:     Systems Model for Reliable and Skillful\n974:     Predictions**][Argonne Earth Systems Model for Reliable and Skillful Predictions]\n975:     (Hatanpää et al. (2025))\n976:     - ✨ [*2025 ACM Gordon Bell Prize for Climate Modeling Finalist*]\n977: 2.  Aurora: Architecting Argonne’s First Exascale Supercomputer for\n978:     Accelerated Scientific Discovery (Allen et al. (2025))\n979: 3.  [HiPerRAG: High-Performance Retrieval Augmented Generation for\n980:     Scientific Insights] (Gokdemir et al. (2025))\n981: 4.  [Automated Tuning for HMC Mass Ratios] (Torsiello et al. (2025))\n982: 5.  [MOFA: Discovering Materials for Carbon Capture with a GenAI and\n983:     Simulation-Based Workflow] (Yan et al. (2025))\n984: 6.  🧪 [<span class=\"highlight-pink\">**MProt-DPO**</span>: **Breaking\n\n(Showing lines 425-984 of 1898. Use offset=985 to continue.)\n</content>",
+            "title": "web/src/pages/landing.mdx",
+            "metadata": {
+              "preview": "### 📆 2025\n\n> [!TIP] AuroraGPT: Training Foundation Models on Supercomputers @ ANL 12/2025\n>\n> <div class=\"reveal-full-page\">\n>\n> <iframe\n>     class=\"slide-deck reveal-full-page\"\n>     loading=\"lazy\"\n>     src=\"https://samforeman.me/talks/2025/12/16/slides.html?view=scroll\"\n>     title=\"Training Foundation Models on Supercomputers\"\n>     align=\"center\"\n>     frameborder=\"0\"\n>     webkitallowfullscreen\n>     allowfullscreen\n>     style=\"aspect-ratio:1.3671875;\"></iframe>\n>\n> </div>\n\n> [!TIP] Training Foundation Models on Supercomputers @ UIUC 10/2025",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772030395174,
+              "end": 1772030395180
+            }
+          },
+          "id": "prt_c953dff9f001fNDwTbPeMvTOa7",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953debe7001fdFld7sz082oiK"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "cost": 0,
+          "tokens": {
+            "total": 26261,
+            "input": 4296,
+            "output": 240,
+            "reasoning": 0,
+            "cache": {
+              "read": 21725,
+              "write": 0
+            }
+          },
+          "id": "prt_c953e032d001pU1QQW7RJtUcr3",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953debe7001fdFld7sz082oiK"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772030395302,
+          "completed": 1772030402147
+        },
+        "parentID": "msg_c953db082001ioEyd7yucda81T",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 43200,
+          "input": 16903,
+          "output": 277,
+          "reasoning": 0,
+          "cache": {
+            "read": 26020,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c953e03a6001H4yOKnXepih9Qy",
+        "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "id": "REDACTED",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e03a6001H4yOKnXepih9Qy"
+        },
+        {
+          "type": "text",
+          "text": "Now let me check if the local slides.html paths actually exist in the web directory:",
+          "time": {
+            "start": 1772030402006,
+            "end": 1772030402006
+          },
+          "id": "prt_c953e1049002mER2UIpM7CNLpo",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e03a6001H4yOKnXepih9Qy"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_yvRf6s23nVykH1mk736D97",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "**/talks/**/slides.html",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "No files found",
+            "title": "web/src/pages",
+            "metadata": {
+              "count": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030400433,
+              "end": 1772030400450
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e03a6001H4yOKnXepih9Qy"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_3a6UVAL66YQ8YzRGQV9CiK",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "**/talks/**/slides/**",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "No files found",
+            "title": "web/src/pages",
+            "metadata": {
+              "count": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030401137,
+              "end": 1772030401157
+            }
+          },
+          "id": "prt_c953e17b1001s4xXxMnSbizf15",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e03a6001H4yOKnXepih9Qy"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_A8uzNH3ICxAakxE9ssSawj",
+          "tool": "bash",
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "ls -la \"/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/\"",
+              "description": "List talks directory contents"
+            },
+            "output": "total 48\ndrwxr-xr-x  15 samforeman  staff    480 Feb  6 15:40 .\ndrwxr-xr-x  22 samforeman  staff    704 Feb 24 22:37 ..\ndrwxr-xr-x   5 samforeman  staff    160 Feb  6 13:42 2025\ndrwxr-xr-x   5 samforeman  staff    160 Feb  6 15:40 ai-for-science-2024\ndrwxr-xr-x   5 samforeman  staff    160 Feb  6 15:40 alcf-hpc-workshop-2024\ndrwxr-xr-x   4 samforeman  staff    128 Feb  6 15:40 aurora-gpt-fm-for-electric-grid\ndrwxr-xr-x   3 samforeman  staff     96 Feb  6 13:42 AuroraGPT\ndrwxr-xr-x   4 samforeman  staff    128 Feb  6 15:40 AuroraGPT-SIAM25\ndrwxr-xr-x   4 samforeman  staff    128 Feb  6 15:40 hpc-user-forum\ndrwxr-xr-x   5 samforeman  staff    160 Feb  6 14:40 incite-hackathon-2025\n-rw-r--r--   1 samforeman  staff  21993 Feb  8 11:43 index.mdx\ndrwxr-xr-x   3 samforeman  staff     96 Feb  6 13:42 lattice23\ndrwxr-xr-x   4 samforeman  staff    128 Feb  6 15:40 llms-at-scale\ndrwxr-xr-x   3 samforeman  staff     96 Feb  6 15:40 llms-on-polaris\ndrwxr-xr-x   5 samforeman  staff    160 Feb  6 14:40 openskai25\n",
+            "title": "List talks directory contents",
+            "metadata": {
+              "output": "total 48\ndrwxr-xr-x  15 samforeman  staff    480 Feb  6 15:40 .\ndrwxr-xr-x  22 samforeman  staff    704 Feb 24 22:37 ..\ndrwxr-xr-x   5 samforeman  staff    160 Feb  6 13:42 2025\ndrwxr-xr-x   5 samforeman  staff    160 Feb  6 15:40 ai-for-science-2024\ndrwxr-xr-x   5 samforeman  staff    160 Feb  6 15:40 alcf-hpc-workshop-2024\ndrwxr-xr-x   4 samforeman  staff    128 Feb  6 15:40 aurora-gpt-fm-for-electric-grid\ndrwxr-xr-x   3 samforeman  staff     96 Feb  6 13:42 AuroraGPT\ndrwxr-xr-x   4 samforeman  staff    128 Feb  6 15:40 AuroraGPT-SIAM25\ndrwxr-xr-x   4 samforeman  staff    128 Feb  6 15:40 hpc-user-forum\ndrwxr-xr-x   5 samforeman  staff    160 Feb  6 14:40 incite-hackathon-2025\n-rw-r--r--   1 samforeman  staff  21993 Feb  8 11:43 index.mdx\ndrwxr-xr-x   3 samforeman  staff     96 Feb  6 13:42 lattice23\ndrwxr-xr-x   4 samforeman  staff    128 Feb  6 15:40 llms-at-scale\ndrwxr-xr-x   3 samforeman  staff     96 Feb  6 15:40 llms-on-polaris\ndrwxr-xr-x   5 samforeman  staff    160 Feb  6 14:40 openskai25\n",
+              "exit": 0,
+              "description": "List talks directory contents",
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030402004,
+              "end": 1772030402030
+            }
+          },
+          "id": "prt_c953e1a71001YHWSWW1ndkn2LX",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e03a6001H4yOKnXepih9Qy"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "cost": 0,
+          "tokens": {
+            "total": 43200,
+            "input": 16903,
+            "output": 277,
+            "reasoning": 0,
+            "cache": {
+              "read": 26020,
+              "write": 0
+            }
+          },
+          "id": "prt_c953e1dee001sWmuXsbdxWaEDu",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e03a6001H4yOKnXepih9Qy"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772030402149,
+          "completed": 1772030405740
+        },
+        "parentID": "msg_c953db082001ioEyd7yucda81T",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 43983,
+          "input": 893,
+          "output": 168,
+          "reasoning": 0,
+          "cache": {
+            "read": 42922,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c953e1e65001sxuk0ZPtFcCdfk",
+        "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "id": "prt_c953e283d001GrVDerZejXljHi",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e1e65001sxuk0ZPtFcCdfk"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_2oc0yK2HkMa66oEXXZJvgL",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks",
+              "pattern": "**/*"
+            },
+            "output": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/llms-at-scale/index.mdx\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/llms-on-polaris/index.mdx\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/incite-hackathon-2025/index.mdx\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/AuroraGPT-FM-for-electric-grid.mdx\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/alcf-hpc-workshop-2024.mdx\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/AuroraGPT-ALCF-Hands-On-HPC-Workshop-2024.mdx\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/groq.jpeg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/graphcore.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/cerebras.jpeg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/llms.gif\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/thumbnail.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/bo-li.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/franck-cappello.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/brad-ullrich.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/sandeep-madireddy.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/ian-foster.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/david-martin.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/sam-foreman.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/charlie-catlett.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/rick-stevens.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/azton-wells.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/venkat-vishwanath.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/rinku-gupta.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/mike-papka.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/rajeev-thakur.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/eliu-huerta.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/fangfang-xia.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/arvind-ramanathan.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/team/robert-underwood.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/timelines.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/aurora.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/gpt.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/blendable.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/sambanova.jpeg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/assets/AuroraGPT.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/groq.jpeg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/graphcore.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/cerebras.jpeg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/llms.gif\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/thumbnail.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/bo-li.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/franck-cappello.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/brad-ullrich.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/sandeep-madireddy.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/ian-foster.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/david-martin.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/sam-foreman.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/charlie-catlett.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/rick-stevens.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/azton-wells.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/venkat-vishwanath.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/rinku-gupta.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/mike-papka.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/rajeev-thakur.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/eliu-huerta.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/fangfang-xia.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/arvind-ramanathan.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/team/robert-underwood.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/timelines.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/aurora.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/mprot-3p5B-scaling-2.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/mprot-7B-scaling-2.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/data-processing.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/sambanova.jpeg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/aurora-gpt-fm-for-electric-grid/assets/AuroraGPT.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/collective-scatter.drawio.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/hf_assisted_generation.mov\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/single-gpu-step-1.drawio.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/model-parallel.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/pipeline_parallelism.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/llms.gif\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/thumbnail.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/parallelism-tp-parallel_gemm.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/it_hungers.jpeg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/evolution.gif\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/parallelism-deepspeed-3d.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/fsdp.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/gpt3-training-step-back-prop.gif\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/collective-reduce-sum.drawio.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/multi-gpu-ddp.drawio.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/zero.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/nanogpt.jpg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/gpt3-fine-tuning.gif\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/collective-allgather.drawio.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/hf_assisted_generation2.mov\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/collective-allreduce-sum.drawio.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/collective-broadcast.drawio.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/jailbreak.jpeg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/assets/emergent-abilities.gif\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/index_files/figure-revealjs/mermaid-figure-2.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/alcf-hpc-workshop-2024/index_files/figure-revealjs/mermaid-figure-1.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/llms-at-scale/assets/collective-scatter.drawio.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/llms-at-scale/assets/thumbnail.png\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/llms-at-scale/assets/collective-reduce-sum.drawio.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/llms-at-scale/assets/collective-allgather.drawio.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/llms-at-scale/assets/collective-allreduce-sum.drawio.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/llms-at-scale/assets/collective-broadcast.drawio.svg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/incite-hackathon-2025/ezpz/assets/modern-pretraining.jpeg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/incite-hackathon-2025/ezpz/assets/colorized-50.jpg\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/incite-hackathon-2025/ezpz/assets/thumbnail.png\n\n(Results are truncated: showing first 100 results. Consider using a more specific path or pattern.)",
+            "title": "web/src/pages/talks",
+            "metadata": {
+              "count": 100,
+              "truncated": true
+            },
+            "time": {
+              "start": 1772030405204,
+              "end": 1772030405220
+            }
+          },
+          "id": "prt_c953e283f001LXmH933yXukcVO",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e1e65001sxuk0ZPtFcCdfk"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/public",
+              "pattern": "**/slides.html"
+            },
+            "output": "No files found",
+            "title": "web/public",
+            "metadata": {
+              "count": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030405611,
+              "end": 1772030405629
+            }
+          },
+          "id": "prt_c953e2a550014LFZaZYbXxyXV0",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e1e65001sxuk0ZPtFcCdfk"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "cost": 0,
+          "tokens": {
+            "total": 43983,
+            "input": 893,
+            "output": 168,
+            "reasoning": 0,
+            "cache": {
+              "read": 42922,
+              "write": 0
+            }
+          },
+          "id": "prt_c953e2bfd001ArLqR1SyS0bf8s",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e1e65001sxuk0ZPtFcCdfk"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772030405741,
+          "completed": 1772030410683
+        },
+        "parentID": "msg_c953db082001ioEyd7yucda81T",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 49273,
+          "input": 5273,
+          "output": 186,
+          "reasoning": 0,
+          "cache": {
+            "read": 43814,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "REDACTED",
+        "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "id": "prt_c953e3895001zu1jluT28Zghfx",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/public",
+              "pattern": "**/*slides*"
+            },
+            "output": "No files found",
+            "title": "web/public",
+            "metadata": {
+              "count": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030409495,
+              "end": 1772030409520
+            }
+          },
+          "id": "prt_c953e3895002VO5bs0FDFGyvPC",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_yWEul82xEowHSBYLOfT9BB",
+          "tool": "bash",
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "ls \"/Users/samforeman/projects/saforem2/sam.onl/web/public/\" 2>/dev/null || echo \"web/public does not exist\"",
+              "description": "Check if web/public directory exists"
+            },
+            "output": "1.png\nassets\nCNAME\ncover-fullsize.png\ncover-light.png\ncover.png\nfavicon Background Removed.png\nfavicon.ico\nfavicon.png\nfavicon.svg\nfavicon1.svg\ngallery\nlogo-light@512.png\nlogo-light@64.png\nlogo@512.png\nlogo@64.png\nold\nsocial-card-light.png\nsocial-card.png\nstatic\ntalks\n",
+            "title": "Check if web/public directory exists",
+            "metadata": {
+              "output": "1.png\nassets\nCNAME\ncover-fullsize.png\ncover-light.png\ncover.png\nfavicon Background Removed.png\nfavicon.ico\nfavicon.png\nfavicon.svg\nfavicon1.svg\ngallery\nlogo-light@512.png\nlogo-light@64.png\nlogo@512.png\nlogo@64.png\nold\nsocial-card-light.png\nsocial-card.png\nstatic\ntalks\n",
+              "exit": 0,
+              "description": "Check if web/public directory exists",
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030410533,
+              "end": 1772030410559
+            }
+          },
+          "id": "prt_c953e3b300015auDfzVanpD2xs",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "cost": 0,
+          "tokens": {
+            "total": 49273,
+            "input": 5273,
+            "output": 186,
+            "reasoning": 0,
+            "cache": {
+              "read": 43814,
+              "write": 0
+            }
+          },
+          "id": "prt_c953e3f400018xekU1942DhaB2",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "REDACTED"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772030410685,
+          "completed": 1772030415625
+        },
+        "parentID": "msg_c953db082001ioEyd7yucda81T",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 49621,
+          "input": 349,
+          "output": 186,
+          "reasoning": 0,
+          "cache": {
+            "read": 49086,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c953e3fbd001pIJNF0uwnwBBxI",
+        "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "id": "prt_c953e4dba001FZOa8u1He34w3R",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e3fbd001pIJNF0uwnwBBxI"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_BlNlCmKay28r0jQFKWtRmw",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/public/talks",
+              "pattern": "**/*slides*"
+            },
+            "output": "No files found",
+            "title": "web/public/talks",
+            "metadata": {
+              "count": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030414540,
+              "end": 1772030414557
+            }
+          },
+          "id": "prt_c953e4dbb001R05sA5iMdmAn2t",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e3fbd001pIJNF0uwnwBBxI"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_fYNkdzIv7pxzrVCdrzpKy3",
+          "tool": "bash",
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "ls -R \"/Users/samforeman/projects/saforem2/sam.onl/web/public/talks/\" 2>/dev/null | head -100",
+              "description": "List talks in web/public directory"
+            },
+            "output": "ai-for-science-2024\nopenskai25\n\n/Users/samforeman/projects/saforem2/sam.onl/web/public/talks/ai-for-science-2024:\ntetris\n\n/Users/samforeman/projects/saforem2/sam.onl/web/public/talks/ai-for-science-2024/tetris:\nscript.js\nstyle.css\n\n/Users/samforeman/projects/saforem2/sam.onl/web/public/talks/openskai25:\ntraining\n\n/Users/samforeman/projects/saforem2/sam.onl/web/public/talks/openskai25/training:\ntetris\n\n/Users/samforeman/projects/saforem2/sam.onl/web/public/talks/openskai25/training/tetris:\nscript.js\nstyle.css\n",
+            "title": "List talks in web/public directory",
+            "metadata": {
+              "output": "ai-for-science-2024\nopenskai25\n\n/Users/samforeman/projects/saforem2/sam.onl/web/public/talks/ai-for-science-2024:\ntetris\n\n/Users/samforeman/projects/saforem2/sam.onl/web/public/talks/ai-for-science-2024/tetris:\nscript.js\nstyle.css\n\n/Users/samforeman/projects/saforem2/sam.onl/web/public/talks/openskai25:\ntraining\n\n/Users/samforeman/projects/saforem2/sam.onl/web/public/talks/openskai25/training:\ntetris\n\n/Users/samforeman/projects/saforem2/sam.onl/web/public/talks/openskai25/training/tetris:\nscript.js\nstyle.css\n",
+              "exit": 0,
+              "description": "List talks in web/public directory",
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030415496,
+              "end": 1772030415526
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e3fbd001pIJNF0uwnwBBxI"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "cost": 0,
+          "tokens": {
+            "total": 49621,
+            "input": 349,
+            "output": 186,
+            "reasoning": 0,
+            "cache": {
+              "read": 49086,
+              "write": 0
+            }
+          },
+          "id": "prt_c953e52a6001ew0rXnD4g1bkX8",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e3fbd001pIJNF0uwnwBBxI"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772030415628,
+          "completed": 1772030419401
+        },
+        "parentID": "msg_c953db082001ioEyd7yucda81T",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 50011,
+          "input": 450,
+          "output": 127,
+          "reasoning": 0,
+          "cache": {
+            "read": 49434,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c953e530c00107N5jmekjq4AsB",
+        "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "id": "prt_c953e5d05001Z6Xi9kFkr1ky4m",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e530c00107N5jmekjq4AsB"
+        },
+        {
+          "type": "text",
+          "text": "Now let me check the web/dist directory for any built slides:",
+          "time": {
+            "start": 1772030419280,
+            "end": 1772030419280
+          },
+          "id": "prt_c953e5d06001HMEqEawXSHQWFt",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e530c00107N5jmekjq4AsB"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "bash",
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "ls \"/Users/samforeman/projects/saforem2/sam.onl/web/dist/\" 2>/dev/null || echo \"web/dist does not exist\"",
+              "description": "Check if web/dist directory exists"
+            },
+            "output": "_astro\n1.png\nabout\nassets\nCNAME\ncover-fullsize.png\ncover-light.png\ncover.png\ndocs\nfavicon Background Removed.png\nfavicon.ico\nfavicon.png\nfavicon.svg\nfavicon1.svg\ngallery\nideas\nindex.html\nlanding\nlogo-light@512.png\nlogo-light@64.png\nlogo@512.png\nlogo@64.png\nmore\nnow\nold\nposts\nprojects\nsocial-card-light.png\nsocial-card.png\nstatic\ntalks\nwebtui\n",
+            "title": "Check if web/dist directory exists",
+            "metadata": {
+              "output": "_astro\n1.png\nabout\nassets\nCNAME\ncover-fullsize.png\ncover-light.png\ncover.png\ndocs\nfavicon Background Removed.png\nfavicon.ico\nfavicon.png\nfavicon.svg\nfavicon1.svg\ngallery\nideas\nindex.html\nlanding\nlogo-light@512.png\nlogo-light@64.png\nlogo@512.png\nlogo@64.png\nmore\nnow\nold\nposts\nprojects\nsocial-card-light.png\nsocial-card.png\nstatic\ntalks\nwebtui\n",
+              "exit": 0,
+              "description": "Check if web/dist directory exists",
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030419278,
+              "end": 1772030419303
+            }
+          },
+          "id": "prt_c953e5de6001TCrUxhBJuFOp5h",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e530c00107N5jmekjq4AsB"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "cost": 0,
+          "tokens": {
+            "total": 50011,
+            "input": 450,
+            "output": 127,
+            "reasoning": 0,
+            "cache": {
+              "read": 49434,
+              "write": 0
+            }
+          },
+          "id": "prt_c953e6167001Ho4d21Vruhg5ZZ",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e530c00107N5jmekjq4AsB"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772030419403,
+          "completed": 1772030424183
+        },
+        "parentID": "msg_c953db082001ioEyd7yucda81T",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 50330,
+          "input": 268,
+          "output": 179,
+          "reasoning": 0,
+          "cache": {
+            "read": 49883,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c953e61cb0018bytUUKunV0Ajz",
+        "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "id": "REDACTED",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e61cb0018bytUUKunV0Ajz"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_BHLtocIZYqb0AetBKuWphq",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks",
+              "pattern": "**/slides.html"
+            },
+            "output": "No files found",
+            "title": "web/dist/talks",
+            "metadata": {
+              "count": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030422942,
+              "end": 1772030422959
+            }
+          },
+          "id": "prt_c953e6e1b002WH3nkwER4L04PH",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e61cb0018bytUUKunV0Ajz"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_VnI5KGSgAsLMn00oqrF0tB",
+          "tool": "bash",
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "ls \"/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/\" 2>/dev/null",
+              "description": "List talks directory in dist"
+            },
+            "output": "2025\nai-for-science-2024\nalcf-hpc-workshop-2024\naurora-gpt-fm-for-electric-grid\nAuroraGPT\nAuroraGPT-SIAM25\nhpc-user-forum\nincite-hackathon-2025\nindex.html\nllms-at-scale\nllms-on-polaris\nopenskai25\n",
+            "title": "List talks directory in dist",
+            "metadata": {
+              "output": "2025\nai-for-science-2024\nalcf-hpc-workshop-2024\naurora-gpt-fm-for-electric-grid\nAuroraGPT\nAuroraGPT-SIAM25\nhpc-user-forum\nincite-hackathon-2025\nindex.html\nllms-at-scale\nllms-on-polaris\nopenskai25\n",
+              "exit": 0,
+              "description": "List talks directory in dist",
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030424027,
+              "end": 1772030424055
+            }
+          },
+          "id": "prt_c953e6f9e001gIrV1Nq78VhiW1",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e61cb0018bytUUKunV0Ajz"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "cost": 0,
+          "tokens": {
+            "total": 50330,
+            "input": 268,
+            "output": 179,
+            "reasoning": 0,
+            "cache": {
+              "read": 49883,
+              "write": 0
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e61cb0018bytUUKunV0Ajz"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772030424185,
+          "completed": 1772030427465
+        },
+        "parentID": "msg_c953db082001ioEyd7yucda81T",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 50578,
+          "input": 336,
+          "output": 92,
+          "reasoning": 0,
+          "cache": {
+            "read": 50150,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c953e7479001vT3EY3Au3XmRas",
+        "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "id": "REDACTED",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e7479001vT3EY3Au3XmRas"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks",
+              "pattern": "**/*.html"
+            },
+            "output": "/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/openskai25/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/openskai25/training/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/openskai25/ai4science/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/llms-on-polaris/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/llms-at-scale/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/incite-hackathon-2025/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/incite-hackathon-2025/ezpz/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/incite-hackathon-2025/AuroraGPT/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/hpc-user-forum/AuroraGPT/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/AuroraGPT-SIAM25/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/AuroraGPT/alcf-hpc-workshop-2024/AuroraGPT-ALCF-Hands-On-HPC-Workshop-2024/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/aurora-gpt-fm-for-electric-grid/AuroraGPT-FM-for-electric-grid/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/alcf-hpc-workshop-2024/alcf-hpc-workshop-2024/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/ai-for-science-2024/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/2025/12/16/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/2025/10/24/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/2025/10/15/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/2025/10/08/index.html\n/Users/samforeman/projects/saforem2/sam.onl/web/dist/talks/2025/09/24/index.html",
+            "title": "web/dist/talks",
+            "metadata": {
+              "count": 20,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772030427339,
+              "end": 1772030427354
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e7479001vT3EY3Au3XmRas"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "cost": 0,
+          "tokens": {
+            "total": 50578,
+            "input": 336,
+            "output": 92,
+            "reasoning": 0,
+            "cache": {
+              "read": 50150,
+              "write": 0
+            }
+          },
+          "id": "prt_c953e80db001pPOcGN85Im6oi2",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e7479001vT3EY3Au3XmRas"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772030427467,
+          "completed": 1772030433198
+        },
+        "parentID": "msg_c953db082001ioEyd7yucda81T",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 51542,
+          "input": 899,
+          "output": 158,
+          "reasoning": 0,
+          "cache": {
+            "read": 50485,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "REDACTED",
+        "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "id": "REDACTED",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "text",
+          "text": "Now I have the complete picture. There are zero `slides.html` files anywhere in the source tree or the built output. Let me also check the `more/index.mdx` embed elements:",
+          "time": {
+            "start": 1772030433051,
+            "end": 1772030433051
+          },
+          "id": "prt_c953e8d780014nsmc0s4IayU6E",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/more/index.mdx",
+              "offset": 120,
+              "limit": 50
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/more/index.mdx</path>\n<type>file</type>\n<content>120: >     alt=\"Github Contributions \"\n121: >     src=\"https://github-readme-activity-graph.vercel.app/graph?username=saforem2&theme=minimal&bg_color=00000000&line=838383&color=838383&days=30&point=838383&hide_border=true&hide_title=true&area=true\"\n122: > />\n123: >\n124: > <figure>\n125: >\n126: > <embed src=\"https://wakatime.com/share/@saforem2/720ce003-bc7f-4c57-8f4c-92f0c7f24975.svg\">\n127: >\n128: > </embed>\n129: >\n130: > </figure>\n131: >\n132: > <figure>\n133: >\n134: > <embed src=\"https://wakatime.com/share/@saforem2/4a58bb04-4212-4b5c-8f97-1ac59f2e3250.svg\">\n135: >\n136: > </embed>\n137: >\n138: > </figure>\n139: >\n140: > <figure>\n141: >\n142: > <embed src=\"https://wakatime.com/share/@saforem2/c8e0da32-52d1-485f-b4ca-22645f25ea3f.svg\" style=\"max-width:95%;\">\n143: >\n144: > </embed>\n145: >\n146: > </figure>\n147: >\n148: > <figure>\n149: >\n150: > <embed src=\"https://wakatime.com/share/@saforem2/8a8894dd-519b-4bd5-b521-d09bee799b57.svg\">\n151: >\n152: > </embed>\n153: >\n154: > </figure>\n155: >\n156: > <figure>\n157: >\n158: > <embed src=\"https://wakatime.com/share/@saforem2/d5fd1e4b-0c8f-44be-8173-59d780fe22c8.svg\" />\n159: >\n160: > </figure>\n161: >\n162: > <figure>\n163: >\n164: > <embed src=\"https://wakatime.com/share/@saforem2/c052a705-7ccf-4028-90ca-adcde26de94d.svg\" />\n165: >\n166: > </figure>\n167: >\n168: > </div>\n169: >\n\n(Showing lines 120-169 of 192. Use offset=170 to continue.)\n</content>",
+            "title": "web/src/pages/more/index.mdx",
+            "metadata": {
+              "preview": ">     alt=\"Github Contributions \"\n>     src=\"https://github-readme-activity-graph.vercel.app/graph?username=saforem2&theme=minimal&bg_color=00000000&line=838383&color=838383&days=30&point=838383&hide_border=true&hide_title=true&area=true\"\n> />\n>\n> <figure>\n>\n> <embed src=\"https://wakatime.com/share/@saforem2/720ce003-bc7f-4c57-8f4c-92f0c7f24975.svg\">\n>\n> </embed>\n>\n> </figure>\n>\n> <figure>\n>\n> <embed src=\"https://wakatime.com/share/@saforem2/4a58bb04-4212-4b5c-8f97-1ac59f2e3250.svg\">\n>\n> </embed>\n>\n> </figure>\n>",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772030433048,
+              "end": 1772030433059
+            }
+          },
+          "id": "prt_c953e93fa001F249zTZJJuJ968",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "cost": 0,
+          "tokens": {
+            "total": 51542,
+            "input": 899,
+            "output": 158,
+            "reasoning": 0,
+            "cache": {
+              "read": 50485,
+              "write": 0
+            }
+          },
+          "id": "prt_c953e9727001TDh9lW8u43zqau",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "REDACTED"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772030433200,
+          "completed": 1772030505845
+        },
+        "parentID": "msg_c953db082001ioEyd7yucda81T",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "explore",
+        "agent": "explore",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 57953,
+          "input": 856,
+          "output": 5714,
+          "reasoning": 0,
+          "cache": {
+            "read": 51383,
+            "write": 0
+          }
+        },
+        "finish": "stop",
+        "id": "msg_c953e97b0001hAMzQwKK4nswHA",
+        "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "id": "prt_c953ea1ea001HqQHO1Gn9clX0M",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e97b0001hAMzQwKK4nswHA"
+        },
+        {
+          "type": "text",
+          "text": "Now I have all the data I need. Here is the comprehensive report.\n\n---\n\n## Complete Report: Embedded Slide URLs in `web/src/pages/`\n\nI am excluding the `landing.mdx copy` file (an obvious backup duplicate of `landing.mdx`) and the XML feed files (`index.xml`, `sitemap.xml`, `search.json`) from the primary analysis, since they are generated/derived content. I will note them separately at the end.\n\nThe three primary source files containing slide iframes are:\n- `/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/talks/index.mdx`\n- `/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx`\n- `/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/more/index.mdx` (embeds only, not slides)\n\n---\n\n### SECTION 1: IFRAME ELEMENTS WITH SLIDE SRC ATTRIBUTES\n\n#### A. External URLs pointing to `samforeman.me/talks/.../slides.html`\n\nThese are all Reveal.js presentations hosted on the `samforeman.me` domain.\n\n| # | File | Line | src URL | Type |\n|---|------|------|---------|------|\n| 1 | `.../talks/index.mdx` | 41 | `https://samforeman.me/talks/2025/12/16/slides.html?view=scroll` | External |\n| 2 | `.../talks/index.mdx` | 61 | `https://samforeman.me/talks/2025/10/24/slides.html?view=scroll` | External |\n| 3 | `.../talks/index.mdx` | 81 | `https://samforeman.me/talks/2025/10/15/slides.html?view=scroll` | External |\n| 4 | `.../talks/index.mdx` | 101 | `https://samforeman.me/talks/2025/10/08/slides.html?view=scroll` | External |\n| 5 | `.../talks/index.mdx` | 121 | `https://samforeman.me/talks/2025/09/24/slides.html?view=scroll` | External |\n| 6 | `.../talks/index.mdx` | 141 | `https://samforeman.me/talks/openskai25/ai4science/slides.html?view=scroll` | External |\n| 7 | `.../talks/index.mdx` | 161 | `https://samforeman.me/talks/openskai25/training/slides.html?view=scroll` | External |\n| 8 | `.../talks/index.mdx` | 181 | `https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html?view=scroll` | External |\n| 9 | `.../talks/index.mdx` | 203 | `https://samforeman.me/talks/incite-hackathon-2025/auroragpt/slides?view=scroll/section#/section` | External |\n| 10 | `.../talks/index.mdx` | 225 | `https://samforeman.me/talks/incite-hackathon-2025/ezpz/slides?view=scroll/section#/section` | External |\n| 11 | `.../talks/index.mdx` | 311 | `https://samforeman.me/talks/alcf-hpc-workshop-2024/slides?view=scroll/section#/section` | External |\n| 12 | `.../landing.mdx` | 434 | `https://samforeman.me/talks/2025/12/16/slides.html?view=scroll` | External |\n| 13 | `.../landing.mdx` | 451 | `https://samforeman.me/talks/2025/10/24/slides.html?view=scroll` | External |\n| 14 | `.../landing.mdx` | 468 | `https://samforeman.me/talks/2025/10/15/slides.html?view=scroll` | External |\n| 15 | `.../landing.mdx` | 485 | `https://samforeman.me/talks/2025/10/08/slides.html?view=scroll` | External |\n| 16 | `.../landing.mdx` | 502 | `https://samforeman.me/talks/2025/09/24/slides.html?view=scroll` | External |\n| 17 | `.../landing.mdx` | 519 | `https://samforeman.me/talks/openskai25/ai4science/slides.html?view=scroll` | External |\n| 18 | `.../landing.mdx` | 536 | `https://samforeman.me/talks/openskai25/training/slides.html?view=scroll` | External |\n| 19 | `.../landing.mdx` | 553 | `https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html?view=scroll` | External |\n| 20 | `.../landing.mdx` | 572 | `https://samforeman.me/talks/incite-hackathon-2025/auroragpt/slides?view=scroll/section#/section` | External |\n| 21 | `.../landing.mdx` | 591 | `https://samforeman.me/talks/incite-hackathon-2025/ezpz/slides?view=scroll/section#/section` | External |\n| 22 | `.../landing.mdx` | 665 | `https://samforeman.me/talks/alcf-hpc-workshop-2024/slides?view=scroll/section#/section` | External |\n\n#### B. LOCAL PATH iframes pointing to `/talks/.../slides.html`\n\nThese use root-relative paths (starting with `/`), meaning they resolve against the site's own domain at build time.\n\n| # | File | Line | src URL | Local file exists? |\n|---|------|------|---------|-------------------|\n| 1 | `.../talks/index.mdx` | 245 | `/talks/aurora-gpt-fm-for-electric-grid/slides.html?view=scroll` | **NO** |\n| 2 | `.../talks/index.mdx` | 269 | `/talks/ai-for-science-2024/slides.html?view=scroll` | **NO** |\n| 3 | `.../talks/index.mdx` | 291 | `/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html?view=scroll` | **NO** |\n| 4 | `.../talks/index.mdx` | 329 | `/talks/hpc-user-forum/slides.html?view=scroll` | **NO** |\n| 5 | `.../talks/index.mdx` | 345 | `/talks/llms-at-scale/slides.html?view=scroll` | **NO** |\n| 6 | `.../talks/index.mdx` | 361 | `/talks/llms-on-polaris/slides.html?view=scroll` | **NO** |\n| 7 | `.../landing.mdx` | 608 | `/talks/aurora-gpt-fm-for-electric-grid/slides.html?view=scroll` | **NO** |\n| 8 | `.../landing.mdx` | 629 | `/talks/ai-for-science-2024/slides.html?view=scroll` | **NO** |\n| 9 | `.../landing.mdx` | 648 | `/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html?view=scroll` | **NO** |\n| 10 | `.../landing.mdx` | 680 | `/talks/hpc-user-forum/slides.html?view=scroll` | **NO** |\n| 11 | `.../landing.mdx` | 693 | `/talks/llms-at-scale/slides.html?view=scroll` | **NO** |\n| 12 | `.../landing.mdx` | 706 | `/talks/llms-on-polaris/slides.html?view=scroll` | **NO** |\n\n**All 6 unique local slide paths do NOT exist** -- there is no `slides.html` file anywhere in `web/src/pages/`, `web/public/`, or `web/dist/`. The built output under `web/dist/talks/` contains only `index.html` files for each talk, never a `slides.html`. The directories that exist in `web/dist/talks/` are:\n- `2025/12/16/`, `2025/10/24/`, `2025/10/15/`, `2025/10/08/`, `2025/09/24/`\n- `ai-for-science-2024/`, `alcf-hpc-workshop-2024/`, `aurora-gpt-fm-for-electric-grid/`\n- `AuroraGPT/alcf-hpc-workshop-2024/`, `AuroraGPT-SIAM25/`, `hpc-user-forum/`\n- `incite-hackathon-2025/`, `llms-at-scale/`, `llms-on-polaris/`, `openskai25/`\n\nNone of these contain a `slides.html` file.\n\n#### C. External URLs pointing to `saforem2.github.io`\n\n| # | File | Line | src URL | Type |\n|---|------|------|---------|------|\n| 1 | `.../talks/index.mdx` | 377 | `https://saforem2.github.io/parallel-training-slides?view=scroll` | External |\n| 2 | `.../talks/index.mdx` | 393 | `https://saforem2.github.io/llm-workshop-talk` | External |\n| 3 | `.../talks/index.mdx` | 411 | `https://saforem2.github.io/LLM-tutorial` | External |\n| 4 | `.../talks/index.mdx` | 428 | `https://saforem2.github.io/oneapi-talk` | External |\n| 5 | `.../talks/index.mdx` | 447 | `https://saforem2.github.io/llm-lunch-talk/#/section` | External |\n| 6 | `.../talks/index.mdx` | 463 | `https://saforem2.github.io/scaling4science/#/section` | External |\n| 7 | `.../talks/index.mdx` | 479 | `https://saforem2.github.io/lattice23/#/title-slide` | External |\n| 8 | `.../talks/index.mdx` | 495 | `https://saforem2.github.io/lqcd-pasc23/` | External |\n| 9 | `.../talks/index.mdx` | 511 | `https://saforem2.github.io/deep-fridays/` | External |\n| 10 | `.../talks/index.mdx` | 529 | `https://saforem2.github.io/ai4sci-large-scale-training/#` | External |\n| 11 | `.../talks/index.mdx` | 545 | `https://saforem2.github.io/hparam-management-sdl2022` | External |\n| 12 | `.../talks/index.mdx` | 564 | `https://saforem2.github.io/ATPESC-StatisticalLearning/#/` | External |\n| 13 | `.../talks/index.mdx` | 580 | `https://saforem2.github.io/anl-job-talk` | External |\n| 14 | `.../talks/index.mdx` | 598 | `https://saforem2.github.io/physicsSeminar` | External |\n| 15 | `.../talks/index.mdx` | 617 | `https://saforem2.github.io/l2hmc-dwq25/` | External |\n| 16 | `.../talks/index.mdx` | 631 | `https://saforem2.github.io/l2hmc_talk_ect2021` | External |\n| 17 | `.../landing.mdx` | 719 | `https://saforem2.github.io/parallel-training-slides?view=scroll` | External |\n| 18 | `.../landing.mdx` | 732 | `https://saforem2.github.io/llm-workshop-talk` | External |\n| 19 | `.../landing.mdx` | 747 | `https://saforem2.github.io/LLM-tutorial` | External |\n| 20 | `.../landing.mdx` | 759 | `https://saforem2.github.io/oneapi-talk` | External |\n| 21 | `.../landing.mdx` | 773 | `https://saforem2.github.io/llm-lunch-talk/#/section` | External |\n| 22 | `.../landing.mdx` | 786 | `https://saforem2.github.io/scaling4science/#/section` | External |\n| 23 | `.../landing.mdx` | 799 | `https://saforem2.github.io/lattice23/#/title-slide` | External |\n| 24 | `.../landing.mdx` | 812 | `https://saforem2.github.io/lqcd-pasc23/` | External |\n| 25 | `.../landing.mdx` | 825 | `https://saforem2.github.io/deep-fridays/` | External |\n| 26 | `.../landing.mdx` | 840 | `https://saforem2.github.io/ai4sci-large-scale-training/#` | External |\n| 27 | `.../landing.mdx` | 853 | `https://saforem2.github.io/hparam-management-sdl2022` | External |\n| 28 | `.../landing.mdx` | 868 | `https://saforem2.github.io/ATPESC-StatisticalLearning/#/` | External |\n| 29 | `.../landing.mdx` | 881 | `https://saforem2.github.io/anl-job-talk` | External |\n| 30 | `.../landing.mdx` | 896 | `https://saforem2.github.io/physicsSeminar` | External |\n| 31 | `.../landing.mdx` | 911 | `https://saforem2.github.io/l2hmc-dwq25/` | External |\n| 32 | `.../landing.mdx` | 924 | `https://saforem2.github.io/l2hmc_talk_ect2021` | External |\n\n#### D. External URLs pointing to `slides.com`\n\n| # | File | Line | src URL | Type |\n|---|------|------|---------|------|\n| 1 | `.../talks/index.mdx` | 657 | `https://slides.com/samforeman/dlhmc/embed` | External |\n| 2 | `.../talks/index.mdx` | 675 | `https://slides.com/samforeman/l2hmc-qcd/embed` | External |\n| 3 | `.../landing.mdx` | 941 | `https://slides.com/samforeman/dlhmc/embed` | External |\n| 4 | `.../landing.mdx` | 956 | `https://slides.com/samforeman/l2hmc-qcd/embed` | External |\n\n#### E. Other iframes (non-slide content)\n\n| # | File | Line | src URL | Type | Description |\n|---|------|------|---------|------|-------------|\n| 1 | `.../landing.mdx` | 1623 | `https://descent.live/saforem2` | External | Chess activity |\n| 2 | `.../landing.mdx` | 1663 | `https://descent.live/saforem2` | External | Chess activity (duplicate) |\n\n---\n\n### SECTION 2: EMBED ELEMENTS\n\nAll found in `/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/more/index.mdx`:\n\n| # | Line | src URL | Type |\n|---|------|---------|------|\n| 1 | 126 | `https://wakatime.com/share/@saforem2/720ce003-bc7f-4c57-8f4c-92f0c7f24975.svg` | External (WakaTime) |\n| 2 | 134 | `https://wakatime.com/share/@saforem2/4a58bb04-4212-4b5c-8f97-1ac59f2e3250.svg` | External (WakaTime) |\n| 3 | 142 | `https://wakatime.com/share/@saforem2/c8e0da32-52d1-485f-b4ca-22645f25ea3f.svg` | External (WakaTime) |\n| 4 | 150 | `https://wakatime.com/share/@saforem2/8a8894dd-519b-4bd5-b521-d09bee799b57.svg` | External (WakaTime) |\n| 5 | 158 | `https://wakatime.com/share/@saforem2/d5fd1e4b-0c8f-44be-8173-59d780fe22c8.svg` | External (WakaTime) |\n| 6 | 164 | `https://wakatime.com/share/@saforem2/c052a705-7ccf-4028-90ca-adcde26de94d.svg` | External (WakaTime) |\n\nNone of these are slide-related; they are all WakaTime coding stats widgets.\n\n---\n\n### SECTION 3: CRITICAL FINDINGS -- MISSING LOCAL SLIDES\n\n**There are 6 unique local `/talks/.../slides.html` paths referenced from iframes, and NONE of them exist anywhere in the repository** (not in `web/src/pages/`, not in `web/public/`, not in `web/dist/`).\n\nThe missing local paths are:\n\n1. `/talks/aurora-gpt-fm-for-electric-grid/slides.html`\n   - Referenced from: `talks/index.mdx` line 245, `landing.mdx` line 608\n   - Source directory exists at `web/src/pages/talks/aurora-gpt-fm-for-electric-grid/` but contains only `AuroraGPT-FM-for-electric-grid.mdx` and `assets/`\n\n2. `/talks/ai-for-science-2024/slides.html`\n   - Referenced from: `talks/index.mdx` line 269, `landing.mdx` line 629\n   - Source directory exists at `web/src/pages/talks/ai-for-science-2024/` but contains only `alcf-hpc-workshop-2024.mdx` and `assets/`\n\n3. `/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html`\n   - Referenced from: `talks/index.mdx` line 291, `landing.mdx` line 648\n   - Source directory exists at `web/src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/` but contains only `AuroraGPT-ALCF-Hands-On-HPC-Workshop-2024.mdx` and `assets/`\n\n4. `/talks/hpc-user-forum/slides.html`\n   - Referenced from: `talks/index.mdx` line 329, `landing.mdx` line 680\n   - Source directory exists at `web/src/pages/talks/hpc-user-forum/` but contains only `AuroraGPT.mdx` and `assets/`\n\n5. `/talks/llms-at-scale/slides.html`\n   - Referenced from: `talks/index.mdx` line 345, `landing.mdx` line 693\n   - Source directory exists at `web/src/pages/talks/llms-at-scale/` with `index.mdx` and `assets/`\n\n6. `/talks/llms-on-polaris/slides.html`\n   - Referenced from: `talks/index.mdx` line 361, `landing.mdx` line 706\n   - Source directory exists at `web/src/pages/talks/llms-on-polaris/` with `index.mdx`\n\n**These 12 iframe references (6 unique paths x 2 files each) will all result in broken embeds** unless these `slides.html` files are generated by a separate build process (e.g., Quarto rendering Reveal.js presentations) and deployed independently, or are expected to be served from `samforeman.me` as the production domain (in which case the local paths would work only once deployed there alongside the slides).\n\n---\n\n### SECTION 4: SUMMARY OF ALL EXTERNAL SLIDE DOMAINS\n\n| Domain | Count of unique iframe src URLs | Notes |\n|--------|------|-------|\n| `samforeman.me` | 11 unique | All point to `/talks/.../slides.html` or `/talks/.../slides` |\n| `saforem2.github.io` | 16 unique | GitHub Pages hosted Reveal.js presentations |\n| `slides.com` | 2 unique | `dlhmc/embed` and `l2hmc-qcd/embed` |\n\n---\n\n### SECTION 5: EXCLUDED FILES (generated/derived content with iframes)\n\nThe following files contain iframes but are generated content, not primary sources:\n- `/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/index.xml` -- Google Tag Manager `noscript` iframes (repeated ~20 times), plus 1 WandB iframe at line 1085 (`https://api.wandb.ai/links/aurora_gpt/dek99dmd`)\n- `/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/index.xml` -- Same GTM pattern plus WandB iframe at line 274\n- `/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/index.xml` -- Same patterns\n- `/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/06/index.xml` -- Same patterns\n- `/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx copy` -- Exact duplicate of `landing.mdx` content (backup file)\n- `/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/sitemap.xml` -- Contains `<loc>` entries for slides.html URLs on `samforeman.me` but no iframes",
+          "time": {
+            "start": 1772030505734,
+            "end": 1772030505734
+          },
+          "id": "prt_c953ea1ec001Uo36ahTBj72ch2",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e97b0001hAMzQwKK4nswHA"
+        },
+        {
+          "type": "step-finish",
+          "reason": "stop",
+          "snapshot": "f8727181ee35a1b86f7daec87745a372c1466fae",
+          "cost": 0,
+          "tokens": {
+            "total": 57953,
+            "input": 856,
+            "output": 5714,
+            "reasoning": 0,
+            "cache": {
+              "read": 51383,
+              "write": 0
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36ac24f7fffebBpckcBypMcmXc",
+          "messageID": "msg_c953e97b0001hAMzQwKK4nswHA"
+        }
+      ]
+    }
+  ]
+}
