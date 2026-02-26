@@ -1,0 +1,18 @@
+I need to verify the built output of the Astro site to confirm vim navigation changes are correctly rendered. 
+
+Please do the following:
+
+1. Read `web/dist/landing/index.html` and search for the VimNavigation script. Look for:
+   - The `vimQuery` variable — it should contain `[tabindex="0"]` 
+   - The `isDocManaged` check — there should be code like `!content.id` or `isDocManaged` that skips `applyVimNavigation` when on Doc.astro pages
+   - The bootstrap keydown handler should also have an `isDocManaged` guard
+
+2. Read `web/dist/posts/2025/11/12/index.html` (a Doc.astro page) and check:
+   - That content elements like `<h2>`, `<p>`, `<div>` have `tabindex="0"` attributes
+   - That `<ul>` and `<ol>` elements do NOT have `tabindex="0"`
+   - That `<li>` elements DO have `tabindex="0"`
+   - Check the Doc.astro script block that calls `applyVimNavigation` with the `mainItemQuery`
+
+3. Check `web/dist/index.html` (landing/home page, standalone) — this page does NOT use Doc.astro, so VimNavigation should NOT skip its `applyVimNavigation` call here.
+
+Return a summary of what you found for each point, noting any issues.
