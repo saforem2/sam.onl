@@ -1,0 +1,15 @@
+Explore the codebase at /Users/samforeman/projects/saforem2/sam.onl to understand:
+
+1. List ALL page files under web/src/pages/ (full directory tree)
+2. Find ALL internal links/references between pages. Search for href patterns, Link components, and any routing configuration
+3. Identify case-sensitive route mismatches - where a link references a path with different casing than the actual file/directory name
+4. Find ALL embedded iframe/embed URLs that point to slides (look for patterns like "slides", "reveal", "presentation" in iframe src attributes)
+5. Find ALL image references in the pages (img tags, markdown image syntax, Astro Image components)
+
+Return a comprehensive report with:
+- Full list of page files and their paths
+- All internal links found and whether they match actual pages (case-sensitive check)
+- All embedded slide URLs found
+- All image references found and whether the referenced images exist
+
+Be very thorough - check every .astro, .mdx, .md file under web/src/pages/.
