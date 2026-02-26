@@ -1,0 +1,13 @@
+# Session Context
+
+## User Prompts
+
+### Prompt 1
+
+Search the codebase in /Users/samforeman/projects/saforem2/sam.onl for any JavaScript/TypeScript files that implement keyboard scroll behavior, specifically looking for 'j' and 'k' key bindings for scrolling. Look in the web/src directory primarily. Search for:
+1. Any files containing keydown/keypress event listeners
+2. Any files referencing 'j' or 'k' key handling
+3. Any scroll-related JavaScript/TypeScript files
+
+Return the full file paths, relevant line numbers, and the complete content of...
+
