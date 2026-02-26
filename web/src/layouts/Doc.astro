@@ -339,12 +339,29 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         const isListContainer = (el: Element) =>
             el.tagName === 'UL' || el.tagName === 'OL'
 
+        // Code blocks are navigated via their individual span.line children,
+        // so skip the <pre> wrapper and make each line focusable instead.
+        const isCodeBlock = (el: Element) =>
+            el.tagName === 'PRE' && el.classList.contains('astro-code')
+
         const children = Array.from(mainContent.children)
         children.forEach((child) => {
             if (!(child instanceof HTMLElement)) return
             if (isFocusableElement(child)) return
-            if (child.hasAttribute('tabindex')) return
             if (isListContainer(child)) return
+            if (isCodeBlock(child)) {
+                // Remove tabindex from the <pre> wrapper so it's not a
+                // navigation stop itself (the rehype plugin sets it).
+                child.removeAttribute('tabindex')
+                // Make each line individually focusable
+                child.querySelectorAll('span.line').forEach((line) => {
+                    if (line instanceof HTMLElement) {
+                        line.setAttribute('tabindex', '0')
+                    }
+                })
+                return
+            }
+            if (child.hasAttribute('tabindex')) return
             child.setAttribute('tabindex', '0')
         })
 
@@ -452,6 +469,45 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                 if (lastEl) vimFocusElement(lastEl)
                 return
             }
+        }
+
+        // ] / [ — skip past / before an entire code block
+        if (
+            (e.key === ']' || e.key === '[') &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            !e.shiftKey
+        ) {
+            const active = document.activeElement
+            if (!(active instanceof HTMLElement)) return
+            const codeBlock = active.closest('pre.astro-code')
+            if (!codeBlock) return // not inside a code block, ignore
+
+            e.preventDefault()
+            const allElements = getVisibleMainElements()
+            if (allElements.length === 0) return
+
+            if (e.key === ']') {
+                // Jump to the first focusable element AFTER this code block
+                const afterBlock = allElements.find(
+                    (el) =>
+                        !codeBlock.contains(el) &&
+                        codeBlock.compareDocumentPosition(el) &
+                            Node.DOCUMENT_POSITION_FOLLOWING,
+                )
+                if (afterBlock) vimFocusElement(afterBlock)
+            } else {
+                // Jump to the last focusable element BEFORE this code block
+                const beforeBlock = allElements.findLast(
+                    (el) =>
+                        !codeBlock.contains(el) &&
+                        codeBlock.compareDocumentPosition(el) &
+                            Node.DOCUMENT_POSITION_PRECEDING,
+                )
+                if (beforeBlock) vimFocusElement(beforeBlock)
+            }
+            return
         }
 
         // ctrl-o -> "navigate out"

@@ -276,7 +276,7 @@
 
     .line {
         width: auto;
-        display: -webkit-inline-block;
+        /* display: block; */
     }
 
     pre,
@@ -304,7 +304,7 @@
     }
     hr {
         display: block;
-        padding: 0.5lh 0;
+        padding: 1ch 0;
         width: 100%;
         border: none;
         background-image: linear-gradient(
@@ -327,6 +327,7 @@
         max-height: round(calc(0.66 * 100vh), 1lh) !important;
         min-height: round(calc(0.33 * 100vh), 1lh) !important;
         max-width: round(100vw, 1ch) !important;
+        min-width: max-content;
         outline: 1pt solid var(--background2);
         margin-block-end: 1ch;
         /* box-shadow: 1pt 2pt black; */
@@ -336,6 +337,9 @@
         margin-left: auto;
         margin-right: auto;
         text-align: center;
+    }
+    .reveal-full-page:focus {
+        outline: 1pt solid var(--accent);
     }
 }
 
@@ -410,7 +414,7 @@
         );
         --callout-summary-bg: oklch(
             from var(--callout-color) calc(l * var(--oklch-scale, 1.08)) c h /
-                0.18
+                0.025
         );
     }
 
@@ -422,7 +426,7 @@
     }
 
     .callout-important {
-        --callout-color: var(--purple, #9a76ce);
+        --callout-color: var(--accent, var(--purple, #9a76ce));
     }
 
     .callout-warning,
@@ -451,17 +455,19 @@
             .callout-success
         ) {
         background-color: var(--callout-bg);
+        color: var(--callout-color);
 
         summary {
             background-color: var(--callout-summary-bg);
             color: var(--callout-color);
             font-weight: var(--font-weight-bold);
+            margin-inline-end: 1ch;
         }
         summary::before {
-            content: '+ ';
+            content: '[+] ';
         }
         &[open] summary::before {
-            content: '- ';
+            content: '[-] ';
         }
     }
     details[is-~='accordion'] {
@@ -471,7 +477,7 @@
                 from var(--background3) calc(l * var(--oklch-scale, 1.15)) c h /
                     0.1
             );
-            color: oklch(from var(--background3) l c h);
+            /* color: oklch(from var(--background3) l c h); */
         }
     }
     details[is-~='accordion'] {
@@ -577,6 +583,16 @@ pre.astro-code {
     /* width: 100%; */
     /* max-width: 100%; */
     padding: 0ch;
+}
+
+pre.astro-code span.line[tabindex='0'] {
+    display: block;
+    outline: none;
+}
+
+pre.astro-code span.line[tabindex='0']:focus-visible {
+    background-color: oklch(from var(--foreground0) l c h / 0.12);
+    box-shadow: inset 2px 0 0 0 var(--foreground0);
 }
 
 pre.astro-code > code {

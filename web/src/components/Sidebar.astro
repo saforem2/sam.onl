@@ -644,7 +644,7 @@ const { pathname: urlPath } = Astro.url
         display: grid;
         grid-template-columns: 2ch minmax(0, 1fr);
         align-items: start;
-        margin-inline-start: 2ch;
+        margin-inline-start: 1ch;
         /* margin-block-end: 1ch; */
     }
 
@@ -653,7 +653,7 @@ const { pathname: urlPath } = Astro.url
     }
     #sidebar ul[marker-~='tree'] > li::before {
         grid-column: 1;
-        content: '~';
+        content: '-';
         color: var(--foreground2);
     }
 
@@ -709,7 +709,7 @@ const { pathname: urlPath } = Astro.url
 
     #category-list > a.sidebar-direct-link::before {
         content: '';
-        padding-inline: 1ch;
+        padding-inline: 2ch;
     }
 
     ul > details > summary {
@@ -725,7 +725,6 @@ const { pathname: urlPath } = Astro.url
     /* } */
 
     ul ul {
-        padding-left: 1ch;
         margin: 0;
     }
 
@@ -739,12 +738,12 @@ const { pathname: urlPath } = Astro.url
     details {
         /* margin-block-end: 1lh; */
         summary {
-            font-weight: 500;
+            /* font-weight: 500; */
             background-color: none;
             color: var(--foreground1);
             &::marker {
                 color: var(--foreground2);
-                content: '+';
+                content: '[+]';
             }
 
             &:hover {
@@ -755,7 +754,7 @@ const { pathname: urlPath } = Astro.url
         &[open] {
             summary {
                 &::marker {
-                    content: '-';
+                    content: '[-]';
                 }
             }
         }
@@ -771,9 +770,9 @@ const { pathname: urlPath } = Astro.url
         /* margin-block-end: 1ch; */
         padding-inline-start: 1ch;
         summary {
-            font-weight: var(--font-weight-bold);
+            /* font-weight: var(--font-weight-bold); */
             &::marker {
-                color: var(--foreground2);
+                color: var(--foreground3);
             }
 
             &:hover {
