@@ -1,0 +1,1623 @@
+Fix the `j` `k` scroll behavior in the main content
+
+---
+
+it seems to skip paragraphs, lists, headings, ...
+
+e.g. when pressing `j` for the first time, the Cooling Down list element is selected as shown:
+
+[Image 1] 
+
+pressing `j` again selects the W&B Report list element as shown:
+
+[Image 2] 
+
+why is not focusing the links? i.e. when pressing `j` on a list element that contains a link, the link should be the next focused element
+
+---
+
+no no, we DO want to fos <ul> elements
+
+---
+
+still not right; pressing j/k just moves focus between these two but never goes anywhere else:
+
+[Image 1] [Image 2]
+
+---
+
+still not working; when pressing j in the first screenshot from the previous message, why is the Sam Foreman 2025-10-06 line not focused first??
+
+---
+
+wait no, <p> and list elements should all be focusable
+
+---
+
+wait no, <p> and list elements should all be focusable
+
+---
+
+still not right; e.g. in @web/src/pages/landing.mdx when pressing 'j' for the first time, the `## About` heading should be focused; pressing `j` again should send the focus to the anchor link for the `## About` heading; pressing `j` again should focus the paragraph below; pressing `j` again should focus the first [Computational Scientist] link in that paragraph, etc.
+
+instead; pressing `j` for the first time sends the focus to the `I'm a computational scientist...` paragraph as shown below:
+
+[Image 1] 
+Called the Read tool with the following input: {"filePath":"/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx"}
+<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx</path>
+<type>file</type>
+<content>1: ---
+2: layout: '@/layouts/Doc.astro'
+3: title: 'Sam Foreman'
+4: order: 0
+5: ---
+6: 
+7: ## 🧑🏻‍💻 About
+8: 
+9: <div id="flex-container" style="display: flex; flex-direction: row; gap: 1rem; width: 100%; justify-content: space-between">
+10: 
+11: <div style="width: round(55%, 1ch);">
+12: I’m a [Computational Scientist][Argonne National Laboratory] in the [AI
+13: / ML group] at the [Argonne Leadership Computing Facility (ALCF)].
+14: 
+15: I’m generally interested in the large scale distributed training of AI
+16: models for scientific applications, and am the co-lead of the [Models /
+17: Pre-Training group] for the [AuroraGPT] project.
+18: 
+19: Prior to this, I received my PhD in Physics from the University of Iowa
+20: in 2019, where I used ML to build better Markov Chain Monte Carlo
+21: sampling techniques for Lattice Quantum Chromodynamics ([`l2hmc-qcd`]).
+22: 
+23: </div>
+24: 
+25: <div style="width: round(40%, 1ch);">
+26: 
+27: <div class="flex-container icon-flex" style="flex-direction: row; margin-block-end: 1lh;">
+28: 
+29: \[[](https://sam.onl)\]
+30: \[[](https://github.com/saforem2)\]
+31: \[[](https://twitter.com/saforem2)\]
+32: \[[](https://bsky.app/profile/samforeman.bsky.social)\]
+33: \[[](https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en)\]
+34: \[[](mailto:sf@omg.lol)\]
+35: \[[](https://last.fm/user/saforem2)\]
+36: \[[](https://www.linkedin.com/in/samforem2)\]
+37: \[[](https://open.spotify.com/user/saforem2)\]
+38: 
+39: </div>
+40: 
+41: > [!TIP] ✨ New!
+42: >
+43: > 🌎 <span class="highlight-green">AERIS</span>: [Argonne Earth Systems
+44: > Model for Reliable and Skillful Predictions][^1] (Hatanpää et al.
+45: > (2025))
+46: 
+47: <br />
+48: 
+49: > [!TIP] 🎶 Now Playing
+50: >
+51: > > [!WARNING] Spotify
+52: > >
+53: > > <a href="https://open.spotify.com/user/saforem2" target="_blank">
+54: > >     <img
+55: > >         src="https://spotify-github-profile.kittinanx.com/api/view?uid=saforem2&cover_image=true&theme=novatorem&show_offline=false&background_color=1CD7607F&interchange=true"
+56: > >         alt="Now Playing"
+57: > >         style="background-color:rgba(0,0,0,0.025); width:auto; max-width: 100%;"
+58: > >     />
+59: > > </a>
+60: >
+61: > > [!NOTE] Last.fm
+62: > >
+63: > > <a href="https://last.fm/user/saforem2" target="_blank">
+64: > >     <img
+65: > >         src="https://api.iconify.design/logos:lastfm.svg"
+66: > >         alt="last.fm"
+67: > >         style="overflow: visible;"
+68: > >     />
+69: > > </a>
+70: > >
+71: > > <div class="nowplayingcard">
+72: > >     <div class="nowplayingcontainer-inner">
+73: > >         <img id="trackart" src="#" alt="Now playing artwork" />
+74: > >         <div class="trackInfo">
+75: > >             <a id="tracktitle"></a>
+76: > >             <a href="#" id="trackartist"></a>
+77: > >         </div>
+78: > >     </div>
+79: > > </div>
+80: 
+81: <script>{`
+82:   const lastFmConfig = {
+83:     user: 'saforem2',
+84:     apiKey: '1dbc15037c1fe71ce06acbb3f73adc75',
+85:     apiBase: 'https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks',
+86:     refreshMs: 50000
+87:   }
+88: 
+89:   const fallbackTrack = {
+90:     title: 'Silence!',
+91:     artist: 'Sam Foreman',
+92:     url: 'https://samforeman.me',
+93:     art: 'https://samforeman.me/assets/avi-small.webp'
+94:   }
+95: 
+96:   function updateNowPlayingCard(track) {
+97:     const trackTitle = document.getElementById('tracktitle')
+98:     const trackArtist = document.getElementById('trackartist')
+99:     const trackArt = document.getElementById('trackart')
+100: 
+101:     if (!trackTitle || !trackArtist || !trackArt) return
+102: 
+103:     trackTitle.textContent = '🎶 ' + track.title
+104:     trackTitle.href = track.url
+105:     trackTitle.title = track.title + ' by ' + track.artist
+106:     trackTitle.target = '_blank'
+107:     trackTitle.rel = 'noopener noreferrer'
+108: 
+109:     trackArtist.textContent = '🗣️ ' + track.artist
+110:     trackArtist.href = 'https://www.last.fm/music/' + encodeURIComponent(track.artist)
+111:     trackArtist.title = 'Artist: ' + track.artist
+112:     trackArtist.target = '_blank'
+113:     trackArtist.rel = 'noopener noreferrer'
+114: 
+115:     trackArt.src = track.art || fallbackTrack.art
+116:   }
+117: 
+118:   async function fetchLatestTrack() {
+119:     const params = new URLSearchParams({
+120:       user: lastFmConfig.user,
+121:       api_key: lastFmConfig.apiKey,
+122:       format: 'json',
+123:       limit: '1'
+124:     })
+125: 
+126:     const response = await fetch(lastFmConfig.apiBase + '&' + params.toString())
+127:     if (!response.ok) {
+128:       throw new Error('Last.fm API error: ' + response.status)
+129:     }
+130: 
+131:     const data = await response.json()
+132:     const recentTrack = data?.recenttracks?.track?.[0]
+133:     if (!recentTrack) {
+134:       throw new Error('No recent track returned by Last.fm')
+135:     }
+136: 
+137:     const artist = recentTrack.artist?.['#text'] || 'Unknown Artist'
+138:     const imageSizes = Array.isArray(recentTrack.image) ? recentTrack.image : []
+139:     const art =
+140:       imageSizes[2]?.['#text'] ||
+141:       imageSizes[3]?.['#text'] ||
+142:       imageSizes[1]?.['#text'] ||
+143:       ''
+144: 
+145:     return {
+146:       title: recentTrack.name || 'Unknown Track',
+147:       artist,
+148:       url: recentTrack.url || 'https://www.last.fm/user/' + lastFmConfig.user,
+149:       art
+150:     }
+151:   }
+152: 
+153:   async function refreshLastFm() {
+154:     try {
+155:       const track = await fetchLatestTrack()
+156:       updateNowPlayingCard(track)
+157:     } catch (error) {
+158:       console.error('Failed to load Last.fm track:', error)
+159:       updateNowPlayingCard(fallbackTrack)
+160:     }
+161:   }
+162: 
+163:   window.addEventListener('DOMContentLoaded', function () {
+164:     refreshLastFm()
+165:     window.setInterval(refreshLastFm, lastFmConfig.refreshMs)
+166:   })
+167: `}</script>
+168: 
+169: </div>
+170: 
+171: </div>
+172: 
+173: > [!TIP] ➕ More
+174: >
+175: > > [!TIP] 🔥 What I Work on
+176: > >
+177: > > As a member of the [AI / ML Group] at [ALCF], I work on:
+178: > >
+179: > > <div class="flex-container">
+180: > >
+181: > > <div class="flex-container">
+182: > >
+183: > > - 🤖 🧪 [AI + Science]
+184: > > - 🎲 [Building better sampling methods for Lattice QCD][`l2hmc-qcd`]
+185: > > - 🧬 [Genome-Scale Language Models]
+186: > >     - [ GenSLM]
+187: > >     - 🥇 [ACM Gordon Bell Special Prize]
+188: > >
+189: > > </div>
+190: > >
+191: > > <div class="flex-container">
+192: > >
+193: > > - 🌍 [Foundation models for long term climate forecasting]
+194: > > - 🏃‍♂️ [Scaling Large Language Models]
+195: > > - 🏎️ [Distributed training across thousands of GPUs]
+196: > >
+197: > > </div>
+198: > >
+199: > > </div>
+200: >
+201: > > [!TIP] 📍 How I got here
+202: > >
+203: > > My [current research] focuses on using deep generative modeling to
+204: > > help build better sampling algorithms in lattice gauge theory. In
+205: > > particular, I’m interested in building gauge equivariant neural
+206: > > network architectures and using inductive priors to incorporate
+207: > > physical symmetries into machine learning models.
+208: > >
+209: > > <br />
+210: > >
+211: > > I received my PhD in Physics from the University of Iowa in 2019 and
+212: > > my thesis was on [Learning Better Physics: A Machine Learning
+213: > >
+214: > > Approach to Lattice Gauge Theory].
+215: > >
+216: > > <br />
+217: > >
+218: > > Prior to this, I completed two bachelors degrees (Engineering
+219: > > Physics and Applied Mathematics, 2015) at The University of Illinois
+220: > > at Urbana-Champaign. My undergraduate dissertation was titled
+221: > > [Energy Storage in Quantum Resonators] and was supervised by
+222: > > Professor [Alfred Hübler] within the Center for Complex Systems
+223: > > Research at UIUC.
+224: > >
+225: > > This work ultimately resulted in a [patent] !!
+226: >
+227: > > [!TIP] 💌 Contact
+228: > >
+229: > > <script
+230: > >     data-letterbirduser="sam"
+231: > >     src="https://letterbird.co/embed/v1.js"></script>
+232: >
+233: > <div style="text-align:center;">
+234: >
+235: > <img
+236: >     loading="lazy"
+237: >     alt="hits"
+238: >     src="https://hitscounter.dev/api/hit?url=samforeman.me&label=samforeman.me&icon=check2-square&color=%236c757d"
+239: > />
+240: >
+241: > <span class="dim-text">© Copyright 2025 [Sam Foreman]</span>
+242: >
+243: > </div>
+244: 
+245: ## 📬 Posts
+246: 
+247: <div id="listing-posts">
+248: 
+249: </div>
+250: 
+251: ## 📊 Talks
+252: 
+253: > [!NOTE] Note
+254: >
+255: > See [talks] for a live view!
+256: 
+257: > [!TIP] HTML ⇆ Reveal.js
+258: >
+259: > Convert from HTML to slideshow version of a page by appending
+260: > `/slides` to the end of its URL, e.g.
+261: >
+262: > - HTML: [https://samforeman.me/talks/ai-for-science-2024/](https://samforeman.me/talks/ai-for-science-2024/)
+263: > - Slides: [https://samforeman.me/talks/ai-for-science-2024/slides](https://samforeman.me/talks/ai-for-science-2024/slides)
+264: 
+265: <div id="listing-talks">
+266: 
+267: </div>
+268: 
+269: ### 📆 2025
+270: 
+271: > [!TIP] AuroraGPT: Training Foundation Models on Supercomputers @ ANL 12/2025
+272: >
+273: > <iframe
+274: >     class="slide-deck reveal-full-page"
+275: >     loading="lazy"
+276: >     src="https://samforeman.me/talks/2025/12/16/slides.html?view=scroll"
+277: >     title="Training Foundation Models on Supercomputers"
+278: >     align="center"
+279: >     frameborder="0"
+280: >     webkitallowfullscreen
+281: >     allowfullscreen
+282: >     style="aspect-ratio:1.3671875;"></iframe>
+283: 
+284: > [!TIP] Training Foundation Models on Supercomputers @ UIUC 10/2025
+285: >
+286: > <iframe
+287: >     class="slide-deck reveal-full-page"
+288: >     loading="lazy"
+289: >     src="https://samforeman.me/talks/2025/10/24/slides.html?view=scroll"
+290: >     title="Training Foundation Models on Supercomputers"
+291: >     align="center"
+292: >     frameborder="0"
+293: >     webkitallowfullscreen
+294: >     allowfullscreen
+295: >     style="aspect-ratio:1.3671875;"></iframe>
+296: 
+297: > [!TIP] Training Foundation Models on Supercomputers @ Georgia Institute of Technology 10/2025
+298: >
+299: > <iframe
+300: >     class="slide-deck reveal-full-page"
+301: >     loading="lazy"
+302: >     src="https://samforeman.me/talks/2025/10/15/slides.html?view=scroll"
+303: >     title="Training Foundation Models on Supercomputers"
+304: >     align="center"
+305: >     frameborder="0"
+306: >     webkitallowfullscreen
+307: >     allowfullscreen
+308: >     style="aspect-ratio:1.3671875;"></iframe>
+309: 
+310: > [!TIP] AERIS: Argonne Earth Systems Model @ 2025 ALCF Hands On HPC Workshop 10/2025
+311: >
+312: > <iframe
+313: >     class="slide-deck reveal-full-page"
+314: >     loading="lazy"
+315: >     src="https://samforeman.me/talks/2025/10/08/slides.html?view=scroll"
+316: >     title="AERIS: Argonne Earth Systems Model"
+317: >     align="center"
+318: >     frameborder="0"
+319: >     webkitallowfullscreen
+320: >     allowfullscreen
+321: >     style="aspect-ratio:1.3671875;"></iframe>
+322: 
+323: > [!TIP] Training Foundation Models on Supercomputers @ 2025 ALCF Hands On HPC Workshop 09/2025
+324: >
+325: > <iframe
+326: >     class="slide-deck reveal-full-page"
+327: >     loading="lazy"
+328: >     src="https://samforeman.me/talks/2025/09/24/slides.html?view=scroll"
+329: >     title="Training Foundation Models on Supercomputers"
+330: >     align="center"
+331: >     frameborder="0"
+332: >     webkitallowfullscreen
+333: >     allowfullscreen
+334: >     style="aspect-ratio:1.3671875;"></iframe>
+335: 
+336: > [!TIP] Scientific AI at Scale: AI for Science @ Open SkAI 2025 09/2025
+337: >
+338: > <iframe
+339: >     class="slide-deck reveal-full-page"
+340: >     loading="lazy"
+341: >     src="https://samforeman.me/talks/openskai25/ai4science/slides.html?view=scroll"
+342: >     title="Scientific AI at Scale: AI for Science"
+343: >     align="center"
+344: >     frameborder="0"
+345: >     webkitallowfullscreen
+346: >     allowfullscreen
+347: >     style="aspect-ratio:1.3671875;"></iframe>
+348: 
+349: > [!TIP] Scientific AI at Scale: Distributed Training @ Open SkAI 2025 09/2025
+350: >
+351: > <iframe
+352: >     class="slide-deck reveal-full-page"
+353: >     loading="lazy"
+354: >     src="https://samforeman.me/talks/openskai25/training/slides.html?view=scroll"
+355: >     title="Scientific AI at Scale: Distributed Training"
+356: >     align="center"
+357: >     frameborder="0"
+358: >     webkitallowfullscreen
+359: >     allowfullscreen
+360: >     style="aspect-ratio:1.3671875;"></iframe>
+361: 
+362: > [!TIP] Large Scale Training on Diverse Accelerators @ Scalable Deep Learning, SIAM AN2025 07/2025
+363: >
+364: > <div class="reveal-full-page">
+365: >
+366: > <iframe
+367: >     class="slide-deck reveal-full-page"
+368: >     loading="lazy"
+369: >     src="https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html?view=scroll"
+370: >     title="AuroraGPT: Large Scale Training on Diverse Accelerators"
+371: >     align="center"
+372: >     frameborder="0"
+373: >     webkitallowfullscreen
+374: >     allowfullscreen
+375: >     style="aspect-ratio:1.3671875;"></iframe>
+376: >
+377: > </div>
+378: 
+379: > [!TIP] LLMs on Aurora: 🌌 AuroraGPT @ 2025 ALCF INCITE GPU Hackathon 05/2025
+380: >
+381: > - [🎥 video]
+382: >
+383: > <div class="reveal-full-page">
+384: >
+385: > <iframe
+386: >     class="slide-deck reveal-full-page"
+387: >     loading="lazy"
+388: >     src="https://samforeman.me/talks/incite-hackathon-2025/auroragpt/slides?view=scroll/section#/section"
+389: >     title="LLMs on Aurora: AuroraGPT"
+390: >     align="center"
+391: >     frameborder="0"
+392: >     webkitallowfullscreen
+393: >     allowfullscreen
+394: >     style="aspect-ratio:1.3671875;"></iframe>
+395: >
+396: > </div>
+397: 
+398: > [!TIP] LLMs on Aurora: 🍋 ezpz @ 2025 ALCF INCITE GPU Hackathon 05/2025
+399: >
+400: > - [🎥 video][4]
+401: >
+402: > <div class="reveal-full-page">
+403: >
+404: > <iframe
+405: >     class="slide-deck reveal-full-page"
+406: >     loading="lazy"
+407: >     src="https://samforeman.me/talks/incite-hackathon-2025/ezpz/slides?view=scroll/section#/section"
+408: >     title="🍋 ezpz on Aurora"
+409: >     align="center"
+410: >     frameborder="0"
+411: >     webkitallowfullscreen
+412: >     allowfullscreen
+413: >     style="aspect-ratio:1.3671875;"></iframe>
+414: >
+415: > </div>
+416: 
+417: > [!TIP] AuroraGPT: Foundation Models for Science @ Foundation Models for the Electric Grid 02/2025
+418: >
+419: > <div class="reveal-full-page">
+420: >
+421: > <iframe
+422: >     class="slide-deck reveal-full-page"
+423: >     loading="lazy"
+424: >     src="https://samforeman.me/talks/aurora-gpt-fm-for-electric-grid/slides.html?view=scroll"
+425: >     title="AuroraGPT: Foundation Models for Science"
+426: >     align="center"
+427: >     frameborder="0"
+428: >     webkitallowfullscreen
+429: >     allowfullscreen
+430: >     style="aspect-ratio:1.3671875;"></iframe>
+431: >
+432: > </div>
+433: 
+434: ### 📆 2024
+435: 
+436: > [!TIP] Parallel Training Methods @ AI-for-Science on Supercomputers 11/2024
+437: >
+438: > - [🎥 video][5]
+439: >
+440: > <div class="reveal-full-page">
+441: >
+442: > <iframe
+443: >     class="slide-deck reveal-full-page"
+444: >     loading="lazy"
+445: >     src="https://samforeman.me/talks/ai-for-science-2024/slides.html?view=scroll"
+446: >     title="Parallel Training Methods"
+447: >     align="center"
+448: >     frameborder="0"
+449: >     webkitallowfullscreen
+450: >     allowfullscreen
+451: >     style="aspect-ratio:1.3671875;"></iframe>
+452: >
+453: > </div>
+454: 
+455: > [!TIP] AuroraGPT @ 2024 ALCF Hands-On HPC Workshop 10/2024
+456: >
+457: > - [🎥 video][4]
+458: >
+459: > <div class="reveal-full-page">
+460: >
+461: > <iframe
+462: >     class="slide-deck reveal-full-page"
+463: >     loading="lazy"
+464: >     src="https://samforeman.me/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html?view=scroll"
+465: >     title="AuroraGPT"
+466: >     align="center"
+467: >     frameborder="0"
+468: >     webkitallowfullscreen
+469: >     allowfullscreen
+470: >     style="aspect-ratio:1.3671875;"></iframe>
+471: >
+472: > </div>
+473: 
+474: > [!TIP] Machine Learning and Foundation Models at Scale @ 2024 ALCF Hands-On HPC Workshop 10/2024
+475: >
+476: > <div class="reveal-full-page">
+477: >
+478: > <iframe
+479: >     class="slide-deck reveal-full-page"
+480: >     loading="lazy"
+481: >     src="https://samforeman.me/talks/alcf-hpc-workshop-2024/slides?view=scroll/section#/section"
+482: >     title="Machine Learning and Foundation Models at Scale"
+483: >     align="center"
+484: >     frameborder="0"
+485: >     webkitallowfullscreen
+486: >     allowfullscreen
+487: >     style="aspect-ratio:1.3671875;"></iframe>
+488: >
+489: > </div>
+490: 
+491: > [!TIP] AuroraGPT @ HPC User Forum, 2024 09/2024
+492: >
+493: > <iframe
+494: >     class="slide-deck reveal-full-page"
+495: >     loading="lazy"
+496: >     src="https://samforeman.me/talks/hpc-user-forum/slides.html?view=scroll"
+497: >     title="AuroraGPT"
+498: >     align="center"
+499: >     frameborder="0"
+500: >     webkitallowfullscreen
+501: >     allowfullscreen
+502: >     style="aspect-ratio:1.3671875;"></iframe>
+503: 
+504: > [!TIP] Training LLMs at Scale @ ATPESC, 2024 08/2024
+505: >
+506: > <iframe
+507: >     class="slide-deck reveal-full-page"
+508: >     loading="lazy"
+509: >     src="https://samforeman.me/talks/llms-at-scale/slides.html?view=scroll"
+510: >     title="Training LLMs at Scale"
+511: >     align="center"
+512: >     frameborder="0"
+513: >     webkitallowfullscreen
+514: >     allowfullscreen
+515: >     style="aspect-ratio:1.3671875;"></iframe>
+516: 
+517: > [!TIP] LLMs on Polaris @ Center for Scientific Foundation Models, Summer School 24’ 07/2024
+518: >
+519: > <iframe
+520: >     class="slide-deck reveal-full-page"
+521: >     loading="lazy"
+522: >     src="https://samforeman.me/talks/llms-on-polaris/slides.html?view=scroll"
+523: >     title="LLMs on Polaris"
+524: >     align="center"
+525: >     frameborder="0"
+526: >     webkitallowfullscreen
+527: >     allowfullscreen
+528: >     style="aspect-ratio:1.3671875;"></iframe>
+529: 
+530: > [!TIP] Parallel Training Techniques @ AI-4-Science Training Series 03/2024
+531: >
+532: > <iframe
+533: >     class="slide-deck reveal-full-page"
+534: >     loading="lazy"
+535: >     src="https://saforem2.github.io/parallel-training-slides?view=scroll"
+536: >     title="Parallel Training Techniques"
+537: >     align="center"
+538: >     frameborder="0"
+539: >     webkitallowfullscreen
+540: >     allowfullscreen
+541: >     style="aspect-ratio:1.3671875;"></iframe>
+542: 
+543: > [!TIP] LLMs from Scratch @ LLM Tutorial Workshop 02/2024
+544: >
+545: > <iframe
+546: >     class="slide-deck reveal-full-page"
+547: >     loading="lazy"
+548: >     src="https://saforem2.github.io/llm-workshop-talk"
+549: >     title="LLMs from Scratch"
+550: >     align="center"
+551: >     frameborder="0"
+552: >     webkitallowfullscreen
+553: >     allowfullscreen
+554: >     style="aspect-ratio:1.3671875;"></iframe>
+555: 
+556: ### 📆 2023
+557: 
+558: > [!TIP] Creating Small(-ish) LLMs @ LLM Tutorial Workshop (1) 11/2023
+559: >
+560: > <iframe
+561: >     class="slide-deck reveal-full-page"
+562: >     loading="lazy"
+563: >     src="https://saforem2.github.io/LLM-tutorial"
+564: >     title="Creating Small(-ish) LLMs"
+565: >     align="center"
+566: >     frameborder="0"
+567: >     webkitallowfullscreen
+568: >     allowfullscreen></iframe>
+569: 
+570: > [!TIP] Exascale Science on Aurora @ Intel oneAPI Workshop @ UIC 10/2023
+571: >
+572: > <iframe
+573: >     class="slide-deck reveal-full-page"
+574: >     loading="lazy"
+575: >     src="https://saforem2.github.io/oneapi-talk"
+576: >     title="Exascale Science on Aurora"
+577: >     align="center"
+578: >     frameborder="0"
+579: >     webkitallowfullscreen
+580: >     allowfullscreen></iframe>
+581: 
+582: > [!TIP] LLM Lunch Talk @ Intel oneAPI Workshop @ UIC 10/2023
+583: >
+584: > - [🎥 video][8]
+585: >
+586: > <iframe
+587: >     class="slide-deck reveal-full-page"
+588: >     loading="lazy"
+589: >     src="https://saforem2.github.io/llm-lunch-talk/#/section"
+590: >     title="LLMs on Polaris"
+591: >     align="center"
+592: >     frameborder="0"
+593: >     webkitallowfullscreen
+594: >     allowfullscreen
+595: >     style="aspect-ratio:1.3671875;"></iframe>
+596: 
+597: > [!TIP] Scaling LLMs for Science @ Data-Intensive Computing + AI/ML at Scale 08/2023
+598: >
+599: > <iframe
+600: >     class="slide-deck reveal-full-page"
+601: >     loading="lazy"
+602: >     src="https://saforem2.github.io/scaling4science/#/section"
+603: >     title="Scaling LLMs for Science and Ongoing Collaborations"
+604: >     align="center"
+605: >     frameborder="0"
+606: >     webkitallowfullscreen
+607: >     allowfullscreen
+608: >     style="aspect-ratio:1.3671875;"></iframe>
+609: 
+610: > [!TIP] MLMC: Machine Learning Monte Carlo @ Lattice 2023 07/2023
+611: >
+612: > <iframe
+613: >     class="slide-deck reveal-full-page"
+614: >     loading="lazy"
+615: >     src="https://saforem2.github.io/lattice23/#/title-slide"
+616: >     title="MLMC: Machine Learning Monte Carlo"
+617: >     align="center"
+618: >     frameborder="0"
+619: >     webkitallowfullscreen
+620: >     allowfullscreen
+621: >     style="aspect-ratio:1.3671875;"></iframe>
+622: 
+623: > [!TIP] Generative Modeling and Efficient Sampling @ PASC23 07/2023
+624: >
+625: > <iframe
+626: >     class="slide-deck reveal-full-page"
+627: >     loading="lazy"
+628: >     src="https://saforem2.github.io/lqcd-pasc23/"
+629: >     title="Generative Modeling and Efficient Sampling"
+630: >     align="center"
+631: >     frameborder="0"
+632: >     webkitallowfullscreen
+633: >     allowfullscreen
+634: >     style="aspect-ratio:1.3671875;"></iframe>
+635: 
+636: > [!TIP] Efficient Sampling for LGT @ Deep Fridays @ U. Bologna 04/2023
+637: >
+638: > <iframe
+639: >     class="slide-deck reveal-full-page"
+640: >     loading="lazy"
+641: >     src="https://saforem2.github.io/deep-fridays/"
+642: >     title="Efficient Sampling for LGT"
+643: >     align="center"
+644: >     frameborder="0"
+645: >     webkitallowfullscreen
+646: >     allowfullscreen
+647: >     style="aspect-ratio:1.3671875;"></iframe>
+648: 
+649: ### 📆 2022
+650: 
+651: > [!TIP] Large Scale Training @ AI4Science on Supercomputers (ALCF) 11/2022
+652: >
+653: > <iframe
+654: >     class="slide-deck reveal-full-page"
+655: >     loading="lazy"
+656: >     src="https://saforem2.github.io/ai4sci-large-scale-training/#"
+657: >     title="Large Scale Training"
+658: >     align="center"
+659: >     frameborder="0"
+660: >     webkitallowfullscreen
+661: >     allowfullscreen
+662: >     style="aspect-ratio:1.3671875;"></iframe>
+663: 
+664: > [!TIP] Hyperparameter Management @ ALCF SDL Workshop 10/2022
+665: >
+666: > <iframe
+667: >     class="slide-deck reveal-full-page"
+668: >     loading="lazy"
+669: >     src="https://saforem2.github.io/hparam-management-sdl2022"
+670: >     title="Hyperparameter Management"
+671: >     align="center"
+672: >     frameborder="0"
+673: >     webkitallowfullscreen
+674: >     allowfullscreen
+675: >     style="aspect-ratio:1.3671875;"></iframe>
+676: 
+677: > [!TIP] Statistical Learning @ ATPESC 2022 08/2022
+678: >
+679: > - [📕 accompanying notebook]
+680: >
+681: > <iframe
+682: >     class="slide-deck reveal-full-page"
+683: >     loading="lazy"
+684: >     src="https://saforem2.github.io/ATPESC-StatisticalLearning/#/"
+685: >     title="Statistical Learning"
+686: >     align="center"
+687: >     frameborder="0"
+688: >     webkitallowfullscreen
+689: >     allowfullscreen
+690: >     style="aspect-ratio:1.3671875;"></iframe>
+691: 
+692: > [!TIP] Scientific Data Science: An Emerging Symbiosis @ ANL 05/2022
+693: >
+694: > <iframe
+695: >     class="slide-deck reveal-full-page"
+696: >     loading="lazy"
+697: >     src="https://saforem2.github.io/anl-job-talk"
+698: >     title="Scientific Data Science"
+699: >     align="center"
+700: >     frameborder="0"
+701: >     webkitallowfullscreen
+702: >     allowfullscreen
+703: >     style="aspect-ratio:1.3671875;"></iframe>
+704: 
+705: > [!TIP] Machine Learning in HEP @ UNC Greensboro 03/2022
+706: >
+707: > - [Machine Learning in HEP], at UNC Greensboro, March 2022
+708: >
+709: > <iframe
+710: >     class="slide-deck reveal-full-page"
+711: >     loading="lazy"
+712: >     src="https://saforem2.github.io/physicsSeminar"
+713: >     title="Machine Learning in HEP"
+714: >     align="center"
+715: >     frameborder="0"
+716: >     webkitallowfullscreen
+717: >     allowfullscreen
+718: >     style="width:100%!important; "></iframe>
+719: 
+720: ### 📆 2021
+721: 
+722: > [!TIP] Accelerated Sampling Methods for LGT @ DWQ @ 25 BNL 12/2021
+723: >
+724: > <iframe
+725: >     class="slide-deck reveal-full-page"
+726: >     loading="lazy"
+727: >     src="https://saforem2.github.io/l2hmc-dwq25/"
+728: >     title="Accelerated Sampling Methods for LGT"
+729: >     align="center"
+730: >     frameborder="0"
+731: >     webkitallowfullscreen
+732: >     allowfullscreen
+733: >     style="aspect-ratio:1.3671875;"></iframe>
+734: 
+735: > [!TIP] Training Topological Samplers for LGT @ ML4HEP, ECT Trento 09/2021
+736: >
+737: > <iframe
+738: >     class="slide-deck reveal-full-page"
+739: >     loading="lazy"
+740: >     src="https://saforem2.github.io/l2hmc_talk_ect2021"
+741: >     title="Training Topological Samplers for LGT"
+742: >     align="center"
+743: >     frameborder="0"
+744: >     webkitallowfullscreen
+745: >     allowfullscreen
+746: >     style="aspect-ratio:1.3671875;"></iframe>
+747: 
+748: > [!TIP] l2hmc-qcd @ MIT Lattice Group Seminar 2021
+749: >
+750: > [l2hmc-qcd][`l2hmc-qcd`] at the _MIT Lattice Group Seminar_, 2021
+751: 
+752: > [!TIP] Deep Learning HMC for Improved Gauge Generation @ ML in LQCD Workshop 2021
+753: >
+754: > <iframe
+755: >     class="slide-deck reveal-full-page"
+756: >     loading="lazy"
+757: >     src="https://slides.com/samforeman/dlhmc/embed"
+758: >     title="Deep Learning HMC for Improved Gauge Generation"
+759: >     scrolling="no"
+760: >     frameborder="0"
+761: >     webkitallowfullscreen
+762: >     allowfullscreen
+763: >     style="aspect-ratio:1.3671875;"></iframe>
+764: 
+765: ### 📆 2020
+766: 
+767: > [!TIP] Machine Learning for Lattice QCD @ U. Iowa 2020
+768: >
+769: > <iframe
+770: >     class="slide-deck reveal-full-page"
+771: >     loading="lazy"
+772: >     src="https://slides.com/samforeman/l2hmc-qcd/embed"
+773: >     title="Machine Learning for Lattice QCD"
+774: >     align="center"
+775: >     frameborder="0"
+776: >     webkitallowfullscreen
+777: >     allowfullscreen
+778: >     style="aspect-ratio:1.3671875;"></iframe>
+779: 
+780: ## 📝 Work
+781: 
+782: > [!NOTE] Note
+783: >
+784: > <span style="color:#4582ec;">
+785: >     You can find a full list of my publications on my [Google Scholar]
+786: > </span>
+787: 
+788: 1.  🌎 [<span class="highlight-green">**AERIS**</span>: **Argonne Earth
+789:     Systems Model for Reliable and Skillful
+790:     Predictions**][Argonne Earth Systems Model for Reliable and Skillful Predictions]
+791:     (Hatanpää et al. (2025))
+792:     - ✨ [*2025 ACM Gordon Bell Prize for Climate Modeling Finalist*]
+793: 2.  Aurora: Architecting Argonne’s First Exascale Supercomputer for
+794:     Accelerated Scientific Discovery (Allen et al. (2025))
+795: 3.  [HiPerRAG: High-Performance Retrieval Augmented Generation for
+796:     Scientific Insights] (Gokdemir et al. (2025))
+797: 4.  [Automated Tuning for HMC Mass Ratios] (Torsiello et al. (2025))
+798: 5.  [MOFA: Discovering Materials for Carbon Capture with a GenAI and
+799:     Simulation-Based Workflow] (Yan et al. (2025))
+800: 6.  🧪 [<span class="highlight-pink">**MProt-DPO**</span>: **Breaking
+801:     the ExaFLOPS Barrier for Multimodal Protein Design with DPO**]
+802:     (Dharuman et al. (2024))
+803:     - 🌟 [*2024 ACM Gordon Bell Finalist*]
+804: 7.  [Intro to HPC Bootcamp: Engaging New Communities Through Energy
+805:     Justice Projects] (<span class="nocase">Leung et al.</span> (2024))
+806: 8.  [Thorough Characterization and Analysis of Large Transformer Model
+807:     Training At-Scale] (Cheng et al. (2024))
+808: 9.  [MLMC: Machine Learning Monte Carlo for Lattice Gauge Theory]
+809:     (Foreman et al. (2023))
+810: 10. [Protein Generation via Genome-scale Language Models with
+811:     Bio-physical Scoring] (<span class="nocase">Dharuman et al.</span>
+812:     (2023))
+813: 11. [DeepSpeed4Science Initiative: Enabling Large-Scale Scientific
+814:     Discovery] (<span class="nocase">Song et al.</span> (2023))
+815:     - [📰 DeepSpeed4Science.ai Blog Post]
+816:     - [🚂 Loooooooong Sequence Lengths]
+817: 12. [Comprehensive Performance Study of LLMs on Novel AI Accelerators]
+818:     (Emani et al. (2023))
+819: 13. [Exploratory Analysis of Climate Data with
+820:     `ClimRR`][Foundation models for long term climate forecasting],
+821:     [Intro to HPC Bootcamp @ NERSC] (Foreman (2023))
+822: 14. 🧬 [<span class="highlight">**GenSLMs**</span>: **Genome-scale
+823:     language models reveal SARS-Cov-2 evolutionary dynamics**]
+824:     (<span class="nocase">Zvyagin et al.</span> (2023))
+825:     - Winner of the [🏆 _ACM Gordon Bell Special Prize for High
+826:       Performance Computing-Based COVID-19
+827:       Research_][ACM Gordon Bell Special Prize]
+828: 15. [Lattice QCD and Particle Physics] (<span class="nocase">Kronfeld et
+829:     al.</span> (2022))
+830: 16. [Applications of ML to Lattice QFT] (<span class="nocase">Boyda et
+831:     al.</span> (2022))
+832: 17. [LeapFrogLayers: Trainable Framework for Effective Sampling]
+833:     (Foreman, Izubuchi, et al. (2021))
+834: 18. [HMC with Normalizing Flows][] \[[slides]\] (Foreman, Izubuchi, et
+835:     al. (2021))
+836: 19. [Deep Learning Hamiltonian Monte Carlo][] \[[+ poster]\] (Foreman,
+837:     Jin, et al. (2021))
+838: 20. [Machine Learning and Neural Networks for Field Theory] (Foreman et
+839:     al. (2020))
+840: 21. [Examples of renormalization group transformations for image sets]
+841:     (Samuel Foreman et al. (2018))
+842: 22. [RG inspired Machine Learning for lattice field theory] (Sam Foreman
+843:     et al. (2018))
+844: 23. [Large Energy Density in Three-Plate Nanocapacitors due to Coulomb
+845:     Blockade] (Hubler et al. (2018))
+846: 24. [Superconductivity of In and Sn Samples] (Deamont and Foreman
+847:     (2014))
+848: 
+849: > [!NOTE] 📓 References
+850: >
+851: > <div id="refs" class="references csl-bib-body hanging-indent">
+852: >
+853: > <div id="ref-allen2025aurora" class="csl-entry">
+854: >
+855: > Allen, Benjamin S., James Anchell, Victor Anisimov, et al. 2025.
+856: > _Aurora: Architecting Argonne’s First Exascale Supercomputer for
+857: > Accelerated Scientific Discovery_. [https://arxiv.org/abs/2509.08207](https://arxiv.org/abs/2509.08207).
+858: >
+859: > </div>
+860: >
+861: > <div id="ref-boyda2022applications" class="csl-entry">
+862: >
+863: > <span class="nocase">Boyda, Denis, Salvatore Calı̀, Sam Foreman, et al.</span>
+864: > 2022. “Applications of Machine Learning to Lattice Quantum Field Theory.”
+865: > *arXiv Preprint arXiv:2202.05838*.
+866: > [https://arxiv.org/abs/2202.05838](https://arxiv.org/abs/2202.05838).
+867: >
+868: > </div>
+869: >
+870: > <div id="ref-cheng2024thorough" class="csl-entry">
+871: >
+872: > Cheng, Scott, Jun-Liang Lin, Murali Emani, et al. 2024. “Thorough
+873: > Characterization and Analysis of Large Transformer Model Training
+874: > at-Scale.” _Proc. ACM Meas. Anal. Comput. Syst._ (New York, NY, USA) 8
+875: > (1). [https://doi.org/10.1145/3639034](https://doi.org/10.1145/3639034).
+876: >
+877: > </div>
+878: >
+879: > <div id="ref-deamont2014superconductivity" class="csl-entry">
+880: >
+881: > Deamont, George, and Sam Foreman. 2014. _Superconductivity of in and
+882: > Sn Samples_.
+883: >
+884: > </div>
+885: >
+886: > <div id="ref-mprot-dpo2024" class="csl-entry">
+887: >
+888: > Dharuman, Gautham, Kyle Hippe, Alexander Brace, et al. 2024.
+889: > “MProt-DPO: Breaking the ExaFLOPS Barrier for Multimodal Protein
+890: > Design Workflows with Direct Preference Optimization.” _Proceedings of
+891: > the International Conference for High Performance Computing,
+892: > Networking, Storage, and Analysis_ (Atlanta, GA, USA), SC ’24.
+893: > [https://doi.org/10.1109/SC41406.2024.00013](https://doi.org/10.1109/SC41406.2024.00013).
+894: >
+895: > </div>
+896: >
+897: > <div id="ref-dharuman2023protein" class="csl-entry">
+898: >
+899: > <span class="nocase">Dharuman, Gautham, Logan Ward, Heng Ma, et al.</span>
+900: > 2023. “Protein Generation via Genome-Scale Language Models with Bio-Physical
+901: > Scoring.” *Proceedings of the SC’23 Workshops of the International Conference
+902: > on High Performance Computing, Network, Storage, and Analysis*, 95–101.
+903: >
+904: > </div>
+905: >
+906: > <div id="ref-emani2023comprehensive" class="csl-entry">
+907: >
+908: > Emani, Murali, Sam Foreman, Varuni Sastry, et al. 2023. “A
+909: > Comprehensive Performance Study of Large Language Models on Novel AI
+910: > Accelerators.” _arXiv Preprint arXiv:2310.04607_.
+911: > [https://arxiv.org/abs/2310.04607](https://arxiv.org/abs/2310.04607).
+912: >
+913: > </div>
+914: >
+915: > <div id="ref-foreman2023climrr" class="csl-entry">
+916: >
+917: > Foreman, Sam. 2023. “Energy Justice Analysis of Climate Data with
+918: > ClimRR.” August 7. [https://saforem2.github.io/climate-analysis](https://saforem2.github.io/climate-analysis).
+919: >
+920: > </div>
+921: >
+922: > <div id="ref-foreman2018rg" class="csl-entry">
+923: >
+924: > Foreman, Sam, Joel Giedt, Yannick Meurice, and Judah Unmuth-Yockey. 2018. “<span class="nocase">RG-inspired machine learning for lattice
+925: > field theory</span>.” _European Physical Journal Web of Conferences_,
+926: > European physical journal web of conferences, vol. 175 (March): 11025.
+927: > [https://doi.org/10.1051/epjconf/201817511025](https://doi.org/10.1051/epjconf/201817511025).
+928: >
+929: > </div>
+930: >
+931: > <div id="ref-foreman2021hmc" class="csl-entry">
+932: >
+933: > Foreman, Sam, Taku Izubuchi, Luchang Jin, Xiao-Yong Jin, James C
+934: > Osborn, and Akio Tomiya. 2021. “HMC with Normalizing Flows.” _arXiv
+935: > Preprint arXiv:2112.01586_. [https://arxiv.org/abs/2112.01586](https://arxiv.org/abs/2112.01586).
+936: >
+937: > </div>
+938: >
+939: > <div id="ref-foreman2021deep" class="csl-entry">
+940: >
+941: > Foreman, Sam, Xiao-Yong Jin, and Osborn James C. 2021. _Deep Learning
+942: > Hamiltonian Monte Carlo_. [https://arxiv.org/abs/2105.03418](https://arxiv.org/abs/2105.03418).
+943: >
+944: > </div>
+945: >
+946: > <div id="ref-foreman2020machine" class="csl-entry">
+947: >
+948: > Foreman, Sam, Xiao-Yong Jin, and James C Osborn. 2020. _Machine
+949: > Learning and Neural Networks for Field Theory_.
+950: >
+951: > </div>
+952: >
+953: > <div id="ref-foreman2023mlmc" class="csl-entry">
+954: >
+955: > Foreman, Sam, Xiao-Yong Jin, and James C. Osborn. 2023. _MLMC: Machine
+956: > Learning Monte Carlo for Lattice Gauge Theory_.
+957: > [https://arxiv.org/abs/2312.08936](https://arxiv.org/abs/2312.08936).
+958: >
+959: > </div>
+960: >
+961: > <div id="ref-foreman2018examples" class="csl-entry">
+962: >
+963: > Foreman, Samuel, Joel Giedt, Yannick Meurice, and Judah Unmuth-Yockey. 2018. “Examples of Renormalization Group Transformations for Image
+964: > Sets.” _Physical Review E_ 98 (5): 052129.
+965: >
+966: > </div>
+967: >
+968: > <div id="ref-gokdemir2025hiperrag" class="csl-entry">
+969: >
+970: > Gokdemir, Ozan, Carlo Siebenschuh, Alexander Brace, et al. 2025.
+971: > _HiPerRAG: High-Performance Retrieval Augmented Generation for
+972: > Scientific Insights_. [https://arxiv.org/abs/2505.04846](https://arxiv.org/abs/2505.04846).
+973: >
+974: > </div>
+975: >
+976: > <div id="ref-stock2025aeris" class="csl-entry">
+977: >
+978: > Hatanpää, Väinö, Eugene Ku, Jason Stock, et al. 2025. _AERIS: Argonne
+979: > Earth Systems Model for Reliable and Skillful Predictions_.
+980: > [https://arxiv.org/abs/2509.13523](https://arxiv.org/abs/2509.13523).
+981: >
+982: > </div>
+983: >
+984: > <div id="ref-hubler2018large" class="csl-entry">
+985: >
+986: > Hubler, A, S Foreman, J Liu, and L Wortsmann. 2018. “Large Energy
+987: > Density in Three-Plate Nanocapacitors Due to Coulomb Blockade.”
+988: > _Journal of Applied Physics_ 123 (10).
+989: >
+990: > </div>
+991: >
+992: > <div id="ref-kronfeld2022lattice" class="csl-entry">
+993: >
+994: > <span class="nocase">
+995: >     Kronfeld, Andreas S, Tanmoy Bhattacharya, Thomas Blum, et al.
+996: > </span>
+997: > 2022. “Lattice QCD and Particle Physics.” *arXiv Preprint arXiv:2207.07641*.
+998: > [https://arxiv.org/abs/2207.07641](https://arxiv.org/abs/2207.07641).
+999: >
+1000: > </div>
+1001: >
+1002: > <div id="ref-leung2024intro" class="csl-entry">
+1003: >
+1004: > <span class="nocase">
+1005: >     Leung, Mary Ann, Katharine Cahill, Rebecca Hartman-Baker, et al.
+1006: > </span>
+1007: > 2024. “Intro to HPC Bootcamp: Engaging New Communities Through Energy Justice
+1008: > Projects.” *Journal of Computational Science Education* 15 (1).
+1009: > [https://doi.org/10.22369/issn.2153-4136/15/1/10](https://doi.org/10.22369/issn.2153-4136/15/1/10).
+1010: >
+1011: > </div>
+1012: >
+1013: > <div id="ref-song2023deepspeed4science" class="csl-entry">
+1014: >
+1015: > <span class="nocase">
+1016: >     Song, Shuaiwen Leon, Bonnie Kruft, Minjia Zhang, et al.
+1017: > </span>
+1018: > 2023. “DeepSpeed4Science Initiative: Enabling Large-Scale Scientific Discovery
+1019: > Through Sophisticated AI System Technologies.” *arXiv Preprint
+1020: > arXiv:2310.04610*.
+1021: > [https://arxiv.org/abs/2310.04610](https://arxiv.org/abs/2310.04610).
+1022: >
+1023: > </div>
+1024: >
+1025: > <div id="ref-torsiello2025automated" class="csl-entry">
+1026: >
+1027: > Torsiello, J., G. T. Fleming, S. Foreman, X.-Y. Jin, and J. C. Osborn. 2025. “Automated Tuning for HMC Mass Ratios.” In _PoS_. Argonne, ALCF;
+1028: > Argonne National Laboratory (ANL), Argonne, IL (United States); Temple
+1029: > U.; Fermi National Accelerator Laboratory (FNAL), Batavia, IL (United
+1030: > States). [https://doi.org/10.22323/1.466.0052](https://doi.org/10.22323/1.466.0052).
+1031: >
+1032: > </div>
+1033: >
+1034: > <div id="ref-yan2025mofa" class="csl-entry">
+1035: >
+1036: > Yan, Xiaoli, Nathaniel Hudson, Hyun Park, et al. 2025. _MOFA:
+1037: > Discovering Materials for Carbon Capture with a GenAI- and
+1038: > Simulation-Based Workflow_. [https://arxiv.org/abs/2501.10651](https://arxiv.org/abs/2501.10651).
+1039: >
+1040: > </div>
+1041: >
+1042: > <div id="ref-zvyagin2023genslms" class="csl-entry">
+1043: >
+1044: > <span class="nocase">
+1045: >     Zvyagin, Maxim, Alexander Brace, Kyle Hippe, et al.
+1046: > </span>
+1047: > 2023. “GenSLMs: Genome-Scale Language Models Reveal SARS-CoV-2 Evolutionary
+1048: > Dynamics.” *The International Journal of High Performance Computing
+1049: > Applications* 37 (6): 683–705.
+1050: >
+1051: > </div>
+1052: >
+1053: > </div>
+1054: 
+1055: ## 📂 Projects
+1056: 
+1057: <style>{`
+1058:   .repo-grid {
+1059:     display: flex;
+1060:     flex-wrap: wrap;
+1061:     gap: 1rem;
+1062:     justify-content: flex-start;
+1063:     align-items: stretch;
+1064:     margin-top: 1.5rem;
+1065:   }
+1066:   .repo-card {
+1067:     flex: 1 1 260px; /* responsive: min width ~260px */
+1068:     max-width: 360px;
+1069:     border-radius: 0pt;
+1070:     padding: 1rem 1.1rem;
+1071:     border: 1px solid var(--background2, #dee2e6);
+1072:     background-color: oklch(from var(--background0, #f8f9fa) calc(var(--l) + 0.02) var(--c) var(--h));
+1073:     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+1074:     display: flex;
+1075:     flex-direction: column;
+1076:     transition: transform 0.15s ease, box-shadow 0.15s ease,
+1077:                 border-color 0.15s ease, background-color 0.15s ease;
+1078:   }
+1079:   .repo-card:hover {
+1080:     transform: translateY(-3px);
+1081:     box-shadow: 3pt 3pt black;
+1082:     /* border-color: var(--bs-primary, #0d6efd); */
+1083:   }
+1084:   .repo-header {
+1085:     display: flex;
+1086:     align-items: center;
+1087:     justify-content: space-between;
+1088:     gap: 0.4rem;
+1089:     margin-bottom: 0.35rem;
+1090:   }
+1091:   .repo-name {
+1092:     color: inherit;
+1093:     background: none;
+1094:     font-size: 1.0rem;
+1095:     font-weight: 600;
+1096:     margin: 0;
+1097:     word-break: break-word;
+1098:     border: 1pt solid rgba(0,0,0,0.0) !important;
+1099:     padding-inline: 1pt;
+1100:   }
+1101:   .repo-name a {
+1102:     text-decoration: none;
+1103:     color: var(--accent-color, var(--blue, #0d6efd));
+1104:   }
+1105:   .repo-name a:hover {
+1106:     text-decoration: underline;
+1107:     border: none;
+1108:   }
+1109:   .repo-badge {
+1110:     font-size: 0.7rem;
+1111:     padding: 0.15rem 0.45rem;
+1112:     /* border-radius: 999px; */
+1113:     border: 1px solid var(--bs-border-color, #838383);
+1114:     background: var(--bs-secondary-bg, rgba(108, 117, 125, 0.1));
+1115:     white-space: nowrap;
+1116:   }
+1117:   .repo-description {
+1118:     font-size: 0.9rem;
+1119:     margin: 0.3rem 0 0.6rem;
+1120:     color: var(--bs-secondary-color, #6c757d);
+1121:     min-height: 2.2em; /* keep rows roughly aligned */
+1122:   }
+1123:   .repo-meta {
+1124:     display: flex;
+1125:     flex-wrap: wrap;
+1126:     align-items: center;
+1127:     gap: 0.6rem;
+1128:     margin-top: auto;
+1129:     font-size: 0.8rem;
+1130:     color: var(--bs-secondary-color, #6c757d);
+1131:   }
+1132:   .repo-meta span {
+1133:     display: inline-flex;
+1134:     align-items: center;
+1135:     gap: 0.2rem;
+1136:   }
+1137:   .repo-language-dot {
+1138:     width: 0.55rem;
+1139:     height: 0.55rem;
+1140:     /* border-radius: 999px; */
+1141:     background: currentColor;
+1142:   }
+1143:   /* Dark mode tweaks when using Quarto's theme toggle */
+1144:   body[data-mode="dark"] .repo-card {
+1145:     background-color: var(--bs-body-bg, #111827);
+1146:     border-color: var(--bs-border-color, #374151);
+1147:     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+1148:   }
+1149:   body[data-mode="dark"] .repo-badge {
+1150:     background: var(--bs-secondary-bg, #1f2933);
+1151:   }
+1152:   .repo-grid-loading {
+1153:     font-size: 0.9rem;
+1154:     color: var(--bs-secondary-color, #6c757d);
+1155:     margin-top: 0.75rem;
+1156:   }
+1157: `}</style>
+1158: 
+1159: <div class="repo-grid-container">
+1160: 
+1161: <h2 class="anchored">
+1162: 
+1163: <a href="https://github.com/saforem2/"><code>saforem2</code></a>s GitHub
+1164: Repositories
+1165: </h2>
+1166: 
+1167: <p class="repo-grid-loading" id="repo-grid-status">
+1168: 
+1169: Loading repositories from GitHub…
+1170: 
+1171: </p>
+1172: 
+1173: <div id="repo-grid" class="repo-grid" data-github-user="saforem2">
+1174: 
+1175: </div>
+1176: 
+1177: </div>
+1178: 
+1179: <script>{`
+1180:   (async function () {
+1181:     const grid = document.getElementById("repo-grid");
+1182:     const status = document.getElementById("repo-grid-status");
+1183:     if (!grid) return;
+1184:     const username = grid.getAttribute("data-github-user") || "saforem2";
+1185:     const apiUrl =
+1186:       "https://api.github.com/users/" +
+1187:       username +
+1188:       "/repos?per_page=100&sort=updated";
+1189:     try {
+1190:       const res = await fetch(apiUrl);
+1191:       if (!res.ok) throw new Error("GitHub API error: " + res.status);
+1192:       const repos = await res.json();
+1193:       // Filter out forks if you don't want them:
+1194:       const filtered = repos.filter(r => !r.fork);
+1195:       if (filtered.length === 0) {
+1196:         if (status) status.textContent = "No repositories found.";
+1197:         return;
+1198:       }
+1199:       if (status) status.remove();
+1200:       // Small helper: nice abbreviations for numbers
+1201:       function formatNumber(n) {
+1202:         if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+1203:         if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "k";
+1204:         return String(n);
+1205:       }
+1206:       filtered.forEach(repo => {
+1207:         const card = document.createElement("div");
+1208:         card.className = "repo-card";
+1209:         const header = document.createElement("div");
+1210:         header.className = "repo-header";
+1211:         const title = document.createElement("h3");
+1212:         title.className = "repo-name";
+1213:         const link = document.createElement("a");
+1214:         link.href = repo.html_url;
+1215:         link.textContent = repo.name;
+1216:         link.target = "_blank";
+1217:         link.rel = "noopener noreferrer";
+1218:         title.appendChild(link);
+1219:         const badge = document.createElement("span");
+1220:         badge.className = "repo-badge";
+1221:         badge.textContent = repo.private ? "Private" : "Public";
+1222:         header.appendChild(title);
+1223:         header.appendChild(badge);
+1224:         const desc = document.createElement("p");
+1225:         desc.className = "repo-description";
+1226:         desc.textContent = repo.description || "No description provided.";
+1227:         const meta = document.createElement("div");
+1228:         meta.className = "repo-meta";
+1229:         if (repo.language) {
+1230:           const langSpan = document.createElement("span");
+1231:           const dot = document.createElement("span");
+1232:           dot.className = "repo-language-dot";
+1233:           langSpan.appendChild(dot);
+1234:           const langText = document.createElement("span");
+1235:           langText.textContent = repo.language;
+1236:           langSpan.appendChild(langText);
+1237:           meta.appendChild(langSpan);
+1238:         }
+1239:         const starsSpan = document.createElement("span");
+1240:         starsSpan.innerHTML = "⭐️ " + formatNumber(repo.stargazers_count || 0);
+1241:         meta.appendChild(starsSpan);
+1242:         const updatedSpan = document.createElement("span");
+1243:         const updatedDate = new Date(repo.updated_at);
+1244:         updatedSpan.textContent = "Updated " + updatedDate.toLocaleDateString(undefined, {
+1245:           year: "numeric",
+1246:           month: "short",
+1247:           day: "numeric"
+1248:         });
+1249:         meta.appendChild(updatedSpan);
+1250:         card.appendChild(header);
+1251:         card.appendChild(desc);
+1252:         card.appendChild(meta);
+1253:         grid.appendChild(card);
+1254:       });
+1255:     } catch (err) {
+1256:       console.error(err);
+1257:       if (status) {
+1258:         status.textContent = "Failed to load repositories from GitHub.";
+1259:       }
+1260:     }
+1261:   })();
+1262: `}</script>
+1263: 
+1264: ## 👔 Experience
+1265: 
+1266: - **Assistant Computational Scientist**
+1267:     - _Argonne National Laboratory_, Leadership Computing Facility (ALCF)
+1268:       Lemont, IL \| 2022–Present
+1269:         - Research lead on scaling large language models (LLMs) and
+1270:           generative AI for science on supercomputers (Aurora, Frontier,
+1271:           LUMI, Leonardo, …).
+1272:             - Co-lead the Models and Pretraining team of the
+1273:               [AuroraGPT](https://auroragpt.anl.gov) project
+1274:         - Optimize large-scale training of foundation models and language
+1275:           models for scientific applications.
+1276:         - Collaborate with interdisciplinary teams to enhance simulation
+1277:           efficiency and scalability
+1278:         - Focus on AI and HPC for scientific applications, including:
+1279:             - Training large language models on supercomputers
+1280:             - Genome scale language models (GenSLMs) for studying SARS-CoV-2
+1281:               evolutionary dynamics
+1282:             - Direct Preference Optimization (DPO) for multimodal protein
+1283:               design workflows
+1284:             - Climate modeling and weather forecasting using foundation models
+1285:             - Developing improved sampling algorithms for lattice quantum
+1286:               chromodynamics (QCD)
+1287:         - [alcf.anl.gov/about/people/sam-foreman](https://www.alcf.anl.gov/about/people/sam-foreman)
+1288: - **Postdoctoral Researcher**
+1289:     - _Argonne National Laboratory_, Leadership Computing Facility (ALCF)
+1290:       Lemont, IL \| 2019 – 2022
+1291:         - Applied deep learning to lattice gauge theory and quantum field
+1292:           simulations.
+1293:         - Developed ML-enhanced Monte Carlo methods for QCD
+1294:           ([l2hmc-qcd](https://github.com/saforem2/l2hmc-qcd)).
+1295:         - Engaged in AI-for-Science collaborations with national labs and
+1296:           university partners.
+1297: - **Graduate Researcher (DOE SCGSR Fellowship)**
+1298:     - _Argonne National Laboratory_, Mathematics and Computer Sciences
+1299:       Division (MCS)  
+1300:       Lemont, IL \| 2018 – 2019
+1301:         - Development of [l2hmc-qcd](https://github.com/saforem2/l2hmc-qcd)
+1302:           in collaboration with ALCF for my PhD Thesis research
+1303: 
+1304: ## 🎓 Education
+1305: 
+1306: - **Ph.D., Physics**  
+1307:   _University of Iowa_ \| 2015–2019
+1308:     - [*Learning Better Physics: A Machine Learning Approach to Lattice
+1309:       Gauge Theory*]
+1310: - **B.S. in Engineering Physics**  
+1311:   _University of Illinois at Urbana-Champaign_ \| 2010–2015
+1312:     - [Energy Storage in Quantum Resonators (US Patent \#US9741492B2)]
+1313: - **B.S. in Applied Mathematics**  
+1314:   _University of Illinois at Urbana-Champaign_ \| 2010–2015
+1315: 
+1316: ## 👔 Professional Experience
+1317: 
+1318: - **Assistant Computational Scientist**
+1319:     - _Argonne National Laboratory_, Leadership Computing Facility (ALCF)
+1320:       Lemont, IL \| 2022–Present
+1321:         - Research lead on scaling large language models (LLMs) and
+1322:           generative AI for science on supercomputers (Aurora, Frontier,
+1323:           LUMI, Leonardo, …).
+1324:             - Co-lead the Models and Pretraining team of the [AuroraGPT]
+1325:               project
+1326:         - Optimize large-scale training of foundation models and language
+1327:           models for scientific applications.
+1328:         - Collaborate with interdisciplinary teams to enhance simulation
+1329:           efficiency and scalability
+1330:         - Focus on AI and HPC for scientific applications, including:
+1331:             - Training large language models on supercomputers
+1332:             - Genome scale language models (GenSLMs) for studying SARS-CoV-2
+1333:               evolutionary dynamics
+1334:             - Direct Preference Optimization (DPO) for multimodal protein
+1335:               design workflows
+1336:             - Climate modeling and weather forecasting using foundation models
+1337:             - Developing improved sampling algorithms for lattice quantum
+1338:               chromodynamics (QCD)
+1339:         - [https://www.alcf.anl.gov/about/people/sam-foreman](https://www.alcf.anl.gov/about/people/sam-foreman)
+1340: - **Postdoctoral Researcher**
+1341:     - _Argonne National Laboratory_, Leadership Computing Facility (ALCF)
+1342:       Lemont, IL \| 2019 – 2022
+1343:         - Applied deep learning to lattice gauge theory and quantum field
+1344:           simulations.
+1345:         - Developed ML-enhanced Monte Carlo methods for QCD
+1346:           ([l2hmc-qcd][`l2hmc-qcd`]).
+1347:         - Engaged in AI-for-Science collaborations with national labs and
+1348:           university partners.
+1349: - **Graduate Researcher (DOE SCGSR Fellowship)**
+1350:     - _Argonne National Laboratory_, Mathematics and Computer Sciences
+1351:       Division (MCS)  
+1352:       Lemont, IL \| 2018 – 2019
+1353:         - Development of [l2hmc-qcd][`l2hmc-qcd`] in collaboration with ALCF
+1354:           for my PhD Thesis research
+1355: 
+1356: ## 🏆 Awards and Honors
+1357: 
+1358: - Member of the DeepSpeed Technical Steering Commiittee, 2025 – Present
+1359:     - Contributing to the development and direction of the DeepSpeed
+1360:       library for large-scale model training.
+1361: 
+1362: - Nominated to serve on the US [**Coordinating Panel for Software and
+1363:   Computing**] by the Division of Particles and Fields of the American
+1364:   Physical Society (APS).
+1365: 
+1366: - **Finalist, ACM Gordon Bell Prize in Climate Modeling**, 2025
+1367:     - Recognized for our work on  
+1368:       🌎 **AERIS** (Hatanpää et al. (2025)): The first billion-parameter
+1369:       pixel-level diffusion model for global weather and
+1370:       subseasonal-to-seasonal forecasting. Trained efficiently at scales
+1371:       from 1.3–80B parameters with our sequence-window parallelism (SWiPe)
+1372:       strategy, we achieve a sustained mixed-precision performance of
+1373:       10.21 ExaFLOPS and peak performance of 11.21 ExaFLOPS, scaling to
+1374:       10,080 nodes (120,960 GPUs) on the Aurora supercomputer.
+1375: 
+1376: - **Finalist, ACM Gordon Bell Prize**, 2024
+1377:     - Acknowledged for the MProt-DPO (Dharuman et al. (2024)) project,
+1378:       which achieved over 4 ExaFLOP sustained performance in multimodal
+1379:       protein design workflows using Direct Preference Optimization.
+1380:         - [Argonne team breaks new ground in AI-driven protein design –
+1381:           Argonne @ SC]
+1382: 
+1383: - **ACM Gordon Bell Special Prize for High Performance Computing-Based
+1384:   COVID-19 Research**, 2022
+1385:     - Recognized for contributions to the GenSLMs
+1386:       (<span class="nocase">Zvyagin et al.</span> (2023)) project, which
+1387:       developed genome-scale language models to study SARS-CoV-2
+1388:       evolutionary dynamics.
+1389:         - [ACM Gordon Bell Special Prize for HPC-Based COVID-19 Research
+1390:           Awarded to Team for Modelling How Pandemic-Causing Viruses,
+1391:           Especially SARS-CoV-2, are Identified and
+1392:           Classified][ACM Gordon Bell Special Prize]
+1393: 
+1394: - **DOE Office of Science Graduate Student Research Fellow**, 2018
+1395:     - Awarded by the Department of Energy for outstanding research
+1396:       contributions during graduate studies.
+1397: 
+1398: ## 🎪 Events
+1399: 
+1400: - Organizer for:
+1401:     - [SC25 Workshop: High Performance Python for Science at Scale
+1402:       (HPPSS)], November 2025
+1403:     - [SC25 Tutorial: Accelerating and Scaling Python for HPC]
+1404:     - [SC24 Workshop: High Performance Python for Science at Scale
+1405:       (HPPSS)], November 2024
+1406:     - [SC23 Workshop: High Performance Python for Science at Scale
+1407:       (HPPSS)], November 2023
+1408:     - [Machine Learning and Quantum Computing for Earth Sciences] at
+1409:       17th U. S. National Congress on Computational Mechanics, July 2023
+1410: 
+1411: ### 🎶 Music
+1412: 
+1413: <div style="text-align: center;">
+1414: 
+1415: <div class="light-content">
+1416: 
+1417: <div class="flex-container" style="gap: 10pt; text-align: center;">
+1418: 
+1419: <a href="https://github.com/kittinan/spotify-github-profile">
+1420:     <img
+1421:         loading="lazy"
+1422:         src="https://spotify-github-profile.kittinanx.com/api/view?uid=saforem2&cover_image=true&loading=lazy&theme=default&show_offline=false&background_color=f8f8f8&interchange=false"
+1423:     />
+1424: </a>
+1425: 
+1426: <a href="https://music-profile.rayriffy.com">
+1427:     <img
+1428:         width="85%"
+1429:         loading="lazy"
+1430:         src="https://music-profile.rayriffy.com/theme/light.svg?uid=002028.5a338f21979147c78f6193b6138a1ec7.1532"
+1431:         align="center"
+1432:     />
+1433: </a>
+1434: 
+1435: </div>
+1436: 
+1437: <div class="flex-container" style="gap: 10pt; text-align: center;">
+1438: 
+1439: <iframe loading="lazy" width="auto" src="https://descent.live/saforem2" style="width: 100%; border: none; height: min(800px, calc(0.8*100vh)); border-radius: 4pt;">
+1440: 
+1441: </iframe>
+1442: 
+1443: <a href="https://last.fm/user/saforem2">
+1444:     <img
+1445:         loading="lazy"
+1446:         src="https://lastfm-recently-played.vercel.app/api?user=saforem2"
+1447:         align="center"
+1448:     />
+1449: </a>
+1450: 
+1451: </div>
+1452: 
+1453: </div>
+1454: 
+1455: <div class="dark-content">
+1456: 
+1457: <div class="flex-container" style="gap: 10pt; text-align: center;">
+1458: 
+1459: <a href="https://github.com/kittinan/spotify-github-profile">
+1460:     <img
+1461:         loading="lazy"
+1462:         src="https://spotify-github-profile.kittinanx.com/api/view?uid=saforem2&cover_image=true&loading=lazy&theme=default&show_offline=false&background_color=1c1c1c&interchange=false"
+1463:     />
+1464: </a>
+1465: 
+1466: <a href="https://music-profile.rayriffy.com">
+1467:     <img
+1468:         width="85%"
+1469:         loading="lazy"
+1470:         src="https://music-profile.rayriffy.com/theme/dark.svg?uid=002028.5a338f21979147c78f6193b6138a1ec7.1532"
+1471:         align="center"
+1472:     />
+1473: </a>
+1474: 
+1475: </div>
+1476: 
+1477: <div class="flex-container" style="gap: 10pt; text-align: center;">
+1478: 
+1479: <iframe loading="lazy" width="auto" src="https://descent.live/saforem2" style="width: 100%; border: none; height: min(800px, calc(0.8*100vh)); border-radius: 4pt;">
+1480: 
+1481: </iframe>
+1482: 
+1483: <a href="https://last.fm/user/saforem2">
+1484:     <img
+1485:         loading="lazy"
+1486:         src="https://lastfm-recently-played.vercel.app/api?user=saforem2"
+1487:         align="center"
+1488:     />
+1489: </a>
+1490: 
+1491: </div>
+1492: 
+1493: </div>
+1494: 
+1495: </div>
+1496: 
+1497: ### ➕ More
+1498: 
+1499: <div class="panel-tabset" style="justify-content: center;">
+1500: 
+1501: ### 👤 About Me
+1502: 
+1503: > [!TIP] ➕ More
+1504: >
+1505: > > [!TIP] 🔥 What I Work on
+1506: > >
+1507: > > As a member of the [AI / ML Group] at [ALCF], I work on:
+1508: > >
+1509: > > <div class="flex-container">
+1510: > >
+1511: > > <div class="flex-container">
+1512: > >
+1513: > > - 🤖 🧪 [AI + Science]
+1514: > > - 🎲 [Building better sampling methods for Lattice QCD][`l2hmc-qcd`]
+1515: > > - 🧬 [Genome-Scale Language Models]
+1516: > >     - [ GenSLM]
+1517: > >     - 🥇 [ACM Gordon Bell Special Prize]
+1518: > >
+1519: > > </div>
+1520: > >
+1521: > > <div class="flex-container">
+1522: > >
+1523: > > - 🌍 [Foundation models for long term climate forecasting]
+1524: > > - 🏃‍♂️ [Scaling Large Language Models]
+1525: > > - 🏎️ [Distributed training across thousands of GPUs]
+1526: > >
+1527: > > </div>
+1528: > >
+1529: > > </div>
+1530: >
+1531: > > [!TIP] 📍 How I got here
+1532: > >
+1533: > > My [current research] focuses on using deep generative modeling to
+1534: > > help build better sampling algorithms in lattice gauge theory. In
+1535: > > particular, I’m interested in building gauge equivariant neural
+1536: > > network architectures and using inductive priors to incorporate
+1537: > > physical symmetries into machine learning models.
+1538: > >
+1539: > > <br />
+1540: > >
+1541: > > I received my PhD in Physics from the University of Iowa in 2019 and
+1542: > > my thesis was on [Learning Better Physics: A Machine Learning
+1543: > >
+1544: > > Approach to Lattice Gauge Theory].
+1545: > >
+1546: > > <br />
+1547: > >
+1548: > > Prior to this, I completed two bachelors degrees (Engineering
+1549: > > Physics and Applied Mathematics, 2015) at The University of Illinois
+1550: > > at Urbana-Champaign. My undergraduate dissertation was titled
+
+(Output capped at 50 KB. Showing lines 1-1550. Use offset=1551 to continue.)
+</content>
+
+---
+
+its closer now but seems like its skipping elements ? pressing j from the first screenshot sends the focus to the next link (in the second screenshot), skipping the <div> block
+
+[Image 1] [Image 2]
+
+---
+
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+
+---
+
+can we scroll (/focus with `j/k`) through individual lines in code blocks as well?
+
+---
+
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+
+---
+
+Why aren't we using the CodePreview for code blocks?
