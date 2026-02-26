@@ -1,0 +1,17 @@
+Search the codebase at /Users/samforeman/projects/saforem2/sam.onl/web/src/pages/ for internal links that reference webtui-related paths. I need to understand:
+
+1. Find all links in .mdx/.astro/.md files that point to webtui-related content (CSS, theme, plugin packages)
+2. Check what the actual directory structure is under web/src/pages/ for webtui content — is there a /webtui/ prefix directory?
+3. Identify which links are broken because they're missing a /webtui/ prefix
+
+Look for patterns like:
+- Links to paths containing "css", "theme-vitesse", "plugin" that might be webtui package docs
+- Any href or link references that should have /webtui/ in the path but don't
+
+Also check:
+- What exists at web/src/pages/webtui/ (list the directory structure)
+- Are there links like /css/ or /theme-vitesse/ that should be /webtui/css/ or /webtui/theme-vitesse/?
+
+Return:
+- The full list of broken links with file path, line number, the broken link text, and what it should be changed to
+- The directory structure of web/src/pages/webtui/
