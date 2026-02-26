@@ -1,0 +1,1064 @@
+{
+  "info": {
+    "id": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+    "slug": "calm-falcon",
+    "projectID": "b5be0511ce8471c191329d8707367f25d90d9422",
+    "directory": "/Users/samforeman/projects/saforem2/sam.onl",
+    "parentID": "ses_36ac81ea8ffeWzP8xePB9yxQoG",
+    "title": "Audit for remaining issues (@general subagent)",
+    "version": "1.2.13",
+    "summary": {
+      "additions": 0,
+      "deletions": 0,
+      "files": 0
+    },
+    "permission": [
+      {
+        "permission": "todowrite",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "todoread",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "task",
+        "pattern": "*",
+        "action": "deny"
+      }
+    ],
+    "time": {
+      "created": 1772032837550,
+      "updated": 1772032884827
+    }
+  },
+  "messages": [
+    {
+      "info": {
+        "role": "user",
+        "time": {
+          "created": 1772032837554
+        },
+        "summary": {
+          "diffs": []
+        },
+        "agent": "general",
+        "model": {
+          "providerID": "github-copilot",
+          "modelID": "claude-opus-4.6"
+        },
+        "tools": {
+          "todowrite": false,
+          "todoread": false,
+          "task": false
+        },
+        "id": "msg_c956347b1001mdAn36SZ5Igss2",
+        "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w"
+      },
+      "parts": [
+        {
+          "type": "text",
+          "text": "You are auditing the Astro site at /Users/samforeman/projects/saforem2/sam.onl/web/src/pages/ for remaining issues before a commit. Do the following checks and report back ALL findings:\n\n1. **Remaining .qmd links**: Search for any `.qmd` references in .mdx, .md, .astro files under web/src/pages/ (exclude the `projects/hpc-bootcamp-2025/` directory which has .qmd source files that are out of scope)\n2. **Remaining local /talks/...slides.html iframe srcs**: Search for `src=\"/talks/` patterns that point to local slide files\n3. **Case-sensitive link issues**: Search for links containing `posts/AuroraGPT` (capital A, capital G, capital P, capital T) which should be `posts/auroragpt` (lowercase)\n4. **Broken webtui links**: Search for links that go to paths like `/start/`, `/components/`, `/installation/`, `/contributing/` without the `/webtui/` prefix in files under web/src/pages/webtui/\n5. **Any files with merge conflict markers**: Search for `<<<<<<<`, `=======`, `>>>>>>>` patterns\n6. **Check the `landing.mdx copy` file**: Read its contents and note if it has any of the old broken URLs that were fixed in landing.mdx (this is the known duplicate)\n7. **Run a build check**: Run `bun run build --filter=web` from the repo root `/Users/samforeman/projects/saforem2/sam.onl/` and report if it succeeds or fails, and any warnings\n\nReport all findings clearly with file paths and line numbers.",
+          "id": "prt_c956347b3001EtJ7uR4O38sBtz",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c956347b1001mdAn36SZ5Igss2"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772032837560,
+          "completed": 1772032846455
+        },
+        "parentID": "msg_c956347b1001mdAn36SZ5Igss2",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "general",
+        "agent": "general",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 10502,
+          "input": 9853,
+          "output": 649,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c956347b8001G31f5JrTNsFVV4",
+        "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "id": "prt_c95635071001CfEMTh9H1FjRjx",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c956347b8001G31f5JrTNsFVV4"
+        },
+        {
+          "type": "text",
+          "text": "\n\nI'll run all these checks in parallel to audit the site efficiently.",
+          "time": {
+            "start": 1772032846305,
+            "end": 1772032846305
+          },
+          "id": "prt_c956350720010R3e61eQ5CVtNV",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c956347b8001G31f5JrTNsFVV4"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_WiNSUZ8aSfoSYShNRnCeal",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "\\.qmd",
+              "include": "*.{mdx,md,astro}",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "Found 6 matches\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/dope-slides/index.mdx:\n  Line 85:     $ cp -r old_talk/{_quarto.yml,index.qmd,references.bib,css/*} new_talk/\n  Line 106:   (`.qmd`)](https://quarto.org/)[^3], a\n  Line 109: - For a single slide deck, the content will be placed in `index.qmd` and\n  Line 123:     ├── 📄 index.qmd          # Quarto document containing slides content\n  Line 180: [`index.qmd`](https://github.com/saforem2/lattice23/blob/main/index.qmd)\n  Line 338: ## `index.qmd`",
+            "title": "\\.qmd",
+            "metadata": {
+              "matches": 6,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772032841262,
+              "end": 1772032841290
+            }
+          },
+          "id": "prt_c956352e8001fhgvZvd6MdhUB3",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c956347b8001G31f5JrTNsFVV4"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "src=\"/talks/",
+              "include": "*.{mdx,md,astro}",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "No files found",
+            "title": "src=\"/talks/",
+            "metadata": {
+              "matches": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772032842302,
+              "end": 1772032842325
+            }
+          },
+          "id": "prt_c9563563e001cbzBwUVXXFWboA",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c956347b8001G31f5JrTNsFVV4"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_ae5lWEgpNSiwJwuyFgycmU",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "posts/AuroraGPT",
+              "include": "*.{mdx,md,astro}",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "No files found",
+            "title": "posts/AuroraGPT",
+            "metadata": {
+              "matches": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772032843035,
+              "end": 1772032843052
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c956347b8001G31f5JrTNsFVV4"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "<<<<<<<|=======|>>>>>>>",
+              "include": "*.{mdx,md,astro,ts,tsx,js,jsx,css}",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src"
+            },
+            "output": "Found 3 matches\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/jupyter/test/index.mdx:\n  Line 89: |=============================================================================|\n\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/webtui/components/progress.mdx:\n  Line 87:             --progress-value-content: '========================';\n  Line 146:             --progress-value-content: '>>>>>>>>>>>>>>>>>>>>>>>>';",
+            "title": "<<<<<<<|=======|>>>>>>>",
+            "metadata": {
+              "matches": 3,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772032844239,
+              "end": 1772032844256
+            }
+          },
+          "id": "prt_c95635d1c001d0IcBXR947zE8P",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c956347b8001G31f5JrTNsFVV4"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_fepRlLUMchyi3huydyyiCc",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "**/landing.mdx copy*",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx copy",
+            "title": "web/src/pages",
+            "metadata": {
+              "count": 1,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772032845015,
+              "end": 1772032845032
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c956347b8001G31f5JrTNsFVV4"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_VTRkTIS633kbVsx67TIiWc",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "\\](/start/|\\](/components/|\\](/installation/|\\](/contributing/",
+              "include": "*.{mdx,md,astro}",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/webtui"
+            },
+            "output": "No files found",
+            "title": "\\](/start/|\\](/components/|\\](/installation/|\\](/contributing/",
+            "metadata": {
+              "matches": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772032846304,
+              "end": 1772032846313
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c956347b8001G31f5JrTNsFVV4"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "cost": 0,
+          "tokens": {
+            "total": 10502,
+            "input": 9853,
+            "output": 649,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c956347b8001G31f5JrTNsFVV4"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772032846458,
+          "completed": 1772032852931
+        },
+        "parentID": "msg_c956347b1001mdAn36SZ5Igss2",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "general",
+        "agent": "general",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 11243,
+          "input": 1893,
+          "output": 218,
+          "reasoning": 0,
+          "cache": {
+            "read": 9132,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c95636a7a001qenOh8zgmb05Q8",
+        "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c95636a7a001qenOh8zgmb05Q8"
+        },
+        {
+          "type": "text",
+          "text": "Good, most checks returned quickly. Now let me read the duplicate file and run the build:",
+          "time": {
+            "start": 1772032852005,
+            "end": 1772032852005
+          },
+          "id": "prt_c95637580001toxrBsjf40Z9w0",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c95636a7a001qenOh8zgmb05Q8"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_lf99QC8e9lBrXnNHpFesLd",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx copy"
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx copy</path>\n<type>file</type>\n<content>1: ---\n2: layout: '@/layouts/Doc.astro'\n3: title: 'Sam Foreman'\n4: order: 0\n5: ---\n6: \n7: <span class=\"profile-avatar\">\n8:     <img\n9:         width=\"75\"\n10:         height=\"75\"\n11:         src=\"https://samforeman.me/assets/avi-small.webp\"\n12:         aria-label=\"Sam Foreman\"\n13:         alt=\"Sam Foreman\"\n14:     />\n15: </span>\n16: \n17: <span style=\"font-size: 1.5rem; color: var(--dim-text)!important; padding-bottom: 0pt;\">\n18:     <span class=\"dim-text\">👋 Hi, I’m Sam!</span> [\n19:     <span class=\"orcid-green\" style=\"background: none!important;\"></span>]\n20: </span>\n21: \n22: <div class=\"flex-container icon-flex\"\n23: style=\"justify-content: center; flex-direction: row;\">\n24: \n25: <span style=\"height:2ch;\" class=\"fa-li\">\n26:     <i class=\"icon-home\" aria-label=\"Home\">\n27:         <a style=\"color: #838383\" href=\"https://samforeman.me\">\n28:             <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\">\n29:                 {/* Icon from Phosphor by Phosphor Icons - https://github.com/phosphor-icons/core/blob/main/LICENSE */}\n30:                 <path\n31:                     fill=\"currentColor\"\n32:                     d=\"m219.31 108.68l-80-80a16 16 0 0 0-22.62 0l-80 80A15.87 15.87 0 0 0 32 120v96a8 8 0 0 0 8 8h64a8 8 0 0 0 8-8v-56h32v56a8 8 0 0 0 8 8h64a8 8 0 0 0 8-8v-96a15.87 15.87 0 0 0-4.69-11.32M208 208h-48v-56a8 8 0 0 0-8-8h-48a8 8 0 0 0-8 8v56H48v-88l80-80l80 80Z\"\n33:                 />\n34:             </svg>\n35:         </a>\n36:     </i>\n37: </span>\n38: &#10;\n39: <span style=\"height:2ch;\" class=\"fa-li\">\n40:     <i class=\"icon-github\" aria-label=\"GitHub\">\n41:         <a style=\"color: #838383\" href=\"https://github.com/saforem2\">\n42:             <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\">\n43:                 {/* Icon from Phosphor by Phosphor Icons - https://github.com/phosphor-icons/core/blob/main/LICENSE */}\n44:                 <path\n45:                     fill=\"currentColor\"\n46:                     d=\"M208.31 75.68A59.78 59.78 0 0 0 202.93 28a8 8 0 0 0-6.93-4a59.75 59.75 0 0 0-48 24h-24a59.75 59.75 0 0 0-48-24a8 8 0 0 0-6.93 4a59.78 59.78 0 0 0-5.38 47.68A58.14 58.14 0 0 0 56 104v8a56.06 56.06 0 0 0 48.44 55.47A39.8 39.8 0 0 0 96 192v8H72a24 24 0 0 1-24-24a40 40 0 0 0-40-40a8 8 0 0 0 0 16a24 24 0 0 1 24 24a40 40 0 0 0 40 40h24v16a8 8 0 0 0 16 0v-40a24 24 0 0 1 48 0v40a8 8 0 0 0 16 0v-40a39.8 39.8 0 0 0-8.44-24.53A56.06 56.06 0 0 0 216 112v-8a58.14 58.14 0 0 0-7.69-28.32M200 112a40 40 0 0 1-40 40h-48a40 40 0 0 1-40-40v-8a41.74 41.74 0 0 1 6.9-22.48a8 8 0 0 0 1.1-7.69a43.8 43.8 0 0 1 .79-33.58a43.88 43.88 0 0 1 32.32 20.06a8 8 0 0 0 6.71 3.69h32.35a8 8 0 0 0 6.74-3.69a43.87 43.87 0 0 1 32.32-20.06a43.8 43.8 0 0 1 .77 33.58a8.09 8.09 0 0 0 1 7.65a41.7 41.7 0 0 1 7 22.52Z\"\n47:                 />\n48:             </svg>\n49:         </a>\n50:     </i>\n51: </span>\n52: &#10;\n53: <span style=\"height:2ch;\" class=\"fa-li\">\n54:     <i class=\"icon-twitter\" aria-label=\"Twitter\">\n55:         <a style=\"color: #838383\" href=\"https://twitter.com/saforem2\">\n56:             <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\">\n57:                 {/* Icon from Phosphor by Phosphor Icons - https://github.com/phosphor-icons/core/blob/main/LICENSE */}\n58:                 <path\n59:                     fill=\"currentColor\"\n60:                     d=\"M247.39 68.94A8 8 0 0 0 240 64h-30.43a48.66 48.66 0 0 0-41.47-24a46.9 46.9 0 0 0-33.75 13.7A47.9 47.9 0 0 0 120 88v6.09C79.74 83.47 46.81 50.72 46.46 50.37a8 8 0 0 0-13.65 4.92c-4.31 47.79 9.57 79.77 22 98.18a111 111 0 0 0 21.88 24.2c-15.23 17.53-39.21 26.74-39.47 26.84a8 8 0 0 0-3.85 11.93c.75 1.12 3.75 5.05 11.08 8.72C53.51 229.7 65.48 232 80 232c70.67 0 129.72-54.42 135.75-124.44l29.91-29.9a8 8 0 0 0 1.73-8.72m-45 29.41a8 8 0 0 0-2.32 5.14C196 166.58 143.28 216 80 216c-10.56 0-18-1.4-23.22-3.08c11.51-6.25 27.56-17 37.88-32.48A8 8 0 0 0 92 169.08c-.47-.27-43.91-26.34-44-96c16 13 45.25 33.17 78.67 38.79A8 8 0 0 0 136 104V88a32 32 0 0 1 9.6-22.92A30.94 30.94 0 0 1 167.9 56c12.66.16 24.49 7.88 29.44 19.21a8 8 0 0 0 7.33 4.79h16Z\"\n61:                 />\n62:             </svg>\n63:         </a>\n64:     </i>\n65: </span>\n66: &#10;\n67: <span style=\"height:2ch;\" class=\"fa-li\">\n68:     <i class=\"icon-bluesky\" aria-label=\"Bluesky\">\n69:         <a\n70:             style=\"color: #838383\"\n71:             href=\"https://bsky.app/profile/samforeman.bsky.social\">\n72:             <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\">\n73:                 {/* Icon from Phosphor by Phosphor Icons - https://github.com/phosphor-icons/core/blob/main/LICENSE */}\n74:                 <path\n75:                     fill=\"currentColor\"\n76:                     d=\"M232.7 50.48C229 45.7 221.84 40 209 40c-16.85 0-38.46 11.28-57.81 30.16A140 140 0 0 0 136 87.53V56a8 8 0 0 0-16 0v31.53a140 140 0 0 0-15.15-17.37C85.49 51.28 63.88 40 47 40c-12.84 0-20 5.7-23.7 10.48c-6.82 8.77-12.18 24.08-.21 71.2c6.05 23.83 19.51 33 30.63 36.42A44 44 0 0 0 128 205.27a44 44 0 0 0 74.28-47.17c11.12-3.4 24.57-12.59 30.63-36.42c6.72-26.44 11.94-55.58-.21-71.2M92 208a28.12 28.12 0 0 1-3.14-56a8 8 0 1 0-1.76-15.9a43.64 43.64 0 0 0-20.74 7.9c-8.43.09-22-3.57-27.76-26.26c-2.88-11.35-11.6-45.88-2.66-57.44C37.37 58.46 40.09 56 47 56c27.27 0 73 44.88 73 71.67V180a28 28 0 0 1-28 28m125.4-90.26c-5.77 22.69-19.33 26.34-27.77 26.26a43.6 43.6 0 0 0-20.74-7.95a8 8 0 1 0-1.76 15.9A28.11 28.11 0 1 1 136 180v-52.33C136 100.88 181.69 56 209 56c6.95 0 9.66 2.46 11.1 4.3c8.95 11.56.18 46.09-2.7 57.44\"\n77:                 />\n78:             </svg>\n79:         </a>\n80:     </i>\n81: </span>\n82: &#10;\n83: <span style=\"height:2ch;\" class=\"fa-li\">\n84:     <i class=\"icon-scholar\" aria-label=\"Google Scholar\">\n85:         <a\n86:             style=\"color: #838383\"\n87:             href=\"https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en\">\n88:             <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\">\n89:                 {/* Icon from Phosphor by Phosphor Icons - https://github.com/phosphor-icons/core/blob/main/LICENSE */}\n90:                 <path\n91:                     fill=\"currentColor\"\n92:                     d=\"m251.76 88.94l-120-64a8 8 0 0 0-7.52 0l-120 64a8 8 0 0 0 0 14.12L32 117.87v48.42a15.9 15.9 0 0 0 4.06 10.65C49.16 191.53 78.51 216 128 216a130 130 0 0 0 48-8.76V240a8 8 0 0 0 16 0v-40.49a115.6 115.6 0 0 0 27.94-22.57a15.9 15.9 0 0 0 4.06-10.65v-48.42l27.76-14.81a8 8 0 0 0 0-14.12M128 200c-43.27 0-68.72-21.14-80-33.71V126.4l76.24 40.66a8 8 0 0 0 7.52 0L176 143.47v46.34c-12.6 5.88-28.48 10.19-48 10.19m80-33.75a97.8 97.8 0 0 1-16 14.25v-45.57l16-8.53Zm-20-47.31l-.22-.13l-56-29.87a8 8 0 0 0-7.52 14.12L171 128l-43 22.93L25 96l103-54.93L231 96Z\"\n93:                 />\n94:             </svg>\n95:         </a>\n96:     </i>\n97: </span>\n98: &#10;\n99: <span style=\"height:2ch;\" class=\"fa-li\">\n100:     <i class=\"icon-mail\" aria-label=\"Email\">\n101:         <a style=\"color: #838383\" href=\"mailto:sf@omg.lol\">\n102:             <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\">\n103:                 {/* Icon from Phosphor by Phosphor Icons - https://github.com/phosphor-icons/core/blob/main/LICENSE */}\n104:                 <path\n105:                     fill=\"currentColor\"\n106:                     d=\"M224 48H32a8 8 0 0 0-8 8v136a16 16 0 0 0 16 16h176a16 16 0 0 0 16-16V56a8 8 0 0 0-8-8m-96 85.15L52.57 64h150.86ZM98.71 128L40 181.81V74.19Zm11.84 10.85l12 11.05a8 8 0 0 0 10.82 0l12-11.05l58 53.15H52.57ZM157.29 128L216 74.18v107.64Z\"\n107:                 />\n108:             </svg>\n109:         </a>\n110:     </i>\n111: </span>\n112: &#10;\n113: <span style=\"height:2ch;\" class=\"fa-li\">\n114:     <i class=\"icon-calendar\" aria-label=\"Calendar\">\n115:         <a style=\"color: #838383\" href=\"https://outlook.office.com/\">\n116:             <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\">\n117:                 {/* Icon from Phosphor by Phosphor Icons - https://github.com/phosphor-icons/core/blob/main/LICENSE */}\n118:                 <path\n119:                     fill=\"currentColor\"\n120:                     d=\"M208 32h-24v-8a8 8 0 0 0-16 0v8H88v-8a8 8 0 0 0-16 0v8H48a16 16 0 0 0-16 16v160a16 16 0 0 0 16 16h160a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16M72 48v8a8 8 0 0 0 16 0v-8h80v8a8 8 0 0 0 16 0v-8h24v32H48V48Zm136 160H48V96h160zm-96-88v64a8 8 0 0 1-16 0v-51.06l-4.42 2.22a8 8 0 0 1-7.16-14.32l16-8A8 8 0 0 1 112 120m59.16 30.45L152 176h16a8 8 0 0 1 0 16h-32a8 8 0 0 1-6.4-12.8l28.78-38.37a8 8 0 1 0-13.31-8.83a8 8 0 1 1-13.85-8A24 24 0 0 1 176 136a23.76 23.76 0 0 1-4.84 14.45\"\n121:                 />\n122:             </svg>\n123:         </a>\n124:     </i>\n125: </span>\n126: &#10;\n127: <span style=\"height:2ch;\" class=\"fa-li\">\n128:     <i class=\"icon-linkedin\" aria-label=\"LinkedIn\">\n129:         <a\n130:             style=\"color: #838383\"\n131:             href=\"https://linkedin.com/in/saforem2\"\n132:             data-original-href=\"https://linkedin.com/in/saforem2\"\n133:             target=\"_blank\"\n134:             rel=\"noopener\">\n135:             <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\">\n136:                 {/* Icon from Phosphor by Phosphor Icons - https://github.com/phosphor-icons/core/blob/main/LICENSE */}\n137:                 <path\n138:                     fill=\"currentColor\"\n139:                     d=\"M216 24H40a16 16 0 0 0-16 16v176a16 16 0 0 0 16 16h176a16 16 0 0 0 16-16V40a16 16 0 0 0-16-16m0 192H40V40h176zM96 112v64a8 8 0 0 1-16 0v-64a8 8 0 0 1 16 0m88 28v36a8 8 0 0 1-16 0v-36a20 20 0 0 0-40 0v36a8 8 0 0 1-16 0v-64a8 8 0 0 1 15.79-1.78A36 36 0 0 1 184 140m-84-56a12 12 0 1 1-12-12a12 12 0 0 1 12 12\"\n140:                 />\n141:             </svg>\n142:         </a>\n143:     </i>\n144: </span>\n145: &#10;\n146: <span style=\"height:2ch;\" class=\"fa-li\">\n147:     <i class=\"icon-spotify\" aria-label=\"Spotify\">\n148:         <a\n149:             style=\"color: #838383\"\n150:             href=\"https://open.spotify.com/user/saforem2\"\n151:             data-original-href=\"https://open.spotify.com/user/saforem2\"\n152:             target=\"_blank\"\n153:             rel=\"noopener\">\n154:             <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\">\n155:                 {/* Icon from Phosphor by Phosphor Icons - https://github.com/phosphor-icons/core/blob/main/LICENSE */}\n156:                 <path\n157:                     fill=\"currentColor\"\n158:                     d=\"M128 24a104 104 0 1 0 104 104A104.11 104.11 0 0 0 128 24m0 192a88 88 0 1 1 88-88a88.1 88.1 0 0 1-88 88m31.07-46.26a8 8 0 0 1-10.81 3.33a42.79 42.79 0 0 0-40.52 0a8 8 0 0 1-7.48-14.14a59.33 59.33 0 0 1 55.48 0a8 8 0 0 1 3.33 10.81m32-56a8 8 0 0 1-10.83 3.29a110.62 110.62 0 0 0-104.46 0a8 8 0 0 1-7.54-14.12a126.67 126.67 0 0 1 119.54 0a8 8 0 0 1 3.28 10.85Zm-16 28a8 8 0 0 1-10.82 3.3a77 77 0 0 0-72.48 0a8 8 0 0 1-7.52-14.12a93 93 0 0 1 87.52 0a8 8 0 0 1 3.29 10.84Z\"\n159:                 />\n160:             </svg>\n161:         </a>\n162:     </i>\n163: </span>\n164: &#10;\n165: <span style=\"height:2ch;\" class=\"fa-li\">\n166:     <i class=\"icon-lastfm\" aria-label=\"Last.fm\">\n167:         <a\n168:             style=\"color: #838383\"\n169:             href=\"https://www.last.fm/user/saforem2\"\n170:             data-original-href=\"https://www.last.fm/user/saforem2\"\n171:             target=\"_blank\"\n172:             rel=\"noopener\">\n173:             <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\">\n174:                 {/* Icon from Phosphor by Phosphor Icons - https://github.com/phosphor-icons/core/blob/main/LICENSE */}\n175:                 <path\n176:                     fill=\"currentColor\"\n177:                     d=\"M248 160a40 40 0 0 1-40 40h-17.43a56.22 56.22 0 0 1-50.75-32.32l-30.14-64.6A40.15 40.15 0 0 0 73.43 80H64a40 40 0 0 0-40 40v24a40 40 0 0 0 40 40h8a32 32 0 0 0 29.34-19.2a8 8 0 1 1 14.66 6.4A48 48 0 0 1 72 200h-8a56.06 56.06 0 0 1-56-56v-24a56.06 56.06 0 0 1 56-56h9.43a56.22 56.22 0 0 1 50.75 32.32l30.14 64.6A40.15 40.15 0 0 0 190.57 184H208a24 24 0 0 0 0-48h-20a36 36 0 0 1 0-72h20a32 32 0 0 1 32 32a8 8 0 0 1-16 0a16 16 0 0 0-16-16h-20a20 20 0 0 0 0 40h20a40 40 0 0 1 40 40\"\n178:                 />\n179:             </svg>\n180:         </a>\n181:     </i>\n182: </span>\n183: \n184: </div>\n185: \n186: ## 🧑🏻‍💻 About\n187: \n188: I’m a [Computational Scientist][Argonne National Laboratory] in the [AI\n189: / ML group] at the [Argonne Leadership Computing Facility (ALCF)].\n190: \n191: I’m generally interested in the large scale distributed training of AI\n192: models for scientific applications, and am the co-lead of the [Models /\n193: Pre-Training group] for the [AuroraGPT] project.\n194: \n195: Prior to this, I received my PhD in Physics from the University of Iowa\n196: in 2019, where I used ML to build better Markov Chain Monte Carlo\n197: sampling techniques for Lattice Quantum Chromodynamics ([`l2hmc-qcd`]).\n198: \n199: <div is-=\"separator\" direction-=\"vertical\"></div>\n200: \n201: <details is-=\"accordion\" class=\"callout-tip\">\n202: <summary>✨ New!</summary>\n203: \n204: 🌎 <span class=\"highlight-green\">AERIS</span>: [Argonne Earth Systems\n205: Model for Reliable and Skillful Predictions][^1] (Hatanpää et al.\n206: (2025))\n207: \n208: </details>\n209: \n210: <details is-=\"accordion\" class=\"callout-tip\">\n211: <summary>✏️ Last Updated</summary>\n212: \n213: <pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\">\n214:     Updated:{' '}\n215:     <span style=\"color: #e599f7; text-decoration-color: #e599f7; font-weight: bold\">\n216:         2026\n217:     </span>\n218:     <span style=\"color: #e599f7; text-decoration-color: #e599f7\">-</span>\n219:     <span style=\"color: #e599f7; text-decoration-color: #e599f7; font-weight: bold\">\n220:         02\n221:     </span>\n222:     <span style=\"color: #e599f7; text-decoration-color: #e599f7\">-</span>\n223:     <span style=\"color: #e599f7; text-decoration-color: #e599f7; font-weight: bold\">\n224:         04\n225:     </span>{' '}\n226:     <span style=\"color: #838383; text-decoration-color: #838383\">@</span>{' '}\n227:     <span style=\"color: #00ccff; text-decoration-color: #00ccff; font-weight: bold\">\n228:         18:17:04\n229:     </span>\n230: </pre>\n231: \n232: </details>\n233: \n234: <details is-=\"accordion\" class=\"callout-tip\">\n235: <summary>🎶 Now Playing</summary>\n236: \n237: <details is-=\"accordion\" class=\"callout-tip\">\n238: <summary><span style=\"color:#1CD760;\"><img loading=\"lazy\" src=\"./assets/spotify-green.svg\" class=\"inline-icon img-fluid\" height=\"24\" width=\"24\" style=\"height:1.25rem; width: auto; vertical-align:text-top;\" alt=\"spotify\" /> Now Playing</span></summary>\n239: \n240: <a href=\"https://open.spotify.com/user/saforem2\" target=\"_blank\">\n241:     <img\n242:         src=\"https://spotify-github-profile.kittinanx.com/api/view?uid=saforem2&cover_image=true&theme=novatorem&show_offline=false&background_color=1CD7607Fnone&interchange=true\"\n243:         alt=\"Now Playing\"\n244:         style=\"background-color:rgba(0,0,0,0.025); width:auto; max-width: 100%;\"\n245:     />\n246: </a>\n247: \n248: </details>\n249: \n250: <a href=\"https://last.fm/user/saforem2\" target=\"_blank\">\n251:     <img\n252:         src=\"https://api.iconify.design/logos:lastfm.svg\"\n253:         alt=\"last.fm\"\n254:         style=\"overflow: visible;\"\n255:     />\n256: </a>\n257: \n258: <script>{`\n259: /**\n260:   Developed by Prashant Shrestha\n261: \n262: - https://prashant.me\n263:   _/\n264:   var lastfmData = {\n265:   baseURL:\n266:   \"https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=\",\n267:   // Your Last.fm Username\n268:   user: \"saforem2\",\n269:   // Your API key\n270:   api_key: \"1dbc15037c1fe71ce06acbb3f73adc75\",\n271:   additional: \"&format=json&limit=1\"\n272:   };\n273:   var getSetLastFM = function() {\n274:   $.ajax({\n275:   type: \"GET\",\n276:   url:\n277:   lastfmData.baseURL +\n278:   lastfmData.user +\n279:   \"&api_key=\" +\n280:   lastfmData.api_key +\n281:   lastfmData.additional,\n282:   dataType: \"json\",\n283:   success: function(resp) {\n284:   var recentTrack = resp.recenttracks.track[0];\n285:   var formatted =\n286:   // \"<img src='https://api.iconify.design/streamline-emojis:musical-notes.svg?color=%23888888'>\" + recentTrack.name;\n287:   \"🎶 \" + recentTrack.name;\n288:   $(\"a#tracktitle\")\n289:   .html(formatted)\n290:   .attr(\"href\", recentTrack.url)\n291:   .attr(\"title\", recentTrack.name + \" by \" + recentTrack.artist[\"#text\"])\n292:   .attr(\"target\", \"_blank\");\n293:   var artistFormatted =\n294:   // \"<img src='https://api.iconify.design/material-symbols:person.svg?color=%23888888'>\" + recentTrack.artist[\"#text\"];\n295:   \"🗣️ \" + recentTrack.artist[\"#text\"];\n296:   $(\"a#trackartist\")\n297:   .html(artistFormatted)\n298:   .attr(\"title\", \"Artist : \" + recentTrack.artist[\"#text\"]);\n299:   $(\"img#trackart\").attr(\"src\", recentTrack.image[2][\"#text\"]);\n300:   },\n301:   error: function(resp) {\n302:   $(\"a#tracktitle\").html(\n303:   \"<img src='https://api.iconify.design/streamline-emojis:muted-speaker.svg?color=%23888888'>\" + \"Silence!\"\n304:   );\n305:   $(\"img#trackart\").attr(\"src\", \"🧑🏻‍💻\");\n306:   var artistFormatted =\n307:   \"Sam Foreman\";\n308:   $(\"a#trackartist\")\n309:   .html(artistFormatted)\n310:   .attr(\"href\", \"https://samforeman.me\");\n311:   }\n312:   });\n313:   };\n314:   // Get the new one.\n315:   getSetLastFM();\n316:   // Start the countdown.\n317:   setInterval(getSetLastFM, 10 * 5000);\n318: `}</script>\n319: \n320: <div class=\"nowplayingcard\">\n321:     <div class=\"nowplayingcontainer-inner\">\n322:         <img id=\"trackart\" src=\"#\" alt=\"Now playing artwork\" />\n323:         <div class=\"trackInfo\">\n324:             <a id=\"tracktitle\"></a>\n325:             <a href=\"#\" id=\"trackartist\"></a>\n326:         </div>\n327:     </div>\n328: </div>\n329: </details>\n330: \n331: <details is-=\"accordion\" class=\"callout-tip\">\n332: <summary>➕ More</summary>\n333: \n334: <details is-=\"accordion\" class=\"callout-tip\">\n335: <summary>🔥 What I Work on</summary>\n336: \n337: As a member of the [AI / ML Group] at [ALCF], I work on:\n338: \n339: <div class=\"flex-container\">\n340: \n341: <div class=\"flex-container\">\n342: \n343: - 🤖 🧪 [AI + Science]\n344: - 🎲 [Building better sampling methods for Lattice QCD][`l2hmc-qcd`]\n345: - 🧬 [Genome-Scale Language Models]\n346:     - [ GenSLM]\n347:     - 🥇 [ACM Gordon Bell Special Prize]\n348: \n349: </div>\n350: \n351: <div class=\"flex-container\">\n352: \n353: - 🌍 [Foundation models for long term climate forecasting]\n354: - 🏃‍♂️ [Scaling Large Language Models]\n355: - 🏎️ [Distributed training across thousands of GPUs]\n356: \n357: </div>\n358: \n359: </div>\n360: \n361: </details>\n362: \n363: <details is-=\"accordion\" class=\"callout-tip\">\n364: <summary>📍 How I got here</summary>\n365: \n366: My [current research] focuses on using deep generative modeling to\n367: help build better sampling algorithms in lattice gauge theory. In\n368: particular, I’m interested in building gauge equivariant neural\n369: network architectures and using inductive priors to incorporate\n370: physical symmetries into machine learning models.\n371: \n372: <br />\n373: \n374: I received my PhD in Physics from the University of Iowa in 2019 and\n375: my thesis was on [Learning Better Physics: A Machine Learning\n376: \n377: Approach to Lattice Gauge Theory].\n378: \n379: <br />\n380: \n381: Prior to this, I completed two bachelors degrees (Engineering\n382: Physics and Applied Mathematics, 2015) at The University of Illinois\n383: at Urbana-Champaign. My undergraduate dissertation was titled\n384: [Energy Storage in Quantum Resonators] and was supervised by\n385: Professor [Alfred Hübler] within the Center for Complex Systems\n386: Research at UIUC.\n387: \n388: This work ultimately resulted in a [patent] !!\n389: \n390: </details>\n391: \n392: <details is-=\"accordion\" class=\"callout-tip\">\n393: <summary>💌 Contact</summary>\n394: \n395: <script\n396:     data-letterbirduser=\"sam\"\n397:     src=\"https://letterbird.co/embed/v1.js\"></script>\n398: \n399: </details>\n400: \n401: <div style=\"text-align:center;\">\n402: \n403: <img\n404:     loading=\"lazy\"\n405:     alt=\"hits\"\n406:     src=\"https://hitscounter.dev/api/hit?url=samforeman.me&label=samforeman.me&icon=check2-square&color=%236c757d\"\n407: />\n408: \n409: <span class=\"dim-text\">© Copyright 2025 [Sam Foreman]</span>\n410: \n411: </div>\n412: \n413: </details>\n414: \n415: ## 📬 Posts\n416: \n417: <div id=\"listing-posts\">\n418: \n419: </div>\n420: \n421: ## 📊 Talks\n422: \n423: <details is-=\"accordion\" class=\"callout-tip\">\n424: <summary>Note</summary>\n425: \n426: See [talks] for a live view!\n427: \n428: </details>\n429: \n430: <details is-=\"accordion\" class=\"callout-tip\">\n431: <summary>\\[HTML ⇆ Reveal.js\\]</summary>\n432: \n433: Convert from HTML to slideshow version of a page by appending\n434: `/slides` to the end of its URL, e.g.\n435: \n436: - HTML: [https://samforeman.me/talks/ai-for-science-2024/](https://samforeman.me/talks/ai-for-science-2024/)\n437: - Slides: [https://samforeman.me/talks/ai-for-science-2024/slides](https://samforeman.me/talks/ai-for-science-2024/slides)\n438: \n439: </details>\n440: \n441: <div id=\"listing-talks\">\n442: \n443: </div>\n444: \n445: ### 📆 2025\n446: \n447: <details is-=\"accordion\" class=\"callout-tip\">\n448: <summary><span class=\"dim-text\">[AuroraGPT: Training Foundation Models on Supercomputers] @ ANL \\[12/2025\\]</span></summary>\n449: \n450: <div class=\"reveal-full-page\">\n451: \n452: <iframe\n453:     class=\"slide-deck reveal-full-page\"\n454:     loading=\"lazy\"\n455:     src=\"https://samforeman.me/talks/2025/12/16/slides.html?view=scroll\"\n456:     title=\"Training Foundation Models on Supercomputers\"\n457:     align=\"center\"\n458:     frameborder=\"0\"\n459:     webkitallowfullscreen\n460:     allowfullscreen\n461:     style=\"aspect-ratio:1.3671875;\"></iframe>\n462: \n463: </div>\n464: \n465: </details>\n466: \n467: <details is-=\"accordion\" class=\"callout-tip\">\n468: <summary><span class=\"dim-text\">[Training Foundation Models on Supercomputers] @ UIUC \\[10/2025\\]</span></summary>\n469: \n470: <div class=\"reveal-full-page\">\n471: \n472: <iframe\n473:     class=\"slide-deck reveal-full-page\"\n474:     loading=\"lazy\"\n475:     src=\"https://samforeman.me/talks/2025/10/24/slides.html?view=scroll\"\n476:     title=\"Training Foundation Models on Supercomputers\"\n477:     align=\"center\"\n478:     frameborder=\"0\"\n479:     webkitallowfullscreen\n480:     allowfullscreen\n481:     style=\"aspect-ratio:1.3671875;\"></iframe>\n482: \n483: </div>\n484: \n485: </details>\n486: \n487: <details is-=\"accordion\" class=\"callout-tip\">\n488: <summary><span class=\"dim-text\">[Training Foundation Models on Supercomputers][1] @ Georgia Institute of Technology \\[10/2025\\]</span></summary>\n489: \n490: <div class=\"reveal-full-page\">\n491: \n492: <iframe\n493:     class=\"slide-deck reveal-full-page\"\n494:     loading=\"lazy\"\n495:     src=\"https://samforeman.me/talks/2025/10/15/slides.html?view=scroll\"\n496:     title=\"Training Foundation Models on Supercomputers\"\n497:     align=\"center\"\n498:     frameborder=\"0\"\n499:     webkitallowfullscreen\n500:     allowfullscreen\n501:     style=\"aspect-ratio:1.3671875;\"></iframe>\n502: \n503: </div>\n504: \n505: </details>\n506: \n507: <details is-=\"accordion\" class=\"callout-tip\">\n508: <summary><span class=\"dim-text\">[AERIS: Argonne Earth Systems Model] @ [2025 ALCF Hands On HPC Workshop][] \\[10/2025\\]</span></summary>\n509: \n510: <div class=\"reveal-full-page\">\n511: \n512: <iframe\n513:     class=\"slide-deck reveal-full-page\"\n514:     loading=\"lazy\"\n515:     src=\"https://samforeman.me/talks/2025/10/08/slides.html?view=scroll\"\n516:     title=\"AERIS: Argonne Earth Systems Model\"\n517:     align=\"center\"\n518:     frameborder=\"0\"\n519:     webkitallowfullscreen\n520:     allowfullscreen\n521:     style=\"aspect-ratio:1.3671875;\"></iframe>\n522: \n523: </div>\n524: \n525: </details>\n526: \n527: <details is-=\"accordion\" class=\"callout-tip\">\n528: <summary><span class=\"dim-text\">[Training Foundation Models on Supercomputers][2] @ [2025 ALCF Hands On HPC Workshop][] \\[09/2025\\]</span></summary>\n529: \n530: <div class=\"reveal-full-page\">\n531: \n532: <iframe\n533:     class=\"slide-deck reveal-full-page\"\n534:     loading=\"lazy\"\n535:     src=\"https://samforeman.me/talks/2025/09/24/slides.html?view=scroll\"\n536:     title=\"Training Foundation Models on Supercomputers\"\n537:     align=\"center\"\n538:     frameborder=\"0\"\n539:     webkitallowfullscreen\n540:     allowfullscreen\n541:     style=\"aspect-ratio:1.3671875;\"></iframe>\n542: \n543: </div>\n544: \n545: </details>\n546: \n547: <details is-=\"accordion\" class=\"callout-tip\">\n548: <summary><span class=\"dim-text\">[Scientific AI at Scale: AI for Science] @ [Open SkAI 2025][] \\[09/2025\\]</span></summary>\n549: \n550: <div class=\"reveal-full-page\">\n551: \n552: <iframe\n553:     class=\"slide-deck reveal-full-page\"\n554:     loading=\"lazy\"\n555:     src=\"https://samforeman.me/talks/openskai25/ai4science/slides.html?view=scroll\"\n556:     title=\"Scientific AI at Scale: AI for Science\"\n557:     align=\"center\"\n558:     frameborder=\"0\"\n559:     webkitallowfullscreen\n560:     allowfullscreen\n561:     style=\"aspect-ratio:1.3671875;\"></iframe>\n562: \n563: </div>\n564: \n565: </details>\n566: \n567: <details is-=\"accordion\" class=\"callout-tip\">\n568: <summary><span class=\"dim-text\">[Scientific AI at Scale: Distributed Training] @ [Open SkAI 2025][3] \\[09/2025\\]</span></summary>\n569: \n570: <div class=\"reveal-full-page\">\n571: \n572: <iframe\n573:     class=\"slide-deck reveal-full-page\"\n574:     loading=\"lazy\"\n575:     src=\"https://samforeman.me/talks/openskai25/training/slides.html?view=scroll\"\n576:     title=\"Scientific AI at Scale: Distributed Training\"\n577:     align=\"center\"\n578:     frameborder=\"0\"\n579:     webkitallowfullscreen\n580:     allowfullscreen\n581:     style=\"aspect-ratio:1.3671875;\"></iframe>\n582: \n583: </div>\n584: \n585: </details>\n586: \n587: <details is-=\"accordion\" class=\"callout-tip\">\n588: <summary><span class=\"dim-text\">[Large Scale Training on Diverse Accelerators] @ [Scalable Deep Learning, *SIAM AN2025*][] \\[07/2025\\]</span></summary>\n589: \n590: <div class=\"reveal-full-page\">\n591: \n592: <iframe\n593:     class=\"slide-deck reveal-full-page\"\n594:     loading=\"lazy\"\n595:     src=\"https://samforeman.me/talks/AuroraGPT-SIAM25/slides.html?view=scroll\"\n596:     title=\"AuroraGPT: Large Scale Training on Diverse Accelerators\"\n597:     align=\"center\"\n598:     frameborder=\"0\"\n599:     webkitallowfullscreen\n600:     allowfullscreen\n601:     style=\"aspect-ratio:1.3671875;\"></iframe>\n602: \n603: </div>\n604: \n605: </details>\n606: \n607: <details is-=\"accordion\" class=\"callout-tip\">\n608: <summary><span class=\"dim-text\">[LLMs on Aurora: 🌌 AuroraGPT] @ [*2025 ALCF INCITE GPU Hackathon*][] \\[05/2025\\]</span></summary>\n609: \n610: - [🎥 video]\n611: \n612: <div class=\"reveal-full-page\">\n613: \n614: <iframe\n615:     class=\"slide-deck reveal-full-page\"\n616:     loading=\"lazy\"\n617:     src=\"https://samforeman.me/talks/incite-hackathon-2025/auroragpt/slides?view=scroll/section#/section\"\n618:     title=\"LLMs on Aurora: AuroraGPT\"\n619:     align=\"center\"\n620:     frameborder=\"0\"\n621:     webkitallowfullscreen\n622:     allowfullscreen\n623:     style=\"aspect-ratio:1.3671875;\"></iframe>\n624: \n625: </div>\n626: \n627: </details>\n628: \n629: <details is-=\"accordion\" class=\"callout-tip\">\n630: <summary><span class=\"dim-text\">[LLMs on Aurora: 🍋 ezpz] @ [*2025 ALCF INCITE GPU Hackathon*][] \\[05/2025\\]</span></summary>\n631: \n632: - [🎥 video][4]\n633: \n634: <div class=\"reveal-full-page\">\n635: \n636: <iframe\n637:     class=\"slide-deck reveal-full-page\"\n638:     loading=\"lazy\"\n639:     src=\"https://samforeman.me/talks/incite-hackathon-2025/ezpz/slides?view=scroll/section#/section\"\n640:     title=\"🍋 ezpz on Aurora\"\n641:     align=\"center\"\n642:     frameborder=\"0\"\n643:     webkitallowfullscreen\n644:     allowfullscreen\n645:     style=\"aspect-ratio:1.3671875;\"></iframe>\n646: \n647: </div>\n648: \n649: </details>\n650: \n651: <details is-=\"accordion\" class=\"callout-tip\">\n652: <summary><span class=\"dim-text\">[AuroraGPT: Foundation Models for Science] @ [*Foundation Models for the Electric Grid*][] \\[02/2025\\]</span></summary>\n653: \n654: <div class=\"reveal-full-page\">\n655: \n656: <iframe\n657:     class=\"slide-deck reveal-full-page\"\n658:     loading=\"lazy\"\n659:     src=\"/talks/aurora-gpt-fm-for-electric-grid/slides.html?view=scroll\"\n660:     title=\"AuroraGPT: Foundation Models for Science\"\n661:     align=\"center\"\n662:     frameborder=\"0\"\n663:     webkitallowfullscreen\n664:     allowfullscreen\n665:     style=\"aspect-ratio:1.3671875;\"></iframe>\n666: \n667: </div>\n668: \n669: </details>\n670: \n671: ### 📆 2024\n672: \n673: <details is-=\"accordion\" class=\"callout-tip\">\n674: <summary><span class=\"dim-text\">[Parallel Training Methods] @ [_AI-for-Science on Supercomputers_][*Foundation Models for the Electric Grid*] \\[11/2024\\]</span></summary>\n675: \n676: - [🎥 video][5]\n677: \n678: <div class=\"reveal-full-page\">\n679: \n680: <iframe\n681:     class=\"slide-deck reveal-full-page\"\n682:     loading=\"lazy\"\n683:     src=\"/talks/ai-for-science-2024/slides.html?view=scroll\"\n684:     title=\"Parallel Training Methods\"\n685:     align=\"center\"\n686:     frameborder=\"0\"\n687:     webkitallowfullscreen\n688:     allowfullscreen\n689:     style=\"aspect-ratio:1.3671875;\"></iframe>\n690: \n691: </div>\n692: \n693: </details>\n694: \n695: <details is-=\"accordion\" class=\"callout-tip\">\n696: <summary><span class=\"dim-text\">[AuroraGPT][6] @ [*2024 ALCF Hands-On HPC Workshop*][] \\[10/2024\\]</span></summary>\n697: \n698: - [🎥 video][4]\n699: \n700: <div class=\"reveal-full-page\">\n701: \n702: <iframe\n703:     class=\"slide-deck\"\n704:     loading=\"lazy\"\n705:     src=\"/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html?view=scroll\"\n706:     title=\"AuroraGPT\"\n707:     align=\"center\"\n708:     frameborder=\"0\"\n709:     webkitallowfullscreen\n710:     allowfullscreen\n711:     style=\"aspect-ratio:1.3671875;\"></iframe>\n712: \n713: </div>\n714: \n715: </details>\n716: \n717: <details is-=\"accordion\" class=\"callout-tip\">\n718: <summary><span class=\"dim-text\">[Machine Learning and Foundation Models at Scale] @ [*2024 ALCF Hands-On HPC Workshop*][] \\[10/2024\\]</span></summary>\n719: \n720: <div class=\"reveal-full-page\">\n721: \n722: <iframe\n723:     class=\"slide-deck\"\n724:     loading=\"lazy\"\n725:     src=\"https://samforeman.me/talks/alcf-hpc-workshop-2024/slides?view=scroll/section#/section\"\n726:     title=\"Machine Learning and Foundation Models at Scale\"\n727:     align=\"center\"\n728:     frameborder=\"0\"\n729:     webkitallowfullscreen\n730:     allowfullscreen\n731:     style=\"aspect-ratio:1.3671875;\"></iframe>\n732: \n733: </div>\n734: \n735: </details>\n736: \n737: <details is-=\"accordion\" class=\"callout-tip\">\n738: <summary><span class=\"dim-text\">[AuroraGPT][7] @ [*HPC User Forum*, 2024][] \\[09/2024\\]</span></summary>\n739: \n740: <iframe\n741:     class=\"slide-deck reveal-full-page\"\n742:     loading=\"lazy\"\n743:     src=\"/talks/hpc-user-forum/slides.html?view=scroll\"\n744:     title=\"AuroraGPT\"\n745:     align=\"center\"\n746:     frameborder=\"0\"\n747:     webkitallowfullscreen\n748:     allowfullscreen\n749:     style=\"aspect-ratio:1.3671875;\"></iframe>\n750: \n751: </details>\n752: \n753: <details is-=\"accordion\" class=\"callout-tip\">\n754: <summary><span class=\"dim-text\">[Training LLMs at Scale] @ [*ATPESC*, 2024][] \\[08/2024\\]</span></summary>\n755: \n756: <iframe\n757:     class=\"slide-deck\"\n758:     loading=\"lazy\"\n759:     src=\"/talks/llms-at-scale/slides.html?view=scroll\"\n760:     title=\"Training LLMs at Scale\"\n761:     align=\"center\"\n762:     frameborder=\"0\"\n763:     webkitallowfullscreen\n764:     allowfullscreen\n765:     style=\"aspect-ratio:1.3671875;\"></iframe>\n766: \n767: </details>\n768: \n769: <details is-=\"accordion\" class=\"callout-tip\">\n770: <summary><span class=\"dim-text\">[LLMs on Polaris] @ [*Center for Scientific Foundation Models*, Summer School 24’][] \\[07/2024\\]</span></summary>\n771: \n772: <iframe\n773:     class=\"slide-deck\"\n774:     loading=\"lazy\"\n775:     src=\"/talks/llms-on-polaris/slides.html?view=scroll\"\n776:     title=\"LLMs on Polaris\"\n777:     align=\"center\"\n778:     frameborder=\"0\"\n779:     webkitallowfullscreen\n780:     allowfullscreen\n781:     style=\"aspect-ratio:1.3671875;\"></iframe>\n782: \n783: </details>\n784: \n785: <details is-=\"accordion\" class=\"callout-tip\">\n786: <summary><span class=\"dim-text\">[Parallel Training Techniques] @ [*AI-4-Science Training Series*][] \\[03/2024\\]</span></summary>\n787: \n788: <iframe\n789:     class=\"slide-deck\"\n790:     loading=\"lazy\"\n791:     src=\"https://saforem2.github.io/parallel-training-slides?view=scroll\"\n792:     title=\"Parallel Training Techniques\"\n793:     align=\"center\"\n794:     frameborder=\"0\"\n795:     webkitallowfullscreen\n796:     allowfullscreen\n797:     style=\"aspect-ratio:1.3671875;\"></iframe>\n798: \n799: </details>\n800: \n801: <details is-=\"accordion\" class=\"callout-tip\">\n802: <summary><span class=\"dim-text\">[LLMs from Scratch] @ [LLM Tutorial Workshop][] \\[02/2024\\]</span></summary>\n803: \n804: <iframe\n805:     class=\"slide-deck\"\n806:     loading=\"lazy\"\n807:     src=\"https://saforem2.github.io/llm-workshop-talk\"\n808:     title=\"LLMs from Scratch\"\n809:     align=\"center\"\n810:     frameborder=\"0\"\n811:     webkitallowfullscreen\n812:     allowfullscreen\n813:     style=\"aspect-ratio:1.3671875;\"></iframe>\n814: \n815: </details>\n816: \n817: ### 📆 2023\n818: \n819: <details is-=\"accordion\" class=\"callout-tip\">\n820: <summary><span class=\"dim-text\">[Creating Small(-ish) LLMs] @ [LLM Tutorial Workshop (1)][] \\[11/2023\\]</span></summary>\n821: \n822: <iframe\n823:     class=\"slide-deck\"\n824:     loading=\"lazy\"\n825:     src=\"https://saforem2.github.io/LLM-tutorial\"\n826:     title=\"Creating Small(-ish) LLMs\"\n827:     align=\"center\"\n828:     frameborder=\"0\"\n829:     webkitallowfullscreen\n830:     allowfullscreen>\n831:     {' '}\n832: </iframe>\n833: \n834: </details>\n835: \n836: <details is-=\"accordion\" class=\"callout-tip\">\n837: <summary><span class=\"dim-text\">[Exascale Science on Aurora] @ [Intel oneAPI Workshop @ UIC][] \\[10/2023\\]</span></summary>\n838: \n839: <iframe\n840:     class=\"slide-deck\"\n841:     loading=\"lazy\"\n842:     src=\"https://saforem2.github.io/oneapi-talk\"\n843:     title=\"Exascale Science on Aurora\"\n844:     align=\"center\"\n845:     frameborder=\"0\"\n846:     webkitallowfullscreen\n847:     allowfullscreen>\n848:     {' '}\n849: </iframe>\n850: \n851: </details>\n852: \n853: <details is-=\"accordion\" class=\"callout-tip\">\n854: <summary><span class=\"dim-text\">[LLM Lunch Talk] @ [ALCF Hands On HPC Workshop][Intel oneAPI Workshop @ UIC] \\[10/2023\\]</span></summary>\n855: \n856: - [🎥 video][8]\n857: \n858: <iframe\n859:     class=\"slide-deck\"\n860:     loading=\"lazy\"\n861:     src=\"https://saforem2.github.io/llm-lunch-talk/#/section\"\n862:     title=\"LLMs on Polaris\"\n863:     align=\"center\"\n864:     frameborder=\"0\"\n865:     webkitallowfullscreen\n866:     allowfullscreen\n867:     style=\"aspect-ratio:1.3671875;\"></iframe>\n868: \n869: </details>\n870: \n871: <details is-=\"accordion\" class=\"callout-tip\">\n872: <summary><span class=\"dim-text\">[Scaling LLMs for Science] @ [Data-Intensive Computing + AI/ML at Scale][] \\[08/2023\\]</span></summary>\n873: \n874: <iframe\n875:     class=\"slide-deck\"\n876:     loading=\"lazy\"\n877:     src=\"https://saforem2.github.io/scaling4science/#/section\"\n878:     title=\"Scaling LLMs for Science and Ongoing Collaborations\"\n879:     align=\"center\"\n880:     frameborder=\"0\"\n881:     webkitallowfullscreen\n882:     allowfullscreen\n883:     style=\"aspect-ratio:1.3671875;\"></iframe>\n884: \n885: </details>\n886: \n887: <details is-=\"accordion\" class=\"callout-tip\">\n888: <summary><span class=\"dim-text\">[MLMC: Machine Learning Monte Carlo] @ [Lattice 2023][] \\[07/2023\\]</span></summary>\n889: \n890: <iframe\n891:     class=\"slide-deck\"\n892:     loading=\"lazy\"\n893:     src=\"https://saforem2.github.io/lattice23/#/title-slide\"\n894:     title=\"MLMC: Machine Learning Monte Carlo\"\n895:     align=\"center\"\n896:     frameborder=\"0\"\n897:     webkitallowfullscreen\n898:     allowfullscreen\n899:     style=\"aspect-ratio:1.3671875;\"></iframe>\n900: \n901: </details>\n902: \n903: <details is-=\"accordion\" class=\"callout-tip\">\n904: <summary><span class=\"dim-text\">[Generative Modeling and Efficient Sampling] @ [PASC23][] \\[07/2023\\]</span></summary>\n905: \n906: <iframe\n907:     class=\"slide-deck\"\n908:     loading=\"lazy\"\n909:     src=\"https://saforem2.github.io/lqcd-pasc23/\"\n910:     title=\"Generative Modeling and Efficient Sampling\"\n911:     align=\"center\"\n912:     frameborder=\"0\"\n913:     webkitallowfullscreen\n914:     allowfullscreen\n915:     style=\"aspect-ratio:1.3671875;\"></iframe>\n916: \n917: </details>\n918: \n919: <details is-=\"accordion\" class=\"callout-tip\">\n920: <summary><span class=\"dim-text\">[Efficient Sampling for LGT] @ [Deep Fridays @ U. Bologna][] \\[04/2023\\]</span></summary>\n921: \n922: <iframe\n923:     class=\"slide-deck\"\n924:     loading=\"lazy\"\n925:     src=\"https://saforem2.github.io/deep-fridays/\"\n926:     title=\"Efficient Sampling for LGT\"\n927:     align=\"center\"\n928:     frameborder=\"0\"\n929:     webkitallowfullscreen\n930:     allowfullscreen\n931:     style=\"aspect-ratio:1.3671875;\"></iframe>\n932: \n933: </details>\n934: \n935: ### 📆 2022\n936: \n937: <details is-=\"accordion\" class=\"callout-tip\">\n938: <summary><span class=\"dim-text\">[Large Scale Training] @ [AI4Science on Supercomputers (ALCF)][] \\[11/2022\\]</span></summary>\n939: \n940: <iframe\n941:     class=\"slide-deck\"\n942:     loading=\"lazy\"\n943:     src=\"https://saforem2.github.io/ai4sci-large-scale-training/#\"\n944:     title=\"Large Scale Training\"\n945:     align=\"center\"\n946:     frameborder=\"0\"\n947:     webkitallowfullscreen\n948:     allowfullscreen\n949:     style=\"aspect-ratio:1.3671875;\"></iframe>\n950: \n951: </details>\n952: \n953: <details is-=\"accordion\" class=\"callout-tip\">\n954: <summary><span class=\"dim-text\">[Hyperparameter Management] @ [ALCF SDL Workshop][] \\[10/2022\\]</span></summary>\n955: \n956: <iframe\n957:     class=\"slide-deck\"\n958:     loading=\"lazy\"\n959:     src=\"https://saforem2.github.io/hparam-management-sdl2022\"\n960:     title=\"Hyperparameter Management\"\n961:     align=\"center\"\n962:     frameborder=\"0\"\n963:     webkitallowfullscreen\n964:     allowfullscreen\n965:     style=\"aspect-ratio:1.3671875;\"></iframe>\n966: \n967: </details>\n968: \n969: <details is-=\"accordion\" class=\"callout-tip\">\n970: <summary><span class=\"dim-text\">[Statistical Learning] @ [ATPESC 2022][] \\[08/2022\\]</span></summary>\n971: \n972: - [📕 accompanying notebook]\n973: \n974: <iframe\n975:     class=\"slide-deck\"\n976:     loading=\"lazy\"\n977:     src=\"https://saforem2.github.io/ATPESC-StatisticalLearning/#/\"\n978:     title=\"Statistical Learning\"\n979:     align=\"center\"\n980:     frameborder=\"0\"\n981:     webkitallowfullscreen\n982:     allowfullscreen\n983:     style=\"aspect-ratio:1.3671875;\"></iframe>\n984: \n985: </details>\n986: \n987: <details is-=\"accordion\" class=\"callout-tip\">\n988:     <summary>\n989:         <span class=\"dim-text\">\n990:             [Scientific Data Science: An Emerging\n991:             Symbiosis](https://saforem2.github.io/anl-job-talk/) @ ANL [05/2022]\n992:         </span>\n993:     </summary>\n994: \n995: <iframe\n996:     class=\"slide-deck\"\n997:     loading=\"lazy\"\n998:     src=\"https://saforem2.github.io/anl-job-talk\"\n999:     title=\"Scientific Data Science\"\n1000:     align=\"center\"\n1001:     frameborder=\"0\"\n1002:     webkitallowfullscreen\n1003:     allowfullscreen\n1004:     style=\"aspect-ratio:1.3671875;\"></iframe>\n1005: \n1006: </details>\n1007: \n1008: <details is-=\"accordion\" class=\"callout-tip\">\n1009: <summary><span class=\"dim-text\">[Machine Learning in HEP] @ UNC Greensboro \\[03/2022\\]</span></summary>\n1010: \n1011: - [Machine Learning in HEP], at UNC Greensboro, March 2022\n1012: \n1013: <iframe\n1014:     class=\"slide-deck\"\n1015:     loading=\"lazy\"\n1016:     src=\"https://saforem2.github.io/physicsSeminar\"\n1017:     title=\"Machine Learning in HEP\"\n1018:     align=\"center\"\n1019:     frameborder=\"0\"\n1020:     webkitallowfullscreen\n1021:     allowfullscreen\n1022:     style=\"width:100%!important; \"></iframe>\n1023: \n1024: </details>\n1025: \n1026: ### 📆 2021\n1027: \n1028: <details is-=\"accordion\" class=\"callout-tip\">\n1029:     <summary>\n1030:         <span class=\"dim-text\">\n1031:             [Accelerated Sampling Methods for\n1032:             LGT](https://saforem2.github.io/l2hmc-dwq25/) @ [DWQ @ 25\n1033:             [BNL]](https://indico.bnl.gov/event/13576/) [12/2021]\n1034:         </span>\n1035:     </summary>\n1036: </details>\n1037: \n1038: <iframe\n1039:     class=\"slide-deck\"\n1040:     loading=\"lazy\"\n1041:     src=\"https://saforem2.github.io/l2hmc-dwq25/\"\n1042:     title=\"Accelerated Sampling Methods for LGT\"\n1043:     align=\"center\"\n1044:     frameborder=\"0\"\n1045:     webkitallowfullscreen\n1046:     allowfullscreen\n1047:     style=\"aspect-ratio:1.3671875;\"></iframe>\n1048: \n1049: <details is-=\"accordion\" class=\"callout-tip\">\n1050: <summary><span class=\"dim-text\">[Training Topological Samplers for LGT] @ [ML4HEP, ECT\\* Trento][] \\[09/2021\\]</span></summary>\n1051: \n1052: <iframe\n1053:     class=\"slide-deck\"\n1054:     loading=\"lazy\"\n1055:     src=\"https://saforem2.github.io/l2hmc_talk_ect2021\"\n1056:     title=\"Training Topological Samplers for LGT\"\n1057:     align=\"center\"\n1058:     frameborder=\"0\"\n1059:     webkitallowfullscreen\n1060:     allowfullscreen\n1061:     style=\"aspect-ratio:1.3671875;\"></iframe>\n1062: \n1063: </details>\n1064: \n1065: <details is-=\"accordion\" class=\"callout-tip\">\n1066: <summary><span class=\"dim-text\">[l2hmc-qcd][`l2hmc-qcd`] @ MIT Lattice Group Seminar \\[2021\\]</span></summary>\n1067: \n1068: [l2hmc-qcd][`l2hmc-qcd`] at the _MIT Lattice Group Seminar_, 2021\n1069: \n1070: </details>\n1071: \n1072: <details is-=\"accordion\" class=\"callout-tip\">\n1073: <summary><span class=\"dim-text\">[Deep Learning HMC for Improved Gauge Generation] @ [ML in LQCD Workshop][] \\[2021\\]</span></summary>\n1074: \n1075: <iframe\n1076:     class=\"slide-deck\"\n1077:     loading=\"lazy\"\n1078:     src=\"https://slides.com/samforeman/dlhmc/embed\"\n1079:     title=\"Deep Learning HMC for Improved Gauge Generation\"\n1080:     scrolling=\"no\"\n1081:     frameborder=\"0\"\n1082:     webkitallowfullscreen\n1083:     allowfullscreen\n1084:     style=\"aspect-ratio:1.3671875;\"></iframe>\n1085: \n1086: </details>\n1087: \n1088: ### 📆 2020\n1089: \n1090: <details is-=\"accordion\" class=\"callout-tip\">\n1091: <summary><span class=\"dim-text\">[Machine Learning for Lattice QCD] @ U. Iowa \\[2020\\]</span></summary>\n1092: \n1093: <iframe\n1094:     class=\"slide-deck\"\n1095:     loading=\"lazy\"\n1096:     src=\"https://slides.com/samforeman/l2hmc-qcd/embed\"\n1097:     title=\"Machine Learning for Lattice QCD\"\n1098:     align=\"center\"\n1099:     frameborder=\"0\"\n1100:     webkitallowfullscreen\n1101:     allowfullscreen\n1102:     style=\"aspect-ratio:1.3671875;\"></iframe>\n1103: \n1104: </details>\n1105: \n1106: ## 📝 Work\n1107: \n1108: <details is-=\"accordion\" class=\"callout-tip\">\n1109: <summary>Note</summary>\n1110: \n1111: <span style=\"color:#4582ec;\">\n1112:     You can find a full list of my publications on my [Google Scholar]\n1113: </span>\n1114: \n1115: </details>\n1116: \n1117: 1.  🌎 [<span class=\"highlight-green\">**AERIS**</span>: **Argonne Earth\n1118:     Systems Model for Reliable and Skillful\n1119:     Predictions**][Argonne Earth Systems Model for Reliable and Skillful Predictions]\n1120:     (Hatanpää et al. (2025))\n1121:     - ✨ [*2025 ACM Gordon Bell Prize for Climate Modeling Finalist*]\n1122: 2.  Aurora: Architecting Argonne’s First Exascale Supercomputer for\n1123:     Accelerated Scientific Discovery (Allen et al. (2025))\n1124: 3.  [HiPerRAG: High-Performance Retrieval Augmented Generation for\n1125:     Scientific Insights] (Gokdemir et al. (2025))\n1126: 4.  [Automated Tuning for HMC Mass Ratios] (Torsiello et al. (2025))\n1127: 5.  [MOFA: Discovering Materials for Carbon Capture with a GenAI and\n1128:     Simulation-Based Workflow] (Yan et al. (2025))\n1129: 6.  🧪 [<span class=\"highlight-pink\">**MProt-DPO**</span>: **Breaking\n1130:     the ExaFLOPS Barrier for Multimodal Protein Design with DPO**]\n1131:     (Dharuman et al. (2024))\n1132:     - 🌟 [*2024 ACM Gordon Bell Finalist*]\n1133: 7.  [Intro to HPC Bootcamp: Engaging New Communities Through Energy\n1134:     Justice Projects] (<span class=\"nocase\">Leung et al.</span> (2024))\n1135: 8.  [Thorough Characterization and Analysis of Large Transformer Model\n1136:     Training At-Scale] (Cheng et al. (2024))\n1137: 9.  [MLMC: Machine Learning Monte Carlo for Lattice Gauge Theory]\n1138:     (Foreman et al. (2023))\n1139: 10. [Protein Generation via Genome-scale Language Models with\n1140:     Bio-physical Scoring] (<span class=\"nocase\">Dharuman et al.</span>\n1141:     (2023))\n1142: 11. [DeepSpeed4Science Initiative: Enabling Large-Scale Scientific\n1143:     Discovery] (<span class=\"nocase\">Song et al.</span> (2023))\n1144:     - [📰 DeepSpeed4Science.ai Blog Post]\n1145:     - [🚂 Loooooooong Sequence Lengths]\n1146: \n1147: 12. [Comprehensive Performance Study of LLMs on Novel AI Accelerators]\n1148:     (Emani et al. (2023))\n1149: 13. [Exploratory Analysis of Climate Data with\n1150:     `ClimRR`][Foundation models for long term climate forecasting],\n1151:     [Intro to HPC Bootcamp @ NERSC] (Foreman (2023))\n1152: 14. 🧬 [<span class=\"highlight\">**GenSLMs**</span>: **Genome-scale\n1153:     language models reveal SARS-Cov-2 evolutionary dynamics**]\n1154:     (<span class=\"nocase\">Zvyagin et al.</span> (2023))\n1155:     - Winner of the [🏆 _ACM Gordon Bell Special Prize for High\n1156:       Performance Computing-Based COVID-19\n1157:       Research_][ACM Gordon Bell Special Prize]\n1158: 15. [Lattice QCD and Particle Physics] (<span class=\"nocase\">Kronfeld et\n1159:     al.</span> (2022))\n1160: 16. [Applications of ML to Lattice QFT] (<span class=\"nocase\">Boyda et\n1161:     al.</span> (2022))\n1162: 17. [LeapFrogLayers: Trainable Framework for Effective Sampling]\n1163:     (Foreman, Izubuchi, et al. (2021))\n1164: 18. [HMC with Normalizing Flows][] \\[[slides]\\] (Foreman, Izubuchi, et\n1165:     al. (2021))\n1166: 19. [Deep Learning Hamiltonian Monte Carlo][] \\[[+ poster]\\] (Foreman,\n1167:     Jin, et al. (2021))\n1168: 20. [Machine Learning and Neural Networks for Field Theory] (Foreman et\n1169:     al. (2020))\n1170: 21. [Examples of renormalization group transformations for image sets]\n1171:     (Samuel Foreman et al. (2018))\n1172: 22. [RG inspired Machine Learning for lattice field theory] (Sam Foreman\n1173:     et al. (2018))\n1174: 23. [Large Energy Density in Three-Plate Nanocapacitors due to Coulomb\n1175:     Blockade] (Hubler et al. (2018))\n1176: 24. [Superconductivity of In and Sn Samples] (Deamont and Foreman\n1177:     (2014))\n1178: \n1179: <details is-=\"accordion\" class=\"callout-tip\">\n1180: <summary>📓 References</summary>\n1181: \n1182: <div id=\"refs\" class=\"references csl-bib-body hanging-indent\">\n1183: \n1184: <div id=\"ref-allen2025aurora\" class=\"csl-entry\">\n1185: \n1186: Allen, Benjamin S., James Anchell, Victor Anisimov, et al. 2025.\n1187: _Aurora: Architecting Argonne’s First Exascale Supercomputer for\n1188: Accelerated Scientific Discovery_. [https://arxiv.org/abs/2509.08207](https://arxiv.org/abs/2509.08207).\n1189: \n1190: </div>\n1191: \n1192: <div id=\"ref-boyda2022applications\" class=\"csl-entry\">\n1193: \n1194: <span class=\"nocase\">Boyda, Denis, Salvatore Calı̀, Sam Foreman, et al.</span>\n1195: 2022. “Applications of Machine Learning to Lattice Quantum Field Theory.” *arXiv\n1196: Preprint arXiv:2202.05838*.\n1197: [https://arxiv.org/abs/2202.05838](https://arxiv.org/abs/2202.05838).\n1198: \n1199: </div>\n1200: \n1201: <div id=\"ref-cheng2024thorough\" class=\"csl-entry\">\n1202: \n1203: Cheng, Scott, Jun-Liang Lin, Murali Emani, et al. 2024. “Thorough\n1204: Characterization and Analysis of Large Transformer Model Training\n1205: at-Scale.” _Proc. ACM Meas. Anal. Comput. Syst._ (New York, NY, USA) 8\n1206: (1). [https://doi.org/10.1145/3639034](https://doi.org/10.1145/3639034).\n1207: \n1208: </div>\n1209: \n1210: <div id=\"ref-deamont2014superconductivity\" class=\"csl-entry\">\n1211: \n1212: Deamont, George, and Sam Foreman. 2014. _Superconductivity of in and\n1213: Sn Samples_.\n1214: \n1215: </div>\n1216: \n1217: <div id=\"ref-mprot-dpo2024\" class=\"csl-entry\">\n1218: \n1219: Dharuman, Gautham, Kyle Hippe, Alexander Brace, et al. 2024.\n1220: “MProt-DPO: Breaking the ExaFLOPS Barrier for Multimodal Protein\n1221: Design Workflows with Direct Preference Optimization.” _Proceedings of\n1222: the International Conference for High Performance Computing,\n1223: Networking, Storage, and Analysis_ (Atlanta, GA, USA), SC ’24.\n1224: [https://doi.org/10.1109/SC41406.2024.00013](https://doi.org/10.1109/SC41406.2024.00013).\n1225: \n1226: </div>\n1227: \n1228: <div id=\"ref-dharuman2023protein\" class=\"csl-entry\">\n1229: \n1230: <span class=\"nocase\">Dharuman, Gautham, Logan Ward, Heng Ma, et al.</span>\n1231: 2023. “Protein Generation via Genome-Scale Language Models with Bio-Physical\n1232: Scoring.” *Proceedings of the SC’23 Workshops of the International Conference on\n1233: High Performance Computing, Network, Storage, and Analysis*, 95–101.\n1234: \n1235: </div>\n1236: \n1237: <div id=\"ref-emani2023comprehensive\" class=\"csl-entry\">\n1238: \n1239: Emani, Murali, Sam Foreman, Varuni Sastry, et al. 2023. “A\n1240: Comprehensive Performance Study of Large Language Models on Novel AI\n1241: Accelerators.” _arXiv Preprint arXiv:2310.04607_.\n1242: [https://arxiv.org/abs/2310.04607](https://arxiv.org/abs/2310.04607).\n1243: \n1244: </div>\n1245: \n1246: <div id=\"ref-foreman2023climrr\" class=\"csl-entry\">\n1247: \n1248: Foreman, Sam. 2023. “Energy Justice Analysis of Climate Data with\n1249: ClimRR.” August 7. [https://saforem2.github.io/climate-analysis](https://saforem2.github.io/climate-analysis).\n1250: \n1251: </div>\n1252: \n1253: <div id=\"ref-foreman2018rg\" class=\"csl-entry\">\n1254: \n1255: Foreman, Sam, Joel Giedt, Yannick Meurice, and Judah Unmuth-Yockey. 2018. “<span class=\"nocase\">RG-inspired machine learning for lattice\n1256: field theory</span>.” _European Physical Journal Web of Conferences_,\n1257: European physical journal web of conferences, vol. 175 (March): 11025.\n1258: [https://doi.org/10.1051/epjconf/201817511025](https://doi.org/10.1051/epjconf/201817511025).\n1259: \n1260: </div>\n1261: \n1262: <div id=\"ref-foreman2021hmc\" class=\"csl-entry\">\n1263: \n1264: Foreman, Sam, Taku Izubuchi, Luchang Jin, Xiao-Yong Jin, James C\n1265: Osborn, and Akio Tomiya. 2021. “HMC with Normalizing Flows.” _arXiv\n1266: Preprint arXiv:2112.01586_. [https://arxiv.org/abs/2112.01586](https://arxiv.org/abs/2112.01586).\n1267: \n1268: </div>\n1269: \n1270: <div id=\"ref-foreman2021deep\" class=\"csl-entry\">\n1271: \n1272: Foreman, Sam, Xiao-Yong Jin, and Osborn James C. 2021. _Deep Learning\n1273: Hamiltonian Monte Carlo_. [https://arxiv.org/abs/2105.03418](https://arxiv.org/abs/2105.03418).\n1274: \n1275: </div>\n1276: \n1277: <div id=\"ref-foreman2020machine\" class=\"csl-entry\">\n1278: \n1279: Foreman, Sam, Xiao-Yong Jin, and James C Osborn. 2020. _Machine\n1280: Learning and Neural Networks for Field Theory_.\n1281: \n1282: </div>\n1283: \n1284: <div id=\"ref-foreman2023mlmc\" class=\"csl-entry\">\n1285: \n1286: Foreman, Sam, Xiao-Yong Jin, and James C. Osborn. 2023. _MLMC: Machine\n1287: Learning Monte Carlo for Lattice Gauge Theory_.\n1288: [https://arxiv.org/abs/2312.08936](https://arxiv.org/abs/2312.08936).\n1289: \n1290: </div>\n1291: \n1292: <div id=\"ref-foreman2018examples\" class=\"csl-entry\">\n1293: \n1294: Foreman, Samuel, Joel Giedt, Yannick Meurice, and Judah Unmuth-Yockey. 2018. “Examples of Renormalization Group Transformations for Image\n1295: Sets.” _Physical Review E_ 98 (5): 052129.\n1296: \n1297: </div>\n1298: \n1299: <div id=\"ref-gokdemir2025hiperrag\" class=\"csl-entry\">\n1300: \n1301: Gokdemir, Ozan, Carlo Siebenschuh, Alexander Brace, et al. 2025.\n1302: _HiPerRAG: High-Performance Retrieval Augmented Generation for\n1303: Scientific Insights_. [https://arxiv.org/abs/2505.04846](https://arxiv.org/abs/2505.04846).\n1304: \n1305: </div>\n1306: \n1307: <div id=\"ref-stock2025aeris\" class=\"csl-entry\">\n1308: \n1309: Hatanpää, Väinö, Eugene Ku, Jason Stock, et al. 2025. _AERIS: Argonne\n1310: Earth Systems Model for Reliable and Skillful Predictions_.\n1311: [https://arxiv.org/abs/2509.13523](https://arxiv.org/abs/2509.13523).\n1312: \n1313: </div>\n1314: \n1315: <div id=\"ref-hubler2018large\" class=\"csl-entry\">\n1316: \n1317: Hubler, A, S Foreman, J Liu, and L Wortsmann. 2018. “Large Energy\n1318: Density in Three-Plate Nanocapacitors Due to Coulomb Blockade.”\n1319: _Journal of Applied Physics_ 123 (10).\n1320: \n1321: </div>\n1322: \n1323: <div id=\"ref-kronfeld2022lattice\" class=\"csl-entry\">\n1324: \n1325: <span class=\"nocase\">\n1326:     Kronfeld, Andreas S, Tanmoy Bhattacharya, Thomas Blum, et al.\n1327: </span>\n1328: 2022. “Lattice QCD and Particle Physics.” *arXiv Preprint arXiv:2207.07641*.\n1329: [https://arxiv.org/abs/2207.07641](https://arxiv.org/abs/2207.07641).\n1330: \n1331: </div>\n1332: \n1333: <div id=\"ref-leung2024intro\" class=\"csl-entry\">\n1334: \n1335: <span class=\"nocase\">\n1336:     Leung, Mary Ann, Katharine Cahill, Rebecca Hartman-Baker, et al.\n1337: </span>\n1338: 2024. “Intro to HPC Bootcamp: Engaging New Communities Through Energy Justice\n1339: Projects.” *Journal of Computational Science Education* 15 (1).\n1340: [https://doi.org/10.22369/issn.2153-4136/15/1/10](https://doi.org/10.22369/issn.2153-4136/15/1/10).\n1341: \n1342: </div>\n1343: \n1344: <div id=\"ref-song2023deepspeed4science\" class=\"csl-entry\">\n1345: \n1346: <span class=\"nocase\">\n1347:     Song, Shuaiwen Leon, Bonnie Kruft, Minjia Zhang, et al.\n1348: </span>\n1349: 2023. “DeepSpeed4Science Initiative: Enabling Large-Scale Scientific Discovery\n1350: Through Sophisticated AI System Technologies.” *arXiv Preprint\n1351: arXiv:2310.04610*.\n1352: [https://arxiv.org/abs/2310.04610](https://arxiv.org/abs/2310.04610).\n1353: \n1354: </div>\n1355: \n1356: <div id=\"ref-torsiello2025automated\" class=\"csl-entry\">\n1357: \n1358: Torsiello, J., G. T. Fleming, S. Foreman, X.-Y. Jin, and J. C. Osborn. 2025. “Automated Tuning for HMC Mass Ratios.” In _PoS_. Argonne, ALCF;\n1359: Argonne National Laboratory (ANL), Argonne, IL (United States); Temple\n1360: U.; Fermi National Accelerator Laboratory (FNAL), Batavia, IL (United\n1361: States). [https://doi.org/10.22323/1.466.0052](https://doi.org/10.22323/1.466.0052).\n1362: \n1363: </div>\n1364: \n1365: <div id=\"ref-yan2025mofa\" class=\"csl-entry\">\n1366: \n1367: Yan, Xiaoli, Nathaniel Hudson, Hyun Park, et al. 2025. _MOFA:\n1368: Discovering Materials for Carbon Capture with a GenAI- and\n1369: Simulation-Based Workflow_. [https://arxiv.org/abs/2501.10651](https://arxiv.org/abs/2501.10651).\n1370: \n1371: </div>\n1372: \n1373: <div id=\"ref-zvyagin2023genslms\" class=\"csl-entry\">\n1374: \n1375: <span class=\"nocase\">Zvyagin, Maxim, Alexander Brace, Kyle Hippe, et al.</span>\n1376: 2023. “GenSLMs: Genome-Scale Language Models Reveal SARS-CoV-2 Evolutionary\n1377: Dynamics.” *The International Journal of High Performance Computing\n1378: Applications* 37 (6): 683–705.\n1379: \n1380: </div>\n1381: \n1382: </div>\n1383: \n1384: </details>\n1385: \n1386: ## 📂 Projects\n1387: \n1388: <style>{`\n1389:   .repo-grid {\n1390:     display: flex;\n1391:     flex-wrap: wrap;\n1392:     gap: 1rem;\n1393:     justify-content: flex-start;\n1394:     align-items: stretch;\n1395:     margin-top: 1.5rem;\n1396:   }\n1397:   .repo-card {\n1398:     flex: 1 1 260px; /* responsive: min width ~260px */\n1399:     max-width: 360px;\n1400:     border-radius: 0pt;\n1401:     padding: 1rem 1.1rem;\n1402:     border: 1px solid var(--background2, #dee2e6);\n1403:     background-color: oklch(from var(--background0, #f8f9fa) calc(var(--l) + 0.02) var(--c) var(--h));\n1404:     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);\n1405:     display: flex;\n1406:     flex-direction: column;\n1407:     transition: transform 0.15s ease, box-shadow 0.15s ease,\n1408:                 border-color 0.15s ease, background-color 0.15s ease;\n1409:   }\n1410:   .repo-card:hover {\n1411:     transform: translateY(-3px);\n1412:     box-shadow: 3pt 3pt black;\n1413:     /* border-color: var(--bs-primary, #0d6efd); */\n1414:   }\n1415:   .repo-header {\n1416:     display: flex;\n1417:     align-items: center;\n1418:     justify-content: space-between;\n1419:     gap: 0.4rem;\n1420:     margin-bottom: 0.35rem;\n1421:   }\n1422:   .repo-name {\n1423:     color: inherit;\n1424:     background: none;\n1425:     font-size: 1.0rem;\n1426:     font-weight: 600;\n1427:     margin: 0;\n1428:     word-break: break-word;\n1429:     border: 1pt solid rgba(0,0,0,0.0) !important;\n1430:     padding-inline: 1pt;\n1431:   }\n1432:   .repo-name a {\n1433:     text-decoration: none;\n1434:     color: var(--accent-color, var(--blue, #0d6efd));\n1435:   }\n1436:   .repo-name a:hover {\n1437:     text-decoration: underline;\n1438:     border: none;\n1439:   }\n1440:   .repo-badge {\n1441:     font-size: 0.7rem;\n1442:     padding: 0.15rem 0.45rem;\n1443:     /* border-radius: 999px; */\n1444:     border: 1px solid var(--bs-border-color, #838383);\n1445:     background: var(--bs-secondary-bg, rgba(108, 117, 125, 0.1));\n1446:     white-space: nowrap;\n1447:   }\n1448:   .repo-description {\n1449:     font-size: 0.9rem;\n1450:     margin: 0.3rem 0 0.6rem;\n1451:     color: var(--bs-secondary-color, #6c757d);\n1452:     min-height: 2.2em; /* keep rows roughly aligned */\n1453:   }\n1454:   .repo-meta {\n1455:     display: flex;\n1456:     flex-wrap: wrap;\n1457:     align-items: center;\n1458:     gap: 0.6rem;\n1459:     margin-top: auto;\n1460:     font-size: 0.8rem;\n1461:     color: var(--bs-secondary-color, #6c757d);\n1462:   }\n1463:   .repo-meta span {\n1464:     display: inline-flex;\n1465:     align-items: center;\n1466:     gap: 0.2rem;\n1467:   }\n1468:   .repo-language-dot {\n1469:     width: 0.55rem;\n1470:     height: 0.55rem;\n1471:     /* border-radius: 999px; */\n1472:     background: currentColor;\n1473:   }\n1474:   /* Dark mode tweaks when using Quarto's theme toggle */\n1475:   body[data-mode=\"dark\"] .repo-card {\n1476:     background-color: var(--bs-body-bg, #111827);\n1477:     border-color: var(--bs-border-color, #374151);\n1478:     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);\n1479:   }\n1480:   body[data-mode=\"dark\"] .repo-badge {\n1481:     background: var(--bs-secondary-bg, #1f2933);\n1482:   }\n1483:   .repo-grid-loading {\n1484:     font-size: 0.9rem;\n1485:     color: var(--bs-secondary-color, #6c757d);\n1486:     margin-top: 0.75rem;\n1487:   }\n1488: `}</style>\n1489: \n1490: <div class=\"repo-grid-container\">\n1491: \n1492: <h2 class=\"anchored\">\n1493: \n1494: <a href=\"https://github.com/saforem2/\"><code>saforem2</code></a>s GitHub\n1495: Repositories\n1496: </h2>\n1497: \n1498: <p class=\"repo-grid-loading\" id=\"repo-grid-status\">\n1499: \n1500: Loading repositories from GitHub…\n1501: \n1502: </p>\n1503: \n1504: <div id=\"repo-grid\" class=\"repo-grid\" data-github-user=\"saforem2\">\n1505: \n1506: </div>\n1507: \n1508: </div>\n1509: \n1510: <script>{`\n1511:   (async function () {\n1512:     const grid = document.getElementById(\"repo-grid\");\n1513:     const status = document.getElementById(\"repo-grid-status\");\n1514:     if (!grid) return;\n\n(Output capped at 50 KB. Showing lines 1-1514. Use offset=1515 to continue.)\n</content>",
+            "title": "web/src/pages/landing.mdx copy",
+            "metadata": {
+              "preview": "---\nlayout: '@/layouts/Doc.astro'\ntitle: 'Sam Foreman'\norder: 0\n---\n\n<span class=\"profile-avatar\">\n    <img\n        width=\"75\"\n        height=\"75\"\n        src=\"https://samforeman.me/assets/avi-small.webp\"\n        aria-label=\"Sam Foreman\"\n        alt=\"Sam Foreman\"\n    />\n</span>\n\n<span style=\"font-size: 1.5rem; color: var(--dim-text)!important; padding-bottom: 0pt;\">\n    <span class=\"dim-text\">👋 Hi, I’m Sam!</span> [\n    <span class=\"orcid-green\" style=\"background: none!important;\"></span>]\n</span>",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772032850598,
+              "end": 1772032850606
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c95636a7a001qenOh8zgmb05Q8"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "bash",
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "bun run build --filter=web 2>&1",
+              "description": "Run web workspace build check",
+              "workdir": "/Users/samforeman/projects/saforem2/sam.onl",
+              "timeout": 300000
+            },
+            "output": "$ turbo run build --filter=web\n• turbo 2.8.4\n  x No package found with name 'web' in workspace\n\nerror: script \"build\" exited with code 1\n",
+            "title": "Run web workspace build check",
+            "metadata": {
+              "output": "$ turbo run build --filter=web\n• turbo 2.8.4\n  x No package found with name 'web' in workspace\n\nerror: script \"build\" exited with code 1\n",
+              "exit": 1,
+              "description": "Run web workspace build check",
+              "truncated": false
+            },
+            "time": {
+              "start": 1772032852000,
+              "end": 1772032852807
+            }
+          },
+          "id": "prt_c95637aa7001BSK5i6Q3y4q0gj",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c95636a7a001qenOh8zgmb05Q8"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "cost": 0,
+          "tokens": {
+            "total": 11243,
+            "input": 1893,
+            "output": 218,
+            "reasoning": 0,
+            "cache": {
+              "read": 9132,
+              "write": 0
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c95636a7a001qenOh8zgmb05Q8"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772032852932,
+          "completed": 1772032861586
+        },
+        "parentID": "msg_c956347b1001mdAn36SZ5Igss2",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "general",
+        "agent": "general",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 36296,
+          "input": 24887,
+          "output": 385,
+          "reasoning": 0,
+          "cache": {
+            "read": 11024,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "REDACTED",
+        "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "id": "prt_c95638f960017RPq746oHurZs7",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "text",
+          "text": "The build failed with a filter issue. Let me check the package name and also check for local `/talks/` iframe srcs in the `landing.mdx copy` file, then re-run the build correctly.",
+          "time": {
+            "start": 1772032861403,
+            "end": 1772032861403
+          },
+          "id": "prt_c95638f98001FTgKYL4INf5sd0",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "bash",
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat package.json | python3 -c \"import sys,json; d=json.load(sys.stdin); print(d.get('name','(none)'))\"",
+              "description": "Check root package name",
+              "workdir": "/Users/samforeman/projects/saforem2/sam.onl/web"
+            },
+            "output": "docs\n",
+            "title": "Check root package name",
+            "metadata": {
+              "output": "docs\n",
+              "exit": 0,
+              "description": "Check root package name",
+              "truncated": false
+            },
+            "time": {
+              "start": 1772032859292,
+              "end": 1772032859411
+            }
+          },
+          "id": "prt_c95639699001UPmxlsmMABSMao",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "tooluse_WjrxQcvTLAG8PrFcTJI8LW",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "src=\"/talks/",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages",
+              "include": "*landing.mdx*"
+            },
+            "output": "Found 6 matches\n/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx copy:\n  Line 659:     src=\"/talks/aurora-gpt-fm-for-electric-grid/slides.html?view=scroll\"\n  Line 683:     src=\"/talks/ai-for-science-2024/slides.html?view=scroll\"\n  Line 705:     src=\"/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html?view=scroll\"\n  Line 743:     src=\"/talks/hpc-user-forum/slides.html?view=scroll\"\n  Line 759:     src=\"/talks/llms-at-scale/slides.html?view=scroll\"\n  Line 775:     src=\"/talks/llms-on-polaris/slides.html?view=scroll\"",
+            "title": "src=\"/talks/",
+            "metadata": {
+              "matches": 6,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772032860232,
+              "end": 1772032860273
+            }
+          },
+          "id": "prt_c95639c9e001aWTr4KTRSKOsmC",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx copy",
+              "offset": 650,
+              "limit": 80
+            },
+            "output": "<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/landing.mdx copy</path>\n<type>file</type>\n<content>650: \n651: <details is-=\"accordion\" class=\"callout-tip\">\n652: <summary><span class=\"dim-text\">[AuroraGPT: Foundation Models for Science] @ [*Foundation Models for the Electric Grid*][] \\[02/2025\\]</span></summary>\n653: \n654: <div class=\"reveal-full-page\">\n655: \n656: <iframe\n657:     class=\"slide-deck reveal-full-page\"\n658:     loading=\"lazy\"\n659:     src=\"/talks/aurora-gpt-fm-for-electric-grid/slides.html?view=scroll\"\n660:     title=\"AuroraGPT: Foundation Models for Science\"\n661:     align=\"center\"\n662:     frameborder=\"0\"\n663:     webkitallowfullscreen\n664:     allowfullscreen\n665:     style=\"aspect-ratio:1.3671875;\"></iframe>\n666: \n667: </div>\n668: \n669: </details>\n670: \n671: ### 📆 2024\n672: \n673: <details is-=\"accordion\" class=\"callout-tip\">\n674: <summary><span class=\"dim-text\">[Parallel Training Methods] @ [_AI-for-Science on Supercomputers_][*Foundation Models for the Electric Grid*] \\[11/2024\\]</span></summary>\n675: \n676: - [🎥 video][5]\n677: \n678: <div class=\"reveal-full-page\">\n679: \n680: <iframe\n681:     class=\"slide-deck reveal-full-page\"\n682:     loading=\"lazy\"\n683:     src=\"/talks/ai-for-science-2024/slides.html?view=scroll\"\n684:     title=\"Parallel Training Methods\"\n685:     align=\"center\"\n686:     frameborder=\"0\"\n687:     webkitallowfullscreen\n688:     allowfullscreen\n689:     style=\"aspect-ratio:1.3671875;\"></iframe>\n690: \n691: </div>\n692: \n693: </details>\n694: \n695: <details is-=\"accordion\" class=\"callout-tip\">\n696: <summary><span class=\"dim-text\">[AuroraGPT][6] @ [*2024 ALCF Hands-On HPC Workshop*][] \\[10/2024\\]</span></summary>\n697: \n698: - [🎥 video][4]\n699: \n700: <div class=\"reveal-full-page\">\n701: \n702: <iframe\n703:     class=\"slide-deck\"\n704:     loading=\"lazy\"\n705:     src=\"/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html?view=scroll\"\n706:     title=\"AuroraGPT\"\n707:     align=\"center\"\n708:     frameborder=\"0\"\n709:     webkitallowfullscreen\n710:     allowfullscreen\n711:     style=\"aspect-ratio:1.3671875;\"></iframe>\n712: \n713: </div>\n714: \n715: </details>\n716: \n717: <details is-=\"accordion\" class=\"callout-tip\">\n718: <summary><span class=\"dim-text\">[Machine Learning and Foundation Models at Scale] @ [*2024 ALCF Hands-On HPC Workshop*][] \\[10/2024\\]</span></summary>\n719: \n720: <div class=\"reveal-full-page\">\n721: \n722: <iframe\n723:     class=\"slide-deck\"\n724:     loading=\"lazy\"\n725:     src=\"https://samforeman.me/talks/alcf-hpc-workshop-2024/slides?view=scroll/section#/section\"\n726:     title=\"Machine Learning and Foundation Models at Scale\"\n727:     align=\"center\"\n728:     frameborder=\"0\"\n729:     webkitallowfullscreen\n\n(Showing lines 650-729 of 2057. Use offset=730 to continue.)\n</content>",
+            "title": "web/src/pages/landing.mdx copy",
+            "metadata": {
+              "preview": "\n<details is-=\"accordion\" class=\"callout-tip\">\n<summary><span class=\"dim-text\">[AuroraGPT: Foundation Models for Science] @ [*Foundation Models for the Electric Grid*][] \\[02/2025\\]</span></summary>\n\n<div class=\"reveal-full-page\">\n\n<iframe\n    class=\"slide-deck reveal-full-page\"\n    loading=\"lazy\"\n    src=\"/talks/aurora-gpt-fm-for-electric-grid/slides.html?view=scroll\"\n    title=\"AuroraGPT: Foundation Models for Science\"\n    align=\"center\"\n    frameborder=\"0\"\n    webkitallowfullscreen\n    allowfullscreen\n    style=\"aspect-ratio:1.3671875;\"></iframe>\n\n</div>\n\n</details>",
+              "truncated": true,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772032861380,
+              "end": 1772032861392
+            }
+          },
+          "id": "prt_c9563a05e0013QDh5fNbZ36fHk",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "cost": 0,
+          "tokens": {
+            "total": 36296,
+            "input": 24887,
+            "output": 385,
+            "reasoning": 0,
+            "cache": {
+              "read": 11024,
+              "write": 0
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "REDACTED"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772032861589,
+          "completed": 1772032868880
+        },
+        "parentID": "msg_c956347b1001mdAn36SZ5Igss2",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "general",
+        "agent": "general",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 37913,
+          "input": 1728,
+          "output": 275,
+          "reasoning": 0,
+          "cache": {
+            "read": 35910,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c9563a595001QygLM4hMQoDOIl",
+        "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "id": "prt_c9563af43001WLrESHpZ3Z1h0S",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563a595001QygLM4hMQoDOIl"
+        },
+        {
+          "type": "text",
+          "text": "Now let me run the build with the correct filter name, and also check the `landing.mdx` (the main one, not the copy) for the same local `/talks/` patterns:",
+          "time": {
+            "start": 1772032867523,
+            "end": 1772032867523
+          },
+          "id": "prt_c9563af44001vgmEzVmzlNpgRN",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563a595001QygLM4hMQoDOIl"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "bash",
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "bun run build --filter=docs 2>&1",
+              "description": "Run web build with correct filter name",
+              "timeout": 300000,
+              "workdir": "/Users/samforeman/projects/saforem2/sam.onl"
+            },
+            "output": "$ turbo run build --filter=docs\n• turbo 2.8.4\n• Packages in scope: docs\n• Running build in 1 packages\n• Remote caching disabled\n@webtui/theme-vitesse:build: cache hit, replaying logs 656f96e094478168\n@webtui/plugin-nf:build: cache hit, replaying logs cd769a5c55d719e4\n@webtui/theme-gruvbox:build: cache hit, replaying logs e7d7ba1675917a28\n@webtui/theme-nord:build: cache hit, replaying logs 9b36b38683ce11a9\n@webtui/theme-everforest:build: cache hit, replaying logs fcc604e2a2194e6e\n@webtui/theme-catppuccin:build: cache hit, replaying logs fec68c61ab8a76cb\n@webtui/theme-gruvbox:build: $ rm -rf dist && vite build\n@webtui/theme-gruvbox:build: vite v6.4.1 building for production...\n@webtui/theme-gruvbox:build: transforming...\n@webtui/theme-gruvbox:build: ✓ 1 modules transformed.\n@webtui/theme-gruvbox:build: rendering chunks...\n@webtui/theme-gruvbox:build: computing gzip size...\n@webtui/theme-gruvbox:build: dist/index.css  5.07 kB │ gzip: 0.90 kB\n@webtui/theme-gruvbox:build: ✓ built in 63ms\n@webtui/theme-catppuccin:build: $ rm -rf dist && vite build\n@webtui/theme-catppuccin:build: vite v6.4.1 building for production...\n@webtui/theme-catppuccin:build: transforming...\n@webtui/theme-vitesse:build: $ rm -rf dist && vite build\n@webtui/theme-vitesse:build: vite v6.4.1 building for production...\n@webtui/theme-vitesse:build: transforming...\n@webtui/theme-vitesse:build: ✓ 1 modules transformed.\n@webtui/theme-vitesse:build: rendering chunks...\n@webtui/theme-vitesse:build: computing gzip size...\n@webtui/theme-vitesse:build: dist/index.css  4.29 kB │ gzip: 0.83 kB\n@webtui/theme-vitesse:build: ✓ built in 74ms\n@webtui/plugin-nf:build: $ rm -rf dist && vite build\n@webtui/plugin-nf:build: vite v6.4.1 building for production...\n@webtui/plugin-nf:build: transforming...\n@webtui/plugin-nf:build: ✓ 1 modules transformed.\n@webtui/plugin-nf:build: rendering chunks...\n@webtui/plugin-nf:build: computing gzip size...\n@webtui/plugin-nf:build: dist/index.css  0.26 kB │ gzip: 0.19 kB\n@webtui/plugin-nf:build: ✓ built in 91ms\n@webtui/theme-nord:build: $ rm -rf dist && vite build\n@webtui/theme-nord:build: vite v6.4.1 building for production...\n@webtui/theme-nord:build: transforming...\n@webtui/theme-nord:build: ✓ 1 modules transformed.\n@webtui/theme-nord:build: rendering chunks...\n@webtui/theme-nord:build: computing gzip size...\n@webtui/theme-nord:build: dist/index.css  5.16 kB │ gzip: 0.68 kB\n@webtui/theme-nord:build: ✓ built in 75ms\n@webtui/theme-everforest:build: $ rm -rf dist && vite build\n@webtui/theme-everforest:build: vite v6.4.1 building for production...\n@webtui/theme-catppuccin:build: ✓ 1 modules transformed.\n@webtui/theme-catppuccin:build: rendering chunks...\n@webtui/theme-catppuccin:build: computing gzip size...\n@webtui/theme-catppuccin:build: dist/index.css  6.88 kB │ gzip: 1.37 kB\n@webtui/theme-catppuccin:build: ✓ built in 79ms\n@webtui/theme-everforest:build: transforming...\n@webtui/theme-everforest:build: ✓ 1 modules transformed.\n@webtui/theme-everforest:build: rendering chunks...\n@webtui/theme-everforest:build: computing gzip size...\n@webtui/theme-everforest:build: dist/index.css  5.08 kB │ gzip: 1.15 kB\n@webtui/theme-everforest:build: ✓ built in 101ms\n@webtui/css:build: cache hit, replaying logs bda6b54dd90b6a28\n@webtui/css:build: $ rm -rf dist && vite build\n@webtui/css:build: vite v6.4.1 building for production...\n@webtui/css:build: transforming...\n@webtui/css:build: ✓ 22 modules transformed.\n@webtui/css:build: rendering chunks...\n@webtui/css:build: computing gzip size...\n@webtui/css:build: dist/components/view.css         0.23 kB │ gzip: 0.18 kB\n@webtui/css:build: dist/components/accordion.css    0.39 kB │ gzip: 0.19 kB\n@webtui/css:build: dist/components/textarea.css     0.60 kB │ gzip: 0.27 kB\n@webtui/css:build: dist/components/pre.css          0.63 kB │ gzip: 0.29 kB\n@webtui/css:build: dist/components/radio.css        0.90 kB │ gzip: 0.41 kB\n@webtui/css:build: dist/base.css                    0.90 kB │ gzip: 0.39 kB\n@webtui/css:build: dist/components/checkbox.css     1.05 kB │ gzip: 0.42 kB\n@webtui/css:build: dist/components/progress.css     1.32 kB │ gzip: 0.44 kB\n@webtui/css:build: dist/components/spinner.css      1.47 kB │ gzip: 0.60 kB\n@webtui/css:build: dist/components/popover.css      1.59 kB │ gzip: 0.47 kB\n@webtui/css:build: dist/components/typography.css   1.60 kB │ gzip: 0.57 kB\n@webtui/css:build: dist/components/switch.css       1.72 kB │ gzip: 0.56 kB\n@webtui/css:build: dist/utils/box.css               1.77 kB │ gzip: 0.47 kB\n@webtui/css:build: dist/components/table.css        1.88 kB │ gzip: 0.53 kB\n@webtui/css:build: dist/components/dialog.css       2.01 kB │ gzip: 0.57 kB\n@webtui/css:build: dist/components/badge.css        2.08 kB │ gzip: 0.53 kB\n@webtui/css:build: dist/components/range.css        2.20 kB │ gzip: 0.59 kB\n@webtui/css:build: dist/components/input.css        2.50 kB │ gzip: 0.52 kB\n@webtui/css:build: dist/components/separator.css    2.95 kB │ gzip: 0.57 kB\n@webtui/css:build: dist/components/tooltip.css      3.80 kB │ gzip: 0.51 kB\n@webtui/css:build: dist/components/button.css       4.48 kB │ gzip: 0.82 kB\n@webtui/css:build: dist/full.css                   35.84 kB │ gzip: 5.75 kB\n@webtui/css:build: ✓ built in 151ms\ndocs:build: cache hit, replaying logs d6d97891acda7eb5\ndocs:build: $ astro build\ndocs:build: 09:08:31 [content] Syncing content\ndocs:build: 09:08:31 [content] Astro config changed\ndocs:build: 09:08:31 [content] Content config changed\ndocs:build: 09:08:31 [content] Clearing content store\ndocs:build: 09:08:32 [content] Synced content\ndocs:build: 09:08:32 [types] Generated 771ms\ndocs:build: 09:08:32 [build] output: \"static\"\ndocs:build: 09:08:32 [build] mode: \"static\"\ndocs:build: 09:08:32 [build] directory: /Users/samforeman/projects/saforem2/sam.onl/web/dist/\ndocs:build: 09:08:32 [build] Collecting build info...\ndocs:build: 09:08:32 [build] ✓ Completed in 855ms.\ndocs:build: 09:08:32 [build] Building static entrypoints...\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: 09:09:12 [vite] ✓ built in 39.95s\ndocs:build: 09:09:12 [build] ✓ Completed in 39.98s.\ndocs:build: \ndocs:build:  building client (vite) \ndocs:build: 09:09:12 [vite] transforming...\ndocs:build: 09:09:12 [vite] ✓ 16 modules transformed.\ndocs:build: 09:09:12 [vite] rendering chunks...\ndocs:build: 09:09:12 [vite] computing gzip size...\ndocs:build: 09:09:12 [vite] dist/_astro/Sidebar.astro_astro_type_script_index_0_lang.DlLryk4V.js        0.46 kB │ gzip: 0.30 kB\ndocs:build: 09:09:12 [vite] dist/_astro/Dropdown.astro_astro_type_script_index_0_lang.WMNsd6WJ.js       0.90 kB │ gzip: 0.47 kB\ndocs:build: 09:09:12 [vite] dist/_astro/VimNavigation.astro_astro_type_script_index_0_lang.BbEeRTlx.js  1.21 kB │ gzip: 0.41 kB\ndocs:build: 09:09:12 [vite] dist/_astro/Navbar.astro_astro_type_script_index_0_lang.me8FHkNQ.js         1.40 kB │ gzip: 0.60 kB\ndocs:build: 09:09:12 [vite] dist/_astro/Tabs.astro_astro_type_script_index_0_lang.C7u-imx6.js           1.41 kB │ gzip: 0.63 kB\ndocs:build: 09:09:12 [vite] dist/_astro/vim.BVePuknZ.js                                                 2.73 kB │ gzip: 1.27 kB\ndocs:build: 09:09:12 [vite] dist/_astro/Doc.astro_astro_type_script_index_3_lang.DDxc7lby.js            3.00 kB │ gzip: 1.04 kB\ndocs:build: 09:09:12 [vite] dist/_astro/Doc.astro_astro_type_script_index_6_lang.CbRR5wF4.js            3.76 kB │ gzip: 1.27 kB\ndocs:build: 09:09:12 [vite] dist/_astro/Filter.astro_astro_type_script_index_0_lang.QFyF-JVs.js         4.17 kB │ gzip: 1.44 kB\ndocs:build: 09:09:12 [vite] ✓ built in 188ms\ndocs:build: \ndocs:build:  generating static routes \ndocs:build: 09:09:12 ▶ src/pages/about/index.mdx\ndocs:build: 09:09:12   └─ /about/index.html (+26ms) \ndocs:build: 09:09:13 ▶ src/pages/docs/test.mdx\ndocs:build: 09:09:13   └─ /docs/test/index.html (+10ms) \ndocs:build: 09:09:13 ▶ src/pages/ideas/index.mdx\ndocs:build: 09:09:13   └─ /ideas/index.html (+21ms) \ndocs:build: 09:09:13 ▶ src/pages/landing.mdx\ndocs:build: 09:09:13   └─ /landing/index.html (+12ms) \ndocs:build: 09:09:13 ▶ src/pages/more/index.mdx\ndocs:build: 09:09:13   └─ /more/index.html (+6ms) \ndocs:build: 09:09:13 ▶ src/pages/now/index.mdx\ndocs:build: 09:09:13   └─ /now/index.html (+6ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/04/28/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/04/28/index.html (+9ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/05/03/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/05/03/index.html (+26ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/06/01/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/06/01/index.html (+28ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/06/02/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/06/02/index.html (+52ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/06/14/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/06/14/index.html (+92ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/06/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/06/index.html (+6ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/09/12/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/09/12/index.html (+40ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/09/17/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/09/17/index.html (+8ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/10/06/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/10/06/index.html (+15ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/11/12/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/11/12/index.html (+8ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/index.html (+6ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2026/01/07/index.mdx\ndocs:build: 09:09:13   └─ /posts/2026/01/07/index.html (+8ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2026/01/10/index.mdx\ndocs:build: 09:09:13   └─ /posts/2026/01/10/index.html (+8ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/ai-for-physics/diffusion/index.mdx\ndocs:build: 09:09:13   └─ /posts/ai-for-physics/diffusion/index.html (+137ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/ai-for-physics/l2hmc-qcd/2dU1/index.mdx\ndocs:build: 09:09:13   └─ /posts/ai-for-physics/l2hmc-qcd/2dU1/index.html (+57ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/ai-for-physics/l2hmc-qcd/4dSU3nb/index-broken.mdx\ndocs:build: 09:09:13   └─ /posts/ai-for-physics/l2hmc-qcd/4dSU3nb/index-broken/index.html (+96ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/ai-for-physics/l2hmc-qcd/index.mdx\ndocs:build: 09:09:13   └─ /posts/ai-for-physics/l2hmc-qcd/index.html (+6ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/ai-for-physics/index.mdx\ndocs:build: 09:09:13   └─ /posts/ai-for-physics/index.html (+5ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/auroragpt/aurora-gpt/index.mdx\ndocs:build: 09:09:13   └─ /posts/auroragpt/aurora-gpt/index.html (+36ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/auroragpt/checkpoints/index.mdx\ndocs:build: 09:09:13   └─ /posts/auroragpt/checkpoints/index.html (+230ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/auroragpt/determinstic-flash-attn/deterministic-flash-attn.mdx\ndocs:build: 09:09:14   └─ /posts/auroragpt/determinstic-flash-attn/deterministic-flash-attn/index.html (+6ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/auroragpt/flash-attn-sunspot/index.mdx\ndocs:build: 09:09:14   └─ /posts/auroragpt/flash-attn-sunspot/index.html (+13ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/auroragpt/long-sequences/index.mdx\ndocs:build: 09:09:14   └─ /posts/auroragpt/long-sequences/index.html (+26ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/auroragpt/mpi4py-reproducer/index.mdx\ndocs:build: 09:09:14   └─ /posts/auroragpt/mpi4py-reproducer/index.html (+8ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/auroragpt/spike-skipper/index.mdx\ndocs:build: 09:09:14   └─ /posts/auroragpt/spike-skipper/index.html (+44ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/auroragpt/startup-times/index.mdx\ndocs:build: 09:09:14   └─ /posts/auroragpt/startup-times/index.html (+19ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/auroragpt/index.mdx\ndocs:build: 09:09:14   └─ /posts/auroragpt/index.html (+64ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/dope-slides/index.mdx\ndocs:build: 09:09:14   └─ /posts/dope-slides/index.html (+15ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/drafts/2025/09/22/index.mdx\ndocs:build: 09:09:14   └─ /posts/drafts/2025/09/22/index.html (+9ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/ezpz-at-alcf/index.mdx\ndocs:build: 09:09:14   └─ /posts/ezpz-at-alcf/index.html (+64ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/ezpz-v1/index.mdx\ndocs:build: 09:09:14   └─ /posts/ezpz-v1/index.html (+323ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/jupyter/l2hmc/4dSU3/index.mdx\ndocs:build: 09:09:14   └─ /posts/jupyter/l2hmc/4dSU3/index.html (+105ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/jupyter/l2hmc-4dSU3/index.mdx\ndocs:build: 09:09:15   └─ /posts/jupyter/l2hmc-4dSU3/index.html (+16ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/jupyter/test/index.mdx\ndocs:build: 09:09:15   └─ /posts/jupyter/test/index.html (+37ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/jupyter/index.mdx\ndocs:build: 09:09:15   └─ /posts/jupyter/index.html (+4ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/resume/index.mdx\ndocs:build: 09:09:15   └─ /posts/resume/index.html (+13ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/svgbob/index.mdx\ndocs:build: 09:09:15   └─ /posts/svgbob/index.html (+73ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/torchtune-aurora/index.mdx\ndocs:build: 09:09:15   └─ /posts/torchtune-aurora/index.html (+12ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/torchtune-patch-aurora/index.mdx\ndocs:build: 09:09:15   └─ /posts/torchtune-patch-aurora/index.html (+4ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/index.mdx\ndocs:build: 09:09:15   └─ /posts/index.html (+4ms) \ndocs:build: 09:09:15 ▶ src/pages/projects/index.mdx\ndocs:build: 09:09:15   └─ /projects/index.html (+4ms) \ndocs:build: 09:09:15 λ src/pages/rss.xml.ts\ndocs:build: 09:09:15   └─ /rss.xml (+6ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/2025/09/24/index.mdx\ndocs:build: 09:09:15   └─ /talks/2025/09/24/index.html (+88ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/2025/10/08/index.mdx\ndocs:build: 09:09:15   └─ /talks/2025/10/08/index.html (+11ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/2025/10/15/index.mdx\ndocs:build: 09:09:15   └─ /talks/2025/10/15/index.html (+27ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/2025/10/24/index.mdx\ndocs:build: 09:09:15   └─ /talks/2025/10/24/index.html (+22ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/2025/12/16/index.mdx\ndocs:build: 09:09:15   └─ /talks/2025/12/16/index.html (+7ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/ai-for-science-2024/index.mdx\ndocs:build: 09:09:15   └─ /talks/ai-for-science-2024/index.html (+106ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/alcf-hpc-workshop-2024/alcf-hpc-workshop-2024.mdx\ndocs:build: 09:09:15   └─ /talks/alcf-hpc-workshop-2024/alcf-hpc-workshop-2024/index.html (+64ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/aurora-gpt-fm-for-electric-grid/AuroraGPT-FM-for-electric-grid.mdx\ndocs:build: 09:09:15   └─ /talks/aurora-gpt-fm-for-electric-grid/AuroraGPT-FM-for-electric-grid/index.html (+11ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/AuroraGPT-ALCF-Hands-On-HPC-Workshop-2024.mdx\ndocs:build: 09:09:15   └─ /talks/AuroraGPT/alcf-hpc-workshop-2024/AuroraGPT-ALCF-Hands-On-HPC-Workshop-2024/index.html (+13ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/AuroraGPT-SIAM25/index.mdx\ndocs:build: 09:09:15   └─ /talks/AuroraGPT-SIAM25/index.html (+10ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/hpc-user-forum/AuroraGPT.mdx\ndocs:build: 09:09:15   └─ /talks/hpc-user-forum/AuroraGPT/index.html (+10ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/incite-hackathon-2025/AuroraGPT/index.mdx\ndocs:build: 09:09:15   └─ /talks/incite-hackathon-2025/AuroraGPT/index.html (+11ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/incite-hackathon-2025/ezpz/index.mdx\ndocs:build: 09:09:15   └─ /talks/incite-hackathon-2025/ezpz/index.html (+65ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/incite-hackathon-2025/index.mdx\ndocs:build: 09:09:15   └─ /talks/incite-hackathon-2025/index.html (+5ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/llms-at-scale/index.mdx\ndocs:build: 09:09:15   └─ /talks/llms-at-scale/index.html (+58ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/llms-on-polaris/index.mdx\ndocs:build: 09:09:15   └─ /talks/llms-on-polaris/index.html (+54ms) \ndocs:build: 09:09:16 ▶ src/pages/talks/openskai25/ai4science/index.mdx\ndocs:build: 09:09:16   └─ /talks/openskai25/ai4science/index.html (+8ms) \ndocs:build: 09:09:16 ▶ src/pages/talks/openskai25/training/index.mdx\ndocs:build: 09:09:16   └─ /talks/openskai25/training/index.html (+70ms) \ndocs:build: 09:09:16 ▶ src/pages/talks/openskai25/index.mdx\ndocs:build: 09:09:16   └─ /talks/openskai25/index.html (+4ms) \ndocs:build: 09:09:16 ▶ src/pages/talks/index.mdx\ndocs:build: 09:09:16   └─ /talks/index.html (+4ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/accordion.mdx\ndocs:build: 09:09:16   └─ /webtui/components/accordion/index.html (+35ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/badge.mdx\ndocs:build: 09:09:16   └─ /webtui/components/badge/index.html (+43ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/button.mdx\ndocs:build: 09:09:16   └─ /webtui/components/button/index.html (+6ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/checkbox.mdx\ndocs:build: 09:09:16   └─ /webtui/components/checkbox/index.html (+6ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/dialog.mdx\ndocs:build: 09:09:16   └─ /webtui/components/dialog/index.html (+32ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/input.mdx\ndocs:build: 09:09:16   └─ /webtui/components/input/index.html (+8ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/popover.mdx\ndocs:build: 09:09:16   └─ /webtui/components/popover/index.html (+15ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/pre.mdx\ndocs:build: 09:09:16   └─ /webtui/components/pre/index.html (+10ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/progress.mdx\ndocs:build: 09:09:16   └─ /webtui/components/progress/index.html (+15ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/radio.mdx\ndocs:build: 09:09:16   └─ /webtui/components/radio/index.html (+8ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/range.mdx\ndocs:build: 09:09:16   └─ /webtui/components/range/index.html (+10ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/separator.mdx\ndocs:build: 09:09:16   └─ /webtui/components/separator/index.html (+25ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/spinner.mdx\ndocs:build: 09:09:16   └─ /webtui/components/spinner/index.html (+30ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/switch.mdx\ndocs:build: 09:09:16   └─ /webtui/components/switch/index.html (+11ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/table.mdx\ndocs:build: 09:09:16   └─ /webtui/components/table/index.html (+5ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/textarea.mdx\ndocs:build: 09:09:16   └─ /webtui/components/textarea/index.html (+5ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/tooltip.mdx\ndocs:build: 09:09:16   └─ /webtui/components/tooltip/index.html (+10ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/typography.mdx\ndocs:build: 09:09:16   └─ /webtui/components/typography/index.html (+10ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/view.mdx\ndocs:build: 09:09:16   └─ /webtui/components/view/index.html (+23ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/contributing/contributing.md\ndocs:build: 09:09:16   └─ /webtui/contributing/contributing/index.html (+5ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/contributing/style-guide.md\ndocs:build: 09:09:16   └─ /webtui/contributing/style-guide/index.html (+4ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/installation/astro.md\ndocs:build: 09:09:16   └─ /webtui/installation/astro/index.html (+4ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/installation/nextjs.md\ndocs:build: 09:09:16   └─ /webtui/installation/nextjs/index.html (+3ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/installation/vite.md\ndocs:build: 09:09:16   └─ /webtui/installation/vite/index.html (+3ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/plugins/plugin-dev.md\ndocs:build: 09:09:16   └─ /webtui/plugins/plugin-dev/index.html (+11ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/plugins/plugin-nf.mdx\ndocs:build: 09:09:16   └─ /webtui/plugins/plugin-nf/index.html (+9ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/plugins/theme-catppuccin.mdx\ndocs:build: 09:09:16   └─ /webtui/plugins/theme-catppuccin/index.html (+9ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/plugins/theme-everforest.mdx\ndocs:build: 09:09:16   └─ /webtui/plugins/theme-everforest/index.html (+18ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/plugins/theme-gruvbox.mdx\ndocs:build: 09:09:16   └─ /webtui/plugins/theme-gruvbox/index.html (+8ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/plugins/theme-nord.mdx\ndocs:build: 09:09:16   └─ /webtui/plugins/theme-nord/index.html (+8ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/plugins/theme-vitesse.mdx\ndocs:build: 09:09:16   └─ /webtui/plugins/theme-vitesse/index.html (+16ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/start/ascii-boxes.mdx\ndocs:build: 09:09:16   └─ /webtui/start/ascii-boxes/index.html (+25ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/start/changelog.mdx\ndocs:build: 09:09:16   └─ /webtui/start/changelog/index.html (+12ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/start/installation.md\ndocs:build: 09:09:16   └─ /webtui/start/installation/index.html (+19ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/start/intro.md\ndocs:build: 09:09:16   └─ /webtui/start/intro/index.html (+4ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/start/plugins.md\ndocs:build: 09:09:16   └─ /webtui/start/plugins/index.html (+5ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/start/theming.md\ndocs:build: 09:09:16   └─ /webtui/start/theming/index.html (+9ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/start/tuis-vs-guis.md\ndocs:build: 09:09:16   └─ /webtui/start/tuis-vs-guis/index.html (+6ms) \ndocs:build: 09:09:16 ▶ src/pages/index.astro\ndocs:build: 09:09:16   └─ /index.html (+7ms) \ndocs:build: 09:09:16 ✓ Completed in 3.79s.\ndocs:build: \ndocs:build:  generating optimized images \ndocs:build: 09:09:16   ▶ /_astro/4291d2280ebb3b7d7fd410b6fbd5a7999b28d1e6.DJOU3cyq_ZtqY0m.svg (reused cache entry) (+7ms) (1/408)\ndocs:build: 09:09:16   ▶ /_astro/nvim-headings-dark.Dh4pQJM1_125rSo.webp (reused cache entry) (+8ms) (2/408)\ndocs:build: 09:09:16   ▶ /_astro/cooldown.B1JATfjR_Z1cr2jX.webp (reused cache entry) (+8ms) (3/408)\ndocs:build: 09:09:16   ▶ /_astro/cooldown-dark.WqRUK60t_dLPl9.webp (reused cache entry) (+11ms) (4/408)\ndocs:build: 09:09:16   ▶ /_astro/c51d8b2dcc6ec0e2de63ff069d3730bb571457b0.DCLNmaQy_Z1pMD2n.svg (reused cache entry) (+11ms) (5/408)\ndocs:build: 09:09:16   ▶ /_astro/f4712af7b26ced3d77075d986993d9ed41e01438.D7UTyExj_ZyI52s.svg (reused cache entry) (+11ms) (6/408)\ndocs:build: 09:09:16   ▶ /_astro/52754b8f1d67eb90a526f91bf820f0ab6f00f3e6.CbyWb5VO_ZyYlNd.svg (reused cache entry) (+11ms) (7/408)\ndocs:build: 09:09:16   ▶ /_astro/68eb7a87933506e4ea9f017913c8f1eb3d474f82.C1P-GWWF_Z2cpGPY.svg (reused cache entry) (+13ms) (8/408)\ndocs:build: 09:09:16   ▶ /_astro/91f9822f7846afea800b646ef6d7f00adbe10a41.BKeO8Sch_Z2cpGPY.svg (reused cache entry) (+13ms) (9/408)\ndocs:build: 09:09:16   ▶ /_astro/nvim-headings-light.8A7Tor1O_Z27Enrs.webp (reused cache entry) (+15ms) (10/408)\ndocs:build: 09:09:16   ▶ /_astro/150b885c11a3eb085ac620b73b278b467bf2accf.CXiHAQFk_ZAUlmb.svg (reused cache entry) (+13ms) (11/408)\ndocs:build: 09:09:16   ▶ /_astro/eee837b584211a155df0693c80ab0f74ef3df2d9.io0XjguD_Z1O89Sf.svg (reused cache entry) (+13ms) (12/408)\ndocs:build: 09:09:16   ▶ /_astro/79d781dfd4250c92dd76a8d8d3185ef5f4bf0edb.C4UUJzAn_ZMIsnJ.svg (reused cache entry) (+7ms) (13/408)\ndocs:build: 09:09:16   ▶ /_astro/ba6c79eb08e2df2807d207201f4260fcfb41a55d.Coo-2U9m_Z1XrJ5y.svg (reused cache entry) (+7ms) (14/408)\ndocs:build: 09:09:16   ▶ /_astro/d7f0c56ea62b31af4a43a53d6eb9d0e46a0d0979.BdEJOpdB_ZMIsnJ.svg (reused cache entry) (+11ms) (15/408)\ndocs:build: 09:09:16   ▶ /_astro/be9f0e6e22b1f8d41ba35ef1c2e7c53026cdd606.Dt1vq81O_Z1XrJ5y.svg (reused cache entry) (+7ms) (16/408)\ndocs:build: 09:09:16   ▶ /_astro/7e5ffe849dbd6a7b8314042e953d762ab9e4286b.P8w_cZxq_ZMIsnJ.svg (reused cache entry) (+8ms) (17/408)\ndocs:build: 09:09:16   ▶ /_astro/c919c93d92e6aec85e840c2ad8cb47eb30a8b015.CyqOuEL5_ZMIsnJ.svg (reused cache entry) (+16ms) (18/408)\ndocs:build: 09:09:16   ▶ /_astro/713d68e5d1fdd22fb92855cc3e25255035f0770c.DhSajADE_ZMIsnJ.svg (reused cache entry) (+16ms) (19/408)\ndocs:build: 09:09:16   ▶ /_astro/368f5610bb37915389764b0b7392edd577eaf415.Dgtc8Xu-_ZMIsnJ.svg (reused cache entry) (+17ms) (20/408)\ndocs:build: 09:09:16   ▶ /_astro/86fc3f47b8b4020e2b94ff74e79fdb3558c43f80.J8U0hYXF_ZMIsnJ.svg (reused cache entry) (+18ms) (21/408)\ndocs:build: 09:09:16   ▶ /_astro/acbf03bb04c361e167eefed84a13de13ef8ee37c.BcfbOjub_ZwYi3y.svg (reused cache entry) (+20ms) (22/408)\ndocs:build: 09:09:16   ▶ /_astro/70234c6bf6df3cbd32f9de96e36e740eda0ed20d.CS8Kj6xG_1FrGYV.svg (reused cache entry) (+20ms) (23/408)\ndocs:build: 09:09:16   ▶ /_astro/85261feb8c9ba70c38f9f40eb69b7b3bc4c670b0.BufPRNi8_sflHU.svg (reused cache entry) (+16ms) (24/408)\ndocs:build: 09:09:16   ▶ /_astro/835139501cc9fcf6442be81e0033045b8f33ae74.BxjBF3Hy_ZMIsnJ.svg (reused cache entry) (+22ms) (25/408)\ndocs:build: 09:09:16   ▶ /_astro/e90001ab4bbbe38f50cca429a69bc2b212ed8a4d.Z73_07a5_sflHU.svg (reused cache entry) (+18ms) (26/408)\ndocs:build: 09:09:16   ▶ /_astro/b2807643bf74b33689a17754209e56554bfe1f52.BndFrzc7_SRoK4.svg (reused cache entry) (+18ms) (27/408)\ndocs:build: 09:09:16   ▶ /_astro/9d36e3726eb2a63bcae157590b44c3710847442f.DWqTpUaQ_1AiSQa.svg (reused cache entry) (+15ms) (28/408)\ndocs:build: 09:09:16   ▶ /_astro/6ba854aa0d42fd2eae98f6d82c0d6566005c421b.DFil7tXf_1xTpWn.svg (reused cache entry) (+7ms) (29/408)\ndocs:build: 09:09:16   ▶ /_astro/4509936f2dbb7e69226f3d2851bc462cf8046e8e.C_EgnHoC_Ch1jU.svg (reused cache entry) (+18ms) (30/408)\ndocs:build: 09:09:16   ▶ /_astro/9d3a4133b6d0c2bf60da7558af21452baab7d5c3.BnVraF23_1weHaa.svg (reused cache entry) (+8ms) (31/408)\ndocs:build: 09:09:16   ▶ /_astro/02d2b941bf240ac2a6659c37519a6e2ebec63b41.Cx5by0R7_1yaGI8.svg (reused cache entry) (+8ms) (32/408)\ndocs:build: 09:09:16   ▶ /_astro/292acc374ca58b3045c07221e75d5ad20d83a646.BN4jwO48_sflHU.svg (reused cache entry) (+5ms) (33/408)\ndocs:build: 09:09:16   ▶ /_astro/b8adc3f97c471460069de45c953d36d2a16fc858.Dv3Bq-mw_Z39d4O.svg (reused cache entry) (+3ms) (34/408)\ndocs:build: 09:09:16   ▶ /_astro/88b5366a0686ecb675259d3e1459d08d6c39e750.J7hphE-X_Z1yTKrI.svg (reused cache entry) (+7ms) (35/408)\ndocs:build: 09:09:16   ▶ /_astro/3f9d006e6a51dac62b80daab5d4bb4ac70596db2.B7w3-f0z_5HoAd.svg (reused cache entry) (+8ms) (36/408)\ndocs:build: 09:09:16   ▶ /_astro/3b6a02bc8d6489b5a0147b59009b8a3be270ba14.BuyCtci0_sflHU.svg (reused cache entry) (+6ms) (37/408)\ndocs:build: 09:09:16   ▶ /_astro/47bdd16c94ddaa9ca790f6eb7e1bc0a81096884e.C9Ec5a31_2gBzEl.webp (reused cache entry) (+4ms) (38/408)\ndocs:build: 09:09:16   ▶ /_astro/7d13620e1484d2f1898e8d25111a349d44f96802.B5cx-GPB_UpRBs.webp (reused cache entry) (+4ms) (39/408)\ndocs:build: 09:09:16   ▶ /_astro/5c8dc3c3b2377e2396c8c18af0129ebe00ab8dd0.DikK1th-_yi7UA.webp (reused cache entry) (+5ms) (40/408)\ndocs:build: 09:09:16   ▶ /_astro/6d2aa12fc7b895ecb01732b641ade55bcc144d8c.BUMbCKHt_1X9JDv.webp (reused cache entry) (+5ms) (41/408)\ndocs:build: 09:09:16   ▶ /_astro/3818ed5f707eabfa77a6b76e8c2286ada1343450.CHWtZqPe_Ocrmf.webp (reused cache entry) (+4ms) (42/408)\ndocs:build: 09:09:16   ▶ /_astro/6dffde926798bf77dd315335986b1bd1aa0a9b83.DPyVaAfj_vhng3.webp (reused cache entry) (+4ms) (43/408)\ndocs:build: 09:09:16   ▶ /_astro/879e257bb220f8c3b99c413ca0295b415275f643.Bv_KFx8K_1imIfD.webp (reused cache entry) (+3ms) (44/408)\ndocs:build: 09:09:16   ▶ /_astro/520ebc34968fcde90af80462a6bb1ffd8d2588bb.Bved2OHe_1MmdPp.webp (reused cache entry) (+4ms) (45/408)\ndocs:build: 09:09:16   ▶ /_astro/f72e2858d462bfaf254e034b005d239f82813cea.VjKp1GVK_20WjyF.webp (reused cache entry) (+7ms) (46/408)\ndocs:build: 09:09:16   ▶ /_astro/d6be679cfcd697997e1f1082953d8123cb6999fe.BSnUd1V9_Z29iHVP.webp (reused cache entry) (+3ms) (47/408)\ndocs:build: 09:09:16   ▶ /_astro/33a3458db0fe1d42b6f122ced0e855813c7814a4.BKYWa0fd_Z194igw.webp (reused cache entry) (+4ms) (48/408)\ndocs:build: 09:09:16   ▶ /_astro/dab0c16a9b78f927033c0becca58c3a521e31376.oGNu67YE_1uMyrf.webp (reused cache entry) (+4ms) (49/408)\ndocs:build: 09:09:16   ▶ /_astro/455931aaba521ac6d52db2c33261a04fb28fa1bb.BSzsXNvM_TJmrz.webp (reused cache entry) (+4ms) (50/408)\ndocs:build: 09:09:16   ▶ /_astro/ff73a5f10d599d16fd5cf28a854ba398154723bc.BHv1phQ7_1y5E4l.webp (reused cache entry) (+5ms) (51/408)\ndocs:build: 09:09:16   ▶ /_astro/bb29e5b9a51173d1f34d6e94376ec56c240e1159.CpqsxXAQ_ZutcDT.webp (reused cache entry) (+4ms) (52/408)\ndocs:build: 09:09:16   ▶ /_astro/973b5df9ed2c65bedd46efb82d13cc0ec93cc3cf.C1aYmrPF_fLkPB.webp (reused cache entry) (+5ms) (53/408)\ndocs:build: 09:09:16   ▶ /_astro/d2f31260408eaf4a2598503e370d078d7e7a2bd8.DMtIY0_R_1PMisk.webp (reused cache entry) (+4ms) (54/408)\ndocs:build: 09:09:16   ▶ /_astro/58adb3a94e4096e2a6f1d5ea888be5938b29c956.CCH_uo1d_2gpCwp.webp (reused cache entry) (+4ms) (55/408)\ndocs:build: 09:09:16   ▶ /_astro/f7c0b19ca9f753258b79155c82002648bc61bab7.tlaYWPOW_SLSR3.webp (reused cache entry) (+5ms) (56/408)\ndocs:build: 09:09:16   ▶ /_astro/173247eb828addcccb43b23a53ad1d06f66bcfce.9__sjEAc_1SKA64.webp (reused cache entry) (+5ms) (57/408)\ndocs:build: 09:09:16   ▶ /_astro/4381174dca0b056a196d0479c088d1f3efe16f33.44FRPw6P_3prpk.webp (reused cache entry) (+5ms) (58/408)\ndocs:build: 09:09:16   ▶ /_astro/b8d1b4496ef1b742185adee3e0c9ca5e890a7e21.DAyZ6TsY_1R07Hk.webp (reused cache entry) (+5ms) (59/408)\ndocs:build: 09:09:16   ▶ /_astro/8ec437183a8e38088c60b61f6bf741b9bd8cc5e0.Q1qDClPQ_Z2atAnw.webp (reused cache entry) (+6ms) (60/408)\ndocs:build: 09:09:16   ▶ /_astro/5a159246299e40b9ab7c6846766b663a536f0980.BlnT_r1E_2eejne.webp (reused cache entry) (+2ms) (61/408)\ndocs:build: 09:09:16   ▶ /_astro/9ce225aca61eaac1955cf0e563f5c060ba26abdd.B-QyYZRx_Z1wjftx.webp (reused cache entry) (+5ms) (62/408)\ndocs:build: 09:09:16   ▶ /_astro/4ef7cf6fa40d2838e86ade19885717c6aa3bedad.CvOOxTc6_wsGqf.webp (reused cache entry) (+4ms) (63/408)\ndocs:build: 09:09:16   ▶ /_astro/b0fa9b818f965b4b8688f3dc68c18951a2e9bda3.DMsxZ75b_1EXuWs.webp (reused cache entry) (+4ms) (64/408)\ndocs:build: 09:09:16   ▶ /_astro/6ebfd6dfef5b41747fe8e59ad912637f95601122.Cvd05bj3_Z2mCrCS.webp (reused cache entry) (+5ms) (65/408)\ndocs:build: 09:09:16   ▶ /_astro/356d9006165de27ce7f34065a2cef218a99e935e.Sx0Ee21q_276Pl5.webp (reused cache entry) (+5ms) (66/408)\ndocs:build: 09:09:16   ▶ /_astro/ecc940df6894f40e5d5c5bd9422e5144818a87ad.BzPaxxfq_2c0sLE.webp (reused cache entry) (+8ms) (67/408)\ndocs:build: 09:09:16   ▶ /_astro/33f2b64af3c55b6b9f9092066f02745546f73cb9.DQ6FGszy_Z2pXIjf.webp (reused cache entry) (+8ms) (68/408)\ndocs:build: 09:09:16   ▶ /_astro/349615b5ddb5e5ff8a029e71f5df2e43c2017b37.CQCOn4Vw_Z2qTdVE.webp (reused cache entry) (+9ms) (69/408)\ndocs:build: 09:09:16   ▶ /_astro/2a3459f101399ff1b4201488400b52d37704a235.Yssu5KdP_ZPDeyP.webp (reused cache entry) (+8ms) (70/408)\ndocs:build: 09:09:16   ▶ /_astro/0594044ac9bb875a5426df5079d6c3eea6ef136a.sT5bEa6f_Z1VhaXy.webp (reused cache entry) (+6ms) (71/408)\ndocs:build: 09:09:16   ▶ /_astro/f9dd1efd66879ada60cdb53b0881ae239818b33e.Cj6Ls78g_Zd5FCX.webp (reused cache entry) (+8ms) (72/408)\ndocs:build: 09:09:16   ▶ /_astro/9022f65638f717c0249efdbea0e79eaa9e6dec8d.PSOmcEox_2guLj2.webp (reused cache entry) (+7ms) (73/408)\ndocs:build: 09:09:16   ▶ /_astro/6465bd8d15c17440b0d1703ccb04608af239abc1.CNsiSKVp_Z1NxziL.webp (reused cache entry) (+6ms) (74/408)\ndocs:build: 09:09:16   ▶ /_astro/5854b016458bf24e11058cfd291e8e70d740306f.DqCWeZjC_Z1mekzU.webp (reused cache entry) (+2ms) (75/408)\ndocs:build: 09:09:16   ▶ /_astro/dd7d32f6e94b451a3379c418bed27053f136ce52.LH7ZfSiZ_13esOQ.webp (reused cache entry) (+6ms) (76/408)\ndocs:build: 09:09:16   ▶ /_astro/c8c332ad8537df61decd874d99a89740789c4964.ip4ilOU4_Z2er2He.webp (reused cache entry) (+4ms) (77/408)\ndocs:build: 09:09:16   ▶ /_astro/23f8f82d498a7ab954c98547e4aaf5e3eb471f3d.Cn-iuW-L_1GjJ5i.webp (reused cache entry) (+4ms) (78/408)\ndocs:build: 09:09:16   ▶ /_astro/bfe4b8ad60ed009cae6fa52cf59abc0468f2fa45.Uoa8JXj5_Z1FqVuu.webp (reused cache entry) (+6ms) (79/408)\ndocs:build: 09:09:16   ▶ /_astro/705678f3da4898a16b2c0a5c9175e33ceee096b2.CDT9bkYu_ZIMtG5.webp (reused cache entry) (+6ms) (80/408)\ndocs:build: 09:09:16   ▶ /_astro/e98ffbd623e098bdd063ff21cc2a4269756acf0d.CQ4v-W-X_2oxqm0.webp (reused cache entry) (+7ms) (81/408)\ndocs:build: 09:09:16   ▶ /_astro/cdc08dad12cd81ed898d6c4d5744cf8d3924ca47.Dy220HBK_ZEPg01.webp (reused cache entry) (+5ms) (82/408)\ndocs:build: 09:09:16   ▶ /_astro/261e89edabee51d835f9317fd7f74cf7fd15bc07.DG2nMQxG_1w59VC.webp (reused cache entry) (+6ms) (83/408)\ndocs:build: 09:09:16   ▶ /_astro/50af5bebd91e6f13b411656b5a2fef53fc9c2801.BHcFIy94_nNxS3.webp (reused cache entry) (+6ms) (84/408)\ndocs:build: 09:09:16   ▶ /_astro/1cacfa4989426e636e46b6e54cbf03c0d888fae1.Y4cqKh9C_1VSI6f.webp (reused cache entry) (+5ms) (85/408)\ndocs:build: 09:09:16   ▶ /_astro/6b9cd2adec04a0d085da3229630f2b0420209a0a.BdSxbDi5_eUV6J.webp (reused cache entry) (+6ms) (86/408)\ndocs:build: 09:09:16   ▶ /_astro/447a0ede73d9e67291687d7aec0b6dddfd3f90be.Rgv_vU8E_Z1KVkey.webp (reused cache entry) (+5ms) (87/408)\ndocs:build: 09:09:16   ▶ /_astro/5f339a79a57e20aeedff2fcc8da3a6c4a85dd2cb.NNYLgNDU_ZOfE2Q.webp (reused cache entry) (+5ms) (88/408)\ndocs:build: 09:09:16   ▶ /_astro/ddf6bd4ca3cca67c71ab110625aa78f62834fe98.DSeE4MIG_Z1FBqMM.webp (reused cache entry) (+3ms) (89/408)\ndocs:build: 09:09:16   ▶ /_astro/52cda52294e5f86662078c99c02f21344bc5a963.CpXVLJze_Z1BnEgB.webp (reused cache entry) (+2ms) (90/408)\ndocs:build: 09:09:16   ▶ /_astro/5ad91366b1aac13a7258f416f90f209b77204957.BGABxA4W_24Iod6.webp (reused cache entry) (+7ms) (91/408)\ndocs:build: 09:09:16   ▶ /_astro/12d953f10f7af1b3892c6cf7e02268737ca56fe3.Dayo3z2o_Z2fIFU.webp (reused cache entry) (+2ms) (92/408)\ndocs:build: 09:09:16   ▶ /_astro/2de173f116270c978564829dcec299092897bd79.pCUpoqk-_NyqxF.webp (reused cache entry) (+3ms) (93/408)\ndocs:build: 09:09:16   ▶ /_astro/ed20286c82775bf39bbf5b6d51ca8aed7deb736e.VHDciYQW_Z2ePgpX.webp (reused cache entry) (+3ms) (94/408)\ndocs:build: 09:09:16   ▶ /_astro/b36d5d81147c93f2e5d60af97f1c2419aeb3a1c2.BEN6jxKL_Z1qptS3.webp (reused cache entry) (+4ms) (95/408)\ndocs:build: 09:09:16   ▶ /_astro/5aeefbc762a4f55f21f4847c42e4a31adc52a95c.SAzrJXEG_ZjKNKy.webp (reused cache entry) (+4ms) (96/408)\ndocs:build: 09:09:16   ▶ /_astro/e378a9f71a8044dac83c8c2f7f57f46fc2d52254.4H4yndDw_Z1u6Gfe.webp (reused cache entry) (+6ms) (97/408)\ndocs:build: 09:09:16   ▶ /_astro/8b03fc7278fe8f60c302a19dd4b64dddad137c24.B6xT7f51_kUKyN.webp (reused cache entry) (+7ms) (98/408)\ndocs:build: 09:09:16   ▶ /_astro/04b0d0ce37ce4eb770c0f31bb43c9df1a577340f.D39MSVjQ_2ckLnl.webp (reused cache entry) (+5ms) (99/408)\ndocs:build: 09:09:16   ▶ /_astro/d2fa20eae1f19c33ef88639f4fd7ca657c75c61f.CLZ4m8Tf_ZSRq5s.webp (reused cache entry) (+8ms) (100/408)\ndocs:build: 09:09:16   ▶ /_astro/ae2220aaf83e485e7b450508f25af10d5650ecc9.Bg7FvS-j_ZNin3Q.webp (reused cache entry) (+8ms) (101/408)\ndocs:build: 09:09:16   ▶ /_astro/f58571fb4a1e58c1ec63378a9e578c73646fa016.DVFybM4X_Z2qJHLJ.webp (reused cache entry) (+6ms) (102/408)\ndocs:build: 09:09:16   ▶ /_astro/75b918c31f057695d67d13e206d968a68444a8c3.sI5mfglk_2kO8tw.webp (reused cache entry) (+3ms) (103/408)\ndocs:build: 09:09:16   ▶ /_astro/69ba6ea06ee4da50119de958550377145090542d.M7bLEHxx_Z2b1m52.webp (reused cache entry) (+5ms) (104/408)\ndocs:build: 09:09:16   ▶ /_astro/4cf6c5cd19fed89dec70020e16e22d361d43f11b.V4wjNZcB_2aaiB5.webp (reused cache entry) (+6ms) (105/408)\ndocs:build: 09:09:16   ▶ /_astro/3d919cc5f87d2d307efba66b1304407c4aacc7d4.Ck--vmad_MSpdk.webp (reused cache entry) (+6ms) (106/408)\ndocs:build: 09:09:16   ▶ /_astro/fa2cc5f5cfd8700758aac1b5f9d2745f247385a1.Cn2wY34W_ZxIR2.webp (reused cache entry) (+4ms) (107/408)\ndocs:build: 09:09:16   ▶ /_astro/50e26f31ca7bbef4e56f2e385336d8c689a2fdf3.DDQtesDN_Z26NUIS.webp (reused cache entry) (+5ms) (108/408)\ndocs:build: 09:09:16   ▶ /_astro/a1ba5f20c83182d7c1ccf1313f6e6661c6c0e273.X6HpQlgv_RF9Ju.webp (reused cache entry) (+7ms) (109/408)\ndocs:build: 09:09:16   ▶ /_astro/a7394b061825bd6a3816ee1bcf83ee0ef85a528b.CMs1s_wb_26C31Q.webp (reused cache entry) (+10ms) (110/408)\ndocs:build: 09:09:16   ▶ /_astro/4788925eab3876108af362d0e8bc246b309db14b.F0DGzlH7_HNCUo.webp (reused cache entry) (+7ms) (111/408)\ndocs:build: 09:09:16   ▶ /_astro/e0afbecac790d590f52a4c603705636126935532.B2lng9mo_ZP0pGE.webp (reused cache entry) (+10ms) (112/408)\ndocs:build: 09:09:16   ▶ /_astro/3f7182f75ea7be3de466f0acdf28643b29cc5eb9.DcSqByaE_1Kj2kn.webp (reused cache entry) (+9ms) (113/408)\ndocs:build: 09:09:16   ▶ /_astro/bc8f012cff0f12bfd7d8f5899f467f0b04d1c9f4.BJVZe4Rw_1Xex4q.webp (reused cache entry) (+9ms) (114/408)\ndocs:build: 09:09:16   ▶ /_astro/9d4b10b3eb0ca80844ac23087396a1348571d25e.CBXfqyJU_fHCFA.webp (reused cache entry) (+10ms) (115/408)\ndocs:build: 09:09:16   ▶ /_astro/eca0a15cbc2c851d7aad0d1e3760dc89cb0d8ada.gKNGN2iB_1Q3uJR.webp (reused cache entry) (+10ms) (116/408)\ndocs:build: 09:09:16   ▶ /_astro/7ad1f183ce7436cab3ac2a6611eada039cc28c23.C-iHvq8g_Z1yx9V8.webp (reused cache entry) (+12ms) (117/408)\ndocs:build: 09:09:16   ▶ /_astro/0ab053c480477da8d0fe3714a2aeccd84b3def15.BGCHE3Mu_Z2uPtML.webp (reused cache entry) (+11ms) (118/408)\ndocs:build: 09:09:16   ▶ /_astro/11da03e7fa757048470bc4324e34f6afe325094f.DhzG1mdp_Zhf2S8.webp (reused cache entry) (+14ms) (119/408)\ndocs:build: 09:09:16   ▶ /_astro/d06241e30606b123859a49a5c5d91369298248e2.CvZfVi7E_Z1H0fof.webp (reused cache entry) (+9ms) (120/408)\ndocs:build: 09:09:16   ▶ /_astro/62abf81772f30cb0131a2a2fe8639bc34e4a6d91.WIRVykUq_ZvrNHv.webp (reused cache entry) (+14ms) (121/408)\ndocs:build: 09:09:16   ▶ /_astro/71caddac0e1a8ec91b72abf171d3f7bc661591ca.dYHGDsMW_i82h8.webp (reused cache entry) (+13ms) (122/408)\ndocs:build: 09:09:16   ▶ /_astro/e1bcd0aa338e4dbc799e588953809e2d2f4bb623.DN5a2Exc_TiExj.webp (reused cache entry) (+18ms) (123/408)\ndocs:build: 09:09:16   ▶ /_astro/c8b70caf1ee5a1b2f43eadb345156f84bceb3a76.DZi1K7Jj_48CMR.webp (reused cache entry) (+11ms) (124/408)\ndocs:build: 09:09:16   ▶ /_astro/b744ef91e73c64010a04f8ae08b0bbc06f0f7ab2.Bq-GBPUH_2kNTnf.webp (reused cache entry) (+11ms) (125/408)\ndocs:build: 09:09:16   ▶ /_astro/2df25c501810b19f20596b34bf9eda3246724d89.Djm9AAkV_ZzsByu.webp (reused cache entry) (+14ms) (126/408)\ndocs:build: 09:09:16   ▶ /_astro/e012a974574a1f3ffabc5405d57a27eb5684f1ad.Crwaa6dd_Z2uELGS.webp (reused cache entry) (+12ms) (127/408)\ndocs:build: 09:09:16   ▶ /_astro/53450e9812f7375171c36c338fd2511ac3fe9553.BOjNTtEI_SX8Ym.webp (reused cache entry) (+11ms) (128/408)\ndocs:build: 09:09:16   ▶ /_astro/343c2c596d60fe524108f1eebbda7ff288f98847.C9hRx8_V_2swWPF.webp (reused cache entry) (+9ms) (129/408)\ndocs:build: 09:09:16   ▶ /_astro/f6d1a5278ac4609a95ad18ea79dd43f1ba9e5678.CHxb6A1E_2krsi3.webp (reused cache entry) (+6ms) (130/408)\ndocs:build: 09:09:16   ▶ /_astro/5ea88e0e246b0df8cdfc69aa0010fdaa57b6dd11.CmAOvKVq_Z13JJgm.webp (reused cache entry) (+2ms) (131/408)\ndocs:build: 09:09:16   ▶ /_astro/bdb9adda3dfcf48486b2c7e63031b59749239b5e.DgZ1lSpj_Z1yBQL2.webp (reused cache entry) (+2ms) (132/408)\ndocs:build: 09:09:16   ▶ /_astro/5276d608591daa1b750e3e8ba33adc8b7f4ce587.BM7rLyQ__ZHf2qB.webp (reused cache entry) (+2ms) (133/408)\ndocs:build: 09:09:16   ▶ /_astro/5cb5dba81ec50f2ffd14c1ab096c71926f7e53fb.BwLRQCqy_Z12t1FR.webp (reused cache entry) (+2ms) (134/408)\ndocs:build: 09:09:16   ▶ /_astro/f50cdbefe24ae29c9cc3687b7c6a28f897c06589.BdgXqVIR_Z2xpAr.webp (reused cache entry) (+3ms) (135/408)\ndocs:build: 09:09:16   ▶ /_astro/367ad91a96bf3459fd83a96b7978463360fdedbb.C_ma8xx-_1o2tMn.webp (reused cache entry) (+3ms) (136/408)\ndocs:build: 09:09:16   ▶ /_astro/52cca62e99a6552a083368137f01273a262c38c7.DQioFEGB_Z170VUX.webp (reused cache entry) (+3ms) (137/408)\ndocs:build: 09:09:16   ▶ /_astro/48eb82fab0136487bb9e76e9673026c80ad4ee07.DqQ_WM6i_2duLX9.webp (reused cache entry) (+3ms) (138/408)\ndocs:build: 09:09:16   ▶ /_astro/d896447ac95eb1f0e7159ee97a92633d0b5565de.Cbo59MsV_ZkwmoE.webp (reused cache entry) (+4ms) (139/408)\ndocs:build: 09:09:16   ▶ /_astro/a5bab36c412414e9a217ce48bcccd9183305a1c4.DRe8Pz6c_7I8D.webp (reused cache entry) (+4ms) (140/408)\ndocs:build: 09:09:16   ▶ /_astro/5313ad2537c31d30cceecb44308d8b76a70c456c.Bf0ETI2S_1jl11z.webp (reused cache entry) (+5ms) (141/408)\ndocs:build: 09:09:16   ▶ /_astro/3afef3b0f769ff75a1af190c73d15f89d603d3b4.BgcrCvPN_Z1H8mEt.webp (reused cache entry) (+7ms) (142/408)\ndocs:build: 09:09:16   ▶ /_astro/02a46ab7fdd4996eec3315f0bbf1443c7d0c44b5.CJv-e4O7_Z2b6UTi.webp (reused cache entry) (+5ms) (143/408)\ndocs:build: 09:09:16   ▶ /_astro/b34cb40e78e35b06a7593481dab495869664b379.DsVnUyv4_Uj7r3.webp (reused cache entry) (+5ms) (144/408)\ndocs:build: 09:09:16   ▶ /_astro/d622a4277f2d0d232b363206d908c3f8704d298b.BAZnTFWN_Z1yFSf7.webp (reused cache entry) (+7ms) (145/408)\ndocs:build: 09:09:16   ▶ /_astro/a6e5f19a3fd364853c1428cb595af7951ad68998.CTAXBaeu_1TG5FI.webp (reused cache entry) (+6ms) (146/408)\ndocs:build: 09:09:16   ▶ /_astro/7c22e0f0f180e644878e41ca793bc14eb34f6ae4.Dii78k-0_Z15CTNV.webp (reused cache entry) (+6ms) (147/408)\ndocs:build: 09:09:16   ▶ /_astro/b5c32046606157b939e5c34e81c32c27885c6c2c.DIzMKKfH_Z1PGQu0.webp (reused cache entry) (+7ms) (148/408)\ndocs:build: 09:09:16   ▶ /_astro/6e189b8a97a84ab054e41b320e8b6e34a431f713.rCeOA5x0_Z1WcunD.webp (reused cache entry) (+7ms) (149/408)\ndocs:build: 09:09:16   ▶ /_astro/dcf603dac9c9d094f16bf216bb9d3541749acf56.DZtFm7je_Z1CyfMN.webp (reused cache entry) (+5ms) (150/408)\ndocs:build: 09:09:16   ▶ /_astro/7b7de727f64a0c5a274c9f8bbe6d03aaf5d2f68e.AewcmFAu_1rHhJ5.webp (reused cache entry) (+6ms) (151/408)\ndocs:build: 09:09:16   ▶ /_astro/1e9f5eaf48ab0d3f1854b1645eba17a2fb37376f.DB31eJ-E_ZEfTdU.webp (reused cache entry) (+3ms) (152/408)\ndocs:build: 09:09:16   ▶ /_astro/fd3436d9b7f82f9dfcbb74f8eff1b3db173af32f.D-h-mQbX_1Jcg8K.webp (reused cache entry) (+3ms) (153/408)\ndocs:build: 09:09:16   ▶ /_astro/f58375f8a5747ab00774e67986fa5b28db8f1125.CfUFWR4B_1dvC1F.webp (reused cache entry) (+3ms) (154/408)\ndocs:build: 09:09:16   ▶ /_astro/e6ec67288d5adef4a5ff12baa5dbd7ef9fdd78b7.BQCKxJhk_Z3y8Ok.webp (reused cache entry) (+4ms) (155/408)\ndocs:build: 09:09:16   ▶ /_astro/0fe6a5bf3df03de872d305840bea9980b32bd867.Cd0ptOsY_Z1P2gN3.webp (reused cache entry) (+8ms) (156/408)\ndocs:build: 09:09:16   ▶ /_astro/215a689fb131b01b78ea968dc8e4849d60c532aa.BhXqx5YX_ZrCppd.webp (reused cache entry) (+7ms) (157/408)\ndocs:build: 09:09:16   ▶ /_astro/b1aae6f98c4213e31c87a0e82ca9bb3886e77fef.kx9uK0jk_2g2cna.webp (reused cache entry) (+8ms) (158/408)\ndocs:build: 09:09:16   ▶ /_astro/27d8001582ca479aff7c8e383a858441e020be2b.ZpIkMecr_ZKM5gT.webp (reused cache entry) (+9ms) (159/408)\ndocs:build: 09:09:16   ▶ /_astro/a5426cd21f03946e84ed0217c84ad910c540a5bf.CMhJz_9D_26ibjX.webp (reused cache entry) (+8ms) (160/408)\ndocs:build: 09:09:16   ▶ /_astro/47d40865a6ab9e11a4c0f744219d3e8e18430e53.DEzXl34J_19BmDg.webp (reused cache entry) (+8ms) (161/408)\ndocs:build: 09:09:16   ▶ /_astro/c4ea763aa4bc11ceaf4d8af03897cb46b2874e4f.CpdEMScP_1nglgF.webp (reused cache entry) (+7ms) (162/408)\ndocs:build: 09:09:16   ▶ /_astro/c7e9ffc19083168291b97fabd31fcbbfa121fafb.B3UIc9tj_293i7y.webp (reused cache entry) (+8ms) (163/408)\ndocs:build: 09:09:16   ▶ /_astro/9233293e2e538ef4ba34d367e7993a67f504a3d1.CMRmPgsS_F3s0g.webp (reused cache entry) (+9ms) (164/408)\ndocs:build: 09:09:16   ▶ /_astro/9529e6bb6e32f18cd85f38d20d878bdcbd2ea59f.CAM9ffJa_ZvYYbq.webp (reused cache entry) (+9ms) (165/408)\ndocs:build: 09:09:16   ▶ /_astro/f55c522bb055375b6d63b84060492a39ef970a31.C0CMz6k5_1EhUjh.webp (reused cache entry) (+9ms) (166/408)\ndocs:build: 09:09:16   ▶ /_astro/7dc939b9dbc32ea0bb6d34a7d8d6a98243035c14.DLNYvAq-_ZkLFsf.webp (reused cache entry) (+4ms) (167/408)\ndocs:build: 09:09:16   ▶ /_astro/0e2dc91ff1eec7c36858ebad410b960839fa7742.BgO64qH4_ZqHgJP.webp (reused cache entry) (+4ms) (168/408)\ndocs:build: 09:09:16   ▶ /_astro/3fc77584f96fb4750d723fdc600147b0608a95dc.CDyDxhzh_29mCjC.webp (reused cache entry) (+5ms) (169/408)\ndocs:build: 09:09:16   ▶ /_astro/50d98797994fec9b2f5e78e15b23812b00e2fad1.CNDnjBsX_Z42xej.webp (reused cache entry) (+5ms) (170/408)\ndocs:build: 09:09:16   ▶ /_astro/048eaea06cecc8a1caf789f6ef438cd0fd54de90.Q0kcnBoT_1naf2g.webp (reused cache entry) (+6ms) (171/408)\ndocs:build: 09:09:16   ▶ /_astro/0c89542c4e47bcd5ecc5770944e762ce1c3b9531.CwEODCOf_ph5QS.webp (reused cache entry) (+5ms) (172/408)\ndocs:build: 09:09:16   ▶ /_astro/b1c92efc2f33a4926975d7d7c6413a68af5cef83.KrZLbTJK_ZLf2w6.webp (reused cache entry) (+5ms) (173/408)\ndocs:build: 09:09:16   ▶ /_astro/e6db427847c3766ebc031dd0c98c533d01d62b7d.Dzz4fePV_RVpxE.webp (reused cache entry) (+6ms) (174/408)\ndocs:build: 09:09:16   ▶ /_astro/e74e4993b7dbb3a3206740f3bdc7e3b931010f52.CRcNGBMA_Zhpsp2.webp (reused cache entry) (+6ms) (175/408)\ndocs:build: 09:09:16   ▶ /_astro/279f14d6c4674c03edc4905ca602cd2ffd62a684.Csjfuqnn_tNQyW.webp (reused cache entry) (+3ms) (176/408)\ndocs:build: 09:09:16   ▶ /_astro/a0d4516379bc594a77d54597601bd817bfd356c3.Chqy_-3L_ZoU54R.webp (reused cache entry) (+2ms) (177/408)\ndocs:build: 09:09:16   ▶ /_astro/9b3692bf99881b38ea6bf6576b1a9b7cd13b78c0.e2BAWpSh_1qqgx7.webp (reused cache entry) (+3ms) (178/408)\ndocs:build: 09:09:16   ▶ /_astro/0b6cf0917f4941608c2303c69f5bd14f30329d6e.Cfb6okXo_Z2uTFVJ.webp (reused cache entry) (+3ms) (179/408)\ndocs:build: 09:09:16   ▶ /_astro/5fc884deeaa43bdae5618c9f20c4b2d43505ebaa.DIc1mMAQ_Q7KIL.webp (reused cache entry) (+3ms) (180/408)\ndocs:build: 09:09:16   ▶ /_astro/3bc94896c65ea508518f45cb438c6a572528e9a3.CvZMmEVL_ZWUCSm.webp (reused cache entry) (+3ms) (181/408)\ndocs:build: 09:09:16   ▶ /_astro/fe2d0db8bee3f1451419ce473f946de573c7c083.C4r-Sc90_Z27hArn.webp (reused cache entry) (+3ms) (182/408)\ndocs:build: 09:09:16   ▶ /_astro/ec7e16ae09ccda8091c929a4cf62bc6e60d23be7.Di9OVtBu_29BSiq.webp (reused cache entry) (+3ms) (183/408)\ndocs:build: 09:09:16   ▶ /_astro/49177866b3d4c9b60ba4e534b9c0fdc167c34b1c.CHeOjn2E_Z27PR4E.webp (reused cache entry) (+6ms) (184/408)\ndocs:build: 09:09:16   ▶ /_astro/d573b183c1cd5175ad8761d80a7a65318fbbec15.BQV0Xmdi_1QQx56.webp (reused cache entry) (+5ms) (185/408)\ndocs:build: 09:09:16   ▶ /_astro/f5bf7968df2fd278eba8b561ab2099adc3a38bf5.2FVSzGnW_1QECVL.webp (reused cache entry) (+6ms) (186/408)\ndocs:build: 09:09:16   ▶ /_astro/bd455cd613e99292ac2a98ce3d9d9260a3006a5b.DwBBvMBO_Z1yjHn6.webp (reused cache entry) (+4ms) (187/408)\ndocs:build: 09:09:16   ▶ /_astro/6829327d1639d0833e5ebb1d0deea1712171cc25.BHcxJ5E1_Z1zrkrX.webp (reused cache entry) (+5ms) (188/408)\ndocs:build: 09:09:16   ▶ /_astro/719525e3a567f563b3b62bcb591cfb980187c850.D2hGAhIm_1JUyXh.webp (reused cache entry) (+6ms) (189/408)\ndocs:build: 09:09:16   ▶ /_astro/c8b406844fffefb775c6beb0e3fc78aa4986f58a.CZ9omm_W_ZA770k.webp (reused cache entry) (+6ms) (190/408)\ndocs:build: 09:09:16   ▶ /_astro/10243389b553ab7b6d7a7a8ff3cd6754693a67cf.IKArsYdj_Z1K43RJ.webp (reused cache entry) (+6ms) (191/408)\ndocs:build: 09:09:16   ▶ /_astro/b69f7777e9de4b8117074051d295d215dce2c021.C-UzHS2K_1zQ3p8.webp (reused cache entry) (+6ms) (192/408)\ndocs:build: 09:09:16   ▶ /_astro/aebda149e7192a347673532f646f91c13b3fdcb6.Bg03Pz4__Z1W7XKW.webp (reused cache entry) (+8ms) (193/408)\ndocs:build: 09:09:16   ▶ /_astro/4b7098bd4f2f7e5b30634231745bc6c23040553e.DjC25ODQ_1uog4E.webp (reused cache entry) (+8ms) (194/408)\ndocs:build: 09:09:16   ▶ /_astro/output_11_3.CSl1pFzL_Z202cxz.svg (reused cache entry) (+2ms) (195/408)\ndocs:build: 09:09:16   ▶ /_astro/4a952c94b9203ad5e0adbabee00709b0b92f0baf.BYqF1XTs_Z24HEJz.webp (reused cache entry) (+5ms) (196/408)\ndocs:build: 09:09:16   ▶ /_astro/output_8_0.DylMvUb4_22uYFY.svg (reused cache entry) (+5ms) (197/408)\ndocs:build: 09:09:16   ▶ /_astro/output_9_0.Dd3X7nS9_22uYFY.svg (reused cache entry) (+6ms) (198/408)\ndocs:build: 09:09:16   ▶ /_astro/output_11_7.BKz-A2PU_Z20itjk.svg (reused cache entry) (+6ms) (199/408)\ndocs:build: 09:09:16   ▶ /_astro/output_11_19.CB-0Vn8F_Z206gJg.svg (reused cache entry) (+7ms) (200/408)\ndocs:build: 09:09:16   ▶ /_astro/output_11_15.DyZX6Cu1_Z22esRi.svg (reused cache entry) (+7ms) (201/408)\ndocs:build: 09:09:16   ▶ /_astro/output_11_11.D3Rxu_eD_Z206gJg.svg (reused cache entry) (+8ms) (202/408)\ndocs:build: 09:09:16   ▶ /_astro/output_11_23.YumxM207_Z1YGQA8.svg (reused cache entry) (+9ms) (203/408)\ndocs:build: 09:09:16   ▶ /_astro/output_13_11.CFm1_DOU_ZGnSbR.svg (reused cache entry) (+5ms) (204/408)\ndocs:build: 09:09:16   ▶ /_astro/output_13_15.BO5xO1CD_Z1WGMPt.svg (reused cache entry) (+4ms) (205/408)\ndocs:build: 09:09:16   ▶ /_astro/output_13_7.DGHXdAO8_Z20itjk.svg (reused cache entry) (+8ms) (206/408)\ndocs:build: 09:09:16   ▶ /_astro/output_13_3.yuH-7siw_ZGw1zf.svg (reused cache entry) (+10ms) (207/408)\ndocs:build: 09:09:16   ▶ /_astro/output_13_23.COebOtDI_ZGUqIn.svg (reused cache entry) (+5ms) (208/408)\ndocs:build: 09:09:16   ▶ /_astro/output_13_27.DPcHi_cl_Z1X6cYB.svg (reused cache entry) (+4ms) (209/408)\ndocs:build: 09:09:16   ▶ /_astro/output_13_19.BcVu3Mj-_ZGIe9j.svg (reused cache entry) (+5ms) (210/408)\n\n...21872 bytes truncated...\n\nThe tool call succeeded but the output was truncated. Full output saved to: /Users/samforeman/.local/share/opencode/tool-output/tool_c9563c14d001jymbxBPrF1kPe5\nUse the Task tool to have explore agent process this file with Grep and Read (with offset/limit). Do NOT read the full file yourself - delegate to save context.",
+            "title": "Run web build with correct filter name",
+            "metadata": {
+              "output": "$ turbo run build --filter=docs\n• turbo 2.8.4\n• Packages in scope: docs\n• Running build in 1 packages\n• Remote caching disabled\n@webtui/theme-vitesse:build: cache hit, replaying logs 656f96e094478168\n@webtui/plugin-nf:build: cache hit, replaying logs cd769a5c55d719e4\n@webtui/theme-gruvbox:build: cache hit, replaying logs e7d7ba1675917a28\n@webtui/theme-nord:build: cache hit, replaying logs 9b36b38683ce11a9\n@webtui/theme-everforest:build: cache hit, replaying logs fcc604e2a2194e6e\n@webtui/theme-catppuccin:build: cache hit, replaying logs fec68c61ab8a76cb\n@webtui/theme-gruvbox:build: $ rm -rf dist && vite build\n@webtui/theme-gruvbox:build: vite v6.4.1 building for production...\n@webtui/theme-gruvbox:build: transforming...\n@webtui/theme-gruvbox:build: ✓ 1 modules transformed.\n@webtui/theme-gruvbox:build: rendering chunks...\n@webtui/theme-gruvbox:build: computing gzip size...\n@webtui/theme-gruvbox:build: dist/index.css  5.07 kB │ gzip: 0.90 kB\n@webtui/theme-gruvbox:build: ✓ built in 63ms\n@webtui/theme-catppuccin:build: $ rm -rf dist && vite build\n@webtui/theme-catppuccin:build: vite v6.4.1 building for production...\n@webtui/theme-catppuccin:build: transforming...\n@webtui/theme-vitesse:build: $ rm -rf dist && vite build\n@webtui/theme-vitesse:build: vite v6.4.1 building for production...\n@webtui/theme-vitesse:build: transforming...\n@webtui/theme-vitesse:build: ✓ 1 modules transformed.\n@webtui/theme-vitesse:build: rendering chunks...\n@webtui/theme-vitesse:build: computing gzip size...\n@webtui/theme-vitesse:build: dist/index.css  4.29 kB │ gzip: 0.83 kB\n@webtui/theme-vitesse:build: ✓ built in 74ms\n@webtui/plugin-nf:build: $ rm -rf dist && vite build\n@webtui/plugin-nf:build: vite v6.4.1 building for production...\n@webtui/plugin-nf:build: transforming...\n@webtui/plugin-nf:build: ✓ 1 modules transformed.\n@webtui/plugin-nf:build: rendering chunks...\n@webtui/plugin-nf:build: computing gzip size...\n@webtui/plugin-nf:build: dist/index.css  0.26 kB │ gzip: 0.19 kB\n@webtui/plugin-nf:build: ✓ built in 91ms\n@webtui/theme-nord:build: $ rm -rf dist && vite build\n@webtui/theme-nord:build: vite v6.4.1 building for production...\n@webtui/theme-nord:build: transforming...\n@webtui/theme-nord:build: ✓ 1 modules transformed.\n@webtui/theme-nord:build: rendering chunks...\n@webtui/theme-nord:build: computing gzip size...\n@webtui/theme-nord:build: dist/index.css  5.16 kB │ gzip: 0.68 kB\n@webtui/theme-nord:build: ✓ built in 75ms\n@webtui/theme-everforest:build: $ rm -rf dist && vite build\n@webtui/theme-everforest:build: vite v6.4.1 building for production...\n@webtui/theme-catppuccin:build: ✓ 1 modules transformed.\n@webtui/theme-catppuccin:build: rendering chunks...\n@webtui/theme-catppuccin:build: computing gzip size...\n@webtui/theme-catppuccin:build: dist/index.css  6.88 kB │ gzip: 1.37 kB\n@webtui/theme-catppuccin:build: ✓ built in 79ms\n@webtui/theme-everforest:build: transforming...\n@webtui/theme-everforest:build: ✓ 1 modules transformed.\n@webtui/theme-everforest:build: rendering chunks...\n@webtui/theme-everforest:build: computing gzip size...\n@webtui/theme-everforest:build: dist/index.css  5.08 kB │ gzip: 1.15 kB\n@webtui/theme-everforest:build: ✓ built in 101ms\n@webtui/css:build: cache hit, replaying logs bda6b54dd90b6a28\n@webtui/css:build: $ rm -rf dist && vite build\n@webtui/css:build: vite v6.4.1 building for production...\n@webtui/css:build: transforming...\n@webtui/css:build: ✓ 22 modules transformed.\n@webtui/css:build: rendering chunks...\n@webtui/css:build: computing gzip size...\n@webtui/css:build: dist/components/view.css         0.23 kB │ gzip: 0.18 kB\n@webtui/css:build: dist/components/accordion.css    0.39 kB │ gzip: 0.19 kB\n@webtui/css:build: dist/components/textarea.css     0.60 kB │ gzip: 0.27 kB\n@webtui/css:build: dist/components/pre.css          0.63 kB │ gzip: 0.29 kB\n@webtui/css:build: dist/components/radio.css        0.90 kB │ gzip: 0.41 kB\n@webtui/css:build: dist/base.css                    0.90 kB │ gzip: 0.39 kB\n@webtui/css:build: dist/components/checkbox.css     1.05 kB │ gzip: 0.42 kB\n@webtui/css:build: dist/components/progress.css     1.32 kB │ gzip: 0.44 kB\n@webtui/css:build: dist/components/spinner.css      1.47 kB │ gzip: 0.60 kB\n@webtui/css:build: dist/components/popover.css      1.59 kB │ gzip: 0.47 kB\n@webtui/css:build: dist/components/typography.css   1.60 kB │ gzip: 0.57 kB\n@webtui/css:build: dist/components/switch.css       1.72 kB │ gzip: 0.56 kB\n@webtui/css:build: dist/utils/box.css               1.77 kB │ gzip: 0.47 kB\n@webtui/css:build: dist/components/table.css        1.88 kB │ gzip: 0.53 kB\n@webtui/css:build: dist/components/dialog.css       2.01 kB │ gzip: 0.57 kB\n@webtui/css:build: dist/components/badge.css        2.08 kB │ gzip: 0.53 kB\n@webtui/css:build: dist/components/range.css        2.20 kB │ gzip: 0.59 kB\n@webtui/css:build: dist/components/input.css        2.50 kB │ gzip: 0.52 kB\n@webtui/css:build: dist/components/separator.css    2.95 kB │ gzip: 0.57 kB\n@webtui/css:build: dist/components/tooltip.css      3.80 kB │ gzip: 0.51 kB\n@webtui/css:build: dist/components/button.css       4.48 kB │ gzip: 0.82 kB\n@webtui/css:build: dist/full.css                   35.84 kB │ gzip: 5.75 kB\n@webtui/css:build: ✓ built in 151ms\ndocs:build: cache hit, replaying logs d6d97891acda7eb5\ndocs:build: $ astro build\ndocs:build: 09:08:31 [content] Syncing content\ndocs:build: 09:08:31 [content] Astro config changed\ndocs:build: 09:08:31 [content] Content config changed\ndocs:build: 09:08:31 [content] Clearing content store\ndocs:build: 09:08:32 [content] Synced content\ndocs:build: 09:08:32 [types] Generated 771ms\ndocs:build: 09:08:32 [build] output: \"static\"\ndocs:build: 09:08:32 [build] mode: \"static\"\ndocs:build: 09:08:32 [build] directory: /Users/samforeman/projects/saforem2/sam.onl/web/dist/\ndocs:build: 09:08:32 [build] Collecting build info...\ndocs:build: 09:08:32 [build] ✓ Completed in 855ms.\ndocs:build: 09:08:32 [build] Building static entrypoints...\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: [Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".\ndocs:build: 09:09:12 [vite] ✓ built in 39.95s\ndocs:build: 09:09:12 [build] ✓ Completed in 39.98s.\ndocs:build: \ndocs:build:  building client (vite) \ndocs:build: 09:09:12 [vite] transforming...\ndocs:build: 09:09:12 [vite] ✓ 16 modules transformed.\ndocs:build: 09:09:12 [vite] rendering chunks...\ndocs:build: 09:09:12 [vite] computing gzip size...\ndocs:build: 09:09:12 [vite] dist/_astro/Sidebar.astro_astro_type_script_index_0_lang.DlLryk4V.js        0.46 kB │ gzip: 0.30 kB\ndocs:build: 09:09:12 [vite] dist/_astro/Dropdown.astro_astro_type_script_index_0_lang.WMNsd6WJ.js       0.90 kB │ gzip: 0.47 kB\ndocs:build: 09:09:12 [vite] dist/_astro/VimNavigation.astro_astro_type_script_index_0_lang.BbEeRTlx.js  1.21 kB │ gzip: 0.41 kB\ndocs:build: 09:09:12 [vite] dist/_astro/Navbar.astro_astro_type_script_index_0_lang.me8FHkNQ.js         1.40 kB │ gzip: 0.60 kB\ndocs:build: 09:09:12 [vite] dist/_astro/Tabs.astro_astro_type_script_index_0_lang.C7u-imx6.js           1.41 kB │ gzip: 0.63 kB\ndocs:build: 09:09:12 [vite] dist/_astro/vim.BVePuknZ.js                                                 2.73 kB │ gzip: 1.27 kB\ndocs:build: 09:09:12 [vite] dist/_astro/Doc.astro_astro_type_script_index_3_lang.DDxc7lby.js            3.00 kB │ gzip: 1.04 kB\ndocs:build: 09:09:12 [vite] dist/_astro/Doc.astro_astro_type_script_index_6_lang.CbRR5wF4.js            3.76 kB │ gzip: 1.27 kB\ndocs:build: 09:09:12 [vite] dist/_astro/Filter.astro_astro_type_script_index_0_lang.QFyF-JVs.js         4.17 kB │ gzip: 1.44 kB\ndocs:build: 09:09:12 [vite] ✓ built in 188ms\ndocs:build: \ndocs:build:  generating static routes \ndocs:build: 09:09:12 ▶ src/pages/about/index.mdx\ndocs:build: 09:09:12   └─ /about/index.html (+26ms) \ndocs:build: 09:09:13 ▶ src/pages/docs/test.mdx\ndocs:build: 09:09:13   └─ /docs/test/index.html (+10ms) \ndocs:build: 09:09:13 ▶ src/pages/ideas/index.mdx\ndocs:build: 09:09:13   └─ /ideas/index.html (+21ms) \ndocs:build: 09:09:13 ▶ src/pages/landing.mdx\ndocs:build: 09:09:13   └─ /landing/index.html (+12ms) \ndocs:build: 09:09:13 ▶ src/pages/more/index.mdx\ndocs:build: 09:09:13   └─ /more/index.html (+6ms) \ndocs:build: 09:09:13 ▶ src/pages/now/index.mdx\ndocs:build: 09:09:13   └─ /now/index.html (+6ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/04/28/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/04/28/index.html (+9ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/05/03/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/05/03/index.html (+26ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/06/01/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/06/01/index.html (+28ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/06/02/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/06/02/index.html (+52ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/06/14/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/06/14/index.html (+92ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/06/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/06/index.html (+6ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/09/12/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/09/12/index.html (+40ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/09/17/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/09/17/index.html (+8ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/10/06/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/10/06/index.html (+15ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/11/12/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/11/12/index.html (+8ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2025/index.mdx\ndocs:build: 09:09:13   └─ /posts/2025/index.html (+6ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2026/01/07/index.mdx\ndocs:build: 09:09:13   └─ /posts/2026/01/07/index.html (+8ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/2026/01/10/index.mdx\ndocs:build: 09:09:13   └─ /posts/2026/01/10/index.html (+8ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/ai-for-physics/diffusion/index.mdx\ndocs:build: 09:09:13   └─ /posts/ai-for-physics/diffusion/index.html (+137ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/ai-for-physics/l2hmc-qcd/2dU1/index.mdx\ndocs:build: 09:09:13   └─ /posts/ai-for-physics/l2hmc-qcd/2dU1/index.html (+57ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/ai-for-physics/l2hmc-qcd/4dSU3nb/index-broken.mdx\ndocs:build: 09:09:13   └─ /posts/ai-for-physics/l2hmc-qcd/4dSU3nb/index-broken/index.html (+96ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/ai-for-physics/l2hmc-qcd/index.mdx\ndocs:build: 09:09:13   └─ /posts/ai-for-physics/l2hmc-qcd/index.html (+6ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/ai-for-physics/index.mdx\ndocs:build: 09:09:13   └─ /posts/ai-for-physics/index.html (+5ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/auroragpt/aurora-gpt/index.mdx\ndocs:build: 09:09:13   └─ /posts/auroragpt/aurora-gpt/index.html (+36ms) \ndocs:build: 09:09:13 ▶ src/pages/posts/auroragpt/checkpoints/index.mdx\ndocs:build: 09:09:13   └─ /posts/auroragpt/checkpoints/index.html (+230ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/auroragpt/determinstic-flash-attn/deterministic-flash-attn.mdx\ndocs:build: 09:09:14   └─ /posts/auroragpt/determinstic-flash-attn/deterministic-flash-attn/index.html (+6ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/auroragpt/flash-attn-sunspot/index.mdx\ndocs:build: 09:09:14   └─ /posts/auroragpt/flash-attn-sunspot/index.html (+13ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/auroragpt/long-sequences/index.mdx\ndocs:build: 09:09:14   └─ /posts/auroragpt/long-sequences/index.html (+26ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/auroragpt/mpi4py-reproducer/index.mdx\ndocs:build: 09:09:14   └─ /posts/auroragpt/mpi4py-reproducer/index.html (+8ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/auroragpt/spike-skipper/index.mdx\ndocs:build: 09:09:14   └─ /posts/auroragpt/spike-skipper/index.html (+44ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/auroragpt/startup-times/index.mdx\ndocs:build: 09:09:14   └─ /posts/auroragpt/startup-times/index.html (+19ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/auroragpt/index.mdx\ndocs:build: 09:09:14   └─ /posts/auroragpt/index.html (+64ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/dope-slides/index.mdx\ndocs:build: 09:09:14   └─ /posts/dope-slides/index.html (+15ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/drafts/2025/09/22/index.mdx\ndocs:build: 09:09:14   └─ /posts/drafts/2025/09/22/index.html (+9ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/ezpz-at-alcf/index.mdx\ndocs:build: 09:09:14   └─ /posts/ezpz-at-alcf/index.html (+64ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/ezpz-v1/index.mdx\ndocs:build: 09:09:14   └─ /posts/ezpz-v1/index.html (+323ms) \ndocs:build: 09:09:14 ▶ src/pages/posts/jupyter/l2hmc/4dSU3/index.mdx\ndocs:build: 09:09:14   └─ /posts/jupyter/l2hmc/4dSU3/index.html (+105ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/jupyter/l2hmc-4dSU3/index.mdx\ndocs:build: 09:09:15   └─ /posts/jupyter/l2hmc-4dSU3/index.html (+16ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/jupyter/test/index.mdx\ndocs:build: 09:09:15   └─ /posts/jupyter/test/index.html (+37ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/jupyter/index.mdx\ndocs:build: 09:09:15   └─ /posts/jupyter/index.html (+4ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/resume/index.mdx\ndocs:build: 09:09:15   └─ /posts/resume/index.html (+13ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/svgbob/index.mdx\ndocs:build: 09:09:15   └─ /posts/svgbob/index.html (+73ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/torchtune-aurora/index.mdx\ndocs:build: 09:09:15   └─ /posts/torchtune-aurora/index.html (+12ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/torchtune-patch-aurora/index.mdx\ndocs:build: 09:09:15   └─ /posts/torchtune-patch-aurora/index.html (+4ms) \ndocs:build: 09:09:15 ▶ src/pages/posts/index.mdx\ndocs:build: 09:09:15   └─ /posts/index.html (+4ms) \ndocs:build: 09:09:15 ▶ src/pages/projects/index.mdx\ndocs:build: 09:09:15   └─ /projects/index.html (+4ms) \ndocs:build: 09:09:15 λ src/pages/rss.xml.ts\ndocs:build: 09:09:15   └─ /rss.xml (+6ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/2025/09/24/index.mdx\ndocs:build: 09:09:15   └─ /talks/2025/09/24/index.html (+88ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/2025/10/08/index.mdx\ndocs:build: 09:09:15   └─ /talks/2025/10/08/index.html (+11ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/2025/10/15/index.mdx\ndocs:build: 09:09:15   └─ /talks/2025/10/15/index.html (+27ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/2025/10/24/index.mdx\ndocs:build: 09:09:15   └─ /talks/2025/10/24/index.html (+22ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/2025/12/16/index.mdx\ndocs:build: 09:09:15   └─ /talks/2025/12/16/index.html (+7ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/ai-for-science-2024/index.mdx\ndocs:build: 09:09:15   └─ /talks/ai-for-science-2024/index.html (+106ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/alcf-hpc-workshop-2024/alcf-hpc-workshop-2024.mdx\ndocs:build: 09:09:15   └─ /talks/alcf-hpc-workshop-2024/alcf-hpc-workshop-2024/index.html (+64ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/aurora-gpt-fm-for-electric-grid/AuroraGPT-FM-for-electric-grid.mdx\ndocs:build: 09:09:15   └─ /talks/aurora-gpt-fm-for-electric-grid/AuroraGPT-FM-for-electric-grid/index.html (+11ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/AuroraGPT/alcf-hpc-workshop-2024/AuroraGPT-ALCF-Hands-On-HPC-Workshop-2024.mdx\ndocs:build: 09:09:15   └─ /talks/AuroraGPT/alcf-hpc-workshop-2024/AuroraGPT-ALCF-Hands-On-HPC-Workshop-2024/index.html (+13ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/AuroraGPT-SIAM25/index.mdx\ndocs:build: 09:09:15   └─ /talks/AuroraGPT-SIAM25/index.html (+10ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/hpc-user-forum/AuroraGPT.mdx\ndocs:build: 09:09:15   └─ /talks/hpc-user-forum/AuroraGPT/index.html (+10ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/incite-hackathon-2025/AuroraGPT/index.mdx\ndocs:build: 09:09:15   └─ /talks/incite-hackathon-2025/AuroraGPT/index.html (+11ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/incite-hackathon-2025/ezpz/index.mdx\ndocs:build: 09:09:15   └─ /talks/incite-hackathon-2025/ezpz/index.html (+65ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/incite-hackathon-2025/index.mdx\ndocs:build: 09:09:15   └─ /talks/incite-hackathon-2025/index.html (+5ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/llms-at-scale/index.mdx\ndocs:build: 09:09:15   └─ /talks/llms-at-scale/index.html (+58ms) \ndocs:build: 09:09:15 ▶ src/pages/talks/llms-on-polaris/index.mdx\ndocs:build: 09:09:15   └─ /talks/llms-on-polaris/index.html (+54ms) \ndocs:build: 09:09:16 ▶ src/pages/talks/openskai25/ai4science/index.mdx\ndocs:build: 09:09:16   └─ /talks/openskai25/ai4science/index.html (+8ms) \ndocs:build: 09:09:16 ▶ src/pages/talks/openskai25/training/index.mdx\ndocs:build: 09:09:16   └─ /talks/openskai25/training/index.html (+70ms) \ndocs:build: 09:09:16 ▶ src/pages/talks/openskai25/index.mdx\ndocs:build: 09:09:16   └─ /talks/openskai25/index.html (+4ms) \ndocs:build: 09:09:16 ▶ src/pages/talks/index.mdx\ndocs:build: 09:09:16   └─ /talks/index.html (+4ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/accordion.mdx\ndocs:build: 09:09:16   └─ /webtui/components/accordion/index.html (+35ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/badge.mdx\ndocs:build: 09:09:16   └─ /webtui/components/badge/index.html (+43ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/button.mdx\ndocs:build: 09:09:16   └─ /webtui/components/button/index.html (+6ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/checkbox.mdx\ndocs:build: 09:09:16   └─ /webtui/components/checkbox/index.html (+6ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/dialog.mdx\ndocs:build: 09:09:16   └─ /webtui/components/dialog/index.html (+32ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/input.mdx\ndocs:build: 09:09:16   └─ /webtui/components/input/index.html (+8ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/popover.mdx\ndocs:build: 09:09:16   └─ /webtui/components/popover/index.html (+15ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/pre.mdx\ndocs:build: 09:09:16   └─ /webtui/components/pre/index.html (+10ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/progress.mdx\ndocs:build: 09:09:16   └─ /webtui/components/progress/index.html (+15ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/radio.mdx\ndocs:build: 09:09:16   └─ /webtui/components/radio/index.html (+8ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/range.mdx\ndocs:build: 09:09:16   └─ /webtui/components/range/index.html (+10ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/separator.mdx\ndocs:build: 09:09:16   └─ /webtui/components/separator/index.html (+25ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/spinner.mdx\ndocs:build: 09:09:16   └─ /webtui/components/spinner/index.html (+30ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/switch.mdx\ndocs:build: 09:09:16   └─ /webtui/components/switch/index.html (+11ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/table.mdx\ndocs:build: 09:09:16   └─ /webtui/components/table/index.html (+5ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/textarea.mdx\ndocs:build: 09:09:16   └─ /webtui/components/textarea/index.html (+5ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/tooltip.mdx\ndocs:build: 09:09:16   └─ /webtui/components/tooltip/index.html (+10ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/typography.mdx\ndocs:build: 09:09:16   └─ /webtui/components/typography/index.html (+10ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/components/view.mdx\ndocs:build: 09:09:16   └─ /webtui/components/view/index.html (+23ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/contributing/contributing.md\ndocs:build: 09:09:16   └─ /webtui/contributing/contributing/index.html (+5ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/contributing/style-guide.md\ndocs:build: 09:09:16   └─ /webtui/contributing/style-guide/index.html (+4ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/installation/astro.md\ndocs:build: 09:09:16   └─ /webtui/installation/astro/index.html (+4ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/installation/nextjs.md\ndocs:build: 09:09:16   └─ /webtui/installation/nextjs/index.html (+3ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/installation/vite.md\ndocs:build: 09:09:16   └─ /webtui/installation/vite/index.html (+3ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/plugins/plugin-dev.md\ndocs:build: 09:09:16   └─ /webtui/plugins/plugin-dev/index.html (+11ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/plugins/plugin-nf.mdx\ndocs:build: 09:09:16   └─ /webtui/plugins/plugin-nf/index.html (+9ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/plugins/theme-catppuccin.mdx\ndocs:build: 09:09:16   └─ /webtui/plugins/theme-catppuccin/index.html (+9ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/plugins/theme-everforest.mdx\ndocs:build: 09:09:16   └─ /webtui/plugins/theme-everforest/index.html (+18ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/plugins/theme-gruvbox.mdx\ndocs:build: 09:09:16   └─ /webtui/plugins/theme-gruvbox/index.html (+8ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/plugins/theme-nord.mdx\ndocs:build: 09:09:16   └─ /webtui/plugins/theme-nord/index.html (+8ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/plugins/theme-vitesse.mdx\ndocs:build: 09:09:16   └─ /webtui/plugins/theme-vitesse/index.html (+16ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/start/ascii-boxes.mdx\ndocs:build: 09:09:16   └─ /webtui/start/ascii-boxes/index.html (+25ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/start/changelog.mdx\ndocs:build: 09:09:16   └─ /webtui/start/changelog/index.html (+12ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/start/installation.md\ndocs:build: 09:09:16   └─ /webtui/start/installation/index.html (+19ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/start/intro.md\ndocs:build: 09:09:16   └─ /webtui/start/intro/index.html (+4ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/start/plugins.md\ndocs:build: 09:09:16   └─ /webtui/start/plugins/index.html (+5ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/start/theming.md\ndocs:build: 09:09:16   └─ /webtui/start/theming/index.html (+9ms) \ndocs:build: 09:09:16 ▶ src/pages/webtui/start/tuis-vs-guis.md\ndocs:build: 09:09:16   └─ /webtui/start/tuis-vs-guis/index.html (+6ms) \ndocs:build: 09:09:16 ▶ src/pages/index.astro\ndocs:build: 09:09:16   └─ /index.html (+7ms) \ndocs:build: 09:09:16 ✓ Completed in 3.79s.\ndocs:build: \ndocs:build:  generating optimized images \ndocs:build: 09:09:16   ▶ /_astro/4291d2280ebb3b7d7fd410b6fbd5a7999b28d1e6.DJOU3cyq_ZtqY0m.svg (reused cache entry) (+7ms) (1/408)\ndocs:build: 09:09:16   ▶ /_astro/nvim-headings-dark.Dh4pQJM1_125rSo.webp (reused cache entry) (+8ms) (2/408)\ndocs:build: 09:09:16   ▶ /_astro/cooldown.B1JATfjR_Z1cr2jX.webp (reused cache entry) (+8ms) (3/408)\ndocs:build: 09:09:16   ▶ /_astro/cooldown-dark.WqRUK60t_dLPl9.webp (reused cache entry) (+11ms) (4/408)\ndocs:build: 09:09:16   ▶ /_astro/c51d8b2dcc6ec0e2de63ff069d3730bb571457b0.DCLNmaQy_Z1pMD2n.svg (reused cache entry) (+11ms) (5/408)\ndocs:build: 09:09:16   ▶ /_astro/f4712af7b26ced3d77075d986993d9ed41e01438.D7UTyExj_ZyI52s.svg (reused cache entry) (+11ms) (6/408)\ndocs:build: 09:09:16   ▶ /_astro/52754b8f1d67eb90a526f91bf820f0ab6f00f3e6.CbyWb5VO_ZyYlNd.svg (reused cache entry) (+11ms) (7/408)\ndocs:build: 09:09:16   ▶ /_astro/68eb7a87933506e4ea9f017913c8f1eb3d474f82.C1P-GWWF_Z2cpGPY.svg (reused cache entry) (+13ms) (8/408)\ndocs:build: 09:09:16   ▶ /_astro/91f9822f7846afea800b646ef6d7f00adbe10a41.BKeO8Sch_Z2cpGPY.svg (reused cache entry) (+13ms) (9/408)\ndocs:build: 09:09:16   ▶ /_astro/nvim-headings-light.8A7Tor1O_Z27Enrs.webp (reused cache entry) (+15ms) (10/408)\ndocs:build: 09:09:16   ▶ /_astro/150b885c11a3eb085ac620b73b278b467bf2accf.CXiHAQFk_ZAUlmb.svg (reused cache entry) (+13ms) (11/408)\ndocs:build: 09:09:16   ▶ /_astro/eee837b584211a155df0693c80ab0f74ef3df2d9.io0XjguD_Z1O89Sf.svg (reused cache entry) (+13ms) (12/408)\ndocs:build: 09:09:16   ▶ /_astro/79d781dfd4250c92dd76a8d8d3185ef5f4bf0edb.C4UUJzAn_ZMIsnJ.svg (reused cache entry) (+7ms) (13/408)\ndocs:build: 09:09:16   ▶ /_astro/ba6c79eb08e2df2807d207201f4260fcfb41a55d.Coo-2U9m_Z1XrJ5y.svg (reused cache entry) (+7ms) (14/408)\ndocs:build: 09:09:16   ▶ /_astro/d7f0c56ea62b31af4a43a53d6eb9d0e46a0d0979.BdEJOpdB_ZMIsnJ.svg (reused cache entry) (+11ms) (15/408)\ndocs:build: 09:09:16   ▶ /_astro/be9f0e6e22b1f8d41ba35ef1c2e7c53026cdd606.Dt1vq81O_Z1XrJ5y.svg (reused cache entry) (+7ms) (16/408)\ndocs:build: 09:09:16   ▶ /_astro/7e5ffe849dbd6a7b8314042e953d762ab9e4286b.P8w_cZxq_ZMIsnJ.svg (reused cache entry) (+8ms) (17/408)\ndocs:build: 09:09:16   ▶ /_astro/c919c93d92e6aec85e840c2ad8cb47eb30a8b015.CyqOuEL5_ZMIsnJ.svg (reused cache entry) (+16ms) (18/408)\ndocs:build: 09:09:16   ▶ /_astro/713d68e5d1fdd22fb92855cc3e25255035f0770c.DhSajADE_ZMIsnJ.svg (reused cache entry) (+16ms) (19/408)\ndocs:build: 09:09:16   ▶ /_astro/368f5610bb37915389764b0b7392edd577eaf415.Dgtc8Xu-_ZMIsnJ.svg (reused cache entry) (+17ms) (20/408)\ndocs:build: 09:09:16   ▶ /_astro/86fc3f47b8b4020e2b94ff74e79fdb3558c43f80.J8U0hYXF_ZMIsnJ.svg (reused cache entry) (+18ms) (21/408)\ndocs:build: 09:09:16   ▶ /_astro/acbf03bb04c361e167eefed84a13de13ef8ee37c.BcfbOjub_ZwYi3y.svg (reused cache entry) (+20ms) (22/408)\ndocs:build: 09:09:16   ▶ /_astro/70234c6bf6df3cbd32f9de96e36e740eda0ed20d.CS8Kj6xG_1FrGYV.svg (reused cache entry) (+20ms) (23/408)\ndocs:build: 09:09:16   ▶ /_astro/85261feb8c9ba70c38f9f40eb69b7b3bc4c670b0.BufPRNi8_sflHU.svg (reused cache entry) (+16ms) (24/408)\ndocs:build: 09:09:16   ▶ /_astro/835139501cc9fcf6442be81e0033045b8f33ae74.BxjBF3Hy_ZMIsnJ.svg (reused cache entry) (+22ms) (25/408)\ndocs:build: 09:09:16   ▶ /_astro/e90001ab4bbbe38f50cca429a69bc2b212ed8a4d.Z73_07a5_sflHU.svg (reused cache entry) (+18ms) (26/408)\ndocs:build: 09:09:16   ▶ /_astro/b2807643bf74b33689a17754209e56554bfe1f52.BndFrzc7_SRoK4.svg (reused cache entry) (+18ms) (27/408)\ndocs:build: 09:09:16   ▶ /_astro/9d36e3726eb2a63bcae157590b44c3710847442f.DWqTpUaQ_1AiSQa.svg (reused cache entry) (+15ms) (28/408)\ndocs:build: 09:09:16   ▶ /_astro/6ba854aa0d42fd2eae98f6d82c0d6566005c421b.DFil7tXf_1xTpWn.svg (reused cache entry) (+7ms) (29/408)\ndocs:build: 09:09:16   ▶ /_astro/4509936f2dbb7e69226f3d2851bc462cf8046e8e.C_EgnHoC_Ch1jU.svg (reused cache entry) (+18ms) (30/408)\ndocs:build: 09:09:16   ▶ /_astro/9d3a4133b6d0c2bf60da7558af21452baab7d5c3.BnVraF23_1weHaa.svg (reused cache entry) (+8ms) (31/408)\ndocs:build: 09:09:16   ▶ /_astro/02d2b941bf240ac2a6659c37519a6e2ebec63b41.Cx5by0R7_1yaGI8.svg (reused cache entry) (+8ms) (32/408)\ndocs:build: 09:09:16   ▶ /_astro/292acc374ca58b3045c07221e75d5ad20d83a646.BN4jwO48_sflHU.svg (reused cache entry) (+5ms) (33/408)\ndocs:build: 09:09:16   ▶ /_astro/b8adc3f97c471460069de45c953d36d2a16fc858.Dv3Bq-mw_Z39d4O.svg (reused cache entry) (+3ms) (34/408)\ndocs:build: 09:09:16   ▶ /_astro/88b5366a0686ecb675259d3e1459d08d6c39e750.J7hphE-X_Z1yTKrI.svg (reused cache entry) (+7ms) (35/408)\ndocs:build: 09:09:16   ▶ /_astro/3f9d006e6a51dac62b80daab5d4bb4ac70596db2.B7w3-f0z_5HoAd.svg (reused cache entry) (+8ms) (36/408)\ndocs:build: 09:09:16   ▶ /_astro/3b6a02bc8d6489b5a0147b59009b8a3be270ba14.BuyCtci0_sflHU.svg (reused cache entry) (+6ms) (37/408)\ndocs:build: 09:09:16   ▶ /_astro/47bdd16c94ddaa9ca790f6eb7e1bc0a81096884e.C9Ec5a31_2gBzEl.webp (reused cache entry) (+4ms) (38/408)\ndocs:build: 09:09:16   ▶ /_astro/7d13620e1484d2f1898e8d25111a349d44f96802.B5cx-GPB_UpRBs.webp (reused cache entry) (+4ms) (39/408)\ndocs:build: 09:09:16   ▶ /_astro/5c8dc3c3b2377e2396c8c18af0129ebe00ab8dd0.DikK1th-_yi7UA.webp (reused cache entry) (+5ms) (40/408)\ndocs:build: 09:09:16   ▶ /_astro/6d2aa12fc7b895ecb01732b641ade55bcc144d8c.BUMbCKHt_1X9JDv.webp (reused cache entry) (+5ms) (41/408)\ndocs:build: 09:09:16   ▶ /_astro/3818ed5f707eabfa77a6b76e8c2286ada1343450.CHWtZqPe_Ocrmf.webp (reused cache entry) (+4ms) (42/408)\ndocs:build: 09:09:16   ▶ /_astro/6dffde926798bf77dd315335986b1bd1aa0a9b83.DPyVaAfj_vhng3.webp (reused cache entry) (+4ms) (43/408)\ndocs:build: 09:09:16   ▶ /_astro/879e257bb220f8c3b99c413ca0295b415275f643.Bv_KFx8K_1imIfD.webp (reused cache entry) (+3ms) (44/408)\ndocs:build: 09:09:16   ▶ /_astro/520ebc34968fcde90af80462a6bb1ffd8d2588bb.Bved2OHe_1MmdPp.webp (reused cache entry) (+4ms) (45/408)\ndocs:build: 09:09:16   ▶ /_astro/f72e2858d462bfaf254e034b005d239f82813cea.VjKp1GVK_20WjyF.webp (reused cache entry) (+7ms) (46/408)\ndocs:build: 09:09:16   ▶ /_astro/d6be679cfcd697997e1f1082953d8123cb6999fe.BSnUd1V9_Z29iHVP.webp (reused cache entry) (+3ms) (47/408)\ndocs:build: 09:09:16   ▶ /_astro/33a3458db0fe1d42b6f122ced0e855813c7814a4.BKYWa0fd_Z194igw.webp (reused cache entry) (+4ms) (48/408)\ndocs:build: 09:09:16   ▶ /_astro/dab0c16a9b78f927033c0becca58c3a521e31376.oGNu67YE_1uMyrf.webp (reused cache entry) (+4ms) (49/408)\ndocs:build: 09:09:16   ▶ /_astro/455931aaba521ac6d52db2c33261a04fb28fa1bb.BSzsXNvM_TJmrz.webp (reused cache entry) (+4ms) (50/408)\ndocs:build: 09:09:16   ▶ /_astro/ff73a5f10d599d16fd5cf28a854ba398154723bc.BHv1phQ7_1y5E4l.webp (reused cache entry) (+5ms) (51/408)\ndocs:build: 09:09:16   ▶ /_astro/bb29e5b9a51173d1f34d6e94376ec56c240e1159.CpqsxXAQ_ZutcDT.webp (reused cache entry) (+4ms) (52/408)\ndocs:build: 09:09:16   ▶ /_astro/973b5df9ed2c65bedd46efb82d13cc0ec93cc3cf.C1aYmrPF_fLkPB.webp (reused cache entry) (+5ms) (53/408)\ndocs:build: 09:09:16   ▶ /_astro/d2f31260408eaf4a2598503e370d078d7e7a2bd8.DMtIY0_R_1PMisk.webp (reused cache entry) (+4ms) (54/408)\ndocs:build: 09:09:16   ▶ /_astro/58adb3a94e4096e2a6f1d5ea888be5938b29c956.CCH_uo1d_2gpCwp.webp (reused cache entry) (+4ms) (55/408)\ndocs:build: 09:09:16   ▶ /_astro/f7c0b19ca9f753258b79155c82002648bc61bab7.tlaYWPOW_SLSR3.webp (reused cache entry) (+5ms) (56/408)\ndocs:build: 09:09:16   ▶ /_astro/17324\n\n...",
+              "exit": 0,
+              "description": "Run web build with correct filter name",
+              "truncated": true,
+              "outputPath": "/Users/samforeman/.local/share/opencode/tool-output/tool_c9563c14d001jymbxBPrF1kPe5"
+            },
+            "time": {
+              "start": 1772032866471,
+              "end": 1772032868686
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563a595001QygLM4hMQoDOIl"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "include": "landing.mdx",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages",
+              "pattern": "src=\"/talks/"
+            },
+            "output": "No files found",
+            "title": "src=\"/talks/",
+            "metadata": {
+              "matches": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772032867519,
+              "end": 1772032867551
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563a595001QygLM4hMQoDOIl"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "cost": 0,
+          "tokens": {
+            "total": 37913,
+            "input": 1728,
+            "output": 275,
+            "reasoning": 0,
+            "cache": {
+              "read": 35910,
+              "write": 0
+            }
+          },
+          "id": "prt_c9563c150001Wublb31dOfvAbs",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563a595001QygLM4hMQoDOIl"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772032868883,
+          "completed": 1772032873175
+        },
+        "parentID": "msg_c956347b1001mdAn36SZ5Igss2",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "general",
+        "agent": "general",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 64786,
+          "input": 27015,
+          "output": 134,
+          "reasoning": 0,
+          "cache": {
+            "read": 37637,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c9563c213001WOXsQ4PzlvPNZs",
+        "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563c213001WOXsQ4PzlvPNZs"
+        },
+        {
+          "type": "text",
+          "text": "Let me check the tail of the build output to see if it succeeded:",
+          "time": {
+            "start": 1772032873018,
+            "end": 1772032873018
+          },
+          "id": "prt_c9563cdab001bt5yyOc0IDYMDF",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563c213001WOXsQ4PzlvPNZs"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "bash",
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "tail -5 /Users/samforeman/.local/share/opencode/tool-output/tool_c9563c14d001jymbxBPrF1kPe5",
+              "description": "Check build output end for success/failure"
+            },
+            "output": "\n Tasks:    8 successful, 8 total\nCached:    8 cached, 8 total\n  Time:    1.322s >>> FULL TURBO\n\n",
+            "title": "Check build output end for success/failure",
+            "metadata": {
+              "output": "\n Tasks:    8 successful, 8 total\nCached:    8 cached, 8 total\n  Time:    1.322s >>> FULL TURBO\n\n",
+              "exit": 0,
+              "description": "Check build output end for success/failure",
+              "truncated": false
+            },
+            "time": {
+              "start": 1772032873014,
+              "end": 1772032873045
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563c213001WOXsQ4PzlvPNZs"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "cost": 0,
+          "tokens": {
+            "total": 64786,
+            "input": 27015,
+            "output": 134,
+            "reasoning": 0,
+            "cache": {
+              "read": 37637,
+              "write": 0
+            }
+          },
+          "id": "prt_c9563d255001pVm2bfsIRcVtJg",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563c213001WOXsQ4PzlvPNZs"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772032873177,
+          "completed": 1772032879246
+        },
+        "parentID": "msg_c956347b1001mdAn36SZ5Igss2",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "general",
+        "agent": "general",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 64980,
+          "input": 188,
+          "output": 141,
+          "reasoning": 0,
+          "cache": {
+            "read": 64651,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c9563d2d9001W16zIkyQ32rfrS",
+        "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "id": "prt_c9563e0de0015j0QCjPSm3n43O",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563d2d9001W16zIkyQ32rfrS"
+        },
+        {
+          "type": "text",
+          "text": "Now let me check the main `landing.mdx` for local `/talks/` iframe srcs to compare against the copy:",
+          "time": {
+            "start": 1772032879093,
+            "end": 1772032879093
+          },
+          "id": "prt_c9563e0e0001mLUpvJH0ZjuP3v",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563d2d9001W16zIkyQ32rfrS"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "src=\"/talks/",
+              "include": "landing.mdx",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages"
+            },
+            "output": "No files found",
+            "title": "src=\"/talks/",
+            "metadata": {
+              "matches": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772032879090,
+              "end": 1772032879126
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563d2d9001W16zIkyQ32rfrS"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "cost": 0,
+          "tokens": {
+            "total": 64980,
+            "input": 188,
+            "output": 141,
+            "reasoning": 0,
+            "cache": {
+              "read": 64651,
+              "write": 0
+            }
+          },
+          "id": "prt_c9563ea1a0011geV7zRBvrIM9Y",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563d2d9001W16zIkyQ32rfrS"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772032879251,
+          "completed": 1772032884784
+        },
+        "parentID": "msg_c956347b1001mdAn36SZ5Igss2",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "general",
+        "agent": "general",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 65166,
+          "input": 157,
+          "output": 171,
+          "reasoning": 0,
+          "cache": {
+            "read": 64838,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_c9563ea93001UlxgjDhO3EFMNg",
+        "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563ea93001UlxgjDhO3EFMNg"
+        },
+        {
+          "type": "text",
+          "text": "Good - the main `landing.mdx` has no local `/talks/` refs, confirming those were already fixed there. Now let me verify the broader search for `src=\"/talks/` across all pages (not just landing.mdx):",
+          "time": {
+            "start": 1772032884634,
+            "end": 1772032884634
+          },
+          "id": "prt_c9563f5ff001ZQVNsX19BbPbF9",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563ea93001UlxgjDhO3EFMNg"
+        },
+        {
+          "type": "tool",
+          "callID": "REDACTED",
+          "tool": "grep",
+          "state": {
+            "status": "completed",
+            "input": {
+              "include": "*.{mdx,md,astro}",
+              "path": "/Users/samforeman/projects/saforem2/sam.onl/web/src/pages",
+              "pattern": "src=\"/talks/"
+            },
+            "output": "No files found",
+            "title": "src=\"/talks/",
+            "metadata": {
+              "matches": 0,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772032884633,
+              "end": 1772032884656
+            }
+          },
+          "id": "prt_c9563fab80019sWgfVlY5yl731",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563ea93001UlxgjDhO3EFMNg"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "cost": 0,
+          "tokens": {
+            "total": 65166,
+            "input": 157,
+            "output": 171,
+            "reasoning": 0,
+            "cache": {
+              "read": 64838,
+              "write": 0
+            }
+          },
+          "id": "prt_c9563ffb1001Nb1TlyYeSdIW3v",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c9563ea93001UlxgjDhO3EFMNg"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772032884789,
+          "completed": 1772032914551
+        },
+        "parentID": "msg_c956347b1001mdAn36SZ5Igss2",
+        "modelID": "claude-opus-4.6",
+        "providerID": "github-copilot",
+        "mode": "general",
+        "agent": "general",
+        "path": {
+          "cwd": "/Users/samforeman/projects/saforem2/sam.onl",
+          "root": "/Users/samforeman/projects/saforem2/sam.onl"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 66331,
+          "input": 187,
+          "output": 1150,
+          "reasoning": 0,
+          "cache": {
+            "read": 64994,
+            "write": 0
+          }
+        },
+        "finish": "stop",
+        "id": "msg_c956400350018cohhveF4VCx7X",
+        "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "id": "prt_c9564096e001r7Ch7KEF6C4Dh2",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c956400350018cohhveF4VCx7X"
+        },
+        {
+          "type": "text",
+          "text": "All checks complete. Here's the full audit report:\n\n---\n\n## Audit Report: `web/src/pages/`\n\n### 1. Remaining `.qmd` references\n**Status: CLEAN (false positives only)**\n\nAll 6 matches are in `posts/dope-slides/index.mdx` and are **legitimate content** -- that post is about Quarto/reveal.js slide workflows and discusses `.qmd` files as subject matter. No broken `.qmd` links exist.\n\n- `posts/dope-slides/index.mdx:85` - code example mentioning `index.qmd`\n- `posts/dope-slides/index.mdx:106` - describes `.qmd` format\n- `posts/dope-slides/index.mdx:109,123,180,338` - references to `index.qmd` in content\n\n### 2. Local `/talks/...slides.html` iframe srcs\n**Status: CLEAN** -- No `src=\"/talks/` patterns found in any `.mdx`, `.md`, or `.astro` files under `web/src/pages/`. These were previously fixed in `landing.mdx`.\n\n### 3. Case-sensitive `posts/AuroraGPT` links\n**Status: CLEAN** -- No matches for `posts/AuroraGPT` found anywhere. All links correctly use lowercase `posts/auroragpt`.\n\n### 4. Broken webtui links (missing `/webtui/` prefix)\n**Status: CLEAN** -- No links matching `](/start/`, `](/components/`, `](/installation/`, or `](/contributing/` without the `/webtui/` prefix were found in `web/src/pages/webtui/`.\n\n### 5. Merge conflict markers\n**Status: CLEAN** -- The `=======` pattern matched in 2 files, but both are **false positives**:\n- `posts/jupyter/test/index.mdx:89` -- Part of an `nvidia-smi` output table (`|=====...=====|`)\n- `webtui/components/progress.mdx:87,146` -- CSS values for progress bar display (`'========================'` and `'>>>>>>>>>>>>>>>>>>>>>>>>'`)\n\nNo actual merge conflict markers exist.\n\n### 6. `landing.mdx copy` (duplicate file)\n**Status: ISSUE FOUND**\n\nFile exists at: `web/src/pages/landing.mdx copy`\n\nThis is a stale duplicate of `landing.mdx` that **still contains old broken patterns** that were fixed in the main file:\n\n- **6 local `/talks/` iframe srcs** (lines 659, 683, 705, 743, 759, 775):\n  - `src=\"/talks/aurora-gpt-fm-for-electric-grid/slides.html?view=scroll\"` (line 659)\n  - `src=\"/talks/ai-for-science-2024/slides.html?view=scroll\"` (line 683)\n  - `src=\"/talks/AuroraGPT/alcf-hpc-workshop-2024/slides.html?view=scroll\"` (line 705)\n  - `src=\"/talks/hpc-user-forum/slides.html?view=scroll\"` (line 743)\n  - `src=\"/talks/llms-at-scale/slides.html?view=scroll\"` (line 759)\n  - `src=\"/talks/llms-on-polaris/slides.html?view=scroll\"` (line 775)\n\n**Recommendation:** Delete `landing.mdx copy` entirely. It's a leftover duplicate that Astro doesn't seem to process (it wasn't in the build route list due to the space in the filename), but it's dead weight in the repo and could cause confusion.\n\n### 7. Build check\n**Status: PASSING**\n\n`bun run build --filter=docs` completed successfully:\n- 8/8 tasks successful (all cached)\n- No errors\n- **Warnings:** 8 Shiki syntax highlighting warnings: `[Shiki] The language \"svg\" doesn't exist, falling back to \"plaintext\".` -- These are non-critical; some fenced code blocks use `svg` as the language identifier, which Shiki doesn't recognize.\n\n---\n\n## Summary\n\n| Check | Result |\n|---|---|\n| `.qmd` references | Clean (content-only references) |\n| Local `/talks/` iframe srcs | Clean |\n| Case-sensitive `posts/AuroraGPT` | Clean |\n| Broken webtui links | Clean |\n| Merge conflict markers | Clean (false positives) |\n| `landing.mdx copy` duplicate | **Stale file -- should be deleted** |\n| Build | **Passes** (8 minor Shiki warnings) |\n\n**One actionable item:** Delete `web/src/pages/landing.mdx copy`.",
+          "time": {
+            "start": 1772032914372,
+            "end": 1772032914372
+          },
+          "id": "prt_c95640974001oBluIjsiVvV0fI",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c956400350018cohhveF4VCx7X"
+        },
+        {
+          "type": "step-finish",
+          "reason": "stop",
+          "snapshot": "d232d8c704656b571de86460c3087863329182fb",
+          "cost": 0,
+          "tokens": {
+            "total": 66331,
+            "input": 187,
+            "output": 1150,
+            "reasoning": 0,
+            "cache": {
+              "read": 64994,
+              "write": 0
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_36a9cb852ffePBTaDAmDC2jz9w",
+          "messageID": "msg_c956400350018cohhveF4VCx7X"
+        }
+      ]
+    }
+  ]
+}

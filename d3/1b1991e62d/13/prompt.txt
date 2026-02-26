@@ -1,0 +1,11 @@
+You are auditing the Astro site at /Users/samforeman/projects/saforem2/sam.onl/web/src/pages/ for remaining issues before a commit. Do the following checks and report back ALL findings:
+
+1. **Remaining .qmd links**: Search for any `.qmd` references in .mdx, .md, .astro files under web/src/pages/ (exclude the `projects/hpc-bootcamp-2025/` directory which has .qmd source files that are out of scope)
+2. **Remaining local /talks/...slides.html iframe srcs**: Search for `src="/talks/` patterns that point to local slide files
+3. **Case-sensitive link issues**: Search for links containing `posts/AuroraGPT` (capital A, capital G, capital P, capital T) which should be `posts/auroragpt` (lowercase)
+4. **Broken webtui links**: Search for links that go to paths like `/start/`, `/components/`, `/installation/`, `/contributing/` without the `/webtui/` prefix in files under web/src/pages/webtui/
+5. **Any files with merge conflict markers**: Search for `<<<<<<<`, `=======`, `>>>>>>>` patterns
+6. **Check the `landing.mdx copy` file**: Read its contents and note if it has any of the old broken URLs that were fixed in landing.mdx (this is the known duplicate)
+7. **Run a build check**: Run `bun run build --filter=web` from the repo root `/Users/samforeman/projects/saforem2/sam.onl/` and report if it succeeds or fails, and any warnings
+
+Report all findings clearly with file paths and line numbers.
