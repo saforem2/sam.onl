@@ -178,8 +178,8 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                     variant-="background1"
                                     aria-expanded="true"
                                     aria-controls="toc-container"
-                                    aria-label="Collapse right sidebar (] key)">
-                                    <code>&lt;]&gt;</code>
+                                    aria-label="Collapse right sidebar (zh/zl)">
+                                    <code>&lt;zl&gt;</code>
                                 </button>
                                 <div id="toc-list-container">
                                     <ul id="toc-list">
@@ -215,9 +215,16 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                 &#xeb86; Menu
             </button>
             <button size-="small" id="docs-button">&#xf15b; Docs</button>
-            {tocHeadings.length > 0 && (
-                <button size-="small" variant-="background1" id="toc-button">&#xf0c9; TOC</button>
-            )}
+            {
+                tocHeadings.length > 0 && (
+                    <button
+                        size-="small"
+                        variant-="background1"
+                        id="toc-button">
+                        &#xf0c9; TOC
+                    </button>
+                )
+            }
         </div>
     </column>
 </Layout>
@@ -474,7 +481,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
             }
         }
 
-        // ] / [ — skip past / before an entire code block
+        // ] / [ — jump to next / previous heading
         if (
             (e.key === ']' || e.key === '[') &&
             !e.ctrlKey &&
@@ -482,33 +489,43 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
             !e.altKey &&
             !e.shiftKey
         ) {
-            const active = document.activeElement
-            if (!(active instanceof HTMLElement)) return
-            const codeBlock = active.closest('pre.astro-code')
-            if (!codeBlock) return // not inside a code block, ignore
-
             e.preventDefault()
-            const allElements = getVisibleMainElements()
-            if (allElements.length === 0) return
+            const headings = Array.from(
+                document.querySelectorAll(
+                    '#main-content h1[id], #main-content h2[id], #main-content h3[id], #main-content h4[id], #main-content h5[id], #main-content h6[id]',
+                ),
+            ) as HTMLElement[]
+            if (headings.length === 0) return
+
+            const scrollY = window.scrollY
+            const offset = 80 // account for sticky navbar
 
             if (e.key === ']') {
-                // Jump to the first focusable element AFTER this code block
-                const afterBlock = allElements.find(
-                    (el) =>
-                        !codeBlock.contains(el) &&
-                        codeBlock.compareDocumentPosition(el) &
-                            Node.DOCUMENT_POSITION_FOLLOWING,
+                // Jump to the next heading below current scroll position
+                const next = headings.find(
+                    (h) => h.getBoundingClientRect().top > offset + 2,
                 )
-                if (afterBlock) vimFocusElement(afterBlock)
+                if (next) {
+                    next.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    window.scrollBy(0, -offset)
+                    const anchor = next.querySelector(
+                        'a.heading-anchor',
+                    ) as HTMLElement | null
+                    if (anchor) anchor.focus({ preventScroll: true })
+                }
             } else {
-                // Jump to the last focusable element BEFORE this code block
-                const beforeBlock = allElements.findLast(
-                    (el) =>
-                        !codeBlock.contains(el) &&
-                        codeBlock.compareDocumentPosition(el) &
-                            Node.DOCUMENT_POSITION_PRECEDING,
+                // Jump to the previous heading above current scroll position
+                const prev = headings.findLast(
+                    (h) => h.getBoundingClientRect().top < offset - 2,
                 )
-                if (beforeBlock) vimFocusElement(beforeBlock)
+                if (prev) {
+                    prev.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    window.scrollBy(0, -offset)
+                    const anchor = prev.querySelector(
+                        'a.heading-anchor',
+                    ) as HTMLElement | null
+                    if (anchor) anchor.focus({ preventScroll: true })
+                }
             }
             return
         }
@@ -746,24 +763,24 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
     const setSidebarToggleLabel = (collapsed: boolean) => {
         if (!sidebarToggle) return
 
-        sidebarToggle.innerHTML = '<code>&lt;[&gt;</code>'
+        sidebarToggle.innerHTML = '<code>&lt;zh&gt;</code>'
         sidebarToggle.setAttribute(
             'aria-label',
             collapsed
-                ? 'Expand left sidebar ([ key)'
-                : 'Collapse left sidebar ([ key)',
+                ? 'Expand left sidebar (zh)'
+                : 'Collapse left sidebar (zh)',
         )
     }
 
     const setTocToggleLabel = (collapsed: boolean) => {
         if (!tocToggle) return
 
-        tocToggle.innerHTML = '<code>&lt;]&gt;</code>'
+        tocToggle.innerHTML = '<code>&lt;zl&gt;</code>'
         tocToggle.setAttribute(
             'aria-label',
             collapsed
-                ? 'Expand right sidebar (] key)'
-                : 'Collapse right sidebar (] key)',
+                ? 'Expand right sidebar (zl)'
+                : 'Collapse right sidebar (zl)',
         )
     }
 
@@ -878,22 +895,9 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                     return
                 }
 
-                if (e.key === '[') {
+                if (e.key === '[' || e.key === ']') {
                     pendingZAt = 0
-                    e.preventDefault()
-                    setSidebarCollapsed(
-                        !sidebarContainer?.classList.contains('collapsed'),
-                    )
-                    return
-                }
-
-                if (e.key === ']') {
-                    pendingZAt = 0
-                    e.preventDefault()
-                    setTocCollapsed(
-                        !tocContainer?.classList.contains('collapsed'),
-                    )
-                    return
+                    return // handled by heading-jump listener
                 }
 
                 const hasPendingZChord =
@@ -1132,9 +1136,18 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         sidebarContainer.classList.toggle('mobile-hidden', panel !== 'menu')
         article.classList.toggle('mobile-hidden', panel !== 'docs')
         tocContainer?.classList.toggle('mobile-hidden', panel !== 'toc')
-        menuButton.setAttribute('variant-', panel === 'menu' ? '' : 'background1')
-        docsButton.setAttribute('variant-', panel === 'docs' ? '' : 'background1')
-        tocButton?.setAttribute('variant-', panel === 'toc' ? '' : 'background1')
+        menuButton.setAttribute(
+            'variant-',
+            panel === 'menu' ? '' : 'background1',
+        )
+        docsButton.setAttribute(
+            'variant-',
+            panel === 'docs' ? '' : 'background1',
+        )
+        tocButton?.setAttribute(
+            'variant-',
+            panel === 'toc' ? '' : 'background1',
+        )
     }
 
     menuButton.addEventListener('click', () => setMobileActive('menu'))
