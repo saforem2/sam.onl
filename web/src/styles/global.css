@@ -200,68 +200,6 @@
         );
     }
 
-    /* ::highlight(vim) { */
-    /*     background-color: var(--foreground0); */
-    /*     color: var(--background0); */
-    /* } */
-    /* h1 { */
-    /*     color: oklch(from var(--h1, var(--red)) l c h); */
-    /*     &:hover, */
-    /*     &:focus-visible { */
-    /*         background-color: oklch( */
-    /*             from var(--h1, var(--red)) calc(l * var(--oklch-scale, 0.85)) c */
-    /*                 h / 0.1 */
-    /*         ); */
-    /*     } */
-    /* } */
-    /**/
-    /* h2 { */
-    /*     color: oklch(from var(--h2, #fd971f) l c h); */
-    /*     &:hover, */
-    /*     &:focus-visible { */
-    /*         background-color: oklch( */
-    /*             from var(--h2, #fd971f) calc(l * 0.85) c h / 0.1 */
-    /*         ); */
-    /*     } */
-    /* } */
-    /**/
-    /* h3 { */
-    /*     color: oklch(from var(--h3, var(--green)) l c h); */
-    /*     &:hover, */
-    /*     &:focus-visible { */
-    /*         background-color: oklch( */
-    /*             from var(--h3, var(--green)) calc(l * 0.85) c h / 0.1 */
-    /*         ); */
-    /*     } */
-    /* } */
-    /* h4 { */
-    /*     color: oklch(from var(--h4, #50fa7b) l c h); */
-    /*     &:hover, */
-    /*     &:focus-visible { */
-    /*         background-color: oklch( */
-    /*             from var(--h4, #50fa7b) calc(l * 0.85) c h / 0.1 */
-    /*         ); */
-    /*     } */
-    /* } */
-    /* h5 { */
-    /*     color: oklch(from var(--h5, #fd971f) l c h); */
-    /*     &:hover, */
-    /*     &:focus-visible { */
-    /*         background-color: oklch( */
-    /*             from var(--h5, #fd971f) calc(l * 0.85) c h / 0.1 */
-    /*         ); */
-    /*     } */
-    /* } */
-    /* h6 { */
-    /*     color: oklch(from var(--h6, #f92672) l c h); */
-    /*     &:hover, */
-    /*     &:focus-visible { */
-    /*         background-color: oklch( */
-    /*             from var(--h6, #f92672) calc(l * 0.85) c h / 0.1 */
-    /*         ); */
-    /*     } */
-    /* } */
-
     pre:not([size-]),
     [is-~='pre']:not([size-]) {
         background-color: transparent;
@@ -607,17 +545,6 @@ pre.astro-code > code {
     word-break: break-word;
 }
 
-/* html[data-webtui-theme='catppuccin'] { */
-/*     --background0: var(--base); */
-/*     --background1: var(--surface0); */
-/*     --background2: var(--surface1); */
-/*     --background3: var(--surface2); */
-/**/
-/*     --foreground0: var(--text); */
-/*     --foreground1: var(--subtext1); */
-/*     --foreground2: var(--overlay2); */
-/* } */
-
 p:has(> img) {
     /* display: flow-root; */
 
@@ -639,7 +566,9 @@ html[data-webtui-theme='catppuccin'] {
     --background1: var(--surface0);
     --background2: var(--surface1);
     --background3: var(--surface2);
+
     --foreground0: var(--text);
     --foreground1: var(--subtext1);
     --foreground2: var(--overlay2);
+    --code-bg: var(--foreground0);
 }

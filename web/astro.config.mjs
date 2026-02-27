@@ -5,16 +5,60 @@ import { visit } from 'unist-util-visit'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeMermaid from 'rehype-mermaid'
-// import { createHighlighter } from 'shiki'
-// import { createCssVariablesTheme } from 'shiki'
+// import Catppuccin from 'tm-themes/themes/catppuccin-mocha'
+// import { getSingletonHighlighter } from 'shiki'
+
+// type LineHighlight = 'add' | 'remove' | 'change'
 //
-// const oneLight = createCssVariablesTheme({
-//   name: 'one-light',
-//   variablePrefix: '--shiki',
-//   variableDefaults: {},
-//   fontStyle: true
+// interface Props {
+//     code: string
+//     lang?: 'html' | 'css'
+//     file?: {
+//         name: string
+//         icon: [string, string] | string
+//     }
+//     highlights?: [number, LineHighlight][]
+//     withShadow?: boolean
+// }
+//
+// const {
+//     code,
+//     highlights,
+//     lang = 'html',
+//     file,
+//     withShadow = false,
+//     ...props
+// } = Astro.props
+//
+// const highlighter = await getSingletonHighlighter({
+//     themes: ['catppuccin-mocha'],
+//     langs: ['html', 'css'],
 // })
-// import oneLight from 'shiki/themes/one-light.json'
+// const tokens = highlighter.codeToTokens(code, {
+//     lang,
+//     theme: 'catppuccin-mocha',
+// })
+
+import { createHighlighter } from 'shiki'
+import { createCssVariablesTheme } from 'shiki'
+
+const oneLight = createCssVariablesTheme({
+    name: 'one-light',
+    variablePrefix: '--shiki',
+    variableDefaults: {},
+    fontStyle: true,
+})
+
+const catpuccinMocha = createCssVariablesTheme({
+    name: 'css-variables',
+    variablePrefix: '--shiki-',
+    variableDefaults: {},
+    fontStyle: true,
+})
+const highlighter = await createHighlighter({
+    themes: [oneLight, catpuccinMocha],
+})
+
 // import oneLight from 'shiki/themes/one-light.json'
 
 const indexableElements = [
@@ -196,6 +240,7 @@ export default defineConfig({
             themes: {
                 dark: 'one-dark-pro',
                 light: 'min-light',
+                // catppuccin: 'catppucin-mocha',
             },
             colorReplacements: {
                 'one-light': {
