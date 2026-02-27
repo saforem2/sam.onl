@@ -6,7 +6,7 @@
 
         & > summary {
             &::before {
-                content: '[+] ';
+                content: '> ';
             }
 
             &::-webkit-details-marker {
@@ -14,7 +14,7 @@
             }
 
             &::marker {
-                content: '[-] ';
+                content: '';
                 display: none;
             }
 
@@ -24,7 +24,7 @@
         }
 
         &[open] summary::before {
-            content: '[-] ';
+            content: 'v ';
         }
     }
 }

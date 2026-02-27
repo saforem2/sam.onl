@@ -211,10 +211,13 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
             }
         </row>
         <div id="mobile-nav">
-            <button variant-="background1" id="menu-button">
+            <button size-="small" variant-="background1" id="menu-button">
                 &#xeb86; Menu
             </button>
-            <button id="docs-button">&#xf15b; Docs</button>
+            <button size-="small" id="docs-button">&#xf15b; Docs</button>
+            {tocHeadings.length > 0 && (
+                <button size-="small" variant-="background1" id="toc-button">&#xf0c9; TOC</button>
+            )}
         </div>
     </column>
 </Layout>
@@ -1114,22 +1117,27 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
     const docsButton = document.getElementById(
         'docs-button',
     ) as HTMLButtonElement
+    const tocButton = document.getElementById(
+        'toc-button',
+    ) as HTMLButtonElement | null
     const sidebarContainer = document.getElementById(
         'sidebar-container',
     ) as HTMLDivElement
+    const tocContainer = document.getElementById(
+        'toc-container',
+    ) as HTMLElement | null
     const article = document.querySelector('article') as HTMLElement
 
-    menuButton.addEventListener('click', () => {
-        sidebarContainer.classList.remove('mobile-hidden')
-        article.classList.add('mobile-hidden')
-        menuButton.setAttribute('variant-', '')
-        docsButton.setAttribute('variant-', 'background1')
-    })
+    function setMobileActive(panel: 'menu' | 'docs' | 'toc') {
+        sidebarContainer.classList.toggle('mobile-hidden', panel !== 'menu')
+        article.classList.toggle('mobile-hidden', panel !== 'docs')
+        tocContainer?.classList.toggle('mobile-hidden', panel !== 'toc')
+        menuButton.setAttribute('variant-', panel === 'menu' ? '' : 'background1')
+        docsButton.setAttribute('variant-', panel === 'docs' ? '' : 'background1')
+        tocButton?.setAttribute('variant-', panel === 'toc' ? '' : 'background1')
+    }
 
-    docsButton.addEventListener('click', () => {
-        sidebarContainer.classList.add('mobile-hidden')
-        article.classList.remove('mobile-hidden')
-        menuButton.setAttribute('variant-', 'background1')
-        docsButton.setAttribute('variant-', '')
-    })
+    menuButton.addEventListener('click', () => setMobileActive('menu'))
+    docsButton.addEventListener('click', () => setMobileActive('docs'))
+    tocButton?.addEventListener('click', () => setMobileActive('toc'))
 </script>

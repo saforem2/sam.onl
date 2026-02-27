@@ -56,10 +56,11 @@
         --font-family:
             'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace,
             'Symbols Nerd Font';
-        --font-size: 16px;
+        --font-size: 17px;
         --font-family-sans-serif: var(--font-family);
         --font-family-monospace: var(--font-family);
         font-family: var(--font-family);
+        --table-border-width: 0px;
         --box-border-color: var(--background1);
         --focus-bg: oklch(
             from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
@@ -322,7 +323,10 @@
         background-color: transparent;
         background-image: none;
     }
-
+    .slide-deck.reveal-full-page {
+        width: min(800px, round(97%, 1ch));
+        margin-inline-end: 2ch;
+    }
     .reveal-full-page {
         max-height: round(calc(0.66 * 100vh), 1lh) !important;
         min-height: round(calc(0.33 * 100vh), 1lh) !important;
@@ -461,7 +465,7 @@
             background-color: var(--callout-summary-bg);
             color: var(--callout-color);
             font-weight: var(--font-weight-bold);
-            margin-inline-end: 1ch;
+            padding-inline-end: 1ch;
         }
         summary::before {
             content: '[+] ';
@@ -603,16 +607,16 @@ pre.astro-code > code {
     word-break: break-word;
 }
 
-html[data-webtui-theme='catppuccin'] {
-    --background0: var(--base);
-    --background1: var(--surface0);
-    --background2: var(--surface1);
-    --background3: var(--surface2);
-
-    --foreground0: var(--text);
-    --foreground1: var(--subtext1);
-    --foreground2: var(--overlay2);
-}
+/* html[data-webtui-theme='catppuccin'] { */
+/*     --background0: var(--base); */
+/*     --background1: var(--surface0); */
+/*     --background2: var(--surface1); */
+/*     --background3: var(--surface2); */
+/**/
+/*     --foreground0: var(--text); */
+/*     --foreground1: var(--subtext1); */
+/*     --foreground2: var(--overlay2); */
+/* } */
 
 p:has(> img) {
     /* display: flow-root; */

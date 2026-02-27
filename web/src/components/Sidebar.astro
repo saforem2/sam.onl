@@ -516,6 +516,7 @@ const { pathname: urlPath } = Astro.url
         overflow: hidden;
         flex-grow: 1;
         padding-inline: 1ch;
+        /* margin-inline-start: 1ch; */
         /* line-height: 1.5; */
         /* line-height: var(--line-height, 1.227); */
 
@@ -597,7 +598,7 @@ const { pathname: urlPath } = Astro.url
         #category-container {
             position: relative;
             flex-grow: 1;
-            margin-top: 2lh;
+            margin-top: 1lh;
         }
 
         #category-list {
@@ -644,12 +645,12 @@ const { pathname: urlPath } = Astro.url
         display: grid;
         grid-template-columns: 2ch minmax(0, 1fr);
         align-items: start;
-        margin-inline-start: 1ch;
+        margin-inline-start: 2ch;
         /* margin-block-end: 1ch; */
     }
 
     #sidebar ul[marker-~='tree'] ul > li {
-        margin-inline-start: 0ch !important;
+        margin-inline-start: 1ch;
     }
     #sidebar ul[marker-~='tree'] > li::before {
         grid-column: 1;
@@ -709,7 +710,7 @@ const { pathname: urlPath } = Astro.url
 
     #category-list > a.sidebar-direct-link::before {
         content: '';
-        padding-inline: 2ch;
+        padding-inline: 1ch;
     }
 
     ul > details > summary {
@@ -743,7 +744,7 @@ const { pathname: urlPath } = Astro.url
             color: var(--foreground1);
             &::marker {
                 color: var(--foreground2);
-                content: '[+]';
+                content: '>';
             }
 
             &:hover {
@@ -754,7 +755,7 @@ const { pathname: urlPath } = Astro.url
         &[open] {
             summary {
                 &::marker {
-                    content: '[-]';
+                    content: 'v';
                 }
             }
         }

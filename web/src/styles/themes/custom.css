@@ -419,12 +419,24 @@
         /* --h6: oklch(from #61afef  l c h); */
         /* /* --h6: oklch(from #ff79c6 l c h); */
         /* ---------------------------------*/
-        --h1: oklch(from var(--material-pink-200) l c h);
-        --h2: oklch(from var(--material-deep-purple-200) l c h);
-        --h3: oklch(from var(--material-blue-200) l c h);
-        --h4: oklch(from var(--material-teal-200) l c h);
-        --h5: oklch(from var(--material-green-200) l c h);
-        --h6: oklch(from var(--material-yellow-200) l c h);
+        --h1: oklch(
+            from var(--material-pink-200) calc(l * 1.05) calc(c * 1.35) h
+        );
+        --h2: oklch(
+            from var(--material-deep-purple-200) calc(l * 1.05) calc(c * 1.35) h
+        );
+        --h3: oklch(
+            from var(--material-blue-200) calc(l * 1.05) calc(c * 1.35) h
+        );
+        --h4: oklch(
+            from var(--material-teal-200) calc(l * 1.05) calc(c * 1.35) h
+        );
+        --h5: oklch(
+            from var(--material-green-200) calc(l * 1.05) calc(c * 1.35) h
+        );
+        --h6: oklch(
+            from var(--material-yellow-200) calc(l * 1.05) calc(c * 1.35) h
+        );
         /* --h2: oklch(from #c678dd l c h); */
         /* --h3: oklch(from #e06c75 l c h); */
         /* --h4: oklch(from #e5c07b l c h); */
