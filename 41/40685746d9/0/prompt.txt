@@ -1,0 +1,171 @@
+Can we fix the latex in @web/src/pages/posts/2025/10/06/index.mdx 
+Called the Read tool with the following input: {"filePath":"/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/10/06/index.mdx"}
+<path>/Users/samforeman/projects/saforem2/sam.onl/web/src/pages/posts/2025/10/06/index.mdx</path>
+<type>file</type>
+<content>1: ---
+2: layout: '@/layouts/Doc.astro'
+3: title: '🎨 Mixing Between Distributions While Training'
+4: date: 2025-10-06
+5: description: 'A mathematical framework for smoothly interpolating between data distributions during training using an annealing schedule.'
+6: ---
+7: 
+8: Sam Foreman
+9: 2025-10-06
+10: 
+11: - [Motivation](#motivation)
+12: - [Mathematical Framework](#mathematical-framework)
+13: - [Mixing Definition](#mixing-definition)
+14: - [Incremental Difference](#incremental-difference)
+15: - [Interpretation](#interpretation)
+16: - [Implementation](#implementation)
+17: - [Original Notes](#original-notes)
+18: 
+19: ## Motivation
+20: 
+21: When training on multiple data sources or domains, it is often desirable
+22: to _smoothly interpolate_ between two distributions rather than
+23: switching abruptly. This ensures stable optimization and avoids sudden
+24: shifts in gradient statistics.
+25: 
+26: We can achieve this with an **annealing schedule** that gradually shifts
+27: probability mass from one distribution to another.
+28: 
+29: ## Mathematical Framework
+30: 
+31: We introduce an annealing schedule during the mixing phase:
+32: 
+33: $$\&#123;\gamma_t\&#125;_&#123;t=0&#125;^N = \&#123;\gamma_0, \gamma_1, \ldots, \gamma_&#123;N-1&#125;, \gamma_N\&#125;$$
+34: 
+35: where
+36: 
+37: $$
+38: \begin&#123;aligned&#125;
+39: 0 < \gamma_0 < \gamma_1 &< \cdots < \gamma_N < 1 \\
+40: \quad |\gamma_&#123;t+1&#125; &- \gamma_t| \ll 1.
+41: \end&#123;aligned&#125;
+42: $$
+43: 
+44: We also define a complementary schedule:
+45: 
+46: $$ &#123;\eta_t&#125;_&#123;t=0&#125;^N = &#123;\eta_0, \eta_1, \ldots, \eta_N&#125;, \quad \text&#123;with &#125; \gamma_i + \eta_i = 1 \implies \eta_i = 1 - \gamma_i. $$
+47: 
+48: ## Mixing Definition
+49: 
+50: For (t = 0, 1, , N), define the interpolated distribution
+51: 
+52: $$ B_i = \gamma_i X + (1 - \gamma_i) Y, $$
+53: 
+54: where (X) and (Y) are two underlying distributions (or datasets, or
+55: losses).
+56: 
+57: ## Incremental Difference
+58: 
+59: The change between successive mixtures is:
+60: 
+61: $$
+62: \begin&#123;aligned&#125;
+63: B_&#123;i+1&#125; - B_i
+64: &= \gamma_&#123;i+1&#125; X + (1 - \gamma_&#123;i+1&#125;) Y - \left[ \gamma_i X + (1 - \gamma_i) Y \right] \\
+65: &= (\gamma_&#123;i+1&#125; - \gamma_i)(X - Y).
+66: \end&#123;aligned&#125;
+67: $$
+68: 
+69: Thus,
+70: 
+71: $$ |B*&#123;i+1&#125; - B_i| = |\gamma*&#123;i+1&#125; - \gamma_i| \, |X - Y|. $$
+72: 
+73: If we set $|\gamma_&#123;i+1&#125; - \gamma_i| = \varepsilon \ll 1$, then
+74: 
+75: $$ |B\_&#123;i+1&#125; - B_i| \leq \varepsilon \, |X - Y|, $$
+76: 
+77: meaning the transition between (X) and (Y) is arbitrarily smooth.
+78: 
+79: ## Interpretation
+80: 
+81: - This is a **linear interpolation** (convex combination) between two
+82:   distributions.
+83: - The annealing schedule ensures that the interpolation is smooth in
+84:   small increments.
+85: - Useful in:
+86:     - **Curriculum learning:** start from an easier distribution and
+87:       anneal to a harder one.
+88:     - **Domain adaptation:** gradually shift from source domain (X) to
+89:       target domain (Y).
+90:     - **Robust training:** maintain a mixture for diversity and stability.
+91: 
+92: ## Implementation
+93: 
+94: Below is a simple Python implementation of such a schedule and a sampler
+95: that mixes between two datasets.
+96: 
+97: ```python
+98: import math, random
+99: from typing import List, Sequence, Any, Iterator, Tuple
+100: 
+101: def make_schedule(n_steps: int, start: float = 0.0, end: float = 1.0, kind: str = "linear") -> List[float]:
+102:     """Generate an annealing schedule."""
+103:     if kind == "linear":
+104:         return [start + (end - start) * (t / (n_steps - 1)) for t in range(n_steps)]
+105:     elif kind == "cosine":
+106:         return [
+107:             start + (end - start) * (1 - math.cos(math.pi * t / (n_steps - 1))) / 2
+108:             for t in range(n_steps)
+109:         ]
+110:     else:
+111:         raise ValueError(f"Unknown schedule kind: {kind}")
+112: 
+113: class MixtureSampler:
+114:     """Probabilistic mixture of two datasets using gamma_t schedule."""
+115:     def __init__(self, X: Sequence[Any], Y: Sequence[Any], schedule: Sequence[float]):
+116:         self.X, self.Y = X, Y
+117:         self.schedule = schedule
+118:         self.rng = random.Random(0)
+119: 
+120:     def __iter__(self) -> Iterator[Tuple[int, Any]]:
+121:         for t, gamma_t in enumerate(self.schedule):
+122:             if self.rng.random() < gamma_t:
+123:                 yield t, self.X[self.rng.randrange(len(self.X))]
+124:             else:
+125:                 yield t, self.Y[self.rng.randrange(len(self.Y))]
+126: 
+127: # Example usage
+128: if __name__ == "__main__":
+129:     X = [("X", i) for i in range(5)]
+130:     Y = [("Y", i) for i in range(5)]
+131:     sched = make_schedule(10, start=0.1, end=0.9, kind="cosine")
+132:     mix = MixtureSampler(X, Y, sched)
+133: 
+134:     for t, ex in mix:
+135:         print(f"t={t:02d}, gamma={sched[t]:.2f}, sample={ex}")
+136: ```
+137: 
+138: ## Original Notes
+139: 
+140: <div id="fig-notes">
+141: 
+142: <img src="./assets/notes_light.png" class="light-content" />
+143: 
+144: <img src="./assets/notes_dark.png" class="dark-content" />
+145: 
+146: Figure 1: Original Notes
+147: 
+148: </div>
+
+(End of file - total 148 lines)
+</content>
+
+---
+
+yeah keep going
+
+---
+
+why do you keep stopping mid todo
+
+---
+
+...
+
+---
+
+??
