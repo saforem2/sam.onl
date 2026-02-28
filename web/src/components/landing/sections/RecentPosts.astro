@@ -77,6 +77,8 @@ function formatDate(date: Date): string {
 
             table {
                 width: 100%;
+                overflow-x: auto;
+                display: block;
             }
 
             td a {
@@ -100,6 +102,12 @@ function formatDate(date: Date): string {
                 white-space: nowrap;
                 text-align: right;
                 vertical-align: top;
+            }
+
+            @media (max-width: 48ch) {
+                .post-desc {
+                    display: none;
+                }
             }
 
             a[is-='badge'] {
