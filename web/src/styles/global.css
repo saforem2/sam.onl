@@ -108,7 +108,6 @@
 
     h2 {
         color: oklch(from var(--h2, var(--orange)) l c h);
-        margin-block: 1ch;
         &:hover,
         &:focus-visible {
             background-color: oklch(
@@ -204,7 +203,7 @@
     [is-~='pre']:not([size-]) {
         background-color: transparent;
         background-color: var(--code-bg);
-        overflow: visible !important;
+        overflow-x: auto;
         padding: 1ch 1ch;
     }
 
@@ -220,7 +219,7 @@
 
     pre,
     [is-~='pre'] {
-        white-space: pre-wrap;
+        white-space: pre;
         font-family: var(--font-family);
         font-size: var(--font-size);
         line-height: var(--line-height);
@@ -522,9 +521,16 @@ html[data-webtui-theme='dark'] .astro-code span {
 }
 
 pre.astro-code {
-    /* width: 100%; */
-    /* max-width: 100%; */
     padding: 0ch;
+}
+
+pre.astro-code > code {
+    display: block;
+    width: round(calc(100% - 0ch), 1ch);
+    padding: 1ch 0;
+    white-space: break-spaces;
+    word-break: break-word;
+    counter-reset: line;
 }
 
 pre.astro-code span.line[tabindex='0'] {
@@ -537,12 +543,20 @@ pre.astro-code span.line[tabindex='0']:focus-visible {
     box-shadow: inset 2px 0 0 0 var(--foreground0);
 }
 
-pre.astro-code > code {
-    display: block;
-    width: round(calc(100% - 0ch), 1ch);
-    padding: 1ch 1ch;
-    white-space: break-spaces;
-    word-break: break-word;
+pre.astro-code span.line {
+    display: inline-block;
+    width: 100%;
+}
+
+pre.astro-code span.line::before {
+    counter-increment: line;
+    content: counter(line);
+    display: inline-block;
+    width: 3ch;
+    margin-right: 1ch;
+    text-align: right;
+    color: var(--foreground2);
+    user-select: none;
 }
 
 p:has(> img) {

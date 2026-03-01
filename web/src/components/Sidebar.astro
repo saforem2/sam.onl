@@ -297,6 +297,7 @@ const { pathname: urlPath } = Astro.url
                                     ) : (
                                         categoryLabels[slug]
                                     )}
+                                    <span class="fold-icon" aria-hidden="true"></span>
                                 </summary>
                                 <ul marker-="tree open">
                                     {mergedYears.map((year) => {
@@ -357,7 +358,7 @@ const { pathname: urlPath } = Astro.url
                                                 open={isYearActive}
                                                 is-="accordion"
                                                 class="sidebar-year">
-                                                <summary>{year}</summary>
+                                                <summary>{year}<span class="fold-icon" aria-hidden="true"></span></summary>
                                                 <ul marker-="tree open">
                                                     {entries.map((entry) => (
                                                         <li>
@@ -409,7 +410,7 @@ const { pathname: urlPath } = Astro.url
                                             )}
                                             is-="accordion"
                                             class="sidebar-year">
-                                            <summary>Other</summary>
+                                            <summary>Other<span class="fold-icon" aria-hidden="true"></span></summary>
                                             <ul marker-="tree open">
                                                 {misc.map(
                                                     ({
@@ -470,6 +471,7 @@ const { pathname: urlPath } = Astro.url
                                 ) : (
                                     categoryLabels[slug]
                                 )}
+                                <span class="fold-icon" aria-hidden="true"></span>
                             </summary>
                             <ul marker-="tree open">
                                 {categoryPages.map(
@@ -608,6 +610,8 @@ const { pathname: urlPath } = Astro.url
             flex-direction: column;
             gap: 0lh;
             overflow-y: auto;
+            padding-inlin-start: 1ch;
+            margin-inline-start: 1ch;
             /* margin-inline: 1ch; */
         }
     }
@@ -623,6 +627,10 @@ const { pathname: urlPath } = Astro.url
 
     ul > li > a[href] {
         color: var(--foreground2);
+    }
+
+    ul ul > li > a[href] {
+        color: var(--foreground3);
         text-decoration: none;
         outline: none;
         display: block;
@@ -637,7 +645,7 @@ const { pathname: urlPath } = Astro.url
     }
 
     ul > li > a.external {
-        color: var(--foreground2);
+        color: var(--foreground3);
         font-style: italic;
     }
 
@@ -650,7 +658,7 @@ const { pathname: urlPath } = Astro.url
     }
 
     #sidebar ul[marker-~='tree'] ul > li {
-        margin-inline-start: 1ch;
+        margin-inline-start: 0;
     }
     #sidebar ul[marker-~='tree'] > li::before {
         grid-column: 1;
@@ -668,34 +676,16 @@ const { pathname: urlPath } = Astro.url
     }
 
     ul > details > summary {
-        color: var(--foreground2);
-        font-weight: var(--font-weight-normal);
-        /* display: list-item; */
-        /* margin-block-start: 1ch; */
         color: var(--foreground1);
-        background-color: var(--background0);
-    }
-    ul > details > summary::marker {
-        content: '\ ';
-        /* margin-inline-start: -1ch; */
-
-        &[open] {
-            summary {
-                &::marker {
-                    content: '\ ';
-                }
-            }
-        }
+        font-weight: var(--font-weight-normal);
+        background-color: transparent;
     }
 
     #category-list > a.sidebar-direct-link {
-        color: var(--foreground1);
+        color: var(--foreground0);
         text-decoration: none;
-        /* margin-inline-start: 1ch; */
         outline: none;
         display: block;
-        /* margin-inline-start: 1ch; */
-        /* margin-block-end: 1lh; */
         &:hover {
             background-color: var(--background1);
         }
@@ -710,7 +700,6 @@ const { pathname: urlPath } = Astro.url
 
     #category-list > a.sidebar-direct-link::before {
         content: '';
-        padding-inline: 1ch;
     }
 
     ul > details > summary {
@@ -731,6 +720,14 @@ const { pathname: urlPath } = Astro.url
 
     details.sidebar-year {
         margin: 0;
+
+        > summary::before {
+            content: none;
+        }
+
+        > ul {
+            padding-inline-start: 0;
+        }
     }
     /* ul > details > summary::marker { */
     /*   content: '+'; */
@@ -741,10 +738,27 @@ const { pathname: urlPath } = Astro.url
         summary {
             /* font-weight: 500; */
             background-color: none;
-            color: var(--foreground1);
+            color: var(--foreground0);
+            list-style-type: '';
+            display: flex;
+            align-items: baseline;
+
             &::marker {
-                color: var(--foreground2);
-                content: '>';
+                content: '';
+            }
+
+            &::-webkit-details-marker {
+                display: none;
+            }
+
+            .fold-icon {
+                margin-inline-start: auto;
+                padding-inline-end: 1ch;
+
+                &::after {
+                    content: '\eab6';
+                    color: var(--foreground2);
+                }
             }
 
             &:hover {
@@ -752,12 +766,8 @@ const { pathname: urlPath } = Astro.url
             }
         }
 
-        &[open] {
-            summary {
-                &::marker {
-                    content: 'v';
-                }
-            }
+        &[open] > summary .fold-icon::after {
+            content: '\eab4';
         }
     }
 
@@ -768,11 +778,10 @@ const { pathname: urlPath } = Astro.url
     }
 
     ul > details {
-        /* margin-block-end: 1ch; */
-        padding-inline-start: 1ch;
+        padding-inline-start: 3ch;
         summary {
             /* font-weight: var(--font-weight-bold); */
-            &::marker {
+            .fold-icon::after {
                 color: var(--foreground3);
             }
 
@@ -780,13 +789,10 @@ const { pathname: urlPath } = Astro.url
                 background-color: var(--background1);
             }
         }
+    }
 
-        &[open] {
-            summary {
-                &::marker {
-                }
-            }
-        }
+    summary::-webkit-details-marker {
+        display: none;
     }
 </style>
 

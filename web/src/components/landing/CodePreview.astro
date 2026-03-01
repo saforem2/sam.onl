@@ -22,14 +22,30 @@ const {
     ...props
 } = Astro.props
 
+const shikiThemes = {
+    dark: 'one-dark-pro',
+    light: 'min-light',
+    catppuccin: 'catppuccin-mocha',
+    nord: 'nord',
+    gruvbox: 'gruvbox-dark-hard',
+    'vitesse-dark': 'vitesse-dark',
+    everforest: 'everforest-dark',
+} as const
+
 const highlighter = await getSingletonHighlighter({
-    themes: ['catppuccin-mocha'],
+    themes: Object.values(shikiThemes),
     langs: ['html', 'css'],
 })
-const tokens = highlighter.codeToTokens(code, {
+
+const html = highlighter.codeToHtml(code, {
     lang,
-    theme: 'catppuccin-mocha',
+    themes: shikiThemes,
+    defaultColor: false,
 })
+
+// Extract per-line HTML — greedy .* (not .*?) to capture all nested spans
+const lineMatches = [...html.matchAll(/<span class="line">(.*)<\/span>/g)]
+const lines = lineMatches.map((m) => m[1])
 
 const fileIconText = Array.isArray(file?.icon) ? file.icon[0] : file?.icon
 const fileIconColor = Array.isArray(file?.icon) ? file.icon[1] : undefined
@@ -60,21 +76,13 @@ const fileIconColor = Array.isArray(file?.icon) ? file.icon[1] : undefined
         </colgroup>
         <tbody>
             {
-                tokens.tokens.map((tokensList, index) => (
+                lines.map((lineHtml, index) => (
                     <tr
                         highlight-={
                             highlights?.find(([l]) => l === index)?.[1]
                         }>
                         <td class="line-number">{index + 1}</td>
-                        <td
-                            class="line-code"
-                            set:html={tokensList
-                                .map(
-                                    (token) =>
-                                        `<span style="color: ${token.color}; font-style: ${token.fontStyle};">${token.content.replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</span>`,
-                                )
-                                .join('')}
-                        />
+                        <td class="line-code" set:html={lineHtml} />
                     </tr>
                 ))
             }
@@ -166,6 +174,42 @@ const fileIconColor = Array.isArray(file?.icon) ? file.icon[1] : undefined
         white-space: pre-wrap;
         padding: 0 1ch;
         vertical-align: top;
+    }
+
+    :global(html[data-webtui-theme='light']) .line-code :global(span) {
+        color: var(--shiki-light);
+        font-style: var(--shiki-light-font-style, normal);
+        font-weight: var(--shiki-light-font-weight, normal);
+    }
+    :global(html[data-webtui-theme='dark']) .line-code :global(span) {
+        color: var(--shiki-dark);
+        font-style: var(--shiki-dark-font-style, normal);
+        font-weight: var(--shiki-dark-font-weight, normal);
+    }
+    :global(html[data-webtui-theme='catppuccin']) .line-code :global(span) {
+        color: var(--shiki-catppuccin);
+        font-style: var(--shiki-catppuccin-font-style, normal);
+        font-weight: var(--shiki-catppuccin-font-weight, normal);
+    }
+    :global(html[data-webtui-theme='nord']) .line-code :global(span) {
+        color: var(--shiki-nord);
+        font-style: var(--shiki-nord-font-style, normal);
+        font-weight: var(--shiki-nord-font-weight, normal);
+    }
+    :global(html[data-webtui-theme='gruvbox']) .line-code :global(span) {
+        color: var(--shiki-gruvbox);
+        font-style: var(--shiki-gruvbox-font-style, normal);
+        font-weight: var(--shiki-gruvbox-font-weight, normal);
+    }
+    :global(html[data-webtui-theme='vitesse-dark']) .line-code :global(span) {
+        color: var(--shiki-vitesse-dark);
+        font-style: var(--shiki-vitesse-dark-font-style, normal);
+        font-weight: var(--shiki-vitesse-dark-font-weight, normal);
+    }
+    :global(html[data-webtui-theme='everforest']) .line-code :global(span) {
+        color: var(--shiki-everforest);
+        font-style: var(--shiki-everforest-font-style, normal);
+        font-weight: var(--shiki-everforest-font-weight, normal);
     }
 
     @media (max-width: 400px) {

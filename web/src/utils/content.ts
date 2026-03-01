@@ -70,31 +70,46 @@ export const categoryLabels: Record<(typeof categoryOrder)[number], string> = {
 export const docPages = await getCollection('docs')
 // export const
 
+function getPageDate(page: (typeof docPages)[number]): number {
+    const d = (page.data as { date?: string | Date }).date
+    if (d instanceof Date) return d.getTime()
+    if (typeof d === 'string') {
+        const parsed = new Date(d)
+        if (!Number.isNaN(parsed.getTime())) return parsed.getTime()
+    }
+    return 0
+}
+
 export function makeCategoryMap() {
     const categoryMap: Map<string, typeof docPages> = new Map()
 
     for (const docPage of docPages) {
         const [category] = docPage.id.split('/')
+        const pages = categoryMap.get(category) || []
+        pages.push(docPage)
+        categoryMap.set(category, pages)
+    }
 
-        const categoryPages = [
-            ...(categoryMap.get(category) || []),
-            docPage,
-        ].sort((a, b) => a.data.title.localeCompare(b.data.title))
-        const orderedPages = categoryPages.filter(
-            (page) => typeof page.data.order === 'number',
-        )
-        const unordered = categoryPages.filter(
-            (page) => typeof page.data.order !== 'number',
-        )
+    // Sort each category: pages with explicit order first, then by date
+    // (reverse chronological), then alphabetically by title as fallback
+    for (const [, pages] of categoryMap) {
+        pages.sort((a, b) => {
+            const orderA = typeof a.data.order === 'number' ? a.data.order : null
+            const orderB = typeof b.data.order === 'number' ? b.data.order : null
 
-        const positive = orderedPages
-            .filter((page) => (page.data.order as number) >= 0)
-            .sort((a, b) => (a.data.order as number) - (b.data.order as number))
-        const negative = orderedPages
-            .filter((page) => (page.data.order as number) < 0)
-            .sort((a, b) => (b.data.order as number) - (a.data.order as number))
+            // Ordered pages come first, sorted by order value
+            if (orderA !== null && orderB !== null) return orderA - orderB
+            if (orderA !== null) return -1
+            if (orderB !== null) return 1
 
-        categoryMap.set(category, [...positive, ...unordered, ...negative])
+            // Unordered pages: sort by date (reverse chronological)
+            const dateA = getPageDate(a)
+            const dateB = getPageDate(b)
+            if (dateA !== dateB) return dateB - dateA
+
+            // Fallback: alphabetical by title
+            return a.data.title.localeCompare(b.data.title)
+        })
     }
 
     return categoryMap

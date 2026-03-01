@@ -32,14 +32,9 @@ const nextDoc =
         : sortedPages.at(pageIndex + 1)
 const prevDoc = pageIndex === 0 ? undefined : sortedPages.at(pageIndex - 1)
 
-const tocHeadings: DocHeading[] = [
-    {
-        depth: 1,
-        text: frontmatter.title,
-        slug: 'toc-page-title',
-    },
-    ...headings.filter((heading) => heading.depth >= 2),
-]
+const tocHeadings: DocHeading[] = headings.filter(
+    (heading) => heading.depth >= 2,
+)
 
 const hasSiblingAfter = (items: DocHeading[], index: number) => {
     const currentDepth = items[index].depth
@@ -165,7 +160,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                 tocHeadings.length > 0 && (
                     <>
                         <div id="toc-resizer" aria-hidden="true" />
-                        <aside id="toc-container" class="mobile-hidden">
+                        <aside id="toc-container" class="mobile-hidden collapsed">
                             <nav
                                 box-="square"
                                 shear-="top"
@@ -176,7 +171,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                     type="button"
                                     size-="small"
                                     variant-="background1"
-                                    aria-expanded="true"
+                                    aria-expanded="false"
                                     aria-controls="toc-container"
                                     aria-label="Collapse right sidebar (zh/zl)">
                                     <code>&lt;zl&gt;</code>
@@ -490,6 +485,9 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
             !e.shiftKey
         ) {
             e.preventDefault()
+            const scroller = document.getElementById('scroll-container')
+            if (!scroller) return
+
             const headings = Array.from(
                 document.querySelectorAll(
                     '#main-content h1[id], #main-content h2[id], #main-content h3[id], #main-content h4[id], #main-content h5[id], #main-content h6[id]',
@@ -497,34 +495,28 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
             ) as HTMLElement[]
             if (headings.length === 0) return
 
-            const scrollY = window.scrollY
-            const offset = 80 // account for sticky navbar
+            const scrollerTop = scroller.getBoundingClientRect().top
+
+            // Build list of heading positions relative to scroller top
+            const positions = headings.map((h) =>
+                h.getBoundingClientRect().top - scrollerTop,
+            )
 
             if (e.key === ']') {
-                // Jump to the next heading below current scroll position
-                const next = headings.find(
-                    (h) => h.getBoundingClientRect().top > offset + 2,
-                )
-                if (next) {
-                    next.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                    window.scrollBy(0, -offset)
-                    const anchor = next.querySelector(
-                        'a.heading-anchor',
-                    ) as HTMLElement | null
-                    if (anchor) anchor.focus({ preventScroll: true })
+                const idx = positions.findIndex((p) => p > 2)
+                if (idx !== -1) {
+                    scroller.scrollTop += positions[idx]
                 }
             } else {
-                // Jump to the previous heading above current scroll position
-                const prev = headings.findLast(
-                    (h) => h.getBoundingClientRect().top < offset - 2,
-                )
-                if (prev) {
-                    prev.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                    window.scrollBy(0, -offset)
-                    const anchor = prev.querySelector(
-                        'a.heading-anchor',
-                    ) as HTMLElement | null
-                    if (anchor) anchor.focus({ preventScroll: true })
+                let idx = -1
+                for (let i = positions.length - 1; i >= 0; i--) {
+                    if (positions[i] < -2) {
+                        idx = i
+                        break
+                    }
+                }
+                if (idx !== -1) {
+                    scroller.scrollTop += positions[idx]
                 }
             }
             return
@@ -669,6 +661,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
             const slug = heading.id
             if (!slug) return
 
+            const level = parseInt(heading.tagName[1], 10)
             const anchor = document.createElement('a')
             anchor.className = 'heading-anchor'
             anchor.href = `#${slug}`
@@ -676,22 +669,23 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                 'aria-label',
                 `Link to section ${heading.textContent ?? ''}`,
             )
-            anchor.textContent = '#'
-            heading.append(anchor)
+            anchor.textContent = '#'.repeat(level)
+            anchor.style.marginInlineEnd = '1ch'
+            heading.prepend(anchor)
         })
     }
 </script>
 
 <!-- TOC Active Heading -->
 <script>
-    const mainContent = document.getElementById(
-        'main-content',
+    const scrollContainer = document.getElementById(
+        'scroll-container',
     ) as HTMLElement | null
     const tocLinks = Array.from(
         document.querySelectorAll('#toc-list a[data-heading-slug]'),
     ) as HTMLAnchorElement[]
 
-    if (mainContent && tocLinks.length > 0) {
+    if (scrollContainer && tocLinks.length > 0) {
         const headingElements = tocLinks
             .map((link) => {
                 const slug = link.dataset.headingSlug
@@ -711,7 +705,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         }
 
         const syncActiveHeading = () => {
-            const scrollTop = mainContent.scrollTop
+            const scrollTop = scrollContainer.scrollTop
             let activeHeading = headingElements[0]
 
             for (const heading of headingElements) {
@@ -731,7 +725,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
             }
         }
 
-        mainContent.addEventListener('scroll', syncActiveHeading, {
+        scrollContainer.addEventListener('scroll', syncActiveHeading, {
             passive: true,
         })
         window.addEventListener('hashchange', syncActiveHeading)
@@ -860,7 +854,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
     }
 
     if (tocToggle && tocContainer) {
-        const isCollapsed = localStorage.getItem('toc-collapsed') === 'true'
+        const isCollapsed = localStorage.getItem('toc-collapsed') !== 'false'
         setTocCollapsed(isCollapsed)
 
         tocToggle.addEventListener('click', () => {
