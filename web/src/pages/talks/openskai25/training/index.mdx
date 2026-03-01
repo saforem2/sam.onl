@@ -97,9 +97,7 @@ Sam Foreman
       time spent training)
     - Maximize: <span class="highlight-blue">Performance</span>
 
-    > [!NOTE]
-    >
-    > ### 📑 Note
+    > [!NOTE] 📑 Note
     >
     > See [🤗 Performance and
     > Scalability](https://huggingface.co/docs/transformers/v4.46.0/performance)
@@ -442,9 +440,7 @@ Parallel](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html)
     - [Intel oneAPI Collective Communications Library
       (oneCCL)](https://www.intel.com/content/www/us/en/developer/tools/oneapi/oneccl.html#gs.gouznn)
 
-        > [!WARNING]
-        >
-        > ### ⌛ Timeouts
+        > [!WARNING] ⌛ Timeouts
         >
         > - Collective operations have to be called for each `rank` to form
         >   a complete collective operation.
@@ -817,9 +813,7 @@ Figure 12: To ensure all workers have the same copies, we load on
 
 ## Best Practices
 
-> [!IMPORTANT]
->
-> ### ⏰ Keeping things in Sync
+> [!IMPORTANT] ⏰ Keeping things in Sync
 >
 > **Computation stalls during communication !!**
 >
@@ -828,7 +822,7 @@ Figure 12: To ensure all workers have the same copies, we load on
 
 <div class="flex-container">
 
-<div class="column" style="width:50%;">
+<column style="width:50%;">
 
 - Use parallel IO whenever possible
     - Feed each rank from different files
@@ -836,9 +830,9 @@ Figure 12: To ensure all workers have the same copies, we load on
     - Use several ranks to read data, MPI to scatter to remaining ranks
         - Most practical in big _at-scale_ training
 
-</div>
+</column>
 
-<div class="column" style="width:50%;">
+<column style="width:50%;">
 
 - Take advantage of data storage
     - Use [striping on
@@ -849,7 +843,7 @@ Figure 12: To ensure all workers have the same copies, we load on
       data
         - **minimize IO latency this way**
 
-</div>
+</column>
 
 </div>
 
@@ -877,7 +871,7 @@ Figure 12: To ensure all workers have the same copies, we load on
 
 <div id="fig-zero">
 
-<img src="./assets/zero.png" class="r-stretch" />
+<img src="/talks/openskai25/training/assets/zero.png" class="r-stretch" />
 
 Figure 13: [DeepSpeed](deepspeed.ai) +
 [`ZeRO`](https://www.deepspeed.ai/tutorials/zero-offload/)
@@ -928,7 +922,7 @@ Figure 14: FSDP Workflow.
 
 <div class="flex-container" style="place-content: end space-evenly;">
 
-<div class="column" style="width:60%;">
+<column style="width:60%;">
 
 - Model is split up **vertically** (layer-level) across multiple GPUs
 - Each GPU:
@@ -941,9 +935,9 @@ Figure 14: FSDP Workflow.
     - [DeepSpeed / Pipeline
       Parallelism](https://deepspeed.readthedocs.io/en/latest/pipeline.html)
 
-</div>
+</column>
 
-<div class="column" style="width:40%;">
+<column style="width:40%;">
 
 <div id="fig-pipeline-parallelism">
 
@@ -980,7 +974,7 @@ Figure 15: Pipeline Parallelism
 
 </div>
 
-</div>
+</column>
 
 </div>
 
@@ -1106,15 +1100,15 @@ models](https://www.microsoft.com/en-us/research/blog/deepspeed-extreme-scale-mo
 
 <div class="flex-container">
 
-<div class="column">
+<column>
 
 - Model fits onto a single GPU
     - [`DDP`](https://pytorch.org/docs/stable/notes/ddp.html)
     - [`ZeRO`](https://deepspeed.readthedocs.io/en/latest/zero3.html)
 
-</div>
+</column>
 
-<div class="column">
+<column>
 
 - Model **DOES NOT** fit onto a single GPU
     1.  [Pipeline Parallelism
@@ -1123,7 +1117,7 @@ models](https://www.microsoft.com/en-us/research/blog/deepspeed-extreme-scale-mo
     3.  [Tensor Parallelism
         (`TP`)](https://pytorch.org/docs/stable/distributed.tensor.parallel.html)
 
-</div>
+</column>
 
 </div>
 
@@ -1164,7 +1158,7 @@ community~~ **world** by storm[^3].
 
 <div id="fig-emergent-abilities">
 
-![](./assets/emergent-abilities.gif)
+![](/talks/openskai25/training/assets/emergent-abilities.gif)
 
 Figure 22: See Wei et al. (2022), Yao et al. (2023)
 
@@ -1180,7 +1174,7 @@ Figure 22: See Wei et al. (2022), Yao et al. (2023)
 
 <div class="flex-container">
 
-<div class="column" style="width: 40%;">
+<column style="width: 40%;">
 
 1.  Data collection + preprocessing
 2.  **Pre-training**
@@ -1190,20 +1184,20 @@ Figure 22: See Wei et al. (2022), Yao et al. (2023)
     - Alignment
 4.  Deploy (+ monitor, re-evaluate, etc.)
 
-</div>
+</column>
 
-<div class="column" style="width:50%;">
+<column style="width:50%;">
 
 <div id="fig-pretrain-two">
 
-![](./assets/gpt3-training-step-back-prop.gif)
+![](/talks/openskai25/training/assets/gpt3-training-step-back-prop.gif)
 
 Figure 23: **Pre-training**: Virtually _all of the compute_ used during
 pre-training[^4].
 
 </div>
 
-</div>
+</column>
 
 </div>
 
@@ -1211,7 +1205,7 @@ pre-training[^4].
 
 <div class="flex-container">
 
-<div class="column" style="width: 50%;">
+<column style="width: 50%;">
 
 1.  Data collection + preprocessing
 2.  Pre-training
@@ -1221,20 +1215,20 @@ pre-training[^4].
     - Alignment
 4.  Deploy (+ monitor, re-evaluate, etc.)
 
-</div>
+</column>
 
-<div class="column" style="width:50%;">
+<column style="width:50%;">
 
 <div id="fig-finetune-lifecycle">
 
-![](./assets/gpt3-fine-tuning.gif)
+![](/talks/openskai25/training/assets/gpt3-fine-tuning.gif)
 
 Figure 24: **Fine-tuning**: Fine-tuning actually updates the model’s
 weights to make the model better at a certain task[^5].
 
 </div>
 
-</div>
+</column>
 
 </div>
 
@@ -1243,7 +1237,7 @@ weights to make the model better at a certain task[^5].
 <div id="fig-hf-assisted-generation">
 
 <video
-    src="./assets/hf_assisted_generation.mov"
+    src="/talks/openskai25/training/assets/hf_assisted_generation.mov"
     controls
     preload="metadata"></video>
 
@@ -1256,7 +1250,7 @@ Figure 25: Language Model trained for causal language modeling[^6].
 <div id="fig-generating-text">
 
 <video
-    src="./assets/hf_assisted_generation2.mov"
+    src="/talks/openskai25/training/assets/hf_assisted_generation2.mov"
     controls
     preload="metadata"></video>
 
@@ -1339,7 +1333,7 @@ to train a small model using DDP
 
 <div id="fig-nanoGPT">
 
-![](./assets/nanogpt.jpg)
+![](/talks/openskai25/training/assets/nanogpt.jpg)
 
 Figure 28: The simplest, fastest repository for training / finetuning
 GPT based models. Figure from
@@ -1711,9 +1705,7 @@ Figure 29: Training a LLM to talk like Shakespeare using
 
             </split>
 
-> [!NOTE]
->
-> ### Acknowledgements
+> [!NOTE] Acknowledgements
 >
 > This research used resources of the Argonne Leadership Computing
 > Facility, which is a DOE Office of Science User Facility supported

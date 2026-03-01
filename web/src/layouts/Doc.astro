@@ -698,9 +698,41 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
             )
 
         const setActiveTocLink = (activeId: string) => {
+            // Find the active link and its parent H2 section
+            let activeH2Slug: string | null = null
+            for (const link of tocLinks) {
+                if (link.dataset.headingSlug === activeId) {
+                    // Walk backwards to find the owning H2
+                    if (link.classList.contains('depth-2')) {
+                        activeH2Slug = activeId
+                    } else {
+                        // Search backwards through tocLinks for nearest depth-2
+                        const idx = tocLinks.indexOf(link)
+                        for (let i = idx - 1; i >= 0; i--) {
+                            if (tocLinks[i].classList.contains('depth-2')) {
+                                activeH2Slug = tocLinks[i].dataset.headingSlug ?? null
+                                break
+                            }
+                        }
+                    }
+                    break
+                }
+            }
+
+            // Update active class and reveal sub-headings for active H2 section
+            let currentH2Slug: string | null = null
             tocLinks.forEach((link) => {
                 const slug = link.dataset.headingSlug
                 link.classList.toggle('active', slug === activeId)
+
+                if (link.classList.contains('depth-2')) {
+                    currentH2Slug = slug ?? null
+                }
+
+                const li = link.parentElement
+                if (li && !link.classList.contains('depth-2')) {
+                    li.classList.toggle('toc-visible', currentH2Slug === activeH2Slug)
+                }
             })
         }
 

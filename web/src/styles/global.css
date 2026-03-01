@@ -175,6 +175,10 @@
         flex-wrap: wrap;
     }
 
+    .dim-text {
+        color: var(--foreground2);
+    }
+
     li > p {
         display: inline;
     }
@@ -269,7 +273,6 @@
         min-height: round(calc(0.33 * 100vh), 1lh) !important;
         max-width: round(100vw, 1ch) !important;
         min-width: max-content;
-        outline: 1pt solid var(--background2);
         margin-block-end: 1ch;
         /* box-shadow: 1pt 2pt black; */
         /* min-width: round(100vw, 1ch) !important; */
@@ -278,9 +281,6 @@
         margin-left: auto;
         margin-right: auto;
         text-align: center;
-    }
-    .reveal-full-page:focus {
-        outline: 1pt solid var(--accent);
     }
 }
 
@@ -410,10 +410,10 @@
             font-weight: var(--font-weight-bold);
             padding-inline-end: 1ch;
         }
-        summary::before {
+        > summary::before {
             content: '[+] ';
         }
-        &[open] summary::before {
+        &[open] > summary::before {
             content: '[-] ';
         }
     }
@@ -429,22 +429,22 @@
     }
     details[is-~='accordion'] {
         &[variant-='directory'] {
-            summary::before {
+            > summary::before {
                 content: '>  ';
             }
 
-            &[open] summary::before {
+            &[open] > summary::before {
                 content: 'v  ';
             }
         }
     }
     details[is-~='accordion'] {
         &[variant-='sidebar-year'] {
-            summary::before {
+            > summary::before {
                 content: '>  ';
             }
 
-            &[open] summary::before {
+            &[open] > summary::before {
                 content: 'v  ';
             }
         }
@@ -528,6 +528,7 @@ html[data-webtui-theme='dark'] .astro-code span {
 
 pre.astro-code {
     padding: 0ch;
+    flex-shrink: 0;
 }
 
 pre.astro-code > code {

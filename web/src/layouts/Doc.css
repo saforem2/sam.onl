@@ -279,40 +279,43 @@ h6::before {
     /* line-height: 1.3; */
 }
 
-#toc-list a:is(.depth-3, .depth-4, .depth-5, .depth-6)::before {
-    content: '-';
-    color: var(--foreground2);
+/* H3–H6 items hidden by default, revealed per-section by JS */
+#toc-list li:has(> a:is(.depth-3, .depth-4, .depth-5, .depth-6)) {
+    display: none;
 }
 
-#toc-list a.depth-1.active::before { content: '#'; color: var(--h1); }
+#toc-list li:has(> a:is(.depth-3, .depth-4, .depth-5, .depth-6)).toc-visible {
+    display: list-item;
+}
+
+#toc-list a:is(.depth-3, .depth-4, .depth-5, .depth-6)::before {
+    content: '';
+}
+
 #toc-list a.depth-2.active::before { content: '#'; color: var(--h2); }
 #toc-list a.depth-3.active::before { content: '#'; color: var(--h3); }
 #toc-list a.depth-4.active::before { content: '#'; color: var(--h4); }
 #toc-list a.depth-5.active::before { content: '#'; color: var(--h5); }
 #toc-list a.depth-6.active::before { content: '#'; color: var(--h6); }
 
-#toc-list .depth-1 {
+#toc-list .depth-2 {
     padding-inline-start: 0;
 }
 
-#toc-list .depth-2 {
+#toc-list .depth-3 {
     padding-inline-start: 2ch;
 }
 
-#toc-list .depth-3 {
+#toc-list .depth-4 {
     padding-inline-start: 4ch;
 }
 
-#toc-list .depth-4 {
+#toc-list .depth-5 {
     padding-inline-start: 6ch;
 }
 
-#toc-list .depth-5 {
-    padding-inline-start: 8ch;
-}
-
 #toc-list .depth-6 {
-    padding-inline-start: 10ch;
+    padding-inline-start: 8ch;
 }
 
 #toc-list a .toc-tree-prefix {
@@ -325,10 +328,6 @@ h6::before {
         from var(--background1, var(--foreground, #838383))
             calc(l * var(--oklch-scale, 0.85)) c h / 0.1
     );
-}
-
-#toc-list a.depth-1.active {
-    color: var(--h1);
 }
 
 #toc-list a.depth-2.active {
@@ -364,11 +363,6 @@ h6::before {
         inset 0 0 0 1px var(--focus-border);
     outline: none;
     text-decoration: none;
-}
-
-#toc-list a.depth-1.active:focus-visible,
-#toc-list a.depth-1.active[data-vim-focused='true']:focus {
-    color: var(--h1);
 }
 
 #toc-list a.depth-2.active:focus-visible,
@@ -493,6 +487,10 @@ h6::before {
         ol li {
             --li-text-offset: 4ch;
             text-indent: 4ch hanging;
+        }
+
+        p {
+            margin-block-end: 1lh;
         }
 
         :is(ul, ol) {

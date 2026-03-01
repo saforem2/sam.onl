@@ -65,9 +65,7 @@ Sam Foreman
       time spent training)
     - Maximize: <span class="highlight-blue">Performance</span>
 
-    > [!NOTE]
-    >
-    > ### 📑 Note
+    > [!NOTE] 📑 Note
     >
     > See [🤗 Performance and
     > Scalability](https://huggingface.co/docs/transformers/v4.46.0/performance)
@@ -319,7 +317,7 @@ Parallel](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html)
 
 <div class="flex-container">
 
-<div class="column">
+<column>
 
 - Requires **global** communication
     - every rank _must participate_ (collective communication) !!
@@ -327,9 +325,9 @@ Parallel](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html)
     - [`mpi4py`](https://mpi4py.readthedocs.io/en/stable/tutorial.html)
     - [`torch.distributed`](https://pytorch.org/docs/stable/distributed.html)
 
-</div>
+</column>
 
-<div class="column">
+<column>
 
 - Collective Communication:
     - Nvidia: [Collective Communications Library
@@ -339,13 +337,11 @@ Parallel](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html)
     - AMD: [ROCm Communication Collectives Library
       (RCC)](https://github.com/ROCm/rccl)
 
-</div>
+</column>
 
 </div>
 
-> [!WARNING]
->
-> ### ⌛ Timeouts
+> [!WARNING] ⌛ Timeouts
 >
 > - Collective operations have to be called for each `rank` to form a
 >   complete collective operation.
@@ -356,7 +352,7 @@ Parallel](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html)
 
 <div class="flex-container">
 
-<div class="column">
+<column>
 
 - Each worker needs to be fed a **unique** batch of data at each step
 - Only perform File I/O on one worker (i.e. `rank==0`)
@@ -366,7 +362,7 @@ Parallel](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html)
     - Ensure that all workers are using the **same** version of code /
       libraries
 
-</div>
+</column>
 
 <div id="fig-broadcast">
 
@@ -394,7 +390,7 @@ Figure 5: To ensure all workers have the same copies, we load on
 
 <div class="flex-container">
 
-<div class="column" style="width:50%;">
+<column style="width:50%;">
 
 - Use parallel IO whenever possible
     - Feed each rank from different files
@@ -402,9 +398,9 @@ Figure 5: To ensure all workers have the same copies, we load on
     - Use several ranks to read data, MPI to scatter to remaining ranks
         - Most practical in big _at-scale_ training
 
-</div>
+</column>
 
-<div class="column" style="width:50%;">
+<column style="width:50%;">
 
 - Take advantage of data storage
     - Use [striping on
@@ -415,13 +411,11 @@ Figure 5: To ensure all workers have the same copies, we load on
       data
         - **minimize IO latency this way**
 
-</div>
+</column>
 
 </div>
 
-> [!IMPORTANT]
->
-> ### ⏰ Keeping things in Sync
+> [!IMPORTANT] ⏰ Keeping things in Sync
 >
 > **Computation stalls during communication !!**
 >
@@ -480,7 +474,7 @@ Figure 6: General strategy for scaling model training
 
 <div id="fig-zero">
 
-<img src="./assets/zero.png" style="width:70.0%" />
+<img src="/talks/2025/09/24/assets/zero.png" style="width:70.0%" />
 
 Figure 7: [DeepSpeed](deepspeed.ai) +
 [`ZeRO`](https://www.deepspeed.ai/tutorials/zero-offload/)
@@ -514,7 +508,7 @@ Figure 7: [DeepSpeed](deepspeed.ai) +
 
 <div class="flex-container" style="place-content: end space-evenly;">
 
-<div class="column" style="width:60%;">
+<column style="width:60%;">
 
 - Model is split up **vertically** (layer-level) across multiple GPUs
 - Each GPU:
@@ -527,9 +521,9 @@ Figure 7: [DeepSpeed](deepspeed.ai) +
     - [DeepSpeed / Pipeline
       Parallelism](https://deepspeed.readthedocs.io/en/latest/pipeline.html)
 
-</div>
+</column>
 
-<div class="column" style="width:40%;">
+<column style="width:40%;">
 
 <div id="fig-pipeline-parallelism">
 
@@ -566,7 +560,7 @@ Figure 8: Pipeline Parallelism
 
 </div>
 
-</div>
+</column>
 
 </div>
 
@@ -574,7 +568,7 @@ Figure 8: Pipeline Parallelism
 
 <div class="flex-container">
 
-<div class="column">
+<column>
 
 - Each tensor is split up into multiple chunks
 - Each shard of the tensor resides on its designated GPU
@@ -585,9 +579,9 @@ Figure 8: Pipeline Parallelism
   Parallelism](https://huggingface.co/docs/transformers/v4.15.0/parallelism)
   for additional details
 
-</div>
+</column>
 
-<div class="column">
+<column>
 
 <div id="fig-model-parallel-1">
 
@@ -629,7 +623,7 @@ Figure 9: Tensor Parallel Training
 
 </div>
 
-</div>
+</column>
 
 </div>
 
@@ -637,7 +631,7 @@ Figure 9: Tensor Parallel Training
 
 <div class="flex-container">
 
-<div class="column">
+<column>
 
 - Suitable when the model is too large to fit onto a single device (CPU
   / GPU)
@@ -648,9 +642,9 @@ Figure 9: Tensor Parallel Training
 - [`argonne-lcf/Megatron-DeepSpeed`](https://github.com/argonne-lcf/Megatron-DeepSpeed)
 - 🤗 [`huggingface/nanotron`](https://github.com/huggingface/nanotron)
 
-</div>
+</column>
 
-<div class="column">
+<column>
 
 <div id="fig-model-parallel-2">
 
@@ -692,7 +686,7 @@ Figure 10: Tensor Parallel Training
 
 </div>
 
-</div>
+</column>
 
 </div>
 
@@ -753,13 +747,13 @@ Figure 11
 
 <div id="fig-mprot-3p5B-scaling">
 
-![](./assets/mprot-3p5B-scaling-2.svg)
+![](/talks/2025/09/24/assets/mprot-3p5B-scaling-2.svg)
 
 Figure 12: Scaling results for `3.5B` model across ~38,400 GPUs
 
 </div>
 
-<div class="column" style="width:30%;">
+<column style="width:30%;">
 
 - ~ <span class="highlight-blue">4 EFLOPS</span> @ Aurora
 
@@ -772,7 +766,7 @@ Figure 12: Scaling results for `3.5B` model across ~38,400 GPUs
 - [MProt-DPO: Breaking the ExaFLOPS Barrier for Multimodal Protein
   Design Workflows](https://dl.acm.org/doi/10.1109/SC41406.2024.00013)
 
-</div>
+</column>
 
 </div>
 
@@ -780,11 +774,11 @@ Figure 12: Scaling results for `3.5B` model across ~38,400 GPUs
 
 <div class="flex-container">
 
-<div class="column" style="width:70%;">
+<column style="width:70%;">
 
 <div id="fig-aeris-scaling">
 
-<img src="../../../../assets/aeris/aeris-scaling.svg" id="fig-aeris-scaling" />
+<img src="../../.././talks/2025/09/24/assets/aeris/aeris-scaling.svg" id="fig-aeris-scaling" />
 
 Figure 13
 
@@ -792,16 +786,16 @@ Figure 13
 
 AERIS: Scaling Results
 
-</div>
+</column>
 
-<div class="column" style="width:30%;">
+<column style="width:30%;">
 
 - <span class="highlight-green">**10 EFLOPs**</span> (sustained) @ **120,960
   GPUs**
 - See (Hatanpää et al. (2025)) for additional details
 - [arXiv:2509.13523](https://arxiv.org/abs/2509.13523)
 
-</div>
+</column>
 
 </div>
 

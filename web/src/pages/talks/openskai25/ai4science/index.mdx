@@ -38,9 +38,9 @@ date: '2025-09-02'
 
 <div class="flex-container" style="justify-content: space-around;">
 
-<div class="column" style="width: 50%">
+<column style="width: 50%">
 
-<div class="blue-card">
+<div box-="round" style="--box-border-color: var(--blue);">
 
 [**AuroraGPT**](https://auroragpt.anl.gov): _General purpose scientific
 LLM_ Broadly trained on a general corpora plus scientific papers, texts, data
@@ -53,9 +53,9 @@ LLM_ Broadly trained on a general corpora plus scientific papers, texts, data
 - **Multimodal**: images, tables, equations, proofs, time series,
   graphs, fields, sequences, etc
 
-</div>
+</column>
 
-<div class="column" style="text-align: center;">
+<column style="text-align: center;">
 
 <div id="fig-awesome-llm">
 
@@ -66,7 +66,7 @@ Figure 1: Image from [Hannibal046 /
 
 </div>
 
-</div>
+</column>
 
 </div>
 
@@ -120,7 +120,7 @@ Figure 1: Image from [Hannibal046 /
 
 <div id="fig-aurora-gpt">
 
-![](./assets/AuroraGPT.svg)
+![](/talks/openskai25/ai4science/assets/AuroraGPT.svg)
 
 Figure 2: High-level overview of AuroraGPT project
 
@@ -172,17 +172,13 @@ Figure 2: High-level overview of AuroraGPT project
 
 <div class="flex-container" style="gap: 5pt;">
 
-> [!NOTE]
->
-> ### 🚂 Training
+> [!NOTE] 🚂 Training
 >
 > [argonne-lcf/Megatron-DeepSpeed](https://github.com/argonne-lcf/Megatron-DeepSpeed)
 >
 > <span class="dim-text">Large Model Training: Any Scale, Any Acclerator</span>
 
-> [!IMPORTANT]
->
-> ### 🏃‍♂️ Running
+> [!IMPORTANT] 🏃‍♂️ Running
 >
 > [argonne-lcf/inference-endpoints](https://github.com/argonne-lcf/inference-endpoints)
 >
@@ -194,7 +190,7 @@ Figure 2: High-level overview of AuroraGPT project
 
 <div class="flex-container" style="align-items: center;">
 
-<div class="column" style="width:5%;">
+<column style="width:5%;">
 
 <div id="tbl-aurora">
 
@@ -212,20 +208,20 @@ Table 1: Aurora Specs
 
 </div>
 
-</div>
+</column>
 
-<div class="column" style="text-align:center">
+<column style="text-align:center">
 
 <div id="fig-aurora">
 
-![](./assets/aurora.png)
+![](/talks/openskai25/ai4science/assets/aurora.png)
 
 Figure 3: Aurora[^1]: [Fact
 Sheet](https://www.alcf.anl.gov/sites/default/files/2024-07/Aurora_FactSheet_2024.pdf).
 
 </div>
 
-</div>
+</column>
 
 </div>
 
@@ -233,7 +229,7 @@ Sheet](https://www.alcf.anl.gov/sites/default/files/2024-07/Aurora_FactSheet_202
 
 <div class="flex-container">
 
-<div class="column">
+<column>
 
 - **Planning**
 - **Data**
@@ -245,9 +241,9 @@ Sheet](https://www.alcf.anl.gov/sites/default/files/2024-07/Aurora_FactSheet_202
 - **Post-Training**
     - Fine-tuning, alignment, reinforcement learning
 
-</div>
+</column>
 
-<div class="column">
+<column>
 
 - **Evaluation**
     - Skills, trustworthiness, safety, robustness, privacy, machine ethics
@@ -258,7 +254,7 @@ Sheet](https://www.alcf.anl.gov/sites/default/files/2024-07/Aurora_FactSheet_202
       consumption
 - **Communication**
 
-</div>
+</column>
 
 </div>
 
@@ -272,7 +268,7 @@ modalities (gene sequences, geospatial data, …)
 
 <div class="flex-container" style="align-items: flex-start; gap: 10pt;">
 
-<div class="column">
+<column>
 
 ### 🍎 Training LLMs
 
@@ -290,13 +286,13 @@ modalities (gene sequences, geospatial data, …)
 
 [argonne-lcf/Megatron-DeepSpeed](https://github.com/argonne-lcf/Megatron-DeepSpeed)
 
-</div>
+</column>
 
-<div class="column">
+<column>
 
 ![](https://github.com/saforem2/llm-lunch-talk/blob/main/docs/assets/it_hungers.jpeg?raw=true)
 
-</div>
+</column>
 
 </div>
 
@@ -342,7 +338,7 @@ This is _incredibly_ difficult in practice, due in part to:
     3.  **Building** indices that map batches of tokens into these files
         (indexing)
 
-<div class="red-card">
+<div box-="round" style="--box-border-color: var(--red);">
 
 The original implementation was _slow_:
 
@@ -356,7 +352,7 @@ The original implementation was _slow_:
 <div class="flex-container"
 style="padding: 10pt; justify-content: space-around; align-items: flex-start;">
 
-<div class="column" style="width:25%;">
+<column style="width:25%;">
 
 - 🐢 Original implementation:
     - **Slow** (serial, single device)
@@ -366,19 +362,19 @@ style="padding: 10pt; justify-content: space-around; align-items: flex-start;">
     - <span style="color:#2296F3;">~ **2 min**</span>/2T tokens (**30x** faster
       !!)
 
-</div>
+</column>
 
-<div class="column">
+<column>
 
 <div id="fig-data-processing">
 
-<img src="./assets/data-processing.svg" class="r-stretch" />
+<img src="/talks/openskai25/ai4science/assets/data-processing.svg" class="r-stretch" />
 
 Figure 4: Time spent preparing 2T tokens
 
 </div>
 
-</div>
+</column>
 
 </div>
 
@@ -410,20 +406,20 @@ Figure 4: Time spent preparing 2T tokens
 
 <div class="flex-container" style="align-items: center; gap: 5pt;">
 
-<div class="column" style="width:55%; text-align: center;">
+<column style="width:55%; text-align: center;">
 
 <span style="font-weight: 600; font-size: 1.5em;">🔭 LLMs for Science</span>
 [source](https://x.com/tenderizzation/status/1944591320796090606)
 ([@tenderizzation](https://twitter.com/tenderizzation)) ChatGPT: [explain this
 image](https://chatgpt.com/share/688ab77e-9ca0-800a-8ab0-a293e06b3cce)
 
-</div>
+</column>
 
-<div class="column">
+<column>
 
-![](./assets/modeling-planets.jpg)
+![](/talks/openskai25/ai4science/assets/modeling-planets.jpg)
 
-</div>
+</column>
 
 </div>
 
@@ -453,9 +449,9 @@ image](https://chatgpt.com/share/688ab77e-9ca0-800a-8ab0-a293e06b3cce)
 
 ## 🧬 MProt-DPO: Scaling Results
 
-<div class="columns">
+<div class="flex-container">
 
-<div class="column" style="width:70%;">
+<column style="width:70%;">
 
 <div class="flex-container"
 style="align-items: center; text-align: center; margin-left: auto; margin-right: auto;">
@@ -463,7 +459,7 @@ style="align-items: center; text-align: center; margin-left: auto; margin-right:
 <div id="fig-mprot-3p5B-scaling0">
 
 <img
-    src="./assets/mprot-3p5B-scaling-2.svg"
+    src="/talks/openskai25/ai4science/assets/mprot-3p5B-scaling-2.svg"
     style="margin:0; padding-unset;;width:100.0%"
 />
 
@@ -473,9 +469,9 @@ Figure 5: Scaling results for `3.5B` model across ~38,400 GPUs
 
 </div>
 
-</div>
+</column>
 
-<div class="column" style="width:30%;">
+<column style="width:30%;">
 
 - ~ <span class="highlight-blue">4 EFLOPS</span> @ Aurora
 
@@ -486,7 +482,7 @@ Figure 5: Scaling results for `3.5B` model across ~38,400 GPUs
     - [MProt-DPO: Breaking the ExaFLOPS Barrier for Multimodal Protein
       Design Workflows](https://dl.acm.org/doi/10.1109/SC41406.2024.00013)
 
-</div>
+</column>
 
 </div>
 
@@ -496,7 +492,7 @@ Figure 5: Scaling results for `3.5B` model across ~38,400 GPUs
 
 <div id="fig-mprot-3p5B-scaling">
 
-![](./assets/mprot-3p5B-scaling-2.svg)
+![](/talks/openskai25/ai4science/assets/mprot-3p5B-scaling-2.svg)
 
 Figure 6: `3.5B` model
 
@@ -504,7 +500,7 @@ Figure 6: `3.5B` model
 
 <div id="fig-mprot-7B-scaling">
 
-![](./assets/mprot-7B-scaling-2.svg)
+![](/talks/openskai25/ai4science/assets/mprot-7B-scaling-2.svg)
 
 Figure 7: `7B` model
 
@@ -518,14 +514,14 @@ Figure 7: `7B` model
 style="align-items: center; justify-content: center;">
 
 <img
-    src="../../../assets/anl.svg"
+    src="../.././talks/openskai25/ai4science/assets/anl.svg"
     style="height:50pt; margin: unset; padding: 0"
 />
 
 <span class="dim-text" style="font-size: 2.0em;"></span>
 
 <img
-    src="../../../assets/deepspeed-logo-transparent.svg"
+    src="../.././talks/openskai25/ai4science/assets/deepspeed-logo-transparent.svg"
     style="height:50pt; margin: unset; padding: 0;"
 />
 
@@ -565,7 +561,7 @@ Figure 8: Maximum (achievable) `SEQ_LEN` for both `25B` and `33B` models
 
 <div class="flex-container" style="gap: 2pt;">
 
-<div class="column">
+<column>
 
 - [argonne-lcf /
   `Megatron-DeepSpeed`](https://github.com/argonne-lcf/Megatron-DeepSpeed)
@@ -582,9 +578,9 @@ Figure 8: Maximum (achievable) `SEQ_LEN` for both `25B` and `33B` models
       Polaris](https://samforeman.me/talks/llms-on-polaris/#/title-slide)
     - [Training LLMs at Scale](https://samforeman.me/talks/llms-at-scale/)
 
-</div>
+</column>
 
-<div class="column">
+<column>
 
 - 👀 See also:
     - [New international consortium for generative AI models for
@@ -599,7 +595,7 @@ Figure 8: Maximum (achievable) `SEQ_LEN` for both `25B` and `33B` models
       Models](https://openreview.net/forum?id=8bjspmAMBk)  
       (Hosseini et al. 2025)
 
-</div>
+</column>
 
 </div>
 
@@ -617,9 +613,7 @@ Figure 8: Maximum (achievable) `SEQ_LEN` for both `25B` and `33B` models
 
                       </split>
 
-> [!NOTE]
->
-> ### 🙏 Acknowledgements
+> [!NOTE] 🙏 Acknowledgements
 >
 > This research used resources of the Argonne Leadership Computing
 > Facility, which is a DOE Office of Science User Facility supported

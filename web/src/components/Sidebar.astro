@@ -215,6 +215,41 @@ const groupPagesByYear = (pages: CollectionEntry<'docs'>[], slug: string) => {
     return { years, grouped, misc }
 }
 
+/** Group pages by their first sub-directory under the category slug. */
+const groupPagesBySubdir = (pages: CollectionEntry<'docs'>[], slug: string) => {
+    const grouped = new Map<string, CollectionEntry<'docs'>[]>()
+    const misc: CollectionEntry<'docs'>[] = []
+
+    for (const page of pages) {
+        const parts = page.id.split('/')
+        // parts[0] is the category slug, parts[1] may be a sub-directory
+        if (parts.length > 2 && parts[1]) {
+            const subdir = parts[1]
+            const group = grouped.get(subdir) ?? []
+            group.push(page)
+            grouped.set(subdir, group)
+        } else {
+            misc.push(page)
+        }
+    }
+
+    // Sort pages within each group alphabetically by title
+    for (const [, groupPages] of grouped.entries()) {
+        groupPages.sort((a, b) => a.data.title.localeCompare(b.data.title))
+    }
+
+    const subdirs = Array.from(grouped.keys()).sort()
+    return { subdirs, grouped, misc }
+}
+
+const subdirLabels: Record<string, string> = {
+    start: 'Start',
+    installation: 'Installation',
+    components: 'Components',
+    plugins: 'Plugins',
+    contributing: 'Contributing',
+}
+
 const { pathname: urlPath } = Astro.url
 ---
 
@@ -457,6 +492,27 @@ const { pathname: urlPath } = Astro.url
                         )
                     }
 
+                    // Single-page category → render as direct link
+                    if (categoryPages.length === 1) {
+                        const page = categoryPages[0]
+                        return (
+                            <a
+                                href={`/${page.id}`}
+                                class={
+                                    isCategoryActive
+                                        ? 'sidebar-direct-link active'
+                                        : 'sidebar-direct-link'
+                                }
+                                data-slug={page.id}>
+                                {categoryLabels[slug]}
+                            </a>
+                        )
+                    }
+
+                    // Check if this category has sub-directory structure
+                    const { subdirs, grouped: subdirGrouped, misc: subdirMisc } = groupPagesBySubdir(categoryPages, slug)
+                    const hasSubdirs = subdirs.length > 0
+
                     return (
                         <details open={isCategoryActive}>
                             <summary>
@@ -474,21 +530,62 @@ const { pathname: urlPath } = Astro.url
                                 <span class="fold-icon" aria-hidden="true"></span>
                             </summary>
                             <ul marker-="tree open">
-                                {categoryPages.map(
-                                    ({ id, data: { title } }) => (
-                                        <li>
-                                            <a
-                                                href={`/${id}`}
-                                                class={
-                                                    compareUrlPaths(urlPath, id)
-                                                        ? 'active'
-                                                        : ''
-                                                }
-                                                data-slug={id}>
-                                                {title}
-                                            </a>
-                                        </li>
-                                    ),
+                                {hasSubdirs ? (
+                                    <>
+                                        {subdirs.map((subdir) => {
+                                            const subdirPages = subdirGrouped.get(subdir) ?? []
+                                            const isSubdirActive = subdirPages.some(({ id }) =>
+                                                compareUrlPaths(urlPath, id),
+                                            )
+                                            return (
+                                                <details
+                                                    open={isSubdirActive}
+                                                    is-="accordion"
+                                                    class="sidebar-year">
+                                                    <summary>{subdirLabels[subdir] ?? subdir}<span class="fold-icon" aria-hidden="true"></span></summary>
+                                                    <ul marker-="tree open">
+                                                        {subdirPages.map(({ id, data: { title } }) => (
+                                                            <li>
+                                                                <a
+                                                                    href={`/${id}`}
+                                                                    class={compareUrlPaths(urlPath, id) ? 'active' : ''}
+                                                                    data-slug={id}>
+                                                                    {title}
+                                                                </a>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </details>
+                                            )
+                                        })}
+                                        {subdirMisc.length > 0 && subdirMisc.map(({ id, data: { title } }) => (
+                                            <li>
+                                                <a
+                                                    href={`/${id}`}
+                                                    class={compareUrlPaths(urlPath, id) ? 'active' : ''}
+                                                    data-slug={id}>
+                                                    {title}
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </>
+                                ) : (
+                                    categoryPages.map(
+                                        ({ id, data: { title } }) => (
+                                            <li>
+                                                <a
+                                                    href={`/${id}`}
+                                                    class={
+                                                        compareUrlPaths(urlPath, id)
+                                                            ? 'active'
+                                                            : ''
+                                                    }
+                                                    data-slug={id}>
+                                                    {title}
+                                                </a>
+                                            </li>
+                                        ),
+                                    )
                                 )}
                             </ul>
                         </details>
