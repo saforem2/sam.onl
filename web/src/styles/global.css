@@ -285,6 +285,12 @@
 }
 
 @layer components {
+    pre,
+    [is-~='pre'] {
+        white-space: pre;
+        overflow-x: auto;
+    }
+
     pre:not([size-]),
     [is-~='pre']:not([size-]) {
         background-color: transparent !important;
@@ -526,10 +532,10 @@ pre.astro-code {
 
 pre.astro-code > code {
     display: block;
-    width: round(calc(100% - 0ch), 1ch);
+    width: max-content;
+    min-width: 100%;
     padding: 1ch 0;
-    white-space: break-spaces;
-    word-break: break-word;
+    white-space: pre;
     counter-reset: line;
 }
 

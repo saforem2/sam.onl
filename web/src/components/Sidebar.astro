@@ -650,10 +650,13 @@ const { pathname: urlPath } = Astro.url
     }
 
     #sidebar ul[marker-~='tree'] > li {
-        display: grid;
-        grid-template-columns: 2ch minmax(0, 1fr);
-        align-items: start;
-        margin-inline-start: 2ch;
+        /* display: grid; */
+        /* grid-template-columns: 2ch minmax(0, 1fr); */
+        /* align-items: start; */
+        /* margin-inline-start: 2ch; */
+        /* margin-block-end: 1ch; */
+        display: list-item;
+        /* text-indent: 4ch hanging; */
         /* margin-block-end: 1ch; */
     }
 
@@ -662,7 +665,7 @@ const { pathname: urlPath } = Astro.url
     }
     #sidebar ul[marker-~='tree'] > li::before {
         grid-column: 1;
-        content: '-';
+        content: '';
         color: var(--foreground2);
     }
 
