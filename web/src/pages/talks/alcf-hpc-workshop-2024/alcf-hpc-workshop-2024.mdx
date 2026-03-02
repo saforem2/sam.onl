@@ -94,7 +94,7 @@ GPU](https://huggingface.co/docs/transformers/v4.46.0/perf_train_gpu_one)
 
 <div id="fig-single-gpu">
 
-<img src="/talks/alcf-hpc-workshop-2024/assets/single-gpu-step-1.drawio.svg" class="r-stretch" />
+<img src="/assets/single-gpu-step-1.drawio.svg" class="r-stretch" />
 
 Figure 1: **SLOW** !! model size limited by GPU memory
 
@@ -137,7 +137,7 @@ send result back to everyone.
 
 <div id="fig-all-reduce">
 
-<img src="/talks/alcf-hpc-workshop-2024/assets/collective-allreduce-sum.drawio.svg" loading="lazy" />
+<img src="/assets/collective-allreduce-sum.drawio.svg" loading="lazy" />
 
 Figure 4: All-Reduce operation: each rank receives the reduction of
 input values across ranks.
@@ -154,7 +154,7 @@ input values across ranks.
 
 <div id="fig-reduce">
 
-<img src="/talks/alcf-hpc-workshop-2024/assets/collective-reduce-sum.drawio.svg" loading="lazy" />
+<img src="/assets/collective-reduce-sum.drawio.svg" loading="lazy" />
 
 Figure 5: Reduce operation: one rank receives the reduction of input
 values across ranks
@@ -165,7 +165,7 @@ values across ranks
 
 <div id="fig-broadcast">
 
-<img src="/talks/alcf-hpc-workshop-2024/assets/collective-broadcast.drawio.svg" loading="lazy" />
+<img src="/assets/collective-broadcast.drawio.svg" loading="lazy" />
 
 Figure 6: `broadcast` (_send_) a tensor <code>$x$</code> from one rank
 to all ranks
@@ -176,7 +176,7 @@ to all ranks
 
 <div id="fig-allgather">
 
-<img src="/talks/alcf-hpc-workshop-2024/assets/collective-allgather.drawio.svg" loading="lazy" />
+<img src="/assets/collective-allgather.drawio.svg" loading="lazy" />
 
 Figure 7: Gathers tensors from the whole group in a list.
 
@@ -186,7 +186,7 @@ Figure 7: Gathers tensors from the whole group in a list.
 
 <div id="fig-scatter">
 
-<img src="/talks/alcf-hpc-workshop-2024/assets/collective-scatter.drawio.svg" class="r-stretch" />
+<img src="/assets/collective-scatter.drawio.svg" class="r-stretch" />
 
 Figure 8: Scatters a list of tensors to the whole group
 
@@ -310,7 +310,7 @@ Figure 9: To ensure all workers have the same copies, we load on
 
 <div id="fig-zero">
 
-<img src="/talks/alcf-hpc-workshop-2024/assets/zero.png" class="r-stretch" />
+<img src="/assets/zero.png" class="r-stretch" />
 
 Figure 10: [DeepSpeed](deepspeed.ai) +
 [`ZeRO`](https://www.deepspeed.ai/tutorials/zero-offload/)
@@ -327,7 +327,7 @@ Figure 10: [DeepSpeed](deepspeed.ai) +
 
 <div id="fig-fsdp">
 
-![](assets/fsdp.png)
+<img src="/assets/fsdp.png" />
 
 Figure 11: FSDP Workflow.
 [Source](https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/)
@@ -352,7 +352,7 @@ Figure 11: FSDP Workflow.
 
 <div id="fig-pipeline-parallelism">
 
-![](assets/pipeline_parallelism.png)
+<img src="/assets/pipeline_parallelism.png" />
 
 Figure 12: [Pipeline
 Parallelism](https://www.deepspeed.ai/tutorials/pipeline/)
@@ -392,7 +392,7 @@ Parallelism](https://www.deepspeed.ai/tutorials/pipeline/)
 
 <div id="fig-model-parallel-1">
 
-![](/talks/alcf-hpc-workshop-2024/assets/model-parallel.svg)
+<img src="/assets/model-parallel.svg" />
 
 Figure 14
 
@@ -460,7 +460,7 @@ Figure 15
 
 <div id="fig-parallel-gemm">
 
-![](assets/parallelism-tp-parallel_gemm.png)
+<img src="/assets/parallelism-tp-parallel_gemm.png" />
 
 Figure 16: Tensor Parallel GEMM. This information is based on (the much
 more in-depth) [TP
@@ -475,7 +475,7 @@ by [@anton-l](https://github.com/anton-l)
 
 <div id="fig-3dparallel">
 
-![](assets/parallelism-deepspeed-3d.png)
+<img src="/assets/parallelism-deepspeed-3d.png" />
 
 Figure 17: Figure taken from [3D parallelism: Scaling to
 trillion-parameter
@@ -561,7 +561,7 @@ community~~ **world** by storm[^3].
 
 <div id="fig-emergent-abilities">
 
-![](/talks/alcf-hpc-workshop-2024/assets/emergent-abilities.gif)
+<img src="/assets/emergent-abilities.gif" />
 
 Figure 19: [Emergent abilities of Large Language
 Models](https://arxiv.org/abs/2206.07682) Yao et al. (2023)
@@ -577,7 +577,7 @@ style="align-items: flex-end; width:90%; text-align:center;">
 
 <div id="fig-evolution">
 
-<img src="/talks/alcf-hpc-workshop-2024/assets/evolution.gif" class="r-stretch" />
+<img src="/assets/evolution.gif" class="r-stretch" />
 
 Figure 20: Visualization from Yang et al. (2023)
 
@@ -589,7 +589,7 @@ Figure 20: Visualization from Yang et al. (2023)
 
 <div id="fig-it-hungers">
 
-<img src="/talks/alcf-hpc-workshop-2024/assets/it_hungers.jpeg" class="r-stretch" />
+<img src="/assets/it_hungers.jpeg" class="r-stretch" />
 
 Figure 21: It’s hungry! Wei et al. (2022)
 
@@ -619,7 +619,7 @@ Figure 21: It’s hungry! Wei et al. (2022)
 
 <div id="fig-pretrain-two">
 
-![](/talks/alcf-hpc-workshop-2024/assets/gpt3-training-step-back-prop.gif)
+<img src="/assets/gpt3-training-step-back-prop.gif" />
 
 Figure 22: **Pre-training**: Virtually _all of the compute_ used during
 pre-training[^4].
@@ -650,7 +650,7 @@ pre-training[^4].
 
 <div id="fig-finetune-lifecycle">
 
-![](/talks/alcf-hpc-workshop-2024/assets/gpt3-fine-tuning.gif)
+<img src="/assets/gpt3-fine-tuning.gif" />
 
 Figure 23: **Fine-tuning**: Fine-tuning actually updates the model’s
 weights to make the model better at a certain task[^5].
@@ -666,7 +666,7 @@ weights to make the model better at a certain task[^5].
 <div id="fig-hf-assisted-generation">
 
 <video
-    src="/talks/alcf-hpc-workshop-2024/assets/hf_assisted_generation.mov"
+    src="/assets/hf_assisted_generation.mov"
     controls
     preload="metadata"></video>
 
@@ -679,7 +679,7 @@ Figure 24: Language Model trained for causal language modeling[^6].
 <div id="fig-generating-text">
 
 <video
-    src="/talks/alcf-hpc-workshop-2024/assets/hf_assisted_generation2.mov"
+    src="/assets/hf_assisted_generation2.mov"
     controls
     preload="metadata"></video>
 
@@ -694,7 +694,7 @@ Figure 25: Language Model trained for causal language modeling[^7].
 <span
     class="preview-image"
     style="text-align:center; margin-left:auto; margin-right: auto;">
-    ![](/talks/alcf-hpc-workshop-2024/assets/jailbreak.jpeg)
+    <img src="/assets/jailbreak.jpeg" />
 </span>
 
 Figure 26
@@ -1215,7 +1215,7 @@ to train a small model using DDP
 
 <div id="fig-nanoGPT">
 
-![](/talks/alcf-hpc-workshop-2024/assets/nanogpt.jpg)
+<img src="/assets/nanogpt.jpg" />
 
 Figure 28: The simplest, fastest repository for training / finetuning
 GPT based models.
