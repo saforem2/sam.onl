@@ -1,0 +1,66 @@
+---
+import { getCollection } from 'astro:content'
+
+const docs = await getCollection('docs')
+
+const posts = docs
+    .filter((doc) => {
+        const [category] = doc.id.split('/')
+        if (category !== 'posts') return false
+        // Skip the posts index itself
+        if (doc.id === 'posts') return false
+        // Skip drafts
+        if (doc.id.startsWith('posts/drafts')) return false
+        return true
+    })
+    .map((doc) => {
+        const path = '/' + doc.id
+        const date = doc.data.date
+            ? doc.data.date.toISOString().split('T')[0]
+            : ''
+        return {
+            title: doc.data.title,
+            date,
+            path,
+            description: doc.data.description || '',
+        }
+    })
+    .sort((a, b) => {
+        if (a.date && b.date) return b.date.localeCompare(a.date)
+        if (a.date) return -1
+        if (b.date) return 1
+        return a.title.localeCompare(b.title)
+    })
+---
+
+<table class="posts-table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Title</th>
+        </tr>
+    </thead>
+    <tbody>
+        {posts.map((post) => (
+            <tr>
+                <td>
+                    {post.date && post.date}
+                </td>
+                <td>
+                    <a href={post.path}>{post.title}</a>
+                </td>
+            </tr>
+        ))}
+    </tbody>
+</table>
+
+<style>
+    .posts-table {
+        --table-border-width: 1px;
+        --table-border-color: var(--foreground1);
+        width: max-content;
+    }
+    .posts-table a {
+        text-decoration: none;
+    }
+</style>

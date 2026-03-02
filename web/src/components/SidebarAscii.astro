@@ -1,0 +1,809 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import { compareUrlPaths } from '@/utils/url'
+import { makeSortedCategoryEntries, categoryLabels } from '@/utils/content'
+import VimNavigation from './landing/VimNavigation.astro'
+
+const categories = makeSortedCategoryEntries()
+
+const yearGroupedCategories = new Set(['posts', 'talks'])
+const linkedCategorySlugs = new Set(['posts', 'talks', 'projects'])
+const dateGroupedCategories = new Set(['posts', 'talks'])
+const yearPattern = /^\d{4}$/
+const datePattern = /(^|\n)(\d{4})-(\d{2})-(\d{2})\b/m
+
+const getPageDate = (page: CollectionEntry<'docs'>) => {
+    const dataDate = (page.data as { date?: string | Date }).date
+    if (dataDate instanceof Date) return dataDate
+    if (typeof dataDate === 'string') {
+        const parsed = new Date(dataDate)
+        if (!Number.isNaN(parsed.getTime())) return parsed
+    }
+
+    const body = page.body ?? ''
+    const match = body.match(datePattern)
+    if (match?.[2]) {
+        const parsed = new Date(`${match[2]}-${match[3]}-${match[4]}`)
+        if (!Number.isNaN(parsed.getTime())) return parsed
+    }
+
+    return null
+}
+
+const getPageYear = (page: CollectionEntry<'docs'>, slug: string) => {
+    if (dateGroupedCategories.has(slug)) {
+        const date = getPageDate(page)
+        if (date) return String(date.getFullYear())
+    }
+
+    const [, year] = page.id.split('/')
+    return year && yearPattern.test(year) ? year : null
+}
+
+const talkExternalLinks = [
+    {
+        year: '2024',
+        month: '03',
+        title: 'Parallel Training Techniques',
+        href: 'https://github.com/saforem2/parallel-training-slides',
+        event: 'AI-4-Science Training Series',
+    },
+    {
+        year: '2024',
+        month: '02',
+        title: 'LLMs from Scratch',
+        href: 'https://saforem2.github.io/llm-workshop-talk',
+        event: 'LLM Tutorial Workshop',
+    },
+    {
+        year: '2023',
+        month: '11',
+        title: 'Creating Small(-ish) LLMs',
+        href: 'https://saforem2.github.io/LLM-tutorial',
+        event: 'LLM Tutorial Workshop (1)',
+    },
+    {
+        year: '2023',
+        month: '10',
+        title: 'Exascale Science on Aurora',
+        href: 'https://saforem2.github.io/oneapi-talk',
+        event: 'Intel oneAPI Workshop @ UIC',
+    },
+    {
+        year: '2023',
+        month: '10',
+        title: 'LLM Lunch Talk',
+        href: 'https://saforem2.github.io/llm-lunch-talk',
+        event: 'ALCF Hands On HPC Workshop',
+    },
+    {
+        year: '2023',
+        month: '08',
+        title: 'Scaling LLMs for Science',
+        href: 'https://saforem2.github.io/scaling4science',
+        event: 'Data-Intensive Computing + AI/ML at Scale',
+    },
+    {
+        year: '2023',
+        month: '07',
+        title: 'MLMC: Machine Learning Monte Carlo',
+        href: 'https://saforem2.github.io/lattice23',
+        event: 'Lattice 2023',
+    },
+    {
+        year: '2023',
+        month: '07',
+        title: 'Generative Modeling and Efficient Sampling',
+        href: 'https://saforem2.github.io/lqcd-pasc23/',
+        event: 'PASC23',
+    },
+    {
+        year: '2023',
+        month: '04',
+        title: 'Efficient Sampling for LGT',
+        href: 'https://saforem2.github.io/deep-fridays',
+        event: 'Deep Fridays @ U. Bologna',
+    },
+    {
+        year: '2022',
+        month: '11',
+        title: 'Large Scale Training',
+        href: 'https://saforem2.github.io/ai4sci-large-scale-training',
+        event: 'AI4Science on Supercomputers (ALCF)',
+    },
+    {
+        year: '2022',
+        month: '10',
+        title: 'Hyperparameter Management',
+        href: 'https://saforem2.github.io/hparam-management-sdl2022/',
+        event: 'ALCF SDL Workshop',
+    },
+    {
+        year: '2022',
+        month: '08',
+        title: 'Statistical Learning',
+        href: 'https://saforem2.github.io/ATPESC-StatisticalLearning',
+        event: 'ATPESC 2022',
+    },
+    {
+        year: '2022',
+        month: '05',
+        title: 'Scientific Data Science: An Emerging Symbiosis',
+        href: 'https://saforem2.github.io/anl-job-talk/',
+        event: 'ANL',
+    },
+    {
+        year: '2022',
+        month: '03',
+        title: 'Machine Learning in HEP',
+        href: 'https://saforem2.github.io/physicsSeminar',
+        event: 'UNC Greensboro',
+    },
+    {
+        year: '2021',
+        month: '12',
+        title: 'Accelerated Sampling Methods for LGT',
+        href: 'https://saforem2.github.io/l2hmc-dwq25/',
+        event: 'DWQ @ 25 [BNL]',
+    },
+    {
+        year: '2021',
+        month: '09',
+        title: 'Training Topological Samplers for LGT',
+        href: 'https://saforem2.github.io/l2hmc_talk_ect2021',
+        event: 'ML4HEP, ECT* Trento',
+    },
+    {
+        year: '2021',
+        month: '05',
+        title: 'Deep Learning HMC for Improved Gauge Generation',
+        href: 'https://bit.ly/mainz21',
+        event: 'ML in LQCD Workshop',
+    },
+    {
+        year: '2020',
+        month: '02',
+        title: 'Machine Learning for Lattice QCD',
+        href: 'https://slides.com/samforeman/l2hmc-qcd/embed',
+        event: 'U. Iowa',
+    },
+]
+
+const talkExternalByYear = talkExternalLinks.reduce((map, link) => {
+    const group = map.get(link.year) ?? []
+    group.push(link)
+    map.set(link.year, group)
+    return map
+}, new Map<string, typeof talkExternalLinks>())
+
+const groupPagesByYear = (pages: CollectionEntry<'docs'>[], slug: string) => {
+    const grouped = new Map<string, CollectionEntry<'docs'>[]>()
+    const misc: CollectionEntry<'docs'>[] = []
+
+    const addPage = (year: string, page: CollectionEntry<'docs'>) => {
+        const group = grouped.get(year) ?? []
+        group.push(page)
+        grouped.set(year, group)
+    }
+
+    for (const page of pages) {
+        const year = dateGroupedCategories.has(slug)
+            ? getPageYear(page, slug)
+            : page.id.split('/')[1]
+
+        if (year && yearPattern.test(year)) {
+            addPage(year, page)
+        } else {
+            misc.push(page)
+        }
+    }
+
+    for (const [, yearPages] of grouped.entries()) {
+        if (dateGroupedCategories.has(slug)) {
+            yearPages.sort((a, b) => {
+                const dateA = getPageDate(a)?.getTime() ?? 0
+                const dateB = getPageDate(b)?.getTime() ?? 0
+                if (dateA !== dateB) return dateB - dateA
+                return a.id.localeCompare(b.id)
+            })
+        } else {
+            yearPages.sort((a, b) => a.id.localeCompare(b.id))
+        }
+    }
+
+    const years = Array.from(grouped.keys()).sort((a, b) => b.localeCompare(a))
+    return { years, grouped, misc }
+}
+
+const { pathname: urlPath } = Astro.url
+---
+
+<nav box-="square" shear-="top" id="sidebar">
+    <button
+        id="sidebar-toggle"
+        type="button"
+        size-="small"
+        variant-="background1"
+        aria-expanded="true"
+        aria-controls="sidebar-container"
+        aria-label="Collapse left sidebar (Ctrl+H)">
+        <code>&lt;C-h&gt;</code>
+    </button>
+    <div id="category-container">
+        <div id="category-list">
+            {
+                categories.map(([slug, pages]) => {
+                    if (slug === 'landing') {
+                        const landingPage =
+                            pages.find(({ id }) => id === 'landing') ?? pages[0]
+
+                        if (!landingPage) {
+                            return null
+                        }
+
+                        return (
+                            <a
+                                href={`/${landingPage.id}`}
+                                class={
+                                    compareUrlPaths(urlPath, landingPage.id)
+                                        ? 'sidebar-direct-link active'
+                                        : 'sidebar-direct-link'
+                                }
+                                data-slug={landingPage.id}>
+                                {categoryLabels[slug]}
+                            </a>
+                        )
+                    }
+
+                    const categoryIndexPage = pages.find(
+                        ({ id }) => id === slug,
+                    )
+                    const shouldLinkCategory =
+                        linkedCategorySlugs.has(slug) &&
+                        Boolean(categoryIndexPage)
+                    const categoryPages = shouldLinkCategory
+                        ? pages.filter(({ id }) => id !== slug)
+                        : pages
+                    const isCategoryActive = pages.some(({ id }) =>
+                        compareUrlPaths(urlPath, id),
+                    )
+
+                    if (yearGroupedCategories.has(slug)) {
+                        const { years, grouped, misc } = groupPagesByYear(
+                            categoryPages,
+                            slug,
+                        )
+                        const mergedYears =
+                            slug === 'talks'
+                                ? Array.from(
+                                      new Set([
+                                          ...years,
+                                          ...talkExternalByYear.keys(),
+                                      ]),
+                                  ).sort((a, b) => b.localeCompare(a))
+                                : years
+
+                        return (
+                            <details open={isCategoryActive}>
+                                <summary>
+                                    {shouldLinkCategory ? (
+                                        <a
+                                            href={`/${slug}`}
+                                            class="sidebar-category-link"
+                                            onclick="event.stopPropagation()"
+                                            data-slug={slug}>
+                                            {categoryLabels[slug]}
+                                        </a>
+                                    ) : (
+                                        categoryLabels[slug]
+                                    )}
+                                </summary>
+                                <ul marker-="tree open">
+                                    {mergedYears.map((year) => {
+                                        const yearPages =
+                                            grouped.get(year) ?? []
+                                        const yearExternals =
+                                            slug === 'talks'
+                                                ? (talkExternalByYear.get(
+                                                      year,
+                                                  ) ?? [])
+                                                : []
+                                        const isYearActive = yearPages.some(
+                                            ({ id }) =>
+                                                compareUrlPaths(urlPath, id),
+                                        )
+
+                                        const entries = [
+                                            ...yearPages.map((page) => ({
+                                                type: 'page',
+                                                title: page.data.title,
+                                                href: `/${page.id}`,
+                                                date: getPageDate(page),
+                                                isActive: compareUrlPaths(
+                                                    urlPath,
+                                                    page.id,
+                                                ),
+                                            })),
+                                            ...yearExternals.map(
+                                                (external) => ({
+                                                    type: 'external',
+                                                    // title: `${external.month}: ${external.title} @ ${external.event}`,
+                                                    title: `${external.title}`,
+                                                    href: external.href,
+                                                    date: new Date(
+                                                        `${external.year}-${external.month}-01`,
+                                                    ),
+                                                    isActive: false,
+                                                }),
+                                            ),
+                                        ].sort((a, b) => {
+                                            const dateA =
+                                                a.date instanceof Date
+                                                    ? a.date.getTime()
+                                                    : 0
+                                            const dateB =
+                                                b.date instanceof Date
+                                                    ? b.date.getTime()
+                                                    : 0
+                                            if (dateA !== dateB)
+                                                return dateB - dateA
+                                            return a.title.localeCompare(
+                                                b.title,
+                                            )
+                                        })
+
+                                        return (
+                                            <details
+                                                open={isYearActive}
+                                                is-="accordion"
+                                                class="sidebar-year">
+                                                <summary>{year}</summary>
+                                                <ul marker-="tree open">
+                                                    {entries.map((entry) => (
+                                                        <li>
+                                                            <a
+                                                                href={
+                                                                    entry.href
+                                                                }
+                                                                class={
+                                                                    entry.isActive
+                                                                        ? 'active'
+                                                                        : entry.type ===
+                                                                            'external'
+                                                                          ? 'external'
+                                                                          : ''
+                                                                }
+                                                                data-slug={
+                                                                    entry.type ===
+                                                                    'page'
+                                                                        ? entry.href.replace(
+                                                                              /^\//,
+                                                                              '',
+                                                                          )
+                                                                        : undefined
+                                                                }
+                                                                target={
+                                                                    entry.type ===
+                                                                    'external'
+                                                                        ? '_blank'
+                                                                        : undefined
+                                                                }
+                                                                rel={
+                                                                    entry.type ===
+                                                                    'external'
+                                                                        ? 'noreferrer'
+                                                                        : undefined
+                                                                }>
+                                                                {entry.title}
+                                                            </a>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </details>
+                                        )
+                                    })}
+                                    {misc.length > 0 ? (
+                                        <details
+                                            open={misc.some(({ id }) =>
+                                                compareUrlPaths(urlPath, id),
+                                            )}
+                                            is-="accordion"
+                                            class="sidebar-year">
+                                            <summary>Other</summary>
+                                            <ul marker-="tree open">
+                                                {misc.map(
+                                                    ({
+                                                        id,
+                                                        data: { title },
+                                                    }) => (
+                                                        <li>
+                                                            <a
+                                                                href={`/${id}`}
+                                                                class={
+                                                                    compareUrlPaths(
+                                                                        urlPath,
+                                                                        id,
+                                                                    )
+                                                                        ? 'active'
+                                                                        : ''
+                                                                }
+                                                                data-slug={id}>
+                                                                {title}
+                                                            </a>
+                                                        </li>
+                                                    ),
+                                                )}
+                                            </ul>
+                                        </details>
+                                    ) : null}
+                                </ul>
+                            </details>
+                        )
+                    }
+
+                    if (shouldLinkCategory && categoryPages.length === 0) {
+                        return (
+                            <a
+                                href={`/${slug}`}
+                                class={
+                                    isCategoryActive
+                                        ? 'sidebar-direct-link active'
+                                        : 'sidebar-direct-link'
+                                }
+                                data-slug={slug}>
+                                {categoryLabels[slug]}
+                            </a>
+                        )
+                    }
+
+                    return (
+                        <details open={isCategoryActive}>
+                            <summary>
+                                {shouldLinkCategory ? (
+                                    <a
+                                        href={`/${slug}`}
+                                        class="sidebar-category-link"
+                                        onclick="event.stopPropagation()"
+                                        data-slug={slug}>
+                                        {categoryLabels[slug]}
+                                    </a>
+                                ) : (
+                                    categoryLabels[slug]
+                                )}
+                            </summary>
+                            <ul marker-="tree open">
+                                {categoryPages.map(
+                                    ({ id, data: { title } }) => (
+                                        <li>
+                                            <a
+                                                href={`/${id}`}
+                                                class={
+                                                    compareUrlPaths(urlPath, id)
+                                                        ? 'active'
+                                                        : ''
+                                                }
+                                                data-slug={id}>
+                                                {title}
+                                            </a>
+                                        </li>
+                                    ),
+                                )}
+                            </ul>
+                        </details>
+                    )
+                })
+            }
+        </div>
+    </div>
+    <div id="sidebar-vim-nav-container">
+        <VimNavigation showHL />
+    </div>
+</nav>
+
+<style>
+    #sidebar-vim-nav-container {
+        padding-left: 1ch;
+        padding-right: 2ch;
+        padding-top: 1lh;
+        padding-bottom: 1lh;
+        display: flex;
+        flex-direction: row;
+    }
+    #sidebar {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        flex-grow: 1;
+        line-height: 1.5
+        /* line-height: var(--line-height, 1.227); */
+
+        #sidebar-toggle {
+            position: absolute;
+            z-index: 3;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+
+            code {
+                background-color: transparent;
+            }
+        }
+
+        &:focus-within {
+            --box-border-color: var(--foreground0);
+        }
+
+        :is(a[href], summary, button:not([disabled])) {
+            position: relative;
+            outline: none;
+        }
+
+        :is(a[href], summary, button:not([disabled]))::after {
+            content: '> ';
+            position: absolute;
+            inset-inline-start: -2ch;
+            inset-block-start: 0;
+            color: transparent;
+            width: 2ch;
+            pointer-events: none;
+        }
+
+        :is(a[href], summary, button:not([disabled])):focus-visible,
+        :is(
+                a[href],
+                summary,
+                button:not([disabled])
+            )[data-vim-focused='true']:focus {
+            background-color: var(--focus-bg);
+            color: var(--focus-fg);
+            outline: 1px solid var(--focus-border);
+            outline-offset: -1px;
+            text-decoration: none;
+        }
+
+        :is(a[href], summary, button:not([disabled])):focus-visible::after,
+        :is(
+                a[href],
+                summary,
+                button:not([disabled])
+            )[data-vim-focused='true']:focus::after {
+            color: var(--focus-marker);
+        }
+
+        :is(a[href], summary, button:not([disabled])):hover {
+            background-color: var(--focus-hover-bg);
+        }
+
+        #category-container {
+            position: relative;
+            flex-grow: 1;
+            margin-top: 2lh;
+        }
+
+        #category-list {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0lh;
+            overflow-y: auto;
+            margin-inline: 1ch;
+        }
+    }
+
+    details > summary > a.sidebar-category-link {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    ul > li > a[href] {
+        color: var(--foreground2);
+        text-decoration: none;
+        outline: none;
+        display: block;
+        min-width: 0;
+
+        &.active {
+            background-color: oklch(
+                from var(--background-active, var(--background2, #838383))
+                    calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+            );
+        }
+    }
+
+    ul > li > a.external {
+        color: var(--foreground2);
+        font-style: italic;
+    }
+
+    #sidebar ul[marker-~='tree'] > li {
+        display: grid;
+        grid-template-columns: 3ch minmax(0, 1fr);
+        align-items: start;
+    }
+
+    #sidebar ul[marker-~='tree'] > li::before {
+        grid-column: 1;
+        content: '├─ ';
+    }
+
+    #sidebar ul[marker-~='tree'] > li:last-of-type::before {
+        content: '└─ ';
+    }
+
+    #sidebar ul[marker-~='tree'] > li > a {
+        grid-column: 2;
+    }
+
+    ul > details {
+        display: block;
+        padding-left: 0;
+    }
+
+    ul > details > summary {
+        color: var(--foreground2);
+        font-weight: var(--font-weight-normal);
+        display: list-item;
+        /* margin-block-start: 1ch; */
+        color: var(--foreground1);
+        background-color: var(--background0);
+    }
+    ul > details > summary::marker {
+        content: '> ';
+        /* margin-inline-start: -1ch; */
+
+        &[open] {
+            summary {
+                &::marker {
+                    content: ' v ';
+                }
+            }
+        }
+    }
+
+    #category-list > a.sidebar-direct-link {
+        color: var(--foreground1);
+        text-decoration: none;
+        padding-inline-start: 1ch;
+        outline: none;
+        display: block;
+        margin-inline-start: 1ch;
+        /* margin-block-end: 1lh; */
+
+        &:hover {
+            background-color: var(--background1);
+        }
+
+        &.active {
+            background-color: oklch(
+                from var(--background-active, var(--background2, #838383))
+                    calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+            );
+        }
+    }
+
+    ul > details > summary {
+        margin-inline-start: 1ch;
+    }
+
+    /* ul > details > summary::before { */
+    /*     content: '├ '; */
+    /* } */
+
+    /* ul > details:last-of-type > summary::before { */
+    /*     content: '└ '; */
+    /* } */
+
+    ul ul {
+        padding-left: 3ch;
+        margin: 0;
+    }
+
+    details.sidebar-year {
+        margin: 0;
+    }
+
+    details {
+        line-height: 1.5;
+        /* margin-block-end: 1lh; */
+        summary {
+            font-weight: 500;
+            background-color: none;
+            color: var(--foreground1);
+            &::marker {
+                color: var(--foreground2);
+                content: '>';
+            }
+
+            &:hover {
+                background-color: var(--background1);
+            }
+        }
+
+        &[open] {
+            summary {
+                &::marker {
+                    content: 'v';
+                }
+            }
+        }
+    }
+
+    details[open] a.hidden,
+    details.hidden,
+    .hidden {
+        display: none;
+    }
+
+    ul > details {
+        /* margin-block-end: 1ch; */
+        margin-inline: 1ch;
+        summary {
+            font-weight: var(--font-weight-bold);
+            &::marker {
+                color: var(--foreground2);
+                content: '> ';
+            }
+
+            &:hover {
+                background-color: var(--background1);
+            }
+        }
+
+        &[open] {
+            summary {
+                &::marker {
+                    content: 'v ';
+                }
+            }
+        }
+    }
+</style>
+
+<script>
+    import { applyVimNavigation } from '@/utils/vim'
+
+    const sidebar = document.getElementById('sidebar')
+    let lastInteractionWasPointer = false
+
+    const revealFocusedElement = (element: HTMLElement) => {
+        let parent = element.parentElement
+
+        while (parent) {
+            if (parent instanceof HTMLDetailsElement) {
+                parent.open = true
+            }
+
+            if (parent.id === 'sidebar') break
+            parent = parent.parentElement
+        }
+    }
+
+    if (sidebar) {
+        sidebar.addEventListener('pointerdown', () => {
+            lastInteractionWasPointer = true
+        })
+
+        sidebar.addEventListener('keydown', () => {
+            lastInteractionWasPointer = false
+        })
+
+        applyVimNavigation(
+            sidebar,
+            '#category-list > a:not(.hidden), details:not(.hidden)[open] a:not(.hidden), details:not(.hidden) summary',
+            (element) => {
+                if (lastInteractionWasPointer) {
+                    return
+                }
+
+                if (element.tagName === 'SUMMARY') {
+                    return
+                }
+
+                revealFocusedElement(element)
+            },
+        )
+    }
+</script>
