@@ -1,3 +1,6 @@
 [build]
 command = "npx playwright install chromium && bun run build"
 publish = "web/dist"
+
+[build.environment]
+NODE_OPTIONS = "--max-old-space-size=4096"
