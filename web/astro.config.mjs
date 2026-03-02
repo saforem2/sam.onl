@@ -4,7 +4,7 @@ import { rehypeHeadingIds } from '@astrojs/markdown-remark'
 import { visit } from 'unist-util-visit'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import rehypeMermaid from 'rehype-mermaid'
+// import rehypeMermaid from 'rehype-mermaid'
 // import Catppuccin from 'tm-themes/themes/catppuccin-mocha'
 // import { getSingletonHighlighter } from 'shiki'
 
@@ -196,6 +196,52 @@ const rehypeGitHubCallouts = () => {
     }
 }
 
+const rehypeMermaidClientSide = () => {
+    // @ts-expect-error doesn't matter
+    return (tree) => {
+        visit(tree, 'element', (node, index, parent) => {
+            if (!parent || typeof index !== 'number') return
+            if (node.tagName !== 'pre') return
+
+            const codeNode = node.children.find(
+                (child) =>
+                    child.type === 'element' && child.tagName === 'code',
+            )
+            if (!codeNode) return
+
+            const classes = Array.isArray(codeNode.properties?.className)
+                ? codeNode.properties.className
+                : []
+            const lang =
+                codeNode.properties?.dataLanguage ??
+                classes
+                    .find(
+                        (cls) =>
+                            typeof cls === 'string' &&
+                            cls.startsWith('language-'),
+                    )
+                    ?.slice('language-'.length)
+
+            if (lang !== 'mermaid') return
+
+            const source = codeNode.children
+                .filter((child) => child.type === 'text')
+                .map((child) => child.value)
+                .join('')
+
+            parent.children[index] = {
+                type: 'element',
+                tagName: 'div',
+                properties: {
+                    className: ['mermaid'],
+                    'data-mermaid': source,
+                },
+                children: [{ type: 'text', value: source }],
+            }
+        })
+    }
+}
+
 const rehypeMarkdownTabIndex = () => {
     // @ts-expect-error doesn't matter
     return (tree) => {
@@ -218,17 +264,7 @@ export default defineConfig({
             rehypeGitHubCallouts,
             rehypeMarkdownTabIndex,
             rehypeKatex,
-            [
-                rehypeMermaid,
-                {
-                    strategy: 'img-svg',
-                    mermaidConfig: {
-                        fontFamily: 'var(--font-family)',
-                        fontSize: 'var(--font-size)',
-                    },
-                },
-            ],
-            // rehypeMermaid,
+            rehypeMermaidClientSide,
         ],
         syntaxHighlight: {
             type: 'shiki',
@@ -238,9 +274,13 @@ export default defineConfig({
             wrap: false,
             // theme: 'one-dark-pro',
             themes: {
-                dark: 'one-dark-pro',
                 light: 'min-light',
-                // catppuccin: 'catppucin-mocha',
+                dark: 'one-dark-pro',
+                catppuccin: 'catppuccin-mocha',
+                nord: 'nord',
+                gruvbox: 'gruvbox-dark-medium',
+                'vitesse-dark': 'vitesse-dark',
+                everforest: 'everforest-dark',
             },
             colorReplacements: {
                 'one-light': {
@@ -257,15 +297,7 @@ export default defineConfig({
             rehypePlugins: [
                 rehypeGitHubCallouts,
                 rehypeKatex,
-                [
-                    rehypeMermaid,
-                    {
-                        mermaidConfig: {
-                            fontFamily: 'var(--font-family)',
-                            fontSize: 'var(--font-size)',
-                        },
-                    },
-                ],
+                rehypeMermaidClientSide,
             ],
         }),
     ],

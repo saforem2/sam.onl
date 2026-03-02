@@ -173,6 +173,18 @@
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
+
+        > column,
+        > [is-~='column'],
+        > .col {
+            flex: 1 1 0%;
+            min-width: 0;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
     }
 
     .dim-text {
@@ -209,11 +221,19 @@
         background-color: var(--code-bg);
         overflow-x: auto;
         padding: 1ch 1ch;
+
+        &.astro-code {
+            background-color: unset;
+        }
     }
 
     code {
         font-family: var(--font-family);
         background-color: var(--code-bg);
+
+        .astro-code > & {
+            background-color: inherit;
+        }
     }
 
     .line {
@@ -240,6 +260,9 @@
 }
 
 @layer components {
+    p {
+        color: unset;
+    }
     details[is-~='accordion'] > summary::marker {
         content: ' ';
         display: none;
@@ -373,7 +396,7 @@
     }
 
     .callout-important {
-        --callout-color: var(--accent, var(--purple, #9a76ce));
+        --callout-color: var(--purple, var(--accent, #9a76ce));
     }
 
     .callout-warning,
@@ -478,6 +501,13 @@
 @media (max-width: 768px) {
     .flex-container {
         flex-direction: column;
+
+        > column,
+        > [is-~='column'],
+        > .col {
+            flex: none;
+            width: 100%;
+        }
     }
 }
 
@@ -511,19 +541,76 @@ html[data-webtui-theme='dark'] .dark-content {
     display: revert !important;
 }
 
-/* html[data-webtui-theme='light'] .astro-code, */
-/* html[data-webtui-theme='light'] .astro-code span { */
-/*     background-color: oklch(from var(--code-bg, #f8f8f8) l c h) !important; */
+html[data-webtui-theme='light'] .astro-code,
+html[data-webtui-theme='light'] .astro-code span {
+    background-color: oklch(from var(--code-bg, #f8f8f8) l c h) !important;
+}
+
+/* html:not([data-webtui-theme='light']) .astro-code { */
+/*     background-color: var(--background1) !important; */
 /* } */
 
-html[data-webtui-theme='dark'] .astro-code,
+/* html:not([data-webtui-theme='light']) .astro-code span { */
+/*     background-color: transparent !important; */
+/* } */
+
+/* html[data-webtui-theme='light'] .astro-code span { */
+/*     color: var(--shiki-light) !important; */
+/*     font-style: var(--shiki-light-font-style) !important; */
+/*     font-weight: var(--shiki-light-font-weight) !important; */
+/*     text-decoration: var(--shiki-light-text-decoration) !important; */
+/*     background-color: var(--background1)!important; */
+/* } */
+
 html[data-webtui-theme='dark'] .astro-code span {
-    --shiki-dark-bg: var(--background1) !important;
     color: var(--shiki-dark) !important;
-    background-color: var(--code-bg, var(--shiki-dark-bg, none)) !important;
     font-style: var(--shiki-dark-font-style) !important;
     font-weight: var(--shiki-dark-font-weight) !important;
     text-decoration: var(--shiki-dark-text-decoration) !important;
+    background-color: var(--background1) !important;
+}
+
+html[data-webtui-theme='catppuccin'] .astro-code span {
+    color: var(--shiki-catppuccin) !important;
+    font-style: var(--shiki-catppuccin-font-style) !important;
+    font-weight: var(--shiki-catppuccin-font-weight) !important;
+    text-decoration: var(--shiki-catppuccin-text-decoration) !important;
+    background-color: var(--background1, var(--shiki-catppuccin-bg)) !important;
+}
+
+html[data-webtui-theme='nord'] .astro-code span {
+    color: var(--shiki-nord) !important;
+    font-style: var(--shiki-nord-font-style) !important;
+    font-weight: var(--shiki-nord-font-weight) !important;
+    text-decoration: var(--shiki-nord-text-decoration) !important;
+    background-color: var(--background1, var(--shiki-nord-bg)) !important;
+}
+
+html[data-webtui-theme='gruvbox'] .astro-code span {
+    color: var(--shiki-gruvbox) !important;
+    font-style: var(--shiki-gruvbox-font-style) !important;
+    font-weight: var(--shiki-gruvbox-font-weight) !important;
+    text-decoration: var(--shiki-gruvbox-text-decoration) !important;
+    background-color: var(
+        --background1,
+        var(--shiki-gruvbox-dark-bg)
+    ) !important;
+}
+
+html[data-webtui-theme='vitesse-dark'] .astro-code span {
+    color: var(--shiki-vitesse-dark) !important;
+    font-style: var(--shiki-vitesse-dark-font-style) !important;
+    font-weight: var(--shiki-vitesse-dark-font-weight) !important;
+    text-decoration: var(--shiki-vitesse-dark-text-decoration) !important;
+    background-color: var(--background1, var(--vitesse-dark-bg)) !important;
+}
+
+html[data-webtui-theme='everforest'] .astro-code span {
+    color: var(--shiki-everforest) !important;
+    font-style: var(--shiki-everforest-font-style) !important;
+    font-weight: var(--shiki-everforest-font-weight) !important;
+    text-decoration: var(--shiki-everforest-text-decoration) !important;
+    background-color: var(--background1, var(--everforest-dark-bg)) !important;
 }
 
 pre.astro-code {
@@ -535,7 +622,7 @@ pre.astro-code > code {
     display: block;
     width: max-content;
     min-width: 100%;
-    padding: 1ch 0;
+    /* padding: 1ch 0; */
     white-space: pre;
     counter-reset: line;
 }

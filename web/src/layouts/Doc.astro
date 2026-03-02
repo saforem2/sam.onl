@@ -476,7 +476,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
             }
         }
 
-        // ] / [ — jump to next / previous heading
+        // ] / [ — jump to and focus next / previous heading
         if (
             (e.key === ']' || e.key === '[') &&
             !e.ctrlKey &&
@@ -496,8 +496,6 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
             if (headings.length === 0) return
 
             const scrollerTop = scroller.getBoundingClientRect().top
-
-            // Build list of heading positions relative to scroller top
             const positions = headings.map((h) =>
                 h.getBoundingClientRect().top - scrollerTop,
             )
@@ -506,17 +504,75 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                 const idx = positions.findIndex((p) => p > 2)
                 if (idx !== -1) {
                     scroller.scrollTop += positions[idx]
+                    headings[idx].focus({ preventScroll: true })
                 }
             } else {
-                let idx = -1
                 for (let i = positions.length - 1; i >= 0; i--) {
                     if (positions[i] < -2) {
-                        idx = i
+                        scroller.scrollTop += positions[i]
+                        headings[i].focus({ preventScroll: true })
                         break
                     }
                 }
-                if (idx !== -1) {
-                    scroller.scrollTop += positions[idx]
+            }
+            return
+        }
+
+        // } / { — jump to next / previous top-level block
+        if (
+            (e.key === '}' || e.key === '{') &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey
+        ) {
+            e.preventDefault()
+            const active = document.activeElement as HTMLElement | null
+            if (!active || !mainContent.contains(active)) return
+
+            // Walk up to the direct child of #main-content
+            let ancestor: HTMLElement = active
+            while (
+                ancestor.parentElement &&
+                ancestor.parentElement !== mainContent
+            ) {
+                ancestor = ancestor.parentElement as HTMLElement
+            }
+
+            const children = Array.from(
+                mainContent.children,
+            ) as HTMLElement[]
+            const idx = children.indexOf(ancestor)
+            if (idx === -1) return
+
+            if (e.key === '}') {
+                for (let i = idx + 1; i < children.length; i++) {
+                    const child = children[i]
+                    if (child.matches(mainItemQuery)) {
+                        vimFocusElement(child)
+                        return
+                    }
+                    const desc = child.querySelector(
+                        mainItemQuery,
+                    ) as HTMLElement | null
+                    if (desc) {
+                        vimFocusElement(desc)
+                        return
+                    }
+                }
+            } else {
+                for (let i = idx - 1; i >= 0; i--) {
+                    const child = children[i]
+                    if (child.matches(mainItemQuery)) {
+                        vimFocusElement(child)
+                        return
+                    }
+                    const desc = child.querySelector(
+                        mainItemQuery,
+                    ) as HTMLElement | null
+                    if (desc) {
+                        vimFocusElement(desc)
+                        return
+                    }
                 }
             }
             return
@@ -532,6 +588,28 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         if (e.key === 'i' && e.ctrlKey) {
             e.preventDefault()
             window.history.forward()
+        }
+
+        // ctrl-d / ctrl-u — half-page scroll with focus follow
+        if (
+            (e.key === 'd' || e.key === 'u') &&
+            e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey
+        ) {
+            e.preventDefault()
+            const scroller = document.getElementById('scroll-container')
+            if (!scroller) return
+            const halfPage = scroller.clientHeight / 2
+            scroller.scrollBy({
+                top: e.key === 'd' ? halfPage : -halfPage,
+                behavior: 'instant',
+            })
+            const visible = getVisibleMainElements()
+            if (visible.length > 0) {
+                vimFocusElement(visible[0])
+            }
+            return
         }
 
         const isShiftRegionKey =
