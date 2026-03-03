@@ -1,6 +1,5 @@
 ---
 import { docPages } from '@/utils/content'
-import Dropdown from '@/components/ui/Dropdown.astro'
 import type { MarkdownHeading } from 'astro'
 
 const docHeadings = docPages
@@ -31,10 +30,6 @@ const themeOptions = {
     light: 'Light',
     dark: 'Dark',
     catppuccin: 'Catppuccin',
-    nord: 'Nord',
-    gruvbox: 'Gruvbox',
-    'vitesse-dark': 'Vitesse',
-    everforest: 'Everforest',
 }
 ---
 
@@ -58,14 +53,20 @@ const themeOptions = {
             </section>
             <section class="command-section" box-="round">
                 <span is-="badge" variant-="background0">Theme</span>
-                <Dropdown
-                    id="command-theme-dropdown"
-                    data-theme-dropdown="true"
-                    label="Theme"
-                    items={themeOptions}
-                    data-value="light"
-                    position="bottom baseline-right"
-                />
+                <row class="command-theme-buttons" gap-="1">
+                    {
+                        Object.entries(themeOptions).map(([key, value]) => (
+                            <button
+                                data-theme-dropdown="true"
+                                data-theme-option={key}
+                                size-="small"
+                                variant-="background1"
+                                aria-selected="false">
+                                {value}
+                            </button>
+                        ))
+                    }
+                </row>
             </section>
             <section class="command-section" box-="round">
                 <span is-="badge" variant-="background0">Keybinds</span>
@@ -334,14 +335,15 @@ const themeOptions = {
         }
     }
 
-    #command-theme-dropdown,
-    #command-theme-dropdown details,
-    #command-theme-dropdown summary {
-        width: 100%;
+    .command-theme-buttons button {
+        flex: 1;
     }
 
-    #command-theme-dropdown summary {
-        justify-content: space-between;
+    .command-theme-buttons button[aria-selected='true'] {
+        background-color: var(--background3);
+        color: var(--foreground0);
+        font-weight: var(--font-weight-bold);
+        background-image: none;
     }
 
     #search-results {
@@ -443,10 +445,6 @@ const themeOptions = {
         light: 'Light',
         dark: 'Dark',
         catppuccin: 'Catppuccin',
-        nord: 'Nord',
-        gruvbox: 'Gruvbox',
-        'vitesse-dark': 'Vitesse',
-        everforest: 'Everforest',
     }
 
     let activeLink: HTMLAnchorElement | null =

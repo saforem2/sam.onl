@@ -26,10 +26,6 @@ const shikiThemes = {
     dark: 'one-dark-pro',
     light: 'min-light',
     catppuccin: 'catppuccin-mocha',
-    nord: 'nord',
-    gruvbox: 'gruvbox-dark-hard',
-    'vitesse-dark': 'vitesse-dark',
-    everforest: 'everforest-dark',
 } as const
 
 const highlighter = await getSingletonHighlighter({
@@ -191,27 +187,6 @@ const fileIconColor = Array.isArray(file?.icon) ? file.icon[1] : undefined
         font-style: var(--shiki-catppuccin-font-style, normal);
         font-weight: var(--shiki-catppuccin-font-weight, normal);
     }
-    :global(html[data-webtui-theme='nord']) .line-code :global(span) {
-        color: var(--shiki-nord);
-        font-style: var(--shiki-nord-font-style, normal);
-        font-weight: var(--shiki-nord-font-weight, normal);
-    }
-    :global(html[data-webtui-theme='gruvbox']) .line-code :global(span) {
-        color: var(--shiki-gruvbox);
-        font-style: var(--shiki-gruvbox-font-style, normal);
-        font-weight: var(--shiki-gruvbox-font-weight, normal);
-    }
-    :global(html[data-webtui-theme='vitesse-dark']) .line-code :global(span) {
-        color: var(--shiki-vitesse-dark);
-        font-style: var(--shiki-vitesse-dark-font-style, normal);
-        font-weight: var(--shiki-vitesse-dark-font-weight, normal);
-    }
-    :global(html[data-webtui-theme='everforest']) .line-code :global(span) {
-        color: var(--shiki-everforest);
-        font-style: var(--shiki-everforest-font-style, normal);
-        font-weight: var(--shiki-everforest-font-weight, normal);
-    }
-
     @media (max-width: 400px) {
         .line-number {
             display: none;

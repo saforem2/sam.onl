@@ -30,10 +30,6 @@
 @import '@webtui/plugin-nf';
 @import '@/styles/themes/custom.css';
 @import '@webtui/theme-catppuccin';
-@import '@webtui/theme-nord';
-@import '@webtui/theme-gruvbox';
-@import '@webtui/theme-vitesse';
-@import '@webtui/theme-everforest';
 
 .flex-container.icon-flex a {
     text-decoration: none;
@@ -263,9 +259,14 @@
     p {
         color: unset;
     }
-    details[is-~='accordion'] > summary::marker {
-        content: ' ';
+    details[is-~='accordion'] > summary {
+        list-style: none;
+    }
+    details[is-~='accordion'] > summary::-webkit-details-marker {
         display: none;
+    }
+    .katex-display {
+        overflow-x: auto;
     }
     hr {
         display: block;
@@ -578,41 +579,6 @@ html[data-webtui-theme='catppuccin'] .astro-code span {
     background-color: var(--background1, var(--shiki-catppuccin-bg)) !important;
 }
 
-html[data-webtui-theme='nord'] .astro-code span {
-    color: var(--shiki-nord) !important;
-    font-style: var(--shiki-nord-font-style) !important;
-    font-weight: var(--shiki-nord-font-weight) !important;
-    text-decoration: var(--shiki-nord-text-decoration) !important;
-    background-color: var(--background1, var(--shiki-nord-bg)) !important;
-}
-
-html[data-webtui-theme='gruvbox'] .astro-code span {
-    color: var(--shiki-gruvbox) !important;
-    font-style: var(--shiki-gruvbox-font-style) !important;
-    font-weight: var(--shiki-gruvbox-font-weight) !important;
-    text-decoration: var(--shiki-gruvbox-text-decoration) !important;
-    background-color: var(
-        --background1,
-        var(--shiki-gruvbox-dark-bg)
-    ) !important;
-}
-
-html[data-webtui-theme='vitesse-dark'] .astro-code span {
-    color: var(--shiki-vitesse-dark) !important;
-    font-style: var(--shiki-vitesse-dark-font-style) !important;
-    font-weight: var(--shiki-vitesse-dark-font-weight) !important;
-    text-decoration: var(--shiki-vitesse-dark-text-decoration) !important;
-    background-color: var(--background1, var(--vitesse-dark-bg)) !important;
-}
-
-html[data-webtui-theme='everforest'] .astro-code span {
-    color: var(--shiki-everforest) !important;
-    font-style: var(--shiki-everforest-font-style) !important;
-    font-weight: var(--shiki-everforest-font-weight) !important;
-    text-decoration: var(--shiki-everforest-text-decoration) !important;
-    background-color: var(--background1, var(--everforest-dark-bg)) !important;
-}
-
 pre.astro-code {
     padding: 0ch;
     flex-shrink: 0;
@@ -622,7 +588,6 @@ pre.astro-code > code {
     display: block;
     width: max-content;
     min-width: 100%;
-    /* padding: 1ch 0; */
     white-space: pre;
     counter-reset: line;
 }

@@ -255,6 +255,7 @@ const rehypeMarkdownTabIndex = () => {
 
 // https://astro.build/config
 export default defineConfig({
+    devToolbar: { enabled: false },
     site: 'https://samforeman.me',
     compressHTML: false,
     markdown: {
@@ -277,10 +278,6 @@ export default defineConfig({
                 light: 'min-light',
                 dark: 'one-dark-pro',
                 catppuccin: 'catppuccin-mocha',
-                nord: 'nord',
-                gruvbox: 'gruvbox-dark-medium',
-                'vitesse-dark': 'vitesse-dark',
-                everforest: 'everforest-dark',
             },
             colorReplacements: {
                 'one-light': {
@@ -305,11 +302,7 @@ export default defineConfig({
         ssr: {
             noExternal: [
                 '@webtui/css',
-                // '@webtui/theme-custom',
                 '@webtui/theme-catppuccin',
-                '@webtui/theme-nord',
-                '@webtui/theme-gruvbox',
-                '@webtui/theme-vitesse',
                 '@webtui/plugin-nf',
             ],
         },
