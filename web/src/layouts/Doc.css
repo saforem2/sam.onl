@@ -7,6 +7,10 @@
     }
 }
 
+#doc-article > header {
+    overflow-x: auto;
+}
+
 h1::before {
     content: '#';
     color: var(--h1);
@@ -244,12 +248,24 @@ h6::before {
     }
 }
 
-#main-content h1 .heading-anchor { color: var(--h1); }
-#main-content h2 .heading-anchor { color: var(--h2); }
-#main-content h3 .heading-anchor { color: var(--h3); }
-#main-content h4 .heading-anchor { color: var(--h4); }
-#main-content h5 .heading-anchor { color: var(--h5); }
-#main-content h6 .heading-anchor { color: var(--h6); }
+#main-content h1 .heading-anchor {
+    color: var(--h1);
+}
+#main-content h2 .heading-anchor {
+    color: var(--h2);
+}
+#main-content h3 .heading-anchor {
+    color: var(--h3);
+}
+#main-content h4 .heading-anchor {
+    color: var(--h4);
+}
+#main-content h5 .heading-anchor {
+    color: var(--h5);
+}
+#main-content h6 .heading-anchor {
+    color: var(--h6);
+}
 
 #toc-list li {
     list-style: none;
@@ -292,11 +308,26 @@ h6::before {
     content: '';
 }
 
-#toc-list a.depth-2.active::before { content: '#'; color: var(--h2); }
-#toc-list a.depth-3.active::before { content: '#'; color: var(--h3); }
-#toc-list a.depth-4.active::before { content: '#'; color: var(--h4); }
-#toc-list a.depth-5.active::before { content: '#'; color: var(--h5); }
-#toc-list a.depth-6.active::before { content: '#'; color: var(--h6); }
+#toc-list a.depth-2.active::before {
+    content: '##';
+    color: var(--h2);
+}
+#toc-list a.depth-3.active::before {
+    content: '###';
+    color: var(--h3);
+}
+#toc-list a.depth-4.active::before {
+    content: '####';
+    color: var(--h4);
+}
+#toc-list a.depth-5.active::before {
+    content: '#####';
+    color: var(--h5);
+}
+#toc-list a.depth-6.active::before {
+    content: '#######';
+    color: var(--h6);
+}
 
 #toc-list .depth-2 {
     padding-inline-start: 0;
@@ -407,11 +438,7 @@ h6::before {
         display: flex;
         flex-direction: column;
         gap: 1ch;
-        /* margin-block-end:  */
-        /* padding: 1lh 1ch; */
-        /* min-width: 0; */
-        /* overflow-x: hidden; */
-        /* overflow-y: visible; */
+        overflow-x: hidden;
         color: var(--foreground1);
 
         strong {
