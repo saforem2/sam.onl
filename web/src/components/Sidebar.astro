@@ -216,7 +216,7 @@ const groupPagesByYear = (pages: CollectionEntry<'docs'>[], slug: string) => {
 }
 
 /** Group pages by their first sub-directory under the category slug. */
-const groupPagesBySubdir = (pages: CollectionEntry<'docs'>[], slug: string) => {
+const groupPagesBySubdir = (pages: CollectionEntry<'docs'>[], _slug: string) => {
     const grouped = new Map<string, CollectionEntry<'docs'>[]>()
     const misc: CollectionEntry<'docs'>[] = []
 
@@ -707,7 +707,7 @@ const { pathname: urlPath } = Astro.url
             flex-direction: column;
             gap: 0lh;
             overflow-y: auto;
-            padding-inlin-start: 1ch;
+            padding-inline-start: 1ch;
             margin-inline-start: 1ch;
             /* margin-inline: 1ch; */
         }
