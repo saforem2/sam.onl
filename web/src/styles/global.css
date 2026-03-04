@@ -226,9 +226,11 @@
 
     code {
         font-family: var(--font-family);
+        color: var(--code-fg, inherit);
         background-color: var(--code-bg);
 
         .astro-code > & {
+            color: inherit;
             background-color: inherit;
         }
     }
@@ -566,14 +568,22 @@ p:has(> img) {
     }
 }
 
-html[data-webtui-theme='catppuccin'] {
-    --background0: var(--base);
-    --background1: var(--surface0);
-    --background2: var(--surface1);
-    --background3: var(--surface2);
+html[data-webtui-theme|='catppuccin'] {
+    --oklch-scale: 1.15;
+    --foreground3: var(--overlay0);
 
-    --foreground0: var(--text);
-    --foreground1: var(--subtext1);
-    --foreground2: var(--overlay2);
-    --code-bg: var(--foreground0);
+    --purple: var(--mauve);
+    --orange: var(--peach);
+    --aqua: var(--sapphire);
+    --accent: var(--mauve);
+    --url: var(--foreground2);
+    --code-bg: var(--surface1);
+    --code-fg: var(--text);
+
+    --h1: var(--red);
+    --h2: var(--peach);
+    --h3: var(--yellow);
+    --h4: var(--green);
+    --h5: var(--blue);
+    --h6: var(--lavender);
 }
