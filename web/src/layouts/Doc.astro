@@ -108,7 +108,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                             <div is-="typography-block">
                                                 <span
                                                     is-="badge"
-                                                    variant-="background0">
+                                                    variant-="background1">
                                                     <row gap-="1">
                                                         <span>←</span>
                                                         <code>&lt;C-b&gt;</code>
@@ -136,7 +136,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                                 is-="typography-block">
                                                 <span
                                                     is-="badge"
-                                                    variant-="background0">
+                                                    variant-="background1">
                                                     <row gap-="1">
                                                         <span>Next</span>
                                                         <code>&lt;C-n&gt;</code>
@@ -160,7 +160,9 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                 tocHeadings.length > 0 && (
                     <>
                         <div id="toc-resizer" aria-hidden="true" />
-                        <aside id="toc-container" class="mobile-hidden collapsed">
+                        <aside
+                            id="toc-container"
+                            class="mobile-hidden collapsed">
                             <nav
                                 box-="square"
                                 shear-="top"
@@ -496,19 +498,30 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
             if (headings.length === 0) return
 
             const scrollerTop = scroller.getBoundingClientRect().top
-            const positions = headings.map((h) =>
-                h.getBoundingClientRect().top - scrollerTop,
+            const positions = headings.map(
+                (h) => h.getBoundingClientRect().top - scrollerTop,
             )
 
+            const focused = document.activeElement as HTMLElement | null
+            const focusRect = focused?.getBoundingClientRect()
+
             if (e.key === ']') {
-                const idx = positions.findIndex((p) => p > 2)
+                // Find the first heading below the focused element's bottom
+                const threshold = focusRect
+                    ? focusRect.bottom - scrollerTop
+                    : 2
+                const idx = positions.findIndex((p) => p > threshold)
                 if (idx !== -1) {
                     scroller.scrollTop += positions[idx]
                     headings[idx].focus({ preventScroll: true })
                 }
             } else {
+                // Find the last heading above the focused element's top
+                const threshold = focusRect
+                    ? focusRect.top - scrollerTop
+                    : scroller.clientHeight
                 for (let i = positions.length - 1; i >= 0; i--) {
-                    if (positions[i] < -2) {
+                    if (positions[i] < threshold - 2) {
                         scroller.scrollTop += positions[i]
                         headings[i].focus({ preventScroll: true })
                         break
@@ -538,9 +551,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                 ancestor = ancestor.parentElement as HTMLElement
             }
 
-            const children = Array.from(
-                mainContent.children,
-            ) as HTMLElement[]
+            const children = Array.from(mainContent.children) as HTMLElement[]
             const idx = children.indexOf(ancestor)
             if (idx === -1) return
 
@@ -788,7 +799,8 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                         const idx = tocLinks.indexOf(link)
                         for (let i = idx - 1; i >= 0; i--) {
                             if (tocLinks[i].classList.contains('depth-2')) {
-                                activeH2Slug = tocLinks[i].dataset.headingSlug ?? null
+                                activeH2Slug =
+                                    tocLinks[i].dataset.headingSlug ?? null
                                 break
                             }
                         }
@@ -809,7 +821,10 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
 
                 const li = link.parentElement
                 if (li && !link.classList.contains('depth-2')) {
-                    li.classList.toggle('toc-visible', currentH2Slug === activeH2Slug)
+                    li.classList.toggle(
+                        'toc-visible',
+                        currentH2Slug === activeH2Slug,
+                    )
                 }
             })
         }
