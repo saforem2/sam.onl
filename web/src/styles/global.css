@@ -339,6 +339,10 @@
         );
     }
 
+    .callout p {
+        color: var(--foreground1);
+    }
+
     .callout-tip {
         --callout-color: var(--background3, #838383);
     }
@@ -377,11 +381,17 @@
         ) {
         background-color: var(--callout-bg);
         color: var(--callout-color);
+        padding-inline: 1ch;
+
+        > :not(summary) {
+            margin-inline-start: -2ch;
+        }
 
         summary {
             background-color: var(--callout-summary-bg);
             color: var(--callout-color);
             font-weight: var(--font-weight-bold);
+            margin-inline-end: -1ch;
             padding-inline-end: 1ch;
         }
         > summary::before {

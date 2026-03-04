@@ -508,12 +508,18 @@ h6::before {
         }
 
         ul li {
-            --li-text-offset: 2ch;
+            /* --li-text-offset: 2ch; */
             text-indent: 2ch hanging;
         }
         ol li {
-            --li-text-offset: 4ch;
+            /* --li-text-offset: 4ch; */
+            text-indent: 3ch hanging;
+        }
+        ol > li:nth-child(n + 10) {
             text-indent: 4ch hanging;
+        }
+        ol > li::marker {
+            content: counter(list-item) ".";
         }
 
         /* p { */
