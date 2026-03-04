@@ -175,7 +175,8 @@ ${css ? `<style>${css}</style>` : ''}
             )
             const initialTheme = self.getAttribute('data-initial-theme')
             const preferredTheme =
-                initialTheme ?? (colorPreference.matches ? 'custom-dark' : 'custom-light')
+                initialTheme ??
+                (colorPreference.matches ? 'custom-dark' : 'custom-light')
 
             const iframeDocument = iframe.contentDocument
 

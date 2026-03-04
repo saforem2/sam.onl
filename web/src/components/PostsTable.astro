@@ -41,16 +41,16 @@ const posts = docs
         </tr>
     </thead>
     <tbody>
-        {posts.map((post) => (
-            <tr>
-                <td>
-                    {post.date && post.date}
-                </td>
-                <td>
-                    <a href={post.path}>{post.title}</a>
-                </td>
-            </tr>
-        ))}
+        {
+            posts.map((post) => (
+                <tr>
+                    <td>{post.date && post.date}</td>
+                    <td>
+                        <a href={post.path}>{post.title}</a>
+                    </td>
+                </tr>
+            ))
+        }
     </tbody>
 </table>
 

@@ -507,9 +507,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
 
             if (e.key === ']') {
                 // Find the first heading below the focused element's bottom
-                const threshold = focusRect
-                    ? focusRect.bottom - scrollerTop
-                    : 2
+                const threshold = focusRect ? focusRect.bottom - scrollerTop : 2
                 const idx = positions.findIndex((p) => p > threshold)
                 if (idx !== -1) {
                     scroller.scrollTop += positions[idx]

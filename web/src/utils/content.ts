@@ -94,8 +94,10 @@ export function makeCategoryMap() {
     // (reverse chronological), then alphabetically by title as fallback
     for (const [, pages] of categoryMap) {
         pages.sort((a, b) => {
-            const orderA = typeof a.data.order === 'number' ? a.data.order : null
-            const orderB = typeof b.data.order === 'number' ? b.data.order : null
+            const orderA =
+                typeof a.data.order === 'number' ? a.data.order : null
+            const orderB =
+                typeof b.data.order === 'number' ? b.data.order : null
 
             // Ordered pages come first, sorted by order value
             if (orderA !== null && orderB !== null) return orderA - orderB

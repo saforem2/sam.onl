@@ -11,9 +11,11 @@ import '@/styles/global.css'
         <script is:inline>
             const storedTheme = localStorage.getItem('webtui-theme')
             const migratedTheme =
-                storedTheme === 'light' ? 'custom-light'
-                : storedTheme === 'dark' ? 'custom-dark'
-                : storedTheme
+                storedTheme === 'light'
+                    ? 'custom-light'
+                    : storedTheme === 'dark'
+                      ? 'custom-dark'
+                      : storedTheme
             const systemTheme = window.matchMedia(
                 '(prefers-color-scheme: dark)',
             ).matches
@@ -140,11 +142,7 @@ import '@/styles/global.css'
                         `${resolvedHeight}px`,
                         'important',
                     )
-                    node.style.setProperty(
-                        'max-height',
-                        '50vh',
-                        'important',
-                    )
+                    node.style.setProperty('max-height', '50vh', 'important')
                     node.style.setProperty('width', '100%', 'important')
                     node.style.setProperty('max-width', '100%', 'important')
                     node.style.setProperty('display', 'block', 'important')
@@ -225,7 +223,6 @@ import '@/styles/global.css'
             }
 
             focusMainRegion()
-
         </script>
         <script>
             import { initMermaid } from '@/utils/mermaid-render'
