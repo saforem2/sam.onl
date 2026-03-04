@@ -60,9 +60,14 @@ if (url.pathname === '/') {
         <a href="/talks" data-active={isOn === 'talks'}>󰐨 Talks</a>
         <a href="/more" data-active={isOn === 'more'}> More</a>
         <!-- <a href="/projects" data-active={isOn === 'projects'}>  Projects </a> -->
-        <a href="https://github.com/saforem2/sam.onl" target="_blank"
-            > Github</a
-        >
+        <a
+            id="github-button"
+            href="https://github.com/saforem2/sam.onl"
+            target="_blank"
+            size-="small">
+            
+        </a>
+        <a id="rss-button" href="/rss.xml" target="_blank" size-="small">  </a>
         <button id="theme-button" size-="small">  </button>
         <button id="search-button" size-="small"> &#xea6d;</button>
     </row>
@@ -132,25 +137,6 @@ if (url.pathname === '/') {
 
         :is(a[href], button:not([disabled])):hover {
             background-color: var(--focus-hover-bg);
-        }
-
-        #github-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75ch;
-            text-decoration: none;
-            -moz-osx-font-smoothing: grayscale;
-            -webkit-font-smoothing: subpixel-antialiased;
-            font-weight: var(--font-weight-bold);
-            color: var(--foreground1);
-
-            img {
-                display: block;
-            }
-
-            &:hover {
-                text-decoration: underline;
-            }
         }
 
         #home-link {
@@ -230,6 +216,48 @@ if (url.pathname === '/') {
             }
         }
 
+        #github-button {
+            display: inline-flex;
+            gap: 1ch;
+            padding-inline: 1ch;
+            color: var(--foreground1);
+            text-decoration: none;
+            background-color: oklch(
+                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
+                    0.1
+            );
+
+            &:hover {
+                background-color: oklch(
+                    from var(--purple) calc(l * var(--oklch-scale, 0.85)) c h /
+                        0.1
+                );
+                color: var(--purple);
+                text-decoration: none;
+            }
+        }
+
+        #rss-button {
+            display: inline-flex;
+            gap: 1ch;
+            padding-inline: 1ch;
+            color: var(--foreground1);
+            text-decoration: none;
+            background-color: oklch(
+                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
+                    0.1
+            );
+
+            &:hover {
+                background-color: oklch(
+                    from var(--orange) calc(l * var(--oklch-scale, 0.85)) c h /
+                        0.1
+                );
+                color: var(--orange);
+                text-decoration: none;
+            }
+        }
+
         #theme-button {
             display: inline-flex;
             gap: 1ch;
@@ -274,6 +302,8 @@ if (url.pathname === '/') {
                 /* } */
             }
 
+            #github-button,
+            #rss-button,
             #theme-button {
                 padding: 0 1ch;
             }
@@ -348,8 +378,8 @@ if (url.pathname === '/') {
     } else {
         const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
             .matches
-            ? 'dark'
-            : 'light'
+            ? 'custom-dark'
+            : 'custom-light'
         setTheme(systemTheme)
     }
 
