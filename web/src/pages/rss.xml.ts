@@ -3,6 +3,7 @@ import type { APIContext } from 'astro'
 import { getCollection } from 'astro:content'
 
 export async function GET(context: APIContext) {
+    // const allDocs = await getCollection('docs')
     const allDocs = await getCollection('docs')
     const posts = allDocs
         .filter((doc) => {
@@ -27,6 +28,7 @@ export async function GET(context: APIContext) {
 
     return rss({
         title: 'Sam Foreman',
+        stylesheet: '/rss/styles.xsl',
         description:
             'Personal site and blog of Sam Foreman -- computational scientist at Argonne National Laboratory.',
         site: context.site!.toString(),
