@@ -11,20 +11,20 @@ const posts = docs
         const db = b.data.date ? new Date(b.data.date).getTime() : 0
         return db - da
     })
-    .slice(0, 6)
+    .slice(0, 5)
 
 function formatDate(date: Date): string {
     return new Intl.DateTimeFormat('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
+        year: '2-digit',
+        month: '2-digit',
+        day: '2-digit',
     }).format(date)
 }
 ---
 
 <section id="recent-posts">
     <column class="content" align-="center">
-        <h2 is-="badge" variant-="green">&#xf0219; Recent Posts</h2>
+        <h2 is-="badge" variant-="background1">&#xf0219; Recent Posts</h2>
         <p>Latest writing and notes</p>
         <table>
             <thead>
@@ -64,6 +64,14 @@ function formatDate(date: Date): string {
 
     <style>
         #recent-posts {
+            h2 {
+                padding-inline: 1ch;
+            }
+            h2::before {
+                content: '' !important;
+                color: var(--foreground0) !important;
+                margin-inline-end: 0ch;
+            }
             background-color: var(--background0);
             align-items: center;
             justify-content: center;

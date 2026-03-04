@@ -11,19 +11,19 @@ const talks = docs
         const db = b.data.date ? new Date(b.data.date).getTime() : 0
         return db - da
     })
-    .slice(0, 6)
+    .slice(0, 5)
 
 function formatDate(date: Date): string {
     return new Intl.DateTimeFormat('en-US', {
-        year: 'numeric',
-        month: 'short',
+        year: '2-digit',
+        month: '2-digit',
     }).format(date)
 }
 ---
 
 <section id="recent-talks">
     <column class="content" align-="center">
-        <h2 is-="badge" variant-="mauve">&#xf0328; Recent Talks</h2>
+        <h2 is-="badge" variant-="background1">&#xf0328; Recent Talks</h2>
         <p>Presentations and workshops</p>
         <table>
             <thead>
@@ -58,6 +58,14 @@ function formatDate(date: Date): string {
 
     <style>
         #recent-talks {
+            h2 {
+                padding-inline: 1ch;
+            }
+            h2::before {
+                content: '' !important;
+                color: var(--foreground0) !important;
+                margin-inline-end: 0ch;
+            }
             background-color: var(--background0);
             align-items: center;
             justify-content: center;
