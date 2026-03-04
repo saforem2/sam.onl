@@ -216,7 +216,7 @@ const groupPagesByYear = (pages: CollectionEntry<'docs'>[], slug: string) => {
 }
 
 /** Group pages by their first sub-directory under the category slug. */
-const groupPagesBySubdir = (pages: CollectionEntry<'docs'>[], _slug: string) => {
+const groupPagesBySubdir = (pages: CollectionEntry<'docs'>[]) => {
     const grouped = new Map<string, CollectionEntry<'docs'>[]>()
     const misc: CollectionEntry<'docs'>[] = []
 
@@ -510,7 +510,7 @@ const { pathname: urlPath } = Astro.url
                     }
 
                     // Check if this category has sub-directory structure
-                    const { subdirs, grouped: subdirGrouped, misc: subdirMisc } = groupPagesBySubdir(categoryPages, slug)
+                    const { subdirs, grouped: subdirGrouped, misc: subdirMisc } = groupPagesBySubdir(categoryPages)
                     const hasSubdirs = subdirs.length > 0
 
                     return (
