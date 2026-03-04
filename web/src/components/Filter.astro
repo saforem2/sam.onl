@@ -34,7 +34,7 @@ const themeOptions = {
 ---
 
 <dialog id="command-dialog" size-="small" position-="center" container-="fill">
-    <div box-="round" shear-="top" id="command-content">
+    <div box-="square" shear-="top" id="command-content">
         <row align-="between">
             <span is-="badge" variant-="background0">&#xf120; Command</span>
             <button id="command-close-btn" variant-="foreground0" size-="small"
@@ -42,7 +42,7 @@ const themeOptions = {
             >
         </row>
         <div id="command-sections">
-            <section class="command-section" box-="round">
+            <section class="command-section" box-="square">
                 <span is-="badge" variant-="background0">Site Info</span>
                 <p>
                     sam.onl is a terminal-style knowledge base and notes hub,
@@ -51,7 +51,7 @@ const themeOptions = {
                     look with the theme picker.
                 </p>
             </section>
-            <section class="command-section" box-="round">
+            <section class="command-section" box-="square">
                 <span is-="badge" variant-="background0">Theme</span>
                 <row class="command-theme-buttons" gap-="1">
                     {
@@ -68,7 +68,7 @@ const themeOptions = {
                     }
                 </row>
             </section>
-            <section class="command-section" box-="round">
+            <section class="command-section" box-="square">
                 <span is-="badge" variant-="background0">Keybinds</span>
                 <div class="keybind-columns">
                     <div class="keybind-group" box-="round">
@@ -149,7 +149,7 @@ const themeOptions = {
 </dialog>
 
 <dialog id="search-dialog" size-="small" position-="center" container-="fill">
-    <div box-="round" shear-="top" id="search-content">
+    <div box-="square" shear-="top" id="search-content">
         <row align-="between">
             <span is-="badge" variant-="background0">&#xea6d; Search</span>
             <button id="close-btn" variant-="foreground0" size-="small"
@@ -191,7 +191,7 @@ const themeOptions = {
 </dialog>
 
 <dialog id="theme-dialog" size-="small" position-="center" container-="fill">
-    <div box-="round" shear-="top" id="theme-content">
+    <div box-="square" shear-="top" id="theme-content">
         <row align-="between">
             <span is-="badge" variant-="background0">&#xf1fc; Theme</span>
             <button id="theme-close-btn" variant-="foreground0" size-="small"
@@ -240,7 +240,7 @@ const themeOptions = {
         --dialog-offset-x: 1ch;
         --dialog-offset-y: 1lh;
         --dialog-max-width: calc(100vw - 2ch);
-        --dialog-max-height: calc(100vh - 2lh);
+        --dialog-max-height: min(80vh, 50lh);
     }
 
     @media (min-width: 576px) {
@@ -248,28 +248,24 @@ const themeOptions = {
             --dialog-offset-x: 2ch;
             --dialog-offset-y: 2lh;
             --dialog-max-width: min(92vw, 80ch);
-            --dialog-max-height: min(88vh, 52lh);
         }
     }
 
     @media (min-width: 768px) {
         #command-dialog {
             --dialog-max-width: min(90vw, 96ch);
-            --dialog-max-height: min(88vh, 60lh);
         }
     }
 
     @media (min-width: 1024px) {
         #command-dialog {
             --dialog-max-width: min(88vw, 112ch);
-            --dialog-max-height: min(88vh, 64lh);
         }
     }
 
     @media (min-width: 1280px) {
         #command-dialog {
             --dialog-max-width: min(86vw, 128ch);
-            --dialog-max-height: min(86vh, 68lh);
         }
     }
 
@@ -303,6 +299,7 @@ const themeOptions = {
     .command-section {
         display: flex;
         flex-direction: column;
+        flex: 0 0 auto;
         gap: 0.5lh;
         padding: 1ch;
         background-color: var(--background0);
