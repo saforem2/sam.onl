@@ -1,0 +1,46 @@
+@layer components {
+    [data-webtui-theme|='custom'] {
+        h1 {
+            color: var(--h1);
+        }
+
+        h2 {
+            color: var(--h2);
+        }
+
+        h3 {
+            color: var(--h3);
+        }
+
+        h4 {
+            color: var(--h4);
+        }
+
+        h5 {
+            color: var(--h5);
+        }
+
+        h6 {
+            color: var(--h6);
+        }
+
+        p,
+        blockquote,
+        li,
+        [is-~='typography-block'] {
+            a {
+                color: var(--url);
+                text-decoration: underline;
+
+                &:hover {
+                    color: var(--accent);
+                }
+            }
+
+            code {
+                color: var(--code-fg);
+                background-color: var(--code-bg);
+            }
+        }
+    }
+}

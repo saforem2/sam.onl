@@ -3,22 +3,30 @@ import '@/styles/global.css'
 ---
 
 <!doctype html>
-<html lang="en" data-webtui-theme="light">
+<html lang="en" data-webtui-theme="custom-light">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
         <link rel="preconnect" href="https://cdn.jsdelivr.net" />
         <script is:inline>
             const storedTheme = localStorage.getItem('webtui-theme')
+            const migratedTheme =
+                storedTheme === 'light' ? 'custom-light'
+                : storedTheme === 'dark' ? 'custom-dark'
+                : storedTheme
             const systemTheme = window.matchMedia(
                 '(prefers-color-scheme: dark)',
             ).matches
-                ? 'dark'
-                : 'light'
+                ? 'custom-dark'
+                : 'custom-light'
+            const resolvedTheme = migratedTheme ?? systemTheme
             document.documentElement.setAttribute(
                 'data-webtui-theme',
-                storedTheme ?? systemTheme,
+                resolvedTheme,
             )
+            if (migratedTheme && migratedTheme !== storedTheme) {
+                localStorage.setItem('webtui-theme', migratedTheme)
+            }
         </script>
         <meta name="generator" content={Astro.generator} />
         <title>Sam Foreman</title>

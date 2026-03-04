@@ -204,8 +204,7 @@ const rehypeMermaidClientSide = () => {
             if (node.tagName !== 'pre') return
 
             const codeNode = node.children.find(
-                (child) =>
-                    child.type === 'element' && child.tagName === 'code',
+                (child) => child.type === 'element' && child.tagName === 'code',
             )
             if (!codeNode) return
 
@@ -256,7 +255,7 @@ const rehypeMarkdownTabIndex = () => {
 // https://astro.build/config
 export default defineConfig({
     devToolbar: { enabled: false },
-    site: 'https://samforeman.me',
+    site: 'https://sam.onl',
     compressHTML: false,
     markdown: {
         remarkPlugins: [remarkMath],
@@ -274,9 +273,10 @@ export default defineConfig({
         shikiConfig: {
             wrap: false,
             // theme: 'one-dark-pro',
+            defaultColor: 'custom-light',
             themes: {
-                light: 'min-light',
-                dark: 'one-dark-pro',
+                'custom-light': 'min-light',
+                'custom-dark': 'one-dark-pro',
                 catppuccin: 'catppuccin-mocha',
             },
             colorReplacements: {
@@ -303,6 +303,7 @@ export default defineConfig({
             noExternal: [
                 '@webtui/css',
                 '@webtui/theme-catppuccin',
+                '@webtui/theme-custom',
                 '@webtui/plugin-nf',
             ],
         },

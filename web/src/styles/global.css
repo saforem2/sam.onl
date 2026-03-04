@@ -30,6 +30,7 @@
 @import '@webtui/plugin-nf';
 @import '@/styles/themes/custom.css';
 @import '@webtui/theme-catppuccin';
+@import '@webtui/theme-custom';
 
 .flex-container.icon-flex a {
     text-decoration: none;
@@ -324,59 +325,6 @@
         margin-inline: 1ch;
     }
 
-    :is(
-        button,
-        input[type='button'],
-        input[type='submit'],
-        input[type='reset'],
-        [is-~='button']
-    ) {
-        &[variant-='red'] {
-            --button-primary: var(--red);
-            --button-secondary: var(--background0);
-        }
-
-        &[variant-='orange'] {
-            --button-primary: var(--orange);
-            --button-secondary: var(--background0);
-        }
-
-        &[variant-='yellow'] {
-            --button-primary: var(--yellow);
-            --button-secondary: var(--background0);
-        }
-
-        &[variant-='green'] {
-            --button-primary: var(--green);
-            --button-secondary: var(--background0);
-        }
-
-        &[variant-='blue'] {
-            --button-primary: var(--blue);
-            --button-secondary: var(--background0);
-        }
-
-        &[variant-='purple'] {
-            --button-primary: var(--purple);
-            --button-secondary: var(--background0);
-        }
-
-        &[variant-='pink'] {
-            --button-primary: var(--pink);
-            --button-secondary: var(--background0);
-        }
-
-        &[variant-='dim'] {
-            --button-primary: var(--foreground2);
-            --button-secondary: var(--background0);
-        }
-
-        &[variant-='bright'] {
-            --button-primary: var(--foreground0);
-            --button-secondary: var(--background0);
-        }
-    }
-
     .callout {
         --callout-color: var(--blue, #118cc2);
         --callout-bg: oklch(
@@ -526,48 +474,32 @@
     }
 }
 
-html[data-webtui-theme='light'] .light-content {
+html[data-webtui-theme='custom-light'] .light-content {
     display: revert !important;
 }
 
-html[data-webtui-theme='light'] .dark-content {
+html[data-webtui-theme='custom-light'] .dark-content {
     display: none !important;
 }
 
-html[data-webtui-theme='dark'] .light-content {
+html[data-webtui-theme='custom-dark'] .light-content {
     display: none !important;
 }
 
-html[data-webtui-theme='dark'] .dark-content {
+html[data-webtui-theme='custom-dark'] .dark-content {
     display: revert !important;
 }
 
-html[data-webtui-theme='light'] .astro-code,
-html[data-webtui-theme='light'] .astro-code span {
+html[data-webtui-theme='custom-light'] .astro-code,
+html[data-webtui-theme='custom-light'] .astro-code span {
     background-color: oklch(from var(--code-bg, #f8f8f8) l c h) !important;
 }
 
-/* html:not([data-webtui-theme='light']) .astro-code { */
-/*     background-color: var(--background1) !important; */
-/* } */
-
-/* html:not([data-webtui-theme='light']) .astro-code span { */
-/*     background-color: transparent !important; */
-/* } */
-
-/* html[data-webtui-theme='light'] .astro-code span { */
-/*     color: var(--shiki-light) !important; */
-/*     font-style: var(--shiki-light-font-style) !important; */
-/*     font-weight: var(--shiki-light-font-weight) !important; */
-/*     text-decoration: var(--shiki-light-text-decoration) !important; */
-/*     background-color: var(--background1)!important; */
-/* } */
-
-html[data-webtui-theme='dark'] .astro-code span {
-    color: var(--shiki-dark) !important;
-    font-style: var(--shiki-dark-font-style) !important;
-    font-weight: var(--shiki-dark-font-weight) !important;
-    text-decoration: var(--shiki-dark-text-decoration) !important;
+html[data-webtui-theme='custom-dark'] .astro-code span {
+    color: var(--shiki-custom-dark) !important;
+    font-style: var(--shiki-custom-dark-font-style) !important;
+    font-weight: var(--shiki-custom-dark-font-weight) !important;
+    text-decoration: var(--shiki-custom-dark-text-decoration) !important;
     background-color: var(--background1) !important;
 }
 

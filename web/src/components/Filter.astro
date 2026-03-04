@@ -27,8 +27,8 @@ const docHeadings = docPages
     )
 
 const themeOptions = {
-    light: 'Light',
-    dark: 'Dark',
+    'custom-light': 'Light',
+    'custom-dark': 'Dark',
     catppuccin: 'Catppuccin',
 }
 ---
@@ -442,8 +442,8 @@ const themeOptions = {
     ) as HTMLElement | null
     const focusableLinks = document.querySelectorAll('.search-result')
     const themeLabels: Record<string, string> = {
-        light: 'Light',
-        dark: 'Dark',
+        'custom-light': 'Light',
+        'custom-dark': 'Dark',
         catppuccin: 'Catppuccin',
     }
 
@@ -469,7 +469,7 @@ const themeOptions = {
 
         const activeTheme =
             document.documentElement.getAttribute('data-webtui-theme') ??
-            'light'
+            'custom-light'
         const label = themeLabels[activeTheme] ?? activeTheme
         themeCurrentValue.textContent = label
     }

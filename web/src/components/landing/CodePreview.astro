@@ -172,15 +172,15 @@ const fileIconColor = Array.isArray(file?.icon) ? file.icon[1] : undefined
         vertical-align: top;
     }
 
-    :global(html[data-webtui-theme='light']) .line-code :global(span) {
-        color: var(--shiki-light);
-        font-style: var(--shiki-light-font-style, normal);
-        font-weight: var(--shiki-light-font-weight, normal);
+    :global(html[data-webtui-theme='custom-light']) .line-code :global(span) {
+        color: var(--shiki-custom-light);
+        font-style: var(--shiki-custom-light-font-style, normal);
+        font-weight: var(--shiki-custom-light-font-weight, normal);
     }
-    :global(html[data-webtui-theme='dark']) .line-code :global(span) {
-        color: var(--shiki-dark);
-        font-style: var(--shiki-dark-font-style, normal);
-        font-weight: var(--shiki-dark-font-weight, normal);
+    :global(html[data-webtui-theme='custom-dark']) .line-code :global(span) {
+        color: var(--shiki-custom-dark);
+        font-style: var(--shiki-custom-dark-font-style, normal);
+        font-weight: var(--shiki-custom-dark-font-weight, normal);
     }
     :global(html[data-webtui-theme='catppuccin']) .line-code :global(span) {
         color: var(--shiki-catppuccin);

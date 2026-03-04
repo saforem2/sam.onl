@@ -83,8 +83,8 @@ ${css ? `<style>${css}</style>` : ''}
                 label="󰏘 Theme "
                 items={{
                     ...themes,
-                    dark: 'Dark',
-                    light: 'Light',
+                    'custom-dark': 'Dark',
+                    'custom-light': 'Light',
                 }}
                 data-value={rest['data-initial-theme']}
                 id="theme-dropdown"
@@ -175,7 +175,7 @@ ${css ? `<style>${css}</style>` : ''}
             )
             const initialTheme = self.getAttribute('data-initial-theme')
             const preferredTheme =
-                initialTheme ?? (colorPreference.matches ? 'dark' : 'light')
+                initialTheme ?? (colorPreference.matches ? 'custom-dark' : 'custom-light')
 
             const iframeDocument = iframe.contentDocument
 
