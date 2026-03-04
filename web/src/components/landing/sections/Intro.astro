@@ -1,5 +1,5 @@
 ---
-import Navbar from '../../Navbar.astro'
+import Navbar from '../../NavbarMinimal.astro'
 import Widgets from '../widgets/Widgets.astro'
 ---
 
@@ -11,6 +11,9 @@ import Widgets from '../widgets/Widgets.astro'
             <h1>
                 <span is-="badge" variant-="green">&#xf4b5; Sam Foreman</span>
             </h1>
+            <span id="tagline"
+                >Computational Scientist · Argonne National Laboratory</span
+            >
             <column>
                 <p>
                     I'm a Computational Scientist in the
@@ -22,6 +25,7 @@ import Widgets from '../widgets/Widgets.astro'
                         >Argonne Leadership Computing Facility</a
                     >.
                 </p>
+                &nbsp;<br />
                 <p>
                     My work focuses on large-scale distributed training of
                     foundation models for scientific applications. I co-lead the
@@ -30,15 +34,39 @@ import Widgets from '../widgets/Widgets.astro'
                         >AuroraGPT</a
                     > project.
                 </p>
+                &nbsp;<br />
+                <row id="social-links">
+                    <a
+                        href="https://github.com/saforem2"
+                        target="_blank"
+                        title="GitHub">&#xe65b;</a
+                    >
+                    <a
+                        href="https://bsky.app/profile/samforeman.bsky.social"
+                        target="_blank"
+                        title="Bluesky">&#xe28e;</a
+                    >
+                    <a
+                        href="https://twitter.com/saforem2"
+                        target="_blank"
+                        title="Twitter">&#xeb72;</a
+                    >
+                    <a
+                        href="https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en"
+                        target="_blank"
+                        title="Google Scholar">&#xf19d;</a
+                    >
+                    <a
+                        href="https://www.linkedin.com/in/samforem2"
+                        target="_blank"
+                        title="LinkedIn">&#xe820;</a
+                    >
+                    <a href="mailto:sf@omg.lol" title="Email">&#xf0e0;</a>
+                </row>
                 <div is-="separator"></div>
-                <row gap-="1">
-                    <span
-                        >[<a href="/landing"></a>] [<a href="/posts"></a>] [<a
-                            href="/talks">󰐨</a
-                        >] [<a href="/projects"></a>] [<a
-                            href="https://twitter.com/saforem2"></a
-                        >] [<a href="https://github.com/saforem2"></a></span
-                    >]
+                <row id="intro-nav">
+                    <a id="scroll-down-button" href="#recent-posts">↓ Recent</a>
+                    <a id="landing-button" href="/landing">More →</a>
                 </row>
             </column>
         </column>
@@ -67,12 +95,11 @@ import Widgets from '../widgets/Widgets.astro'
                 position: absolute;
                 background-color: var(--background1);
                 border: 1pt solid var(--background2);
-                max-width: 80%;
+                max-width: min(80%, 80ch);
                 width: round(calc(100% - 2ch), 1ch);
 
                 nav {
                     padding: 2ch 1ch;
-                    /* overflow-x: auto; */
                 }
 
                 #main {
@@ -93,14 +120,39 @@ import Widgets from '../widgets/Widgets.astro'
                     h1 {
                         color: var(--foreground0);
                         display: inline-flex;
-                        gap: 1ch;
                     }
                 }
             }
         }
 
+        #tagline {
+            color: var(--foreground2);
+            margin-block-start: -0.5lh;
+        }
+
+        #social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2ch;
+
+            a {
+                color: var(--foreground2) !important;
+                text-decoration: none;
+                padding-inline: 1ch;
+                background-color: oklch(
+                    from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c
+                        h / 0.1
+                );
+
+                &:hover {
+                    color: var(--foreground0) !important;
+                    text-decoration: none;
+                }
+            }
+        }
+
         @media (max-width: 50ch) {
-            #container {
+            #intro {
                 #content,
                 #main {
                     padding: 1lh 1ch;
@@ -111,5 +163,46 @@ import Widgets from '../widgets/Widgets.astro'
         [is-='separator'] {
             --separator-color: var(--foreground2);
         }
+
+        #intro-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+
+            a {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5ch;
+                padding: 0 1ch;
+                color: var(--foreground1);
+                text-decoration: none;
+                background-color: oklch(
+                    from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c
+                        h / 0.1
+                );
+
+                &:hover {
+                    background-color: oklch(
+                        from var(--blue) calc(l * var(--oklch-scale, 0.85)) c
+                            h / 0.1
+                    );
+                    color: var(--blue);
+                    text-decoration: none;
+                }
+            }
+        }
     </style>
+
+    <script>
+        document
+            .getElementById('scroll-down-button')
+            ?.addEventListener('click', (e) => {
+                e.preventDefault()
+                document
+                    .getElementById('recent-posts')
+                    ?.scrollIntoView({ behavior: 'smooth' })
+            })
+    </script>
 </header>
