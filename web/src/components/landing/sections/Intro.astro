@@ -109,13 +109,23 @@ import Widgets from '../widgets/Widgets.astro'
 
                     a {
                         color: var(--foreground2);
-                        text-decoration: underline;
+                        /* text-decoration: underline; */
 
                         &:focus,
                         &:hover {
                             color: var(--blue);
-                            text-decoration: underline;
+                            background-color: oklch(
+                                from var(--blue)
+                                    calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+                            );
+                            text-decoration: none;
                         }
+                    }
+                    a#recent-posts {
+                        text-decoration: none !important;
+                    }
+                    a#landing-button {
+                        text-decoration: none !important;
                     }
 
                     h1 {
