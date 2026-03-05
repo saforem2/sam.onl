@@ -100,9 +100,9 @@ Sam Foreman
 
 - The startup timing was identified by parsing the logfiles from
   existing runs and calculating the difference
-  $\delta t = t_&#123;1&#125; - t_&#123;0&#125;$,
+  $\delta t = t_{1} - t_{0}$,
 
-  - $t_&#123;0&#125;$ is the time stamp at the *very* beginning of the shell
+  - $t_{0}$ is the time stamp at the *very* beginning of the shell
     script (defined
     [here](https://github.com/argonne-lcf/Megatron-DeepSpeed/blob/657bb3e312e793d7b503f475b59e44c1aee44205/ALCF/train-gpt3.sh#L3))
     which then launches
@@ -111,16 +111,16 @@ Sam Foreman
     mpiexec ${mpi-args} python3 [...]
     ```
 
-    - $t_&#123;0&#125;$ appears in the logfile as:
+    - $t_{0}$ appears in the logfile as:
 
       ``` bash
       Job started at: 2023-11-02-183323 on x3004c0s13b0n0
       ```
 
-  - $t_&#123;1&#125;$ is identified as the timestamp associated with the
+  - $t_{1}$ is identified as the timestamp associated with the
     completion of the first training step
 
-    - $t_&#123;1&#125;$ appears in the logfile as:
+    - $t_{1}$ appears in the logfile as:
 
       ``` bash
       [2023-11-02 18:34:13,122] [INFO] [logging.py:96:log_dist] [Rank 0] step=0, skipped=0, lr=[0.0, 0.0], mom=[(0.9, 0.999), (0.9, 0.999)]
