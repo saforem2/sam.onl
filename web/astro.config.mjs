@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config'
+import katexPkg from 'katex/package.json' assert { type: 'json' }
 import mdx from '@astrojs/mdx'
 import { rehypeHeadingIds } from '@astrojs/markdown-remark'
 import { visit } from 'unist-util-visit'
@@ -299,6 +300,9 @@ export default defineConfig({
         }),
     ],
     vite: {
+        define: {
+            __VERSION__: JSON.stringify(katexPkg.version),
+        },
         ssr: {
             noExternal: [
                 '@webtui/css',
