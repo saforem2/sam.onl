@@ -69,7 +69,7 @@ Additional color accents/variants can be added to components individually with C
 
 Shown below is a screenshot showing the background and foreground colors of a basic light theme, dark theme, [Nord](https://nordtheme.com), and [Catppuccin](https://catppuccin.com/)
 
-<!-- ![theme-pallettes.png](../../../assets/theme-pallettes.png) -->
+<!-- <img src="/assets/theme-pallettes.png" alt="theme-pallettes.png" /> -->
 
 ### Light & Dark
 
@@ -85,7 +85,7 @@ To enable the dark theme, simply add `data-webtui-theme="dark"` to the `<html>` 
 
 Theme plugins change the base colors and often include additional color variants and styles for individual components
 
-![catppuccin-badges.png](../../../../src/assets/catppuccin-badges.png)
+<img src="/assets/catppuccin-badges.png" alt="catppuccin-badges.png" />
 
 Check out the [Plugins](/webtui/start/plugins) page for a list of available themes
 

@@ -1,6 +1,8 @@
 ---
 layout: '@/layouts/Doc.astro'
 title: '🍋 ezpz @ ALCF'
+date: 2024-08-23
+description: 'Getting started with the ezpz Python library and shell utilities for streamlined environment setup at ALCF.'
 ---
 
 Sam Foreman
@@ -96,9 +98,7 @@ Table 1: Shell Functions
 
 </div>
 
-> [!WARNING]
->
-> ### Where am I?
+> [!WARNING] Where am I?
 >
 > _Some_ of the `ezpz_*` functions (e.g. `ezpz_setup_python`), will try
 > to create / look for certain directories.
@@ -133,11 +133,7 @@ Table 1: Shell Functions
 
     <details is-="accordion">
 
-    <summary>
-
-    Output
-
-    </summary>
+    <summary>Output</summary>
 
     ```bash
     $ export PBS_O_WORKDIR=$(pwd) && source src/ezpz/bin/utils.sh && ezpz_setup_env
@@ -220,11 +216,7 @@ Table 1: Shell Functions
 
     <details is-="accordion">
 
-    <summary>
-
-    Output
-
-    </summary>
+    <summary>Output</summary>
 
     ```bash
     #[🐍 aurora_nre_models_frameworks-2023.2.1_u1](👻 aurora_nre_models_frameworks-2024.2.1_u1)
@@ -689,9 +681,7 @@ This will:
       `micromamba` executable, and if found, use that to activate the
       base environment.
 
-    > [!TIP]
-    >
-    > ### Using your own `conda`
+    > [!TIP] Using your own `conda`
     >
     > If you are already in a conda environment when calling
     > `ezpz_setup_python` then it will try and use this instead.

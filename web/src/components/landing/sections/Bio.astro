@@ -1,0 +1,104 @@
+---
+
+---
+
+<section id="bio">
+    <column class="content" align-="center">
+        <h2 is-="badge" variant-="blue">&#xf43a; About</h2>
+        <column gap-="1">
+            <p>
+                I'm a Computational Scientist in the
+                <a
+                    href="https://www.alcf.anl.gov/about/people/group/506"
+                    target="_blank">AI / ML Group</a
+                > at the
+                <a href="https://www.alcf.anl.gov/" target="_blank"
+                    >Argonne Leadership Computing Facility</a
+                >.
+            </p>
+            <p>
+                My work focuses on large-scale distributed training of
+                foundation models for scientific applications. I co-lead the
+                Models &amp; Pre-Training team for the
+                <a href="https://auroragpt.anl.gov" target="_blank">AuroraGPT</a
+                > project.
+            </p>
+        </column>
+        <div is-="separator"></div>
+        <row class="nav-links" gap-="1">
+            <a href="/landing" is-="badge" variant-="background1">
+                &#xeb51; Landing
+            </a>
+            <a href="/about" is-="badge" variant-="background1">
+                &#xf43a; About
+            </a>
+            <a href="/posts/resume" is-="badge" variant-="background1">
+                &#xf0219; CV / Resume
+            </a>
+            <a
+                href="https://github.com/saforem2"
+                target="_blank"
+                is-="badge"
+                variant-="background1">
+                &#xf09b; GitHub
+            </a>
+            <a
+                href="https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en"
+                target="_blank"
+                is-="badge"
+                variant-="background1">
+                &#xf19c; Scholar
+            </a>
+        </row>
+    </column>
+
+    <style>
+        #bio {
+            background-color: var(--background0);
+            align-items: center;
+            justify-content: center;
+            padding: 1lh 2ch;
+
+            .content {
+                max-width: 80ch;
+                width: round(calc(100% - 2ch), 1ch);
+                gap: 0.5lh;
+            }
+
+            p {
+                color: var(--foreground1);
+                line-height: 1.6;
+            }
+
+            a {
+                color: var(--blue);
+                text-decoration: none;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+
+                a[is-='badge'] {
+                    color: var(--foreground1);
+                    text-decoration: none;
+                    transition:
+                        background-color 0.15s ease,
+                        color 0.15s ease;
+
+                    &:hover {
+                        color: var(--foreground0);
+                        background-color: var(--background2);
+                    }
+                }
+            }
+
+            [is-='separator'] {
+                --separator-color: var(--foreground2);
+            }
+        }
+    </style>
+</section>

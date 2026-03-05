@@ -6,5 +6,8 @@ export function compareUrlPaths(a: string, b: string) {
     const aChunks = splitPathChunks(a)
     const bChunks = splitPathChunks(b)
 
-    return aChunks.every((chunk, i) => chunk === bChunks[i])
+    return (
+        aChunks.length === bChunks.length &&
+        aChunks.every((chunk, i) => chunk === bChunks[i])
+    )
 }

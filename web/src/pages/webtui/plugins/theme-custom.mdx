@@ -1,0 +1,242 @@
+---
+layout: '@/layouts/Doc.astro'
+title: Custom Theme
+---
+
+import Example from '@/components/Example.astro'
+import typographyStyle from '@webtui/css/components/typography.css?raw'
+import badgeStyle from '@webtui/css/components/badge.css?raw'
+import buttonStyle from '@webtui/css/components/button.css?raw'
+import customStyle from '@webtui/theme-custom?raw'
+
+A custom theme for WebTUI with light and dark variants
+
+<Example
+    stylesheets={[typographyStyle, badgeStyle, buttonStyle, customStyle]}
+    themes={{
+        'custom-light': 'Custom Light',
+        'custom-dark': 'Custom Dark',
+    }}
+    data-initial-theme="custom-dark"
+    html={`
+<h1>Lots</h1>
+<h2>Of</h2>
+<h3>Colored</h3>
+<h4>Headings</h4>
+<h5>And</h5>
+<h6>Stuff</h6>
+<p>And links are <a href="https://example.com">blue</a> now and <code>code</code> is red</p>
+<span is-="badge" variant-="red">red</span>
+<span is-="badge" variant-="green">green</span>
+<span is-="badge" variant-="yellow">yellow</span>
+<span is-="badge" variant-="blue">blue</span>
+<span is-="badge" variant-="purple">purple</span>
+<span is-="badge" variant-="aqua">aqua</span>
+<span is-="badge" variant-="orange">orange</span>
+<span is-="badge" variant-="pink">pink</span>
+<span is-="badge" variant-="teal">teal</span>
+<span is-="badge" variant-="rosewater">rosewater</span>
+<span is-="badge" variant-="flamingo">flamingo</span>
+<span is-="badge" variant-="mauve">mauve</span>
+<span is-="badge" variant-="maroon">maroon</span>
+<span is-="badge" variant-="peach">peach</span>
+<span is-="badge" variant-="sky">sky</span>
+<span is-="badge" variant-="sapphire">sapphire</span>
+<span is-="badge" variant-="lavender">lavender</span><br/>
+<button variant-="red">red</button>
+<button variant-="sky">sky</button>
+<button variant-="green">green</button>
+<button variant-="dim">dim</button>
+<button variant-="bright">bright</button>
+`}
+/>
+
+## Installation
+
+Install the theme with your preferred package manager
+
+```bash
+bun i @webtui/theme-custom
+npm i @webtui/theme-custom
+yarn add @webtui/theme-custom
+pnpm i @webtui/theme-custom
+```
+
+Ensure you import the theme **after** all the other stylesheets from `@webtui/css` or the styles will not be applied
+
+```css
+@layer base, utils, components;
+
+@import '@webtui/css/base.css';
+@import '@webtui/css/components/typography.css';
+/* ... */
+
+@import '@webtui/theme-custom';
+```
+
+Set the `data-webtui-theme` attribute to the `<html>` tag
+
+```html
+<html data-webtui-theme="custom-dark"></html>
+```
+
+To only apply the theme to a specific element, use the same attribute
+
+```html
+<html data-webtui-theme="catppuccin">
+    <body>
+        <div data-webtui-theme="custom-dark">
+            <!-- ... -->
+        </div>
+    </body>
+</html>
+```
+
+## Variants
+
+Supports light and dark variants.
+
+```html
+<html data-webtui-theme="custom-light"></html>
+<html data-webtui-theme="custom-dark"></html>
+```
+
+## Components
+
+Components affected/modified by the theme
+
+- [Typography](#typography)
+- [Badge](#badge)
+- [Button](#button)
+
+### Typography
+
+- Colors headings from `h1` to `h6`
+- inline `<a>` tags are underlined and colored to be `var(--url)`
+- inline `<code>` tags are colored to be `var(--red)`
+
+```html
+<h1>Heading 1</h1>
+<!-- ... -->
+<h6>Heading 6</h6>
+
+<p><a href="https://example.com">Link</a> <code>Inline Code</code></p>
+```
+
+### Badge
+
+Adds variants to badges matching all custom accent colors
+
+```html
+<!-- Shared across both variants -->
+<span is-="badge" variant-="red">red</span>
+<span is-="badge" variant-="green">green</span>
+<span is-="badge" variant-="yellow">yellow</span>
+<span is-="badge" variant-="blue">blue</span>
+<span is-="badge" variant-="purple">purple</span>
+<span is-="badge" variant-="aqua">aqua</span>
+<span is-="badge" variant-="orange">orange</span>
+<span is-="badge" variant-="pink">pink</span>
+<span is-="badge" variant-="teal">teal</span>
+
+<!-- Additional colors (custom-dark) -->
+<span is-="badge" variant-="rosewater">rosewater</span>
+<span is-="badge" variant-="flamingo">flamingo</span>
+<span is-="badge" variant-="mauve">mauve</span>
+<span is-="badge" variant-="maroon">maroon</span>
+<span is-="badge" variant-="peach">peach</span>
+<span is-="badge" variant-="sky">sky</span>
+<span is-="badge" variant-="sapphire">sapphire</span>
+<span is-="badge" variant-="lavender">lavender</span>
+```
+
+### Button
+
+Adds variants to buttons matching all custom accent colors, plus `dim` and `bright`
+
+```html
+<button variant-="red">red</button>
+<button variant-="green">green</button>
+<button variant-="blue">blue</button>
+<!-- ... all color variants ... -->
+<button variant-="dim">dim</button>
+<button variant-="bright">bright</button>
+```
+
+## CSS Variables
+
+### Custom Light
+
+```css
+[data-webtui-theme='custom-light'] {
+    --oklch-scale: 0.85;
+    --text: oklch(from #333333 l c h);
+    --base: oklch(from #eff1f5 l c h);
+    --mantle: oklch(from #e6e9ef l c h);
+    --crust: oklch(from #e4e4e4 l c h);
+
+    /* Foreground / Background */
+    --foreground0: oklch(from #000000 l c h);
+    --foreground1: oklch(from #333333 l c h);
+    --foreground2: oklch(from #888888 l c h);
+    --foreground3: oklch(from #aaaaaa l c h);
+    --background0: oklch(from #ffffff l c h);
+    --background1: oklch(from #f8f8f8 l c h);
+    --background2: oklch(from #cccccc l c h);
+    --background3: oklch(from #999999 l c h);
+
+    /* Accent Colors */
+    --red: oklch(from #ff8a80 l c h);
+    --green: oklch(from #05a551 l c h);
+    --yellow: oklch(from #ff794e l c h);
+    --blue: oklch(from #2196f3 l c h);
+    --purple: oklch(from #8260cc l c h);
+    --aqua: oklch(from #00b8d4 l c h);
+    --orange: oklch(from #ff5722 l c h);
+    --pink: oklch(from #ff3399 l c h);
+    --teal: oklch(from #00838f l c h);
+}
+```
+
+### Custom Dark
+
+```css
+[data-webtui-theme='custom-dark'] {
+    --oklch-scale: 1.15;
+    --text: #eeeeee;
+    --base: oklch(from #1c1c1c l c h);
+    --mantle: oklch(from #111111 l c h);
+    --crust: oklch(from #101010 l c h);
+
+    /* Foreground / Background */
+    --foreground0: oklch(from #eeeeee l c h);
+    --foreground1: oklch(from #cccccc l c h);
+    --foreground2: oklch(from #888888 l c h);
+    --foreground3: #999999;
+    --background0: oklch(from #1c1c1c l c h);
+    --background1: oklch(from #242424 l c h);
+    --background2: oklch(from #333333 l c h);
+    --background3: oklch(from #777777 l c h);
+
+    /* Catppuccin Macchiato Accent Colors */
+    --rosewater: #f4dbd6;
+    --flamingo: #f0c6c6;
+    --pink: #f5bde6;
+    --mauve: #c6a0f6;
+    --red: #ed8796;
+    --maroon: #ee99a0;
+    --peach: #f5a97f;
+    --yellow: #eed49f;
+    --green: #a6da95;
+    --teal: #8bd5ca;
+    --sky: #91d7e3;
+    --sapphire: #7dc4e4;
+    --blue: #8aadf4;
+    --lavender: #b7bdf8;
+
+    /* Additional Colors */
+    --orange: #f2ab47;
+    --aqua: #84d6eb;
+    --purple: #ef7fff;
+}
+```

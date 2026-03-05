@@ -3,7 +3,7 @@ layout: '@/layouts/Doc.astro'
 title: Contributing
 ---
 
-If you are interested in contributing, please ensure that you have read the [Style Guide](/contributing/style-guide)
+If you are interested in contributing, please ensure that you have read the [Style Guide](/webtui/contributing/style-guide)
 
 If you need help on something, join the [Discord Server](https://discord.gg/yUS6T8YnfT)
 
@@ -36,4 +36,4 @@ Ensure that there is a relevant issue before you open a Pull Request. If there i
 
 Link the relevant issue in your Pull Request with `Fixes #issue-number` or `Closes #issue-number`
 
-Ensure that the code in your Pull Request abides by the [Style Guide](/contributing/style-guide)
+Ensure that the code in your Pull Request abides by the [Style Guide](/webtui/contributing/style-guide)

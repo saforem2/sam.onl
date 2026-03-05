@@ -45,7 +45,7 @@ const initialValue = props['data-value'] ?? itemEntries[0][0]
 
     #options {
         background-color: var(--background0);
-        position: relative;
+        position: absolute;
         z-index: 30;
 
         button {
@@ -104,13 +104,23 @@ const initialValue = props['data-value'] ?? itemEntries[0][0]
             })
 
             self.addEventListener('keydown', (e) => {
+                if (!details.open) return
+
                 const { next, prev } = paginateElements(
                     document.activeElement as HTMLElement,
                     items,
                 )
 
-                if (e.key === 'ArrowDown' || e.key === 'j') next.focus()
-                if (e.key === 'ArrowUp' || e.key === 'k') prev.focus()
+                if (e.key === 'ArrowDown' || e.key === 'j') {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    next.focus()
+                }
+                if (e.key === 'ArrowUp' || e.key === 'k') {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    prev.focus()
+                }
             })
         }
     }

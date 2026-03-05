@@ -22,14 +22,26 @@ const {
     ...props
 } = Astro.props
 
+const shikiThemes = {
+    dark: 'one-dark-pro',
+    light: 'min-light',
+    catppuccin: 'catppuccin-mocha',
+} as const
+
 const highlighter = await getSingletonHighlighter({
-    themes: ['catppuccin-mocha'],
+    themes: Object.values(shikiThemes),
     langs: ['html', 'css'],
 })
-const tokens = highlighter.codeToTokens(code, {
+
+const html = highlighter.codeToHtml(code, {
     lang,
-    theme: 'catppuccin-mocha',
+    themes: shikiThemes,
+    defaultColor: false,
 })
+
+// Extract per-line HTML — greedy .* (not .*?) to capture all nested spans
+const lineMatches = [...html.matchAll(/<span class="line">(.*)<\/span>/g)]
+const lines = lineMatches.map((m) => m[1])
 
 const fileIconText = Array.isArray(file?.icon) ? file.icon[0] : file?.icon
 const fileIconColor = Array.isArray(file?.icon) ? file.icon[1] : undefined
@@ -60,21 +72,13 @@ const fileIconColor = Array.isArray(file?.icon) ? file.icon[1] : undefined
         </colgroup>
         <tbody>
             {
-                tokens.tokens.map((tokensList, index) => (
+                lines.map((lineHtml, index) => (
                     <tr
                         highlight-={
                             highlights?.find(([l]) => l === index)?.[1]
                         }>
                         <td class="line-number">{index + 1}</td>
-                        <td
-                            class="line-code"
-                            set:html={tokensList
-                                .map(
-                                    (token) =>
-                                        `<span style="color: ${token.color}; font-style: ${token.fontStyle};">${token.content.replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</span>`,
-                                )
-                                .join('')}
-                        />
+                        <td class="line-code" set:html={lineHtml} />
                     </tr>
                 ))
             }
@@ -168,6 +172,21 @@ const fileIconColor = Array.isArray(file?.icon) ? file.icon[1] : undefined
         vertical-align: top;
     }
 
+    :global(html[data-webtui-theme='custom-light']) .line-code :global(span) {
+        color: var(--shiki-custom-light);
+        font-style: var(--shiki-custom-light-font-style, normal);
+        font-weight: var(--shiki-custom-light-font-weight, normal);
+    }
+    :global(html[data-webtui-theme='custom-dark']) .line-code :global(span) {
+        color: var(--shiki-custom-dark);
+        font-style: var(--shiki-custom-dark-font-style, normal);
+        font-weight: var(--shiki-custom-dark-font-weight, normal);
+    }
+    :global(html[data-webtui-theme='catppuccin']) .line-code :global(span) {
+        color: var(--shiki-catppuccin);
+        font-style: var(--shiki-catppuccin-font-style, normal);
+        font-weight: var(--shiki-catppuccin-font-weight, normal);
+    }
     @media (max-width: 400px) {
         .line-number {
             display: none;

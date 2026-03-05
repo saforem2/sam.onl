@@ -94,7 +94,7 @@ GPU](https://huggingface.co/docs/transformers/v4.46.0/perf_train_gpu_one)
 
 <div id="fig-single-gpu">
 
-<img src="./assets/single-gpu-step-1.drawio.svg" class="r-stretch" />
+<img src="/assets/single-gpu-step-1.drawio.svg" class="r-stretch" />
 
 Figure 1: **SLOW** !! model size limited by GPU memory
 
@@ -123,9 +123,7 @@ Figure 1: **SLOW** !! model size limited by GPU memory
     - [Intel oneAPI Collective Communications Library
       (oneCCL)](https://www.intel.com/content/www/us/en/developer/tools/oneapi/oneccl.html#gs.gouznn)
 
-    > [!WARNING]
-    >
-    > ### ⌛ Timeouts
+    > [!WARNING] ⌛ Timeouts
     >
     > - Collective operations have to be called for each `rank` to form a
     >   complete collective operation.
@@ -139,7 +137,7 @@ send result back to everyone.
 
 <div id="fig-all-reduce">
 
-<img src="./assets/collective-allreduce-sum.drawio.svg" loading="lazy" />
+<img src="/assets/collective-allreduce-sum.drawio.svg" loading="lazy" />
 
 Figure 4: All-Reduce operation: each rank receives the reduction of
 input values across ranks.
@@ -156,7 +154,7 @@ input values across ranks.
 
 <div id="fig-reduce">
 
-<img src="./assets/collective-reduce-sum.drawio.svg" loading="lazy" />
+<img src="/assets/collective-reduce-sum.drawio.svg" loading="lazy" />
 
 Figure 5: Reduce operation: one rank receives the reduction of input
 values across ranks
@@ -167,7 +165,7 @@ values across ranks
 
 <div id="fig-broadcast">
 
-<img src="./assets/collective-broadcast.drawio.svg" loading="lazy" />
+<img src="/assets/collective-broadcast.drawio.svg" loading="lazy" />
 
 Figure 6: `broadcast` (_send_) a tensor <code>$x$</code> from one rank
 to all ranks
@@ -178,7 +176,7 @@ to all ranks
 
 <div id="fig-allgather">
 
-<img src="./assets/collective-allgather.drawio.svg" loading="lazy" />
+<img src="/assets/collective-allgather.drawio.svg" loading="lazy" />
 
 Figure 7: Gathers tensors from the whole group in a list.
 
@@ -188,7 +186,7 @@ Figure 7: Gathers tensors from the whole group in a list.
 
 <div id="fig-scatter">
 
-<img src="./assets/collective-scatter.drawio.svg" class="r-stretch" />
+<img src="/assets/collective-scatter.drawio.svg" class="r-stretch" />
 
 Figure 8: Scatters a list of tensors to the whole group
 
@@ -261,7 +259,7 @@ Figure 9: To ensure all workers have the same copies, we load on
 
 <div class="flex-container">
 
-<div class="column" style="width:50%;">
+<column style="width:50%;">
 
 - Use parallel IO whenever possible
     - Feed each rank from different files
@@ -269,9 +267,9 @@ Figure 9: To ensure all workers have the same copies, we load on
     - Use several ranks to read data, MPI to scatter to remaining ranks
         - Most practical in big _at-scale_ training
 
-</div>
+</column>
 
-<div class="column" style="width:50%;">
+<column style="width:50%;">
 
 - Take advantage of data storage
     - Use [striping on
@@ -283,13 +281,11 @@ Figure 9: To ensure all workers have the same copies, we load on
         - **minimize IO latency this way**
 - Communication Bottleneck
 
-</div>
+</column>
 
 </div>
 
-> [!IMPORTANT]
->
-> ### ⏰ Keeping things in Sync
+> [!IMPORTANT] ⏰ Keeping things in Sync
 >
 > **Computation stalls during communication !!**
 >
@@ -314,7 +310,7 @@ Figure 9: To ensure all workers have the same copies, we load on
 
 <div id="fig-zero">
 
-<img src="./assets/zero.png" class="r-stretch" />
+<img src="/assets/zero.png" class="r-stretch" />
 
 Figure 10: [DeepSpeed](deepspeed.ai) +
 [`ZeRO`](https://www.deepspeed.ai/tutorials/zero-offload/)
@@ -331,7 +327,7 @@ Figure 10: [DeepSpeed](deepspeed.ai) +
 
 <div id="fig-fsdp">
 
-![](assets/fsdp.png)
+<img src="/assets/fsdp.png" />
 
 Figure 11: FSDP Workflow.
 [Source](https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/)
@@ -342,7 +338,7 @@ Figure 11: FSDP Workflow.
 
 <div class="flex-container" style="place-content: end space-evenly;">
 
-<div class="column" style="width:35%;">
+<column style="width:35%;">
 
 - Model is split up vertically (layer-level) across multiple GPUs
 - Each GPU:
@@ -350,20 +346,20 @@ Figure 11: FSDP Workflow.
     - processes _in parallel_ different stages of the pipeline (on a small
       chunk of the batch)
 
-</div>
+</column>
 
-<div class="column" style="width:55%;">
+<column style="width:55%;">
 
 <div id="fig-pipeline-parallelism">
 
-![](assets/pipeline_parallelism.png)
+<img src="/assets/pipeline_parallelism.png" />
 
 Figure 12: [Pipeline
 Parallelism](https://www.deepspeed.ai/tutorials/pipeline/)
 
 </div>
 
-</div>
+</column>
 
 </div>
 
@@ -377,7 +373,7 @@ Parallelism](https://www.deepspeed.ai/tutorials/pipeline/)
 
 <div class="flex-container">
 
-<div class="column" style="width:60%;">
+<column style="width:60%;">
 
 - Split up network over multiple workers
     - Each receives disjoint subset
@@ -390,19 +386,19 @@ Parallelism](https://www.deepspeed.ai/tutorials/pipeline/)
 - [`argonne-lcf/Megatron-DeepSpeed`](https://github.com/argonne-lcf/Megatron-DeepSpeed)
 - 🤗 [`huggingface/nanotron`](https://github.com/huggingface/nanotron)
 
-</div>
+</column>
 
-<div class="column" style="width:40%;">
+<column style="width:40%;">
 
 <div id="fig-model-parallel-1">
 
-![](./assets/model-parallel.svg)
+<img src="/assets/model-parallel.svg" />
 
 Figure 14
 
 </div>
 
-</div>
+</column>
 
 </div>
 
@@ -464,7 +460,7 @@ Figure 15
 
 <div id="fig-parallel-gemm">
 
-![](assets/parallelism-tp-parallel_gemm.png)
+<img src="/assets/parallelism-tp-parallel_gemm.png" />
 
 Figure 16: Tensor Parallel GEMM. This information is based on (the much
 more in-depth) [TP
@@ -479,7 +475,7 @@ by [@anton-l](https://github.com/anton-l)
 
 <div id="fig-3dparallel">
 
-![](assets/parallelism-deepspeed-3d.png)
+<img src="/assets/parallelism-deepspeed-3d.png" />
 
 Figure 17: Figure taken from [3D parallelism: Scaling to
 trillion-parameter
@@ -507,15 +503,15 @@ models](https://www.microsoft.com/en-us/research/blog/deepspeed-extreme-scale-mo
 
 <div class="flex-container">
 
-<div class="column">
+<column>
 
 - Model fits onto a single GPU
     - [`DDP`](https://pytorch.org/docs/stable/notes/ddp.html)
     - [`ZeRO`](https://deepspeed.readthedocs.io/en/latest/zero3.html)
 
-</div>
+</column>
 
-<div class="column">
+<column>
 
 - Model **DOES NOT** fit onto a single GPU
     1.  [Pipeline Parallelism
@@ -524,7 +520,7 @@ models](https://www.microsoft.com/en-us/research/blog/deepspeed-extreme-scale-mo
     3.  [Tensor Parallelism
         (`TP`)](https://pytorch.org/docs/stable/distributed.tensor.parallel.html)
 
-</div>
+</column>
 
 </div>
 
@@ -565,7 +561,7 @@ community~~ **world** by storm[^3].
 
 <div id="fig-emergent-abilities">
 
-![](./assets/emergent-abilities.gif)
+<img src="/assets/emergent-abilities.gif" />
 
 Figure 19: [Emergent abilities of Large Language
 Models](https://arxiv.org/abs/2206.07682) Yao et al. (2023)
@@ -577,29 +573,29 @@ Models](https://arxiv.org/abs/2206.07682) Yao et al. (2023)
 <div class="flex-container"
 style="align-items: flex-end; width:90%; text-align:center;">
 
-<div class="column" style="width: 60%;">
+<column style="width: 60%;">
 
 <div id="fig-evolution">
 
-<img src="./assets/evolution.gif" class="r-stretch" />
+<img src="/assets/evolution.gif" class="r-stretch" />
 
 Figure 20: Visualization from Yang et al. (2023)
 
 </div>
 
-</div>
+</column>
 
-<div class="column" style="width:40%;">
+<column style="width:40%;">
 
 <div id="fig-it-hungers">
 
-<img src="./assets/it_hungers.jpeg" class="r-stretch" />
+<img src="/assets/it_hungers.jpeg" class="r-stretch" />
 
 Figure 21: It’s hungry! Wei et al. (2022)
 
 </div>
 
-</div>
+</column>
 
 </div>
 
@@ -607,7 +603,7 @@ Figure 21: It’s hungry! Wei et al. (2022)
 
 <div class="flex-container">
 
-<div class="column" style="width: 40%;">
+<column style="width: 40%;">
 
 1.  Data collection + preprocessing
 2.  **Pre-training**
@@ -617,20 +613,20 @@ Figure 21: It’s hungry! Wei et al. (2022)
     - Alignment
 4.  Deploy (+ monitor, re-evaluate, etc.)
 
-</div>
+</column>
 
-<div class="column" style="width:50%;">
+<column style="width:50%;">
 
 <div id="fig-pretrain-two">
 
-![](./assets/gpt3-training-step-back-prop.gif)
+<img src="/assets/gpt3-training-step-back-prop.gif" />
 
 Figure 22: **Pre-training**: Virtually _all of the compute_ used during
 pre-training[^4].
 
 </div>
 
-</div>
+</column>
 
 </div>
 
@@ -638,7 +634,7 @@ pre-training[^4].
 
 <div class="flex-container">
 
-<div class="column" style="width: 50%;">
+<column style="width: 50%;">
 
 1.  Data collection + preprocessing
 2.  Pre-training
@@ -648,20 +644,20 @@ pre-training[^4].
     - Alignment
 4.  Deploy (+ monitor, re-evaluate, etc.)
 
-</div>
+</column>
 
-<div class="column" style="width:50%;">
+<column style="width:50%;">
 
 <div id="fig-finetune-lifecycle">
 
-![](./assets/gpt3-fine-tuning.gif)
+<img src="/assets/gpt3-fine-tuning.gif" />
 
 Figure 23: **Fine-tuning**: Fine-tuning actually updates the model’s
 weights to make the model better at a certain task[^5].
 
 </div>
 
-</div>
+</column>
 
 </div>
 
@@ -670,7 +666,7 @@ weights to make the model better at a certain task[^5].
 <div id="fig-hf-assisted-generation">
 
 <video
-    src="./assets/hf_assisted_generation.mov"
+    src="/assets/hf_assisted_generation.mov"
     controls
     preload="metadata"></video>
 
@@ -683,7 +679,7 @@ Figure 24: Language Model trained for causal language modeling[^6].
 <div id="fig-generating-text">
 
 <video
-    src="./assets/hf_assisted_generation2.mov"
+    src="/assets/hf_assisted_generation2.mov"
     controls
     preload="metadata"></video>
 
@@ -698,7 +694,7 @@ Figure 25: Language Model trained for causal language modeling[^7].
 <span
     class="preview-image"
     style="text-align:center; margin-left:auto; margin-right: auto;">
-    ![](./assets/jailbreak.jpeg)
+    <img src="/assets/jailbreak.jpeg" />
 </span>
 
 Figure 26
@@ -1219,7 +1215,7 @@ to train a small model using DDP
 
 <div id="fig-nanoGPT">
 
-![](./assets/nanogpt.jpg)
+<img src="/assets/nanogpt.jpg" />
 
 Figure 28: The simplest, fastest repository for training / finetuning
 GPT based models.
@@ -1575,9 +1571,7 @@ Figure 29: Example: Training a LLM to talk like Shakespeare using
 
           </split>
 
-> [!NOTE]
->
-> ### 🙏 Acknowledgements
+> [!NOTE] 🙏 Acknowledgements
 >
 > This research used resources of the Argonne Leadership Computing
 > Facility, which is a DOE Office of Science User Facility supported

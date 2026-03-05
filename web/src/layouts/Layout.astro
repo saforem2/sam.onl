@@ -3,22 +3,32 @@ import '@/styles/global.css'
 ---
 
 <!doctype html>
-<html lang="en" data-webtui-theme="light">
+<html lang="en" data-webtui-theme="custom-light">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
         <link rel="preconnect" href="https://cdn.jsdelivr.net" />
         <script is:inline>
             const storedTheme = localStorage.getItem('webtui-theme')
+            const migratedTheme =
+                storedTheme === 'light'
+                    ? 'custom-light'
+                    : storedTheme === 'dark'
+                      ? 'custom-dark'
+                      : storedTheme
             const systemTheme = window.matchMedia(
                 '(prefers-color-scheme: dark)',
             ).matches
-                ? 'dark'
-                : 'light'
+                ? 'custom-dark'
+                : 'custom-light'
+            const resolvedTheme = migratedTheme ?? systemTheme
             document.documentElement.setAttribute(
                 'data-webtui-theme',
-                storedTheme ?? systemTheme,
+                resolvedTheme,
             )
+            if (migratedTheme && migratedTheme !== storedTheme) {
+                localStorage.setItem('webtui-theme', migratedTheme)
+            }
         </script>
         <meta name="generator" content={Astro.generator} />
         <title>Sam Foreman</title>
@@ -43,11 +53,19 @@ import '@/styles/global.css'
 
         <!-- OpenGraph / X Cover Image -->
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="https://sam.onl/cover.png" />
-        <meta property="og:image" content="https://sam.onl/cover.png" />
+        <meta name="twitter:image" content="https://sam.onl/social-card.png" />
+        <meta property="og:image" content="https://sam.onl/social-card.png" />
         <meta property="og:image:type" content="image/png" />
-        <meta property="og:image:width" content="1920" />
-        <meta property="og:image:height" content="1200" />
+        <meta property="og:image:width" content="2400" />
+        <meta property="og:image:height" content="1260" />
+        <meta
+            property="og:image:alt"
+            content="Sam Foreman social card with terminal-style branding and AI/HPC focus"
+        />
+        <meta
+            name="twitter:image:alt"
+            content="Sam Foreman social card with terminal-style branding and AI/HPC focus"
+        />
 
         <!-- Misc Metadata -->
         <meta property="og:type" content="website" />
@@ -74,7 +92,13 @@ import '@/styles/global.css'
                 width: 100%;
                 max-width: 100%;
                 height: auto !important;
-                min-height: 12rem;
+                max-height: 50vh;
+                min-height: 0;
+            }
+            svg[id^='mermaid-'] foreignObject * {
+                margin: 0 !important;
+                padding: 0 !important;
+                line-height: normal !important;
             }
         </style>
         <script is:inline>
@@ -106,10 +130,11 @@ import '@/styles/global.css'
                         node.getBoundingClientRect().width ||
                         node.parentElement?.getBoundingClientRect().width ||
                         width
-                    const renderedHeight = (renderedWidth * height) / width
+                    const maxHeight = window.innerHeight * 0.5
+                    const naturalHeight = (renderedWidth * height) / width
                     const resolvedHeight =
-                        Number.isFinite(renderedHeight) && renderedHeight > 0
-                            ? renderedHeight
+                        Number.isFinite(naturalHeight) && naturalHeight > 0
+                            ? Math.min(naturalHeight, maxHeight)
                             : height
 
                     node.style.setProperty(
@@ -117,11 +142,7 @@ import '@/styles/global.css'
                         `${resolvedHeight}px`,
                         'important',
                     )
-                    node.style.setProperty(
-                        'min-height',
-                        `${resolvedHeight}px`,
-                        'important',
-                    )
+                    node.style.setProperty('max-height', '50vh', 'important')
                     node.style.setProperty('width', '100%', 'important')
                     node.style.setProperty('max-width', '100%', 'important')
                     node.style.setProperty('display', 'block', 'important')
@@ -148,6 +169,12 @@ import '@/styles/global.css'
             setTimeout(normalizeMermaidSvgSize, 250)
             window.addEventListener('resize', normalizeMermaidSvgSize)
         </script>
+        <!-- <link rel="preconnect" href="https://fonts.googleapis.com" /> -->
+        <!-- <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /> -->
+        <!-- <link -->
+        <!--     href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" -->
+        <!--     rel="stylesheet" -->
+        <!-- /> -->
         <!-- <link -->
         <!--     href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400..600;1,400..600&display=swap" -->
         <!--     rel="stylesheet" -->
@@ -196,176 +223,10 @@ import '@/styles/global.css'
             }
 
             focusMainRegion()
-
-            const stabilizeMermaidSvgLayout = () => {
-                const mermaidSvgs = document.querySelectorAll(
-                    'svg[id^="mermaid-"]',
-                )
-
-                mermaidSvgs.forEach((node) => {
-                    if (!(node instanceof SVGElement)) return
-
-                    const viewBox = node.getAttribute('viewBox')
-                    if (!viewBox) return
-
-                    const [, , widthRaw, heightRaw] = viewBox
-                        .trim()
-                        .split(/\s+/)
-                        .map((value) => Number(value))
-
-                    if (
-                        !Number.isFinite(widthRaw) ||
-                        !Number.isFinite(heightRaw)
-                    ) {
-                        return
-                    }
-
-                    if (widthRaw <= 0 || heightRaw <= 0) return
-
-                    node.setAttribute('width', String(widthRaw))
-                    node.setAttribute('height', String(heightRaw))
-                    node.style.setProperty('display', 'block', 'important')
-                    node.style.setProperty('width', '100%', 'important')
-                    node.style.setProperty('max-width', '100%', 'important')
-                    const renderedWidth =
-                        node.getBoundingClientRect().width ||
-                        node.parentElement?.getBoundingClientRect().width ||
-                        widthRaw
-                    const renderedHeight =
-                        (renderedWidth * heightRaw) / widthRaw
-                    const resolvedHeight =
-                        Number.isFinite(renderedHeight) && renderedHeight > 0
-                            ? renderedHeight
-                            : heightRaw
-
-                    node.style.setProperty(
-                        'height',
-                        `${resolvedHeight}px`,
-                        'important',
-                    )
-                    node.style.setProperty(
-                        'min-height',
-                        `${resolvedHeight}px`,
-                        'important',
-                    )
-                    node.style.setProperty(
-                        'aspect-ratio',
-                        `${widthRaw} / ${heightRaw}`,
-                        'important',
-                    )
-                    node.style.setProperty('visibility', 'visible', 'important')
-                })
-            }
-
-            stabilizeMermaidSvgLayout()
-            setTimeout(stabilizeMermaidSvgLayout, 0)
-            setTimeout(stabilizeMermaidSvgLayout, 50)
-            setTimeout(stabilizeMermaidSvgLayout, 250)
-
-            const mermaidCodeBlocks = document.querySelectorAll(
-                'pre[data-language="mermaid"] > code, pre > code.language-mermaid',
-            )
-            const legacyMermaidBlocks = Array.from(
-                document.querySelectorAll(
-                    'pre.mermaid, pre.mermaid-js, .mermaid',
-                ),
-            ).filter((node) => {
-                if (!(node instanceof HTMLElement)) return false
-                if (node.matches('svg') || node.querySelector('svg, img')) {
-                    return false
-                }
-
-                const source = (node.textContent ?? '').trim()
-                if (source.length === 0) return false
-
-                return /^\s*(?:%%[^\n]*\n\s*)*(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|quadrantChart|xychart-beta|requirementDiagram|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b/.test(
-                    source,
-                )
-            })
-
-            if (
-                mermaidCodeBlocks.length > 0 ||
-                legacyMermaidBlocks.length > 0
-            ) {
-                const toMermaidBlock = (codeEl) => {
-                    const pre = codeEl.parentElement
-                    if (!pre) return
-
-                    const container = document.createElement('div')
-                    container.className = 'mermaid'
-                    container.dataset.mermaid = codeEl.textContent ?? ''
-                    container.textContent = container.dataset.mermaid
-                    pre.replaceWith(container)
-                }
-
-                mermaidCodeBlocks.forEach((codeEl) => toMermaidBlock(codeEl))
-                legacyMermaidBlocks.forEach((node) => {
-                    if (!(node instanceof HTMLElement)) return
-                    node.classList.add('mermaid')
-                    node.dataset.mermaid = node.textContent ?? ''
-                })
-
-                const resolveMermaidTheme = () => {
-                    const theme =
-                        document.documentElement.getAttribute(
-                            'data-webtui-theme',
-                        ) ?? 'light'
-
-                    return theme === 'light' ? 'default' : 'dark'
-                }
-
-                const resolveMermaidFontFamily = () => {
-                    const fontFamily = getComputedStyle(
-                        document.documentElement,
-                    ).getPropertyValue('--font-family')
-
-                    return fontFamily.trim() || 'monospace'
-                }
-
-                const resolveMermaidFontSize = () => {
-                    const fontSize = getComputedStyle(
-                        document.documentElement,
-                    ).getPropertyValue('--font-size')
-
-                    return fontSize.trim() || '16px'
-                }
-
-                const renderMermaid = async () => {
-                    const { default: mermaid } = await import('mermaid')
-
-                    mermaid.initialize({
-                        startOnLoad: false,
-                        theme: resolveMermaidTheme(),
-                        fontFamily: resolveMermaidFontFamily(),
-                        fontSize: resolveMermaidFontSize(),
-                    })
-
-                    const nodes = document.querySelectorAll('.mermaid')
-                    nodes.forEach((node) => {
-                        const source = node.dataset.mermaid
-                        if (!source) return
-
-                        node.removeAttribute('data-processed')
-                        node.textContent = source
-                    })
-
-                    try {
-                        await mermaid.run({ nodes })
-                        stabilizeMermaidSvgLayout()
-                    } catch (error) {
-                        console.error('Mermaid rendering failed:', error)
-                    }
-                }
-
-                renderMermaid()
-
-                new MutationObserver(() => {
-                    renderMermaid()
-                }).observe(document.documentElement, {
-                    attributes: true,
-                    attributeFilter: ['data-webtui-theme'],
-                })
-            }
+        </script>
+        <script>
+            import { initMermaid } from '@/utils/mermaid-render'
+            initMermaid()
         </script>
     </body>
 </html>

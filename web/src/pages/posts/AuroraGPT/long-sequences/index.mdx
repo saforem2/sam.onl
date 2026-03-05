@@ -1,6 +1,8 @@
 ---
 layout: '@/layouts/Doc.astro'
 title: '🚂 Loooooooong Sequence Lengths'
+date: 2024-02-12
+description: 'Optimizations for extremely long sequence lengths in Megatron-DeepSpeed as part of the DeepSpeed4Science project.'
 ---
 
 Sam Foreman
@@ -18,7 +20,7 @@ Sam Foreman
 
 <div id="fig-ds4sci">
 
-<span class="stretch">![](https://raw.githubusercontent.com/saforem2/llm-lunch-talk/main/docs/assets/ds4sci.svg)</span>
+<span class="stretch"><img src="/assets/ds4sci.svg" /></span>
 
 Figure 1: This work was done as part of the DeepSpeed4Science project,
 in collaboration with Microsoft.
@@ -31,9 +33,7 @@ release contains a variety of improvements / optimizations to enable
 pre-training Transformer based architectures with significantly longer
 sequences than was previously possible.
 
-> [!NOTE]
->
-> ### 📓 Note:
+> [!NOTE] 📓 Note:
 >
 > Additional details can be found in the [📁
 > `DeepSpeed4Science`](https://github.com/microsoft/Megatron-DeepSpeed/tree/main/examples_deepspeed/deepspeed4science/megatron_long_seq_support)
@@ -191,9 +191,7 @@ well as our previous implementation.
 
 ### Using [`install.sh`](https://github.com/ramanathanlab/genslm/blob/foremans/ds4sci/examples/long-sequences/install.sh)
 
-> [!TIP]
->
-> ### Installation
+> [!TIP] Installation
 >
 > **Important**<br /> To install, simply:
 >
@@ -275,10 +273,7 @@ dependencies.
 
 <details is-="accordion">
 
-<summary>
-
-[ `saforem2/ezpz`](https://github.com/saforem2/ezpz)
-</summary>
+<summary>[ `saforem2/ezpz`](https://github.com/saforem2/ezpz)</summary>
 
 1.  [ `saforem2/ezpz`](https://github.com/saforem2/ezpz)
 
@@ -290,10 +285,7 @@ dependencies.
 
 <details is-="accordion">
 
-<summary>
-
-[ `Microsoft/DeepSpeed`](https://github.com/microsoft/DeepSpeed)
-</summary>
+<summary>[ `Microsoft/DeepSpeed`](https://github.com/microsoft/DeepSpeed)</summary>
 
 2.  [ `Microsoft/DeepSpeed`](https://github.com/microsoft/DeepSpeed)
 
@@ -307,11 +299,7 @@ dependencies.
 
 <details is-="accordion">
 
-<summary>
-
-[
-`Microsoft/Megatron-DeepSpeed`](https://github.com/microsoft/Megatron-DeepSpeed)
-</summary>
+<summary>[ `Microsoft/Megatron-DeepSpeed`](https://github.com/microsoft/Megatron-DeepSpeed)</summary>
 
 3.  [
     `Microsoft/Megatron-DeepSpeed`](https://github.com/microsoft/Megatron-DeepSpeed):
@@ -324,10 +312,7 @@ dependencies.
 
 <details is-="accordion">
 
-<summary>
-
-[ `NVIDIA/apex`](https://github.com/NVIDIA/apex)
-</summary>
+<summary>[ `NVIDIA/apex`](https://github.com/NVIDIA/apex)</summary>
 
 4.  [ `NVIDIA/apex`](https://github.com/NVIDIA/apex)
 
@@ -341,10 +326,7 @@ dependencies.
 
 <details is-="accordion">
 
-<summary>
-
-[ `pybind/PyBind11`](https://github.com/pybind/pybind11)
-</summary>
+<summary>[ `pybind/PyBind11`](https://github.com/pybind/pybind11)</summary>
 
 5.  [ `pybind/PyBind11`](https://github.com/pybind/pybind11)
 
@@ -356,18 +338,12 @@ dependencies.
 
 <details is-="accordion">
 
-<summary>
-
-[
-`Dao-AILab/flash-attention`](https://github.com/Dao-AILab/flash-attention)
-</summary>
+<summary>[ `Dao-AILab/flash-attention`](https://github.com/Dao-AILab/flash-attention)</summary>
 
 6.  [
     `Dao-AILab/flash-attention`](https://github.com/Dao-AILab/flash-attention):
 
-    > [!CAUTION]
-    >
-    > ### Flash Attention
+    > [!CAUTION] Flash Attention
     >
     > - The new release supports three different implementations of
     >   FlashAttention: (`v1.0.4`, `v2.x`, `triton`)

@@ -6,7 +6,7 @@
 
         & > summary {
             &::before {
-                content: '˃ ';
+                content: '> ';
             }
 
             &::-webkit-details-marker {
@@ -23,8 +23,8 @@
             }
         }
 
-        &[open] summary::before {
-            content: '˅ ';
+        &[open] > summary::before {
+            content: 'v ';
         }
     }
 }

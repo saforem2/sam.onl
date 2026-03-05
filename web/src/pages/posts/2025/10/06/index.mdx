@@ -1,6 +1,8 @@
 ---
 layout: '@/layouts/Doc.astro'
 title: '🎨 Mixing Between Distributions While Training'
+date: 2025-10-06
+description: 'A mathematical framework for smoothly interpolating between data distributions during training using an annealing schedule.'
 ---
 
 Sam Foreman
@@ -28,28 +30,28 @@ probability mass from one distribution to another.
 
 We introduce an annealing schedule during the mixing phase:
 
-$$\&#123;\gamma_t\&#125;_&#123;t=0&#125;^N = \&#123;\gamma_0, \gamma_1, \ldots, \gamma_&#123;N-1&#125;, \gamma_N\&#125;$$
+$$\{\gamma_t\}_{t=0}^N = \{\gamma_0, \gamma_1, \ldots, \gamma_{N-1}, \gamma_N\}$$
 
 where
 
 $$
-\begin&#123;aligned&#125;
+\begin{aligned}
 0 < \gamma_0 < \gamma_1 &< \cdots < \gamma_N < 1 \\
-\quad |\gamma_&#123;t+1&#125; &- \gamma_t| \ll 1.
-\end&#123;aligned&#125;
+\quad |\gamma_{t+1} &- \gamma_t| \ll 1.
+\end{aligned}
 $$
 
 We also define a complementary schedule:
 
-$$ &#123;\eta_t&#125;_&#123;t=0&#125;^N = &#123;\eta_0, \eta_1, \ldots, \eta_N&#125;, \quad \text&#123;with &#125; \gamma_i + \eta_i = 1 \implies \eta_i = 1 - \gamma_i. $$
+$$ \{\eta*t\}*{t=0}^N = \{\eta_0, \eta_1, \ldots, \eta_N\}, \quad \text{with } \gamma_i + \eta_i = 1 \implies \eta_i = 1 - \gamma_i. $$
 
 ## Mixing Definition
 
-For (t = 0, 1, , N), define the interpolated distribution
+For $t = 0, 1, \ldots, N$, define the interpolated distribution
 
 $$ B_i = \gamma_i X + (1 - \gamma_i) Y, $$
 
-where (X) and (Y) are two underlying distributions (or datasets, or
+where $X$ and $Y$ are two underlying distributions (or datasets, or
 losses).
 
 ## Incremental Difference
@@ -57,22 +59,22 @@ losses).
 The change between successive mixtures is:
 
 $$
-\begin&#123;aligned&#125;
-B_&#123;i+1&#125; - B_i
-&= \gamma_&#123;i+1&#125; X + (1 - \gamma_&#123;i+1&#125;) Y - \left[ \gamma_i X + (1 - \gamma_i) Y \right] \\
-&= (\gamma_&#123;i+1&#125; - \gamma_i)(X - Y).
-\end&#123;aligned&#125;
+\begin{aligned}
+B_{i+1} - B_i
+&= \gamma_{i+1} X + (1 - \gamma_{i+1}) Y - \left[ \gamma_i X + (1 - \gamma_i) Y \right] \\
+&= (\gamma_{i+1} - \gamma_i)(X - Y).
+\end{aligned}
 $$
 
 Thus,
 
-$$ |B*&#123;i+1&#125; - B_i| = |\gamma*&#123;i+1&#125; - \gamma_i| \, |X - Y|. $$
+$$ |B*{i+1} - B_i| = |\gamma*{i+1} - \gamma_i| \, |X - Y|. $$
 
-If we set $|\gamma_&#123;i+1&#125; - \gamma_i| = \varepsilon \ll 1$, then
+If we set $|\gamma_{i+1} - \gamma_i| = \varepsilon \ll 1$, then
 
-$$ |B\_&#123;i+1&#125; - B_i| \leq \varepsilon \, |X - Y|, $$
+$$ |B\_{i+1} - B_i| \leq \varepsilon \, |X - Y|, $$
 
-meaning the transition between (X) and (Y) is arbitrarily smooth.
+meaning the transition between $X$ and $Y$ is arbitrarily smooth.
 
 ## Interpretation
 
@@ -83,8 +85,8 @@ meaning the transition between (X) and (Y) is arbitrarily smooth.
 - Useful in:
     - **Curriculum learning:** start from an easier distribution and
       anneal to a harder one.
-    - **Domain adaptation:** gradually shift from source domain (X) to
-      target domain (Y).
+    - **Domain adaptation:** gradually shift from source domain $X$ to
+      target domain $Y$.
     - **Robust training:** maintain a mixture for diversity and stability.
 
 ## Implementation
@@ -137,9 +139,9 @@ if __name__ == "__main__":
 
 <div id="fig-notes">
 
-<img src="./assets/notes_light.png" class="light-content" />
+<img src="/assets/notes_light.png" class="light-content" />
 
-<img src="./assets/notes_dark.png" class="dark-content" />
+<img src="/assets/notes_dark.png" class="dark-content" />
 
 Figure 1: Original Notes
 

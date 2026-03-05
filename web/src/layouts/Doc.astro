@@ -11,6 +11,10 @@ type DocHeading = {
     slug: string
 }
 
+type TocLine = DocHeading & {
+    treePrefix: string
+}
+
 const { frontmatter, headings } = Astro.props as {
     frontmatter: { title: string }
     headings: DocHeading[]
@@ -28,7 +32,42 @@ const nextDoc =
         : sortedPages.at(pageIndex + 1)
 const prevDoc = pageIndex === 0 ? undefined : sortedPages.at(pageIndex - 1)
 
-const tocHeadings = headings.filter((heading) => heading.depth >= 2)
+const tocHeadings: DocHeading[] = headings.filter(
+    (heading) => heading.depth >= 2,
+)
+
+const hasSiblingAfter = (items: DocHeading[], index: number) => {
+    const currentDepth = items[index].depth
+
+    for (let nextIndex = index + 1; nextIndex < items.length; nextIndex += 1) {
+        const nextDepth = items[nextIndex].depth
+
+        if (nextDepth === currentDepth) return true
+        if (nextDepth < currentDepth) return false
+    }
+
+    return false
+}
+
+const ancestorHasSibling = new Map<number, boolean>()
+const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
+    const isLastSibling = !hasSiblingAfter(tocHeadings, index)
+
+    let ancestorPrefix = ''
+    for (let level = 2; level < heading.depth; level += 1) {
+        ancestorPrefix += ancestorHasSibling.get(level) ? '│  ' : '   '
+    }
+
+    const branchPrefix =
+        heading.depth === 1 ? '' : isLastSibling ? '└─ ' : '├─ '
+
+    ancestorHasSibling.set(heading.depth, !isLastSibling)
+
+    return {
+        ...heading,
+        treePrefix: `${ancestorPrefix}${branchPrefix}`,
+    }
+})
 ---
 
 <style is:global>
@@ -43,7 +82,7 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
                 <Sidebar />
             </div>
             <div id="sidebar-resizer" aria-hidden="true"></div>
-            <article box-="square" shear-="top">
+            <article id="doc-article" box-="square" shear-="top">
                 <header is-="row" align-="between">
                     <div is-="badge" variant-="background0">
                         <h1>{frontmatter.title}</h1>
@@ -52,6 +91,10 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
                 <row gap-="1" self-="grow">
                     <div id="scroll-container">
                         <main id="main-content">
+                            <span
+                                id="toc-page-title"
+                                aria-hidden="true"
+                                tabindex="-1"></span>
                             <slot />
                             <div id="doc-pagination">
                                 {
@@ -59,16 +102,16 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
                                         <a
                                             href={`/${prevDoc.id}`}
                                             class="prev"
-                                            box-="round"
+                                            box-="square"
                                             shear-="top"
                                             tabindex="0">
                                             <div is-="typography-block">
                                                 <span
                                                     is-="badge"
-                                                    variant-="background0">
+                                                    variant-="background1">
                                                     <row gap-="1">
                                                         <span>←</span>
-                                                        <code>&lt;C-p&gt;</code>
+                                                        <code>&lt;C-b&gt;</code>
                                                         <span>Previous</span>
                                                     </row>
                                                 </span>
@@ -85,7 +128,7 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
                                         <a
                                             href={`/${nextDoc.id}`}
                                             class="next"
-                                            box-="round"
+                                            box-="square"
                                             shear-="top"
                                             tabindex="0">
                                             <row
@@ -93,7 +136,7 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
                                                 is-="typography-block">
                                                 <span
                                                     is-="badge"
-                                                    variant-="background0">
+                                                    variant-="background1">
                                                     <row gap-="1">
                                                         <span>Next</span>
                                                         <code>&lt;C-n&gt;</code>
@@ -117,15 +160,27 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
                 tocHeadings.length > 0 && (
                     <>
                         <div id="toc-resizer" aria-hidden="true" />
-                        <aside id="toc-container" class="mobile-hidden">
+                        <aside
+                            id="toc-container"
+                            class="mobile-hidden collapsed">
                             <nav
                                 box-="square"
                                 shear-="top"
                                 id="toc-sidebar"
                                 aria-label="Table of contents">
+                                <button
+                                    id="toc-toggle"
+                                    type="button"
+                                    size-="small"
+                                    variant-="background1"
+                                    aria-expanded="false"
+                                    aria-controls="toc-container"
+                                    aria-label="Collapse right sidebar (zh/zl)">
+                                    <code>&lt;zl&gt;</code>
+                                </button>
                                 <div id="toc-list-container">
                                     <ul id="toc-list">
-                                        {tocHeadings.map((heading) => (
+                                        {tocLines.map((heading) => (
                                             <li>
                                                 <a
                                                     href={`#${heading.slug}`}
@@ -133,7 +188,14 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
                                                     data-heading-slug={
                                                         heading.slug
                                                     }>
-                                                    {heading.text}
+                                                    <span
+                                                        class="toc-tree-prefix"
+                                                        data-tree-prefix={
+                                                            heading.treePrefix
+                                                        }
+                                                        aria-hidden="true"
+                                                    />
+                                                    <span>{heading.text}</span>
                                                 </a>
                                             </li>
                                         ))}
@@ -146,10 +208,20 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
             }
         </row>
         <div id="mobile-nav">
-            <button variant-="background1" id="menu-button">
+            <button size-="small" variant-="background1" id="menu-button">
                 &#xeb86; Menu
             </button>
-            <button id="docs-button">&#xf15b; Docs</button>
+            <button size-="small" id="docs-button">&#xf15b; Docs</button>
+            {
+                tocHeadings.length > 0 && (
+                    <button
+                        size-="small"
+                        variant-="background1"
+                        id="toc-button">
+                        &#xf0c9; TOC
+                    </button>
+                )
+            }
         </div>
     </column>
 </Layout>
@@ -162,8 +234,10 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
         vimFocusElement,
     } from '@/utils/vim'
 
-    const queryString =
-        '#main-content [tabindex="0"], #main-content a[href], #main-content summary'
+    const mainItemQuery = '[tabindex="0"], a[href], summary'
+    const queryString = `#main-content ${mainItemQuery}`
+    const navbarQueryString =
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
     const vimTabbableElements: NodeListOf<HTMLElement> =
         document.querySelectorAll(queryString)
@@ -178,10 +252,15 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
         })
 
     const mainContent = document.getElementById('main-content') as HTMLElement
+    const navbar = document.getElementById('top-navbar') as HTMLElement | null
     const sidebar = document.getElementById('sidebar') as HTMLElement | null
     const tocSidebar = document.getElementById(
         'toc-sidebar',
     ) as HTMLElement | null
+    const getNavbarTarget = () =>
+        navbar?.querySelector(
+            'a[data-active="true"], a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        )
     const getSidebarTarget = () =>
         sidebar?.querySelector('a.active') ||
         sidebar?.querySelector('details summary') ||
@@ -194,11 +273,101 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
             'a[href], button, input, textarea, select, summary, [tabindex]:not([tabindex="-1"])',
         )
 
+    const isVimVisible = (candidate: HTMLElement) => {
+        if (candidate.hidden) return false
+
+        const closedDetails = candidate.closest('details:not([open])')
+        if (closedDetails instanceof HTMLDetailsElement) {
+            const summary = closedDetails.querySelector('summary')
+
+            if (
+                !(summary instanceof HTMLElement) ||
+                (summary !== candidate && !summary.contains(candidate))
+            ) {
+                return false
+            }
+        }
+
+        const style = window.getComputedStyle(candidate)
+        if (style.display === 'none' || style.visibility === 'hidden') {
+            return false
+        }
+
+        return candidate.getClientRects().length > 0
+    }
+
+    const getVisibleMainElements = () =>
+        Array.from(
+            mainContent.querySelectorAll(
+                mainItemQuery,
+            ) as NodeListOf<HTMLElement>,
+        ).filter(isVimVisible)
+
+    const getNavbarElements = () =>
+        navbar
+            ? Array.from(
+                  navbar.querySelectorAll(
+                      navbarQueryString,
+                  ) as NodeListOf<HTMLElement>,
+              )
+            : []
+
+    const isLastNavbarElement = (activeElement: HTMLElement) => {
+        const navbarElements = getNavbarElements()
+        if (navbarElements.length === 0) return false
+
+        const activeIndex = navbarElements.indexOf(activeElement)
+        if (activeIndex !== -1) {
+            return activeIndex === navbarElements.length - 1
+        }
+
+        const visibleNavbarElements = navbarElements.filter(isVimVisible)
+        return (
+            visibleNavbarElements.length > 0 &&
+            activeElement === visibleNavbarElements.at(-1)
+        )
+    }
+
+    const isPlainPrevKey = (event: KeyboardEvent) =>
+        (event.key === 'k' || event.key === 'ArrowUp') &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey
+
+    const isPlainNextKey = (event: KeyboardEvent) =>
+        (event.key === 'j' || event.key === 'ArrowDown') &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey
+
     const applyMainContentTabIndex = () => {
+        // List containers are navigated via their <li> children,
+        // so skip them to avoid a parent-child focus trap.
+        const isListContainer = (el: Element) =>
+            el.tagName === 'UL' || el.tagName === 'OL'
+
+        // Code blocks are navigated via their individual span.line children,
+        // so skip the <pre> wrapper and make each line focusable instead.
+        const isCodeBlock = (el: Element) =>
+            el.tagName === 'PRE' && el.classList.contains('astro-code')
+
         const children = Array.from(mainContent.children)
         children.forEach((child) => {
             if (!(child instanceof HTMLElement)) return
             if (isFocusableElement(child)) return
+            if (isListContainer(child)) return
+            if (isCodeBlock(child)) {
+                // Remove tabindex from the <pre> wrapper so it's not a
+                // navigation stop itself (the rehype plugin sets it).
+                child.removeAttribute('tabindex')
+                // Make each line individually focusable
+                child.querySelectorAll('span.line').forEach((line) => {
+                    if (line instanceof HTMLElement) {
+                        line.setAttribute('tabindex', '0')
+                    }
+                })
+                return
+            }
             if (child.hasAttribute('tabindex')) return
             child.setAttribute('tabindex', '0')
         })
@@ -214,17 +383,207 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
 
     applyMainContentTabIndex()
 
+    mainContent.addEventListener(
+        'keydown',
+        (e) => {
+            if (e.defaultPrevented || isUserTyping() || !isPlainPrevKey(e)) {
+                return
+            }
+
+            const activeElement = document.activeElement
+            if (!(activeElement instanceof HTMLElement)) return
+            if (!mainContent.contains(activeElement)) return
+
+            const visibleMainElements = getVisibleMainElements()
+            if (visibleMainElements.length === 0) return
+            if (activeElement !== visibleMainElements[0]) return
+
+            const navbarTarget = getNavbarTarget()
+            if (!(navbarTarget instanceof HTMLElement)) return
+
+            e.preventDefault()
+            e.stopPropagation()
+            vimFocusElement(navbarTarget)
+        },
+        true,
+    )
+
+    navbar?.addEventListener(
+        'keydown',
+        (e) => {
+            if (e.defaultPrevented || isUserTyping() || !isPlainNextKey(e)) {
+                return
+            }
+
+            const activeElement = document.activeElement
+            if (!(activeElement instanceof HTMLElement)) return
+            if (!navbar.contains(activeElement)) return
+
+            if (!isLastNavbarElement(activeElement)) return
+
+            const elementToFocus =
+                getVisibleMainElements()[0] ??
+                findFirstFocusableElement() ??
+                currentElement ??
+                null
+
+            if (!(elementToFocus instanceof HTMLElement)) return
+
+            e.preventDefault()
+            e.stopPropagation()
+            vimFocusElement(elementToFocus)
+        },
+        true,
+    )
+
     window.addEventListener('keydown', (e) => {
         if (e.defaultPrevented) return
 
-        const commandDialog = document.getElementById(
-            'command-dialog',
-        ) as HTMLDialogElement | null
-
-        if (commandDialog?.open) return
+        const hasOpenDialog =
+            document.querySelector('dialog[open]') instanceof HTMLDialogElement
+        if (hasOpenDialog) return
 
         // Don't navigate if the user is typing
         if (isUserTyping()) {
+            return
+        }
+
+        // Bootstrap focus into main content when j/k is pressed with nothing focused
+        const activeElement = document.activeElement
+        const isUnfocused =
+            !activeElement ||
+            activeElement === document.body ||
+            activeElement === document.documentElement
+
+        if (
+            isUnfocused &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            !e.shiftKey
+        ) {
+            if (e.key === 'j' || e.key === 'ArrowDown') {
+                e.preventDefault()
+                const firstEl =
+                    getVisibleMainElements()[0] ?? findFirstFocusableElement()
+                if (firstEl) vimFocusElement(firstEl)
+                return
+            }
+            if (e.key === 'k' || e.key === 'ArrowUp') {
+                e.preventDefault()
+                const elements = getVisibleMainElements()
+                const lastEl = elements[elements.length - 1]
+                if (lastEl) vimFocusElement(lastEl)
+                return
+            }
+        }
+
+        // ] / [ — jump to and focus next / previous heading
+        if (
+            (e.key === ']' || e.key === '[') &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            !e.shiftKey
+        ) {
+            e.preventDefault()
+            const scroller = document.getElementById('scroll-container')
+            if (!scroller) return
+
+            const headings = Array.from(
+                document.querySelectorAll(
+                    '#main-content h1[id], #main-content h2[id], #main-content h3[id], #main-content h4[id], #main-content h5[id], #main-content h6[id]',
+                ),
+            ) as HTMLElement[]
+            if (headings.length === 0) return
+
+            const scrollerTop = scroller.getBoundingClientRect().top
+            const positions = headings.map(
+                (h) => h.getBoundingClientRect().top - scrollerTop,
+            )
+
+            const focused = document.activeElement as HTMLElement | null
+            const focusRect = focused?.getBoundingClientRect()
+
+            if (e.key === ']') {
+                // Find the first heading below the focused element's bottom
+                const threshold = focusRect ? focusRect.bottom - scrollerTop : 2
+                const idx = positions.findIndex((p) => p > threshold)
+                if (idx !== -1) {
+                    scroller.scrollTop += positions[idx]
+                    headings[idx].focus({ preventScroll: true })
+                }
+            } else {
+                // Find the last heading above the focused element's top
+                const threshold = focusRect
+                    ? focusRect.top - scrollerTop
+                    : scroller.clientHeight
+                for (let i = positions.length - 1; i >= 0; i--) {
+                    if (positions[i] < threshold - 2) {
+                        scroller.scrollTop += positions[i]
+                        headings[i].focus({ preventScroll: true })
+                        break
+                    }
+                }
+            }
+            return
+        }
+
+        // } / { — jump to next / previous top-level block
+        if (
+            (e.key === '}' || e.key === '{') &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey
+        ) {
+            e.preventDefault()
+            const active = document.activeElement as HTMLElement | null
+            if (!active || !mainContent.contains(active)) return
+
+            // Walk up to the direct child of #main-content
+            let ancestor: HTMLElement = active
+            while (
+                ancestor.parentElement &&
+                ancestor.parentElement !== mainContent
+            ) {
+                ancestor = ancestor.parentElement as HTMLElement
+            }
+
+            const children = Array.from(mainContent.children) as HTMLElement[]
+            const idx = children.indexOf(ancestor)
+            if (idx === -1) return
+
+            if (e.key === '}') {
+                for (let i = idx + 1; i < children.length; i++) {
+                    const child = children[i]
+                    if (child.matches(mainItemQuery)) {
+                        vimFocusElement(child)
+                        return
+                    }
+                    const desc = child.querySelector(
+                        mainItemQuery,
+                    ) as HTMLElement | null
+                    if (desc) {
+                        vimFocusElement(desc)
+                        return
+                    }
+                }
+            } else {
+                for (let i = idx - 1; i >= 0; i--) {
+                    const child = children[i]
+                    if (child.matches(mainItemQuery)) {
+                        vimFocusElement(child)
+                        return
+                    }
+                    const desc = child.querySelector(
+                        mainItemQuery,
+                    ) as HTMLElement | null
+                    if (desc) {
+                        vimFocusElement(desc)
+                        return
+                    }
+                }
+            }
             return
         }
 
@@ -240,7 +599,68 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
             window.history.forward()
         }
 
-        if (e.key === 'h') {
+        // ctrl-d / ctrl-u — half-page scroll with focus follow
+        if (
+            (e.key === 'd' || e.key === 'u') &&
+            e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey
+        ) {
+            e.preventDefault()
+            const scroller = document.getElementById('scroll-container')
+            if (!scroller) return
+            const halfPage = scroller.clientHeight / 2
+            scroller.scrollBy({
+                top: e.key === 'd' ? halfPage : -halfPage,
+                behavior: 'instant',
+            })
+            const visible = getVisibleMainElements()
+            if (visible.length > 0) {
+                vimFocusElement(visible[0])
+            }
+            return
+        }
+
+        const isShiftRegionKey =
+            e.shiftKey &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            ['h', 'j', 'k', 'l'].includes(e.key.toLowerCase())
+
+        if (isShiftRegionKey) {
+            const shiftedKey = e.key.toLowerCase()
+            let target: HTMLElement | null = null
+
+            if (shiftedKey === 'h') {
+                target = getSidebarTarget() as HTMLElement | null
+            }
+
+            if (shiftedKey === 'j') {
+                target =
+                    getVisibleMainElements()[0] ??
+                    findFirstFocusableElement() ??
+                    currentElement ??
+                    null
+            }
+
+            if (shiftedKey === 'k') {
+                target = getNavbarTarget() as HTMLElement | null
+            }
+
+            if (shiftedKey === 'l') {
+                target = getTocTarget() as HTMLElement | null
+            }
+
+            if (target instanceof HTMLElement) {
+                e.preventDefault()
+                vimFocusElement(target)
+            }
+
+            return
+        }
+
+        if (e.key === 'h' && !e.ctrlKey && !e.metaKey && !e.altKey) {
             const activeElement = document.activeElement
 
             if (activeElement && mainContent.contains(activeElement)) {
@@ -264,7 +684,7 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
             }
         }
 
-        if (e.key === 'l') {
+        if (e.key === 'l' && !e.ctrlKey && !e.metaKey && !e.altKey) {
             const activeElement = document.activeElement
 
             if (activeElement && sidebar?.contains(activeElement)) {
@@ -294,7 +714,7 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
             window.location.href = nextHref
         }
 
-        if (e.key === 'p' && e.ctrlKey && prevHref) {
+        if (e.key === 'b' && e.ctrlKey && prevHref) {
             window.location.href = prevHref
         }
     })
@@ -302,6 +722,10 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
     applyVimNavigation(mainContent, queryString, (element) => {
         currentElement = element
     })
+
+    if (navbar) {
+        applyVimNavigation(navbar, navbarQueryString)
+    }
 
     if (tocSidebar) {
         applyVimNavigation(tocSidebar, 'a[href]')
@@ -324,6 +748,7 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
             const slug = heading.id
             if (!slug) return
 
+            const level = parseInt(heading.tagName[1], 10)
             const anchor = document.createElement('a')
             anchor.className = 'heading-anchor'
             anchor.href = `#${slug}`
@@ -331,22 +756,23 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
                 'aria-label',
                 `Link to section ${heading.textContent ?? ''}`,
             )
-            anchor.textContent = '#'
-            heading.append(anchor)
+            anchor.textContent = '#'.repeat(level)
+            anchor.style.marginInlineEnd = '1ch'
+            heading.prepend(anchor)
         })
     }
 </script>
 
 <!-- TOC Active Heading -->
 <script>
-    const mainContent = document.getElementById(
-        'main-content',
+    const scrollContainer = document.getElementById(
+        'scroll-container',
     ) as HTMLElement | null
     const tocLinks = Array.from(
         document.querySelectorAll('#toc-list a[data-heading-slug]'),
     ) as HTMLAnchorElement[]
 
-    if (mainContent && tocLinks.length > 0) {
+    if (scrollContainer && tocLinks.length > 0) {
         const headingElements = tocLinks
             .map((link) => {
                 const slug = link.dataset.headingSlug
@@ -359,14 +785,50 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
             )
 
         const setActiveTocLink = (activeId: string) => {
+            // Find the active link and its parent H2 section
+            let activeH2Slug: string | null = null
+            for (const link of tocLinks) {
+                if (link.dataset.headingSlug === activeId) {
+                    // Walk backwards to find the owning H2
+                    if (link.classList.contains('depth-2')) {
+                        activeH2Slug = activeId
+                    } else {
+                        // Search backwards through tocLinks for nearest depth-2
+                        const idx = tocLinks.indexOf(link)
+                        for (let i = idx - 1; i >= 0; i--) {
+                            if (tocLinks[i].classList.contains('depth-2')) {
+                                activeH2Slug =
+                                    tocLinks[i].dataset.headingSlug ?? null
+                                break
+                            }
+                        }
+                    }
+                    break
+                }
+            }
+
+            // Update active class and reveal sub-headings for active H2 section
+            let currentH2Slug: string | null = null
             tocLinks.forEach((link) => {
                 const slug = link.dataset.headingSlug
                 link.classList.toggle('active', slug === activeId)
+
+                if (link.classList.contains('depth-2')) {
+                    currentH2Slug = slug ?? null
+                }
+
+                const li = link.parentElement
+                if (li && !link.classList.contains('depth-2')) {
+                    li.classList.toggle(
+                        'toc-visible',
+                        currentH2Slug === activeH2Slug,
+                    )
+                }
             })
         }
 
         const syncActiveHeading = () => {
-            const scrollTop = mainContent.scrollTop
+            const scrollTop = scrollContainer.scrollTop
             let activeHeading = headingElements[0]
 
             for (const heading of headingElements) {
@@ -386,7 +848,7 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
             }
         }
 
-        mainContent.addEventListener('scroll', syncActiveHeading, {
+        scrollContainer.addEventListener('scroll', syncActiveHeading, {
             passive: true,
         })
         window.addEventListener('hashchange', syncActiveHeading)
@@ -396,28 +858,114 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
 
 <!-- Sidebar Toggle -->
 <script>
-    import { isUserTyping } from '@/utils/vim'
+    import { isUserTyping, vimFocusElement } from '@/utils/vim'
 
     const sidebarToggle = document.getElementById(
         'sidebar-toggle',
     ) as HTMLButtonElement | null
+    const tocToggle = document.getElementById(
+        'toc-toggle',
+    ) as HTMLButtonElement | null
     const sidebarContainer = document.getElementById(
         'sidebar-container',
     ) as HTMLDivElement | null
+    const tocContainer = document.getElementById(
+        'toc-container',
+    ) as HTMLDivElement | null
+    const navbar = document.getElementById('top-navbar') as HTMLElement | null
+    const mainContent = document.getElementById(
+        'main-content',
+    ) as HTMLElement | null
+
+    const setSidebarToggleLabel = (collapsed: boolean) => {
+        if (!sidebarToggle) return
+
+        sidebarToggle.innerHTML = '<code>&lt;zh&gt;</code>'
+        sidebarToggle.setAttribute(
+            'aria-label',
+            collapsed
+                ? 'Expand left sidebar (zh)'
+                : 'Collapse left sidebar (zh)',
+        )
+    }
+
+    const setTocToggleLabel = (collapsed: boolean) => {
+        if (!tocToggle) return
+
+        tocToggle.innerHTML = '<code>&lt;zl&gt;</code>'
+        tocToggle.setAttribute(
+            'aria-label',
+            collapsed
+                ? 'Expand right sidebar (zl)'
+                : 'Collapse right sidebar (zl)',
+        )
+    }
+
+    const setSidebarCollapsed = (collapsed: boolean) => {
+        if (!sidebarContainer || !sidebarToggle) return
+
+        sidebarContainer.classList.toggle('collapsed', collapsed)
+        sidebarToggle.setAttribute('aria-expanded', String(!collapsed))
+        localStorage.setItem('sidebar-collapsed', String(collapsed))
+        setSidebarToggleLabel(collapsed)
+    }
+
+    const setTocCollapsed = (collapsed: boolean) => {
+        if (!tocContainer || !tocToggle) return
+
+        tocContainer.classList.toggle('collapsed', collapsed)
+        tocToggle.setAttribute('aria-expanded', String(!collapsed))
+        localStorage.setItem('toc-collapsed', String(collapsed))
+        setTocToggleLabel(collapsed)
+    }
+
+    const getSidebarFocusTarget = () =>
+        document.querySelector(
+            '#sidebar a.active, #sidebar details summary, #sidebar a[href]',
+        ) as HTMLElement | null
+
+    const getTocFocusTarget = () =>
+        document.querySelector(
+            '#toc-sidebar a.active, #toc-sidebar a[href]',
+        ) as HTMLElement | null
+
+    const isElementVisible = (element: HTMLElement) => {
+        if (element.hidden) return false
+
+        const style = window.getComputedStyle(element)
+        if (style.display === 'none' || style.visibility === 'hidden') {
+            return false
+        }
+
+        return element.getClientRects().length > 0
+    }
+
+    const getNavbarFocusTarget = () =>
+        navbar?.querySelector(
+            'a[data-active="true"], a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        )
+
+    const getMainFocusTarget = () => {
+        if (!mainContent) return null
+
+        const activeElement = document.activeElement
+        if (
+            activeElement instanceof HTMLElement &&
+            mainContent.contains(activeElement)
+        ) {
+            return activeElement
+        }
+
+        const candidates = Array.from(
+            mainContent.querySelectorAll(
+                '[tabindex="0"], a[href], summary',
+            ) as NodeListOf<HTMLElement>,
+        )
+
+        return candidates.find(isElementVisible) ?? null
+    }
 
     if (sidebarToggle && sidebarContainer) {
-        const setSidebarToggleLabel = () => {
-            sidebarToggle.innerHTML = '<code>&lt;C-b&gt;</code>'
-            sidebarToggle.setAttribute('aria-label', 'Toggle sidebar (Ctrl+B)')
-        }
-
-        const setSidebarCollapsed = (collapsed: boolean) => {
-            sidebarContainer.classList.toggle('collapsed', collapsed)
-            sidebarToggle.setAttribute('aria-expanded', String(!collapsed))
-            localStorage.setItem('sidebar-collapsed', String(collapsed))
-            setSidebarToggleLabel()
-        }
-
         const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true'
         setSidebarCollapsed(isCollapsed)
 
@@ -426,14 +974,132 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
                 !sidebarContainer.classList.contains('collapsed'),
             )
         })
+    }
+
+    if (tocToggle && tocContainer) {
+        const isCollapsed = localStorage.getItem('toc-collapsed') !== 'false'
+        setTocCollapsed(isCollapsed)
+
+        tocToggle.addEventListener('click', () => {
+            setTocCollapsed(!tocContainer.classList.contains('collapsed'))
+        })
+    }
+
+    if (sidebarContainer || tocContainer || navbar || mainContent) {
+        let pendingZAt = 0
 
         window.addEventListener('keydown', (e) => {
             if (isUserTyping()) return
-            if (e.key === 'b' && e.ctrlKey) {
+
+            const hasOpenDialog =
+                document.querySelector('dialog[open]') instanceof
+                HTMLDialogElement
+            if (hasOpenDialog) return
+
+            const isPlainKey =
+                !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey
+
+            if (isPlainKey) {
+                const now = Date.now()
+
+                if (e.key === 'z') {
+                    if (pendingZAt && now - pendingZAt <= 700) {
+                        pendingZAt = 0
+                        return
+                    }
+
+                    pendingZAt = now
+                    return
+                }
+
+                if (e.key === '[' || e.key === ']') {
+                    pendingZAt = 0
+                    return // handled by heading-jump listener
+                }
+
+                const hasPendingZChord =
+                    pendingZAt > 0 && now - pendingZAt <= 700
+                pendingZAt = 0
+
+                if (hasPendingZChord) {
+                    if (e.key === 'h') {
+                        e.preventDefault()
+                        setSidebarCollapsed(
+                            !sidebarContainer?.classList.contains('collapsed'),
+                        )
+                        return
+                    }
+
+                    if (e.key === 'l') {
+                        e.preventDefault()
+                        setTocCollapsed(
+                            !tocContainer?.classList.contains('collapsed'),
+                        )
+                        return
+                    }
+
+                    if (e.key === 'j') {
+                        e.preventDefault()
+
+                        const mainTarget = getMainFocusTarget()
+                        if (mainTarget instanceof HTMLElement) {
+                            vimFocusElement(mainTarget)
+                        }
+                        return
+                    }
+
+                    if (e.key === 'k') {
+                        e.preventDefault()
+
+                        const navbarTarget = getNavbarFocusTarget()
+                        if (navbarTarget instanceof HTMLElement) {
+                            vimFocusElement(navbarTarget)
+                        }
+                    }
+                    return
+                }
+            } else {
+                pendingZAt = 0
+            }
+
+            if (!e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
+
+            const key = e.key.toLowerCase()
+
+            if (key === 'h') {
                 e.preventDefault()
-                setSidebarCollapsed(
-                    !sidebarContainer.classList.contains('collapsed'),
-                )
+                const sidebarTarget = getSidebarFocusTarget()
+                if (sidebarTarget instanceof HTMLElement) {
+                    vimFocusElement(sidebarTarget)
+                }
+                return
+            }
+
+            if (key === 'l') {
+                e.preventDefault()
+                const tocTarget = getTocFocusTarget()
+                if (tocTarget instanceof HTMLElement) {
+                    vimFocusElement(tocTarget)
+                }
+                return
+            }
+
+            if (key === 'j') {
+                e.preventDefault()
+
+                const mainTarget = getMainFocusTarget()
+                if (mainTarget instanceof HTMLElement) {
+                    vimFocusElement(mainTarget)
+                }
+            }
+
+            if (key === 'k') {
+                e.preventDefault()
+
+                const navbarTarget = getNavbarFocusTarget()
+                if (navbarTarget instanceof HTMLElement) {
+                    vimFocusElement(navbarTarget)
+                }
             }
         })
     }
@@ -488,6 +1154,10 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
         }
 
         tocResizer.addEventListener('mousedown', (event) => {
+            if (tocContainer.classList.contains('collapsed')) {
+                return
+            }
+
             event.preventDefault()
             tocResizer.classList.add('dragging')
             window.addEventListener('mousemove', onMouseMove)
@@ -568,22 +1238,36 @@ const tocHeadings = headings.filter((heading) => heading.depth >= 2)
     const docsButton = document.getElementById(
         'docs-button',
     ) as HTMLButtonElement
+    const tocButton = document.getElementById(
+        'toc-button',
+    ) as HTMLButtonElement | null
     const sidebarContainer = document.getElementById(
         'sidebar-container',
     ) as HTMLDivElement
+    const tocContainer = document.getElementById(
+        'toc-container',
+    ) as HTMLElement | null
     const article = document.querySelector('article') as HTMLElement
 
-    menuButton.addEventListener('click', () => {
-        sidebarContainer.classList.remove('mobile-hidden')
-        article.classList.add('mobile-hidden')
-        menuButton.setAttribute('variant-', '')
-        docsButton.setAttribute('variant-', 'background1')
-    })
+    function setMobileActive(panel: 'menu' | 'docs' | 'toc') {
+        sidebarContainer.classList.toggle('mobile-hidden', panel !== 'menu')
+        article.classList.toggle('mobile-hidden', panel !== 'docs')
+        tocContainer?.classList.toggle('mobile-hidden', panel !== 'toc')
+        menuButton.setAttribute(
+            'variant-',
+            panel === 'menu' ? '' : 'background1',
+        )
+        docsButton.setAttribute(
+            'variant-',
+            panel === 'docs' ? '' : 'background1',
+        )
+        tocButton?.setAttribute(
+            'variant-',
+            panel === 'toc' ? '' : 'background1',
+        )
+    }
 
-    docsButton.addEventListener('click', () => {
-        sidebarContainer.classList.add('mobile-hidden')
-        article.classList.remove('mobile-hidden')
-        menuButton.setAttribute('variant-', 'background1')
-        docsButton.setAttribute('variant-', '')
-    })
+    menuButton.addEventListener('click', () => setMobileActive('menu'))
+    docsButton.addEventListener('click', () => setMobileActive('docs'))
+    tocButton?.addEventListener('click', () => setMobileActive('toc'))
 </script>

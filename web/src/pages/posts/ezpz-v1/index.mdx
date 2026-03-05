@@ -1,6 +1,8 @@
 ---
 layout: '@/layouts/Doc.astro'
 title: '📝 ezpz-v1'
+date: 2024-08-23
+description: 'Documentation and usage guide for ezpz v1, a library for simplifying distributed training setup and testing.'
 ---
 
 Sam Foreman
@@ -59,18 +61,16 @@ _Full support for your favorite framework + backend combo ❤️_.
         - `WORLD_SIZE =`
           [`ez.get_world_size()`](https://github.com/saforem2/ezpz/blob/main/src/ezpz/dist.py#L417)
 
-        <span class="dim-text">
-            {' '}
-            (see
-            [`ezpz/dist.py`](https://github.com/saforem2/ezpz/blob/main/src/ezpz/dist.py)
-            for more details).{' '}
-        </span>
+        (see [`ezpz/dist.py`](https://github.com/saforem2/ezpz/blob/main/src/ezpz/dist.py) for more details).
 
-- Writing device agnostic code: - <a href="https://github.com/saforem3/ezpz/blob/main/src/ezpz/dist.py#L332"><code>ezpz.get_torch_device()</code></a>
-  \> \> - **Full support** for any &#123;`device` + `framework` +
-  `backend`&#125;: \> - device: &#123;`GPU`, `XPU`, `MPS`, `CPU`&#125; \> -
-  framework: &#123;`torch`, `deepspeed`, `horovod`, `tensorflow`&#125; \> -
-  backend: &#123;`DDP`, `deepspeed`, `horovod`&#125;
+- Writing device agnostic code:
+    - <a href="https://github.com/saforem3/ezpz/blob/main/src/ezpz/dist.py#L332">
+          <code>ezpz.get_torch_device()</code>
+      </a>
+    - **Full support** for any \{`device`, `framework`, `backend`\}
+        - device: \{`GPU`, `XPU`, `MPS`, `CPU`\}
+        - framework: \{`torch`, `deepspeed`, `horovod`, `tensorflow`\}
+        - backend: \{`DDP`, `deepspeed`, `horovod`\}
 
 ## [`test_dist.py`](https://github.com/saforem2/ezpz/blob/main/src/ezpz/test_dist.py)
 
@@ -456,9 +456,7 @@ Deprecated:
 
 ### Gist
 
-> [!TIP]
->
-> ### <span class="dim-text" style="font-weight: normal;"> <code>saforem2/ezpz.md</code></span>
+> [!TIP] <span class="dim-text" style="font-weight: normal;"> <code>saforem2/ezpz.md</code></span>
 >
 > &lt;script src="https://gist.github.com/saforem2/2f2549894d9c65ed2edcfe6b1dbe6a70.js">&lt;/script>
 

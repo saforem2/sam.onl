@@ -1,0 +1,59 @@
+.nowplayingcard {
+    margin: 0 auto;
+    font-family: var(--font-family);
+    font-size: smaller;
+}
+
+.nowplayingcard .nowplayingcontainer-inner {
+    overflow: hidden;
+    margin-bottom: 0;
+    transition: 0.3s;
+    display: inline-flex;
+    text-overflow: ellipsis;
+    border-radius: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.nowplayingcard .nowplayingcontainer-inner:hover {
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+}
+
+.nowplayingcard .nowplayingcontainer-inner img#trackart {
+    max-width: 30%;
+    float: left;
+    left: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.nowplayingcard .nowplayingcontainer-inner .trackInfo {
+    float: left;
+    display: block;
+}
+
+.nowplayingcard .nowplayingcontainer-inner .trackInfo a {
+    max-width: 95%;
+    display: inline-block;
+    font-size: inherit;
+    text-align: left;
+    text-decoration: none;
+    overflow: auto;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.nowplayingcard .nowplayingcontainer-inner .trackInfo a:nth-child(odd) {
+    color: #838383;
+    vertical-align: middle;
+    line-height: normal;
+    letter-spacing: 0.2px;
+    padding: 10% 0 0 5%;
+}
+
+.nowplayingcard .nowplayingcontainer-inner .trackInfo a:nth-child(even) {
+    color: #838383;
+    font-size: calc(var(--font-size) - 1px);
+    letter-spacing: 0.1px;
+    padding: 5% 0 0 5%;
+}

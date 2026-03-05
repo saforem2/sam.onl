@@ -1,6 +1,8 @@
 ---
 layout: '@/layouts/Doc.astro'
 title: '💅 How to Make Dope Slides'
+date: 2024-08-13
+description: 'A guide to creating polished presentation slides using Quarto and Reveal.js with custom CSS.'
 ---
 
 Sam Foreman
@@ -36,9 +38,7 @@ For this post, I’ll focus on the slides I presented at last years
 2023](https://indico.fnal.gov/event/57249/contributions/271305/), shown
 below:
 
-> [!TIP]
->
-> ### <span class="dim-text">🏃‍♂️ Follow Along…</span>
+> [!TIP] <span class="dim-text">🏃‍♂️ Follow Along…</span>
 >
 > Once you’ve [Installed Quarto](https://quarto.org/docs/download/), you
 > can build these slides yourself by:
@@ -107,8 +107,6 @@ Reveal.js is the official documentation:
 - For a single slide deck, the content will be placed in `index.qmd` and
   our directory structure will look something like:
 
-    <div class="tight-code">
-
     ```bash
     📂 lattice23/
     ├── 📂 assets/            # for images, etc.
@@ -121,8 +119,6 @@ Reveal.js is the official documentation:
     ├── 📄 index.qmd          # Quarto document containing slides content
     └── 📜 references.bib     # BibTex references
     ```
-
-    </div>
 
 - Equations are rendered using `$` delimiters for inline math and `$$`
   for display math[^4].
@@ -182,11 +178,7 @@ Explicitly, we see this consists of:
 
 <details is-="accordion">
 
-<summary>
-
-Expand for <code>yaml</code>
-
-</summary>
+<summary>Expand for <code>yaml</code></summary>
 
 ```yaml
 ---
@@ -239,7 +231,7 @@ Options](https://quarto.org/docs/reference/formats/presentations/revealjs.html)
 
     <div id="fig-title">
 
-    <img src="./assets/title-slide.png" style="width:66.0%" />
+    <img src="/assets/title-slide.png" style="width:66.0%" />
 
     Figure 1: [Title
     Slide](https://saforem2.github.io/lattice23/#/section)
@@ -249,11 +241,7 @@ Options](https://quarto.org/docs/reference/formats/presentations/revealjs.html)
 
         <details is-="accordion">
 
-        <summary>
-
-        Expand for <code>quarto</code>
-
-        </summary>
+        <summary>Expand for <code>quarto</code></summary>
 
         ```markdown
         # {.title-slide .centeredslide background-iframe="https://saforem2.github.io/grid-worms-animation/" loading="lazy"}
@@ -323,7 +311,7 @@ writing it in Markdown:
 
 <div id="fig-overview">
 
-<img src="./assets/overview.png" style="width:60.0%" />
+<img src="/assets/overview.png" style="width:60.0%" />
 
 Figure 2: [Overview
 Slide](https://saforem2.github.io/lattice23/#/overview)
@@ -378,11 +366,7 @@ Side-by-side content (either text or images)
 
     <details is-="accordion">
 
-    <summary>
-
-    Expand for<code>quarto</code>
-
-    </summary>
+    <summary>Expand for<code>quarto</code></summary>
 
     ```markdown
     # Markov Chain Monte Carlo (MCMC) {.centeredslide}
@@ -403,7 +387,7 @@ Side-by-side content (either text or images)
     :::
 
     ::: {.column width="49%"}
-    ![](https://raw.githubusercontent.com/saforem2/deep-fridays/main/assets/normal_distribution.dark.svg)
+    <img src="/assets/normal_distribution.dark.svg" />
     :::
 
     ::::
@@ -440,15 +424,11 @@ while to figure out how things worked so maybe its helpful for others.
 
 <details is-="accordion">
 
-<summary>
-
-Expand for <code>css</code>
-
-</summary>
+<summary>Expand for <code>css</code></summary>
 
 <div id="fig-css">
 
-<img src="./assets/css.png" style="width:80.0%" />
+<img src="/assets/css.png" style="width:80.0%" />
 
 Figure 4: Example of selecting an element and making a change to the
 CSS.
@@ -463,7 +443,7 @@ To enable your GitHub page, you can do the following:
 
 <div id="fig-github-page">
 
-<img src="./assets/github-pages.png" style="width:80.0%" />
+<img src="/assets/github-pages.png" style="width:80.0%" />
 
 Figure 5: Instructions for building a GitHub page using the `docs/`
 directory off the `main` branch.
@@ -491,9 +471,7 @@ https://saforem2.github.io/lattice23
 - [ Quarto Clean
   Theme](https://github.com/grantmcdermott/quarto-revealjs-clean)
 
-> [!TIP]
->
-> ### <span style="color: #FF5252;">❤️‍🩹 Status</span>
+> [!TIP] <span style="color: #FF5252;">❤️‍🩹 Status</span>
 >
 > ```text
 >     Last Updated: 12/22/2025 @ 18:27:29

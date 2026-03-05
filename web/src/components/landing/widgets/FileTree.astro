@@ -1,101 +1,183 @@
+---
+type EntryNode = {
+    name: string
+    isDirectory: boolean
+    className: string
+    children: EntryNode[]
+    hiddenCount: number
+}
+
+const expandedRootDirectories = new Set<string>(['posts', 'talks', 'webtui'])
+const visibleExtensions = new Set<string>([
+    '.astro',
+    '.md',
+    '.mdx',
+    '.json',
+    '.txt',
+    '.xml',
+])
+const maxChildEntries = 12
+
+const pageModules = import.meta.glob([
+    '/src/pages/**/*.astro',
+    '/src/pages/**/*.md',
+    '/src/pages/**/*.mdx',
+    '!/src/pages/index.astro',
+])
+const syntheticPaths = [
+    '_redirects',
+    'index.astro',
+    'index.xml',
+    'listings.json',
+    'robots.txt',
+    'search.json',
+    'sitemap.xml',
+    'posts/index.xml',
+]
+const relativePaths = Array.from(
+    new Set([
+        ...Object.keys(pageModules).map((absolutePath) =>
+            absolutePath.replace(/^\/src\/pages\//, ''),
+        ),
+        ...syntheticPaths,
+    ]),
+).filter((path) => path.length > 0 && path !== 'landing.mdx copy')
+
+const extensionOf = (name: string): string => {
+    const lastDot = name.lastIndexOf('.')
+    return lastDot >= 0 ? name.slice(lastDot) : ''
+}
+
+const isDirectoryPath = (candidate: string): boolean =>
+    relativePaths.some((path) => path.startsWith(`${candidate}/`))
+
+const isVisibleFile = (name: string): boolean => {
+    if (name === '_redirects') return true
+    return visibleExtensions.has(extensionOf(name))
+}
+
+const classifyEntry = (name: string, isDirectory: boolean): string => {
+    if (isDirectory) return 'folder'
+
+    const extension = extensionOf(name)
+    if (extension === '.md' || extension === '.mdx') return 'markdown'
+    if (extension === '.astro') return 'astro'
+    if (extension === '.json' || extension === '.xml') return 'config'
+    return 'file'
+}
+
+const sortEntries = (a: EntryNode, b: EntryNode): number => {
+    if (a.isDirectory && !b.isDirectory) return -1
+    if (!a.isDirectory && b.isDirectory) return 1
+    return a.name.localeCompare(b.name)
+}
+
+const rootNames = Array.from(
+    new Set(relativePaths.map((path) => path.split('/')[0]).filter(Boolean)),
+)
+
+const rootEntries: EntryNode[] = rootNames
+    .map((rootName): EntryNode | null => {
+        const rootIsDirectory = isDirectoryPath(rootName)
+
+        if (!rootIsDirectory) {
+            if (!isVisibleFile(rootName)) return null
+
+            return {
+                name: rootName,
+                isDirectory: false,
+                className: classifyEntry(rootName, false),
+                children: [],
+                hiddenCount: 0,
+            }
+        }
+
+        const rootEntry: EntryNode = {
+            name: rootName,
+            isDirectory: true,
+            className: 'folder',
+            children: [],
+            hiddenCount: 0,
+        }
+
+        if (!expandedRootDirectories.has(rootName)) return rootEntry
+
+        const prefix = `${rootName}/`
+        const childNames = Array.from(
+            new Set(
+                relativePaths
+                    .filter((path) => path.startsWith(prefix))
+                    .map((path) => path.slice(prefix.length).split('/')[0])
+                    .filter(Boolean),
+            ),
+        )
+
+        const childEntries = childNames
+            .map((childName): EntryNode | null => {
+                const childPath = `${rootName}/${childName}`
+                const childIsDirectory = isDirectoryPath(childPath)
+
+                if (!childIsDirectory && !isVisibleFile(childName)) return null
+
+                return {
+                    name: childName,
+                    isDirectory: childIsDirectory,
+                    className: classifyEntry(childName, childIsDirectory),
+                    children: [],
+                    hiddenCount: 0,
+                }
+            })
+            .filter((entry): entry is EntryNode => entry !== null)
+            .sort(sortEntries)
+
+        rootEntry.children = childEntries.slice(0, maxChildEntries)
+        rootEntry.hiddenCount = Math.max(
+            childEntries.length - rootEntry.children.length,
+            0,
+        )
+
+        return rootEntry
+    })
+    .filter((entry): entry is EntryNode => entry !== null)
+    .sort(sortEntries)
+---
+
 <column box-="square" class="widget" pad-="2 1" id="filetree-widget">
-    <span style="color: var(--blue)">&#xf07b; ~/projects/my-app</span>
+    <span class="tree-title"
+        ><span class="folder-icon">&#xf07b;</span> ~/sam.onl/web/src/pages</span
+    >
     <ul marker-="open tree">
-        <li style="color: var(--blue)">&#xf07b; .git</li>
-        <li style="color: var(--blue)">&#xf07b; .github</li>
-        <li class="ignored">
-            <span style="color: var(--blue)">&#xf07b;</span> ◌ .next
-        </li>
-        <li class="ignored">
-            <span style="color: var(--blue)">&#xf07b;</span> ◌ dist
-        </li>
-        <li class="ignored">
-            <span style="color: var(--blue)">&#xf07b;</span> ◌ node_modules
-        </li>
-        <li>
-            <span style="color: var(--blue)">&#xf07b; app</span>
-            <ul marker-="open tree">
-                <li>
-                    <span style="color: var(--blue)">&#xf07b; components</span>
-                    <ul>
-                        <li>
-                            <span style="color: var(--blue)">&#xf07b; ui</span>
-                            <ul>
-                                <li>
-                                    <span style="color: var(--sapphire)"
-                                        >&#xe7ba;</span
-                                    > Accordion.tsx
+        {
+            rootEntries.map((entry) => (
+                <li class={entry.className}>
+                    {entry.isDirectory ? (
+                        <span class="folder-icon">&#xf07b;</span>
+                    ) : (
+                        <span class="file-icon">&#xe60d;</span>
+                    )}{' '}
+                    {entry.name}
+                    {entry.children.length > 0 && (
+                        <ul marker-="open tree">
+                            {entry.children.map((child) => (
+                                <li class={child.className}>
+                                    {child.isDirectory ? (
+                                        <span class="folder-icon">
+                                            &#xf07b;
+                                        </span>
+                                    ) : (
+                                        <span class="file-icon">&#xe60d;</span>
+                                    )}{' '}
+                                    {child.name}
                                 </li>
-                                <li>
-                                    <span style="color: var(--sapphire)"
-                                        >&#xe7ba;</span
-                                    > Button.tsx
-                                </li>
-                                <li>
-                                    <span style="color: var(--sapphire)"
-                                        >&#xe7ba;</span
-                                    > Dialog.tsx
-                                </li>
-                                <li>
-                                    <span style="color: var(--sapphire)"
-                                        >&#xe7ba;</span
-                                    > Popover.tsx
-                                </li>
-                                <li>
-                                    <span style="color: var(--sapphire)"
-                                        >&#xe7ba;</span
-                                    > Tabs.tsx
-                                </li>
-                                <li>
-                                    <span style="color: var(--sapphire)"
-                                        >&#xe7ba;</span
-                                    > Tooltip.tsx
-                                </li>
-                                <li>
-                                    <span style="color: var(--sapphire)"
-                                        >&#xe7ba;</span
-                                    > Button.tsx
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
+                            ))}
+                            {entry.hiddenCount > 0 && (
+                                <li class="more">… {entry.hiddenCount} more</li>
+                            )}
+                        </ul>
+                    )}
                 </li>
-                <li>
-                    <span style="color: var(--mauve)">&#xe60d;</span> favicon.ico
-                </li>
-                <li>
-                    <span style="color: var(--blue)">&#xe749;</span> globals.css
-                </li>
-                <li>
-                    <span style="color: var(--sapphire)">&#xe7ba;</span> layout.tsx
-                </li>
-                <li>
-                    <span style="color: var(--sapphire)">&#xe7ba;</span> page.tsx
-                </li>
-            </ul>
-        </li>
-        <li>
-            <span style="color: var(--blue)">&#xf07b; public</span>
-            <ul marker-="open tree">
-                <li>
-                    <span style="color: var(--mauve)">&#xe60d;</span> logo-256x256.png
-                </li>
-                <li>
-                    <span style="color: var(--mauve)">&#xe60d;</span> logo-128x128.png
-                </li>
-                <li>
-                    <span style="color: var(--mauve)">&#xe60d;</span> logo-64x64.png
-                </li>
-                <li>
-                    <span style="color: var(--mauve)">&#xe60d;</span> logo-16x16.png
-                </li>
-                <li>
-                    <span style="color: var(--mauve)">&#xe60d;</span> logo.svg
-                </li>
-            </ul>
-        </li>
-        <li>&#xe83e; next.config.ts</li>
-        <li>&#xe8ca; tsconfig.json</li>
+            ))
+        }
     </ul>
 </column>
 
@@ -103,6 +185,16 @@
     #filetree-widget {
         grid-column: 1;
         grid-row: 2 / 5;
+    }
+
+    .tree-title {
+        color: var(--blue);
+        display: inline-block;
+        height: 1lh;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     ul {
@@ -113,7 +205,36 @@
         color: var(--foreground2);
     }
 
-    .ignored {
+    .folder {
+        color: var(--blue);
+    }
+
+    .markdown {
+        color: var(--green);
+    }
+
+    .astro {
+        color: var(--sapphire);
+    }
+
+    .config {
+        color: var(--mauve);
+    }
+
+    .file {
+        color: var(--foreground1);
+    }
+
+    .more {
         color: var(--foreground2);
+        font-style: italic;
+    }
+
+    .folder-icon {
+        color: var(--blue);
+    }
+
+    .file-icon {
+        color: var(--sapphire);
     }
 </style>

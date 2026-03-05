@@ -1,5 +1,5 @@
 ---
-import Navbar from '../../Navbar.astro'
+import Navbar from '../../NavbarMinimal.astro'
 import Widgets from '../widgets/Widgets.astro'
 ---
 
@@ -11,51 +11,65 @@ import Widgets from '../widgets/Widgets.astro'
             <h1>
                 <span is-="badge" variant-="green">&#xf4b5; Sam Foreman</span>
             </h1>
+            <span id="tagline"
+                >Computational Scientist · Argonne National Laboratory</span
+            >
             <column>
                 <p>
-                    Currently: training large models on supercomputers at
-                    <a href="https://www.anl.gov/alcf" target="_blank"
+                    I'm a Computational Scientist in the
+                    <a
+                        href="https://www.alcf.anl.gov/about/people/group/506"
+                        target="_blank">AI / ML Group</a
+                    > at the
+                    <a href="https://www.alcf.anl.gov/" target="_blank"
                         >Argonne Leadership Computing Facility</a
-                    >.<br />
+                    >.
                 </p>
+                &nbsp;<br />
+                <p>
+                    My work focuses on large-scale distributed training of
+                    foundation models for scientific applications. I co-lead the
+                    Models &amp; Pre-Training team for the
+                    <a href="https://auroragpt.anl.gov" target="_blank"
+                        >AuroraGPT</a
+                    > project.
+                </p>
+                &nbsp;<br />
+                <row id="social-links">
+                    <a
+                        href="https://github.com/saforem2"
+                        target="_blank"
+                        title="GitHub">&#xe65b;</a
+                    >
+                    <a
+                        href="https://bsky.app/profile/samforeman.bsky.social"
+                        target="_blank"
+                        title="Bluesky">&#xe28e;</a
+                    >
+                    <a
+                        href="https://twitter.com/saforem2"
+                        target="_blank"
+                        title="Twitter">&#xeb72;</a
+                    >
+                    <a
+                        href="https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en"
+                        target="_blank"
+                        title="Google Scholar">&#xf19d;</a
+                    >
+                    <a
+                        href="https://www.linkedin.com/in/samforem2"
+                        target="_blank"
+                        title="LinkedIn">&#xe820;</a
+                    >
+                    <a href="mailto:sf@omg.lol" title="Email">&#xf0e0;</a>
+                </row>
                 <div is-="separator"></div>
-                <row gap-="1">
-                    <span
-                        >[<a href="/landing"></a>] [<a href="/posts"></a>] [<a
-                            href="/talks">󰐨</a
-                        >] [<a href="/projects"></a>] [<a
-                            href="https://twitter.com/saforem2"></a
-                        >] [<a href="https://github.com/saforem2"></a></span
-                    >]
+                <row id="intro-nav">
+                    <a id="scroll-down-button" href="#recent-posts">↓ Recent</a>
+                    <a id="landing-button" href="/landing">More →</a>
                 </row>
             </column>
         </column>
-    </column>
-    <column id="statusline">
-        <row>
-            <span
-                is-="badge"
-                variant-="blue"
-                style="--badge-text: var(--background0)">NORMAL</span
-            >
-            <span
-                is-="badge"
-                variant-="background1"
-                style="--badge-text: var(--blue)">&#xe725; main</span
-            >
-            <row self-="grow">
-                <span is-="badge" variant-="background0">sam.onl</span>
-            </row>
-            <row id="statusline-right">
-                <span is-="badge" variant-="background0">utf-8</span>
-                <span is-="badge" variant-="background1">Top</span>
-                <span
-                    is-="badge"
-                    variant-="blue"
-                    style="--badge-text: var(--background0)">1:1</span
-                >
-            </row>
-        </row>
     </column>
 
     <style>
@@ -68,16 +82,24 @@ import Widgets from '../widgets/Widgets.astro'
             align-items: center;
             justify-content: center;
 
+            h1::before {
+                content: '';
+                margin-inline-start: -1ch;
+            }
+            h2::before {
+                content: '';
+                margin-inline-start: -1ch;
+            }
+
             #content {
                 position: absolute;
                 background-color: var(--background1);
                 border: 1pt solid var(--background2);
-                max-width: 80%;
+                max-width: min(80%, 80ch);
                 width: round(calc(100% - 2ch), 1ch);
 
                 nav {
-                    padding: 1ch;
-                    overflow-x: auto;
+                    padding: 2ch 1ch;
                 }
 
                 #main {
@@ -86,48 +108,114 @@ import Widgets from '../widgets/Widgets.astro'
                     --box-border-color: var(--foreground2);
 
                     a {
-                        color: var(--foreground1);
-                        text-decoration: none;
+                        color: var(--foreground2);
+                        /* text-decoration: underline; */
 
                         &:focus,
                         &:hover {
-                            text-decoration: underline;
+                            color: var(--blue);
+                            background-color: oklch(
+                                from var(--blue)
+                                    calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+                            );
+                            text-decoration: none;
                         }
+                    }
+                    a#recent-posts {
+                        text-decoration: none !important;
+                    }
+                    a#landing-button {
+                        text-decoration: none !important;
                     }
 
                     h1 {
                         color: var(--foreground0);
                         display: inline-flex;
-                        gap: 1ch;
                     }
                 }
             }
         }
 
-        #statusline {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 2lh;
-            background-color: var(--background0);
-            box-shadow: 0 -1lh 0 0 var(--mantle);
+        #tagline {
+            color: var(--foreground2);
+            margin-block-start: -0.5lh;
+        }
+
+        #social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2ch;
+
+            a {
+                color: var(--foreground2);
+                text-decoration: none !important;
+                padding-inline: 1ch;
+                background-color: oklch(
+                    from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c
+                        h / 0.1
+                );
+
+                &:focus,
+                &:hover {
+                    color: var(--blue);
+                    text-decoration: none;
+                }
+            }
         }
 
         @media (max-width: 50ch) {
-            #container {
+            #intro {
                 #content,
                 #main {
                     padding: 1lh 1ch;
                 }
-            }
-
-            #statusline-right {
-                display: none;
             }
         }
 
         [is-='separator'] {
             --separator-color: var(--foreground2);
         }
+
+        #intro-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+
+            a {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5ch;
+                padding: 0 1ch;
+                color: var(--foreground1);
+                text-decoration: none;
+                background-color: oklch(
+                    from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c
+                        h / 0.1
+                );
+
+                &:focus,
+                &:hover {
+                    background-color: oklch(
+                        from var(--blue) calc(l * var(--oklch-scale, 0.85)) c
+                            h / 0.1
+                    );
+                    color: var(--blue);
+                    text-decoration: none;
+                }
+            }
+        }
     </style>
+
+    <script>
+        document
+            .getElementById('scroll-down-button')
+            ?.addEventListener('click', (e) => {
+                e.preventDefault()
+                document
+                    .getElementById('recent-posts')
+                    ?.scrollIntoView({ behavior: 'smooth' })
+            })
+    </script>
 </header>

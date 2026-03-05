@@ -1,72 +1,44 @@
-# WebTUI
+# [sam.onl](https://sam.onl)
 
-Modular CSS Library that brings the beauty of Terminal UIs to the browser
+Personal website for [Sam Foreman](https://sam.onl), built with [Astro](https://astro.build) and [WebTUI](https://webtui.ironclad.sh).
 
-- Docs: https://webtui.ironclad.sh
-- Examples: https://webtui.ironclad.sh/showcase
-- Discord Server: https://discord.gg/yUS6T8YnfT
+## Stack
 
-## Quickstart
+- **Framework**: [Astro](https://astro.build) (SSG)
+- **Styling**: [WebTUI](https://webtui.ironclad.sh) — terminal UI aesthetics for the web
+- **Monorepo**: [Turborepo](https://turbo.build) + [Bun](https://bun.sh)
+- **Hosting**: [Netlify](https://netlify.com)
 
-Install the base WebTUI package with your preferred package manager
+## Structure
 
-```bash
-bun i @webtui/css
-npm i @webtui/css
-yarn add @webtui/css
-pnpm install @webtui/css
 ```
-
-In your global CSS file, define the order of layers then import the library
-
-```css
-@layer base, utils, components;
-
-@import '@webtui/css';
+web/           → Astro site (pages, layouts, components)
+packages/      → WebTUI packages (CSS, plugins, themes)
 ```
-
-Start using the library in your HTML
-
-```html
-<button>click</button>
-<button size-="large">click me too</button>
-<div box-="square">
-    <p>content</p>
-</div>
-```
-
-For more detailed installation instructions, see the [installation guide](https://webtui.ironclad.sh/start/installation) and [framework-specific installations](https://webtui.ironclad.sh/start/installation)
-
-## Packages
-
-All the officially-maintained packages in the monorepo
-
-- [@webtui/css](https://npmjs.com/package/@webtui/css)
-- [@webtui/plugin-nf](https://npmjs.com/package/@webtui/plugin-nf)
-- [@webtui/theme-catppuccin](https://npmjs.com/package/@webtui/theme-catppuccin)
-- [@webtui/theme-gruvbox](https://npmjs.com/package/@webtui/theme-gruvbox)
-- [@webtui/theme-nord](https://npmjs.com/package/@webtui/theme-nord)
-- [@webtui/theme-vitesse](https://npmjs.com/package/@webtui/theme-vitesse)
-- [@webtui/theme-everforest](https://npmjs.com/package/@webtui/theme-everforest)
 
 ## Development
 
-This repository is a monorepo that contains the website and all the official WebTUI packages.
+Requires [Bun](https://bun.sh/) (`>=1.3.0`) and Node (`>=18`).
 
-1. Ensure [Bun](https://bun.sh/) is installed
-2. Clone the repository
-    ```bash
-    git clone https://github.com/webtui/webtui
-    ```
-3. Install dependencies
-    ```bash
-    bun i
-    ```
-4. Build the project
-    ```bash
-    bun run build
-    ```
-4. Start the dev server
-    ```bash
-    bun run dev
-    ```
+```bash
+git clone https://github.com/saforem2/sam.onl.git
+cd sam.onl
+bun install
+bun run build
+bun run dev
+```
+
+## Commands
+
+| Command                | Description              |
+| ---------------------- | ------------------------ |
+| `bun run dev`          | Start dev server         |
+| `bun run build`        | Build all workspaces     |
+| `bun run lint`         | Lint all workspaces      |
+| `bun run format`       | Format all workspaces    |
+| `bun run format:check` | Check formatting         |
+| `bun run clean`        | Clean build artifacts    |
+
+## License
+
+[MIT](LICENSE)

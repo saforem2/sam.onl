@@ -1,6 +1,8 @@
 ---
 layout: '@/layouts/Doc.astro'
 title: '🏔️ Spike Skipper'
+date: 2024-09-17
+description: 'Implementation of a mechanism to skip bad-data training steps that cause loss spikes during LLM training.'
 ---
 
 Sam Foreman
@@ -11,9 +13,7 @@ Sam Foreman
 - [✅ Sanity Check](#white_check_mark-sanity-check)
   - [🔍 Details](#mag-details)
 
-> [!CAUTION]
->
-> ### Details
+> [!CAUTION] Details
 >
 > We describe below our implementation for skipping individual steps
 > during training.
@@ -22,7 +22,7 @@ Sam Foreman
 
 Suppose we observe a large spike in our loss curve, as shown below:
 
-![spike-skipper](./assets/spike-skipper.png)
+<img src="/assets/spike-skipper.png" alt="spike-skipper" />
 
 Seemingly, this spike is being caused by a batch of “bad data”. In order
 to prevent this “bad data” sample from corrupting our training, we would
@@ -146,11 +146,7 @@ same regardless of whether or not that iteration was skipped.
 
   <details is-="accordion">
 
-  <summary>
-
-  <code>tokens</code>:
-
-  </summary>
+  <summary><code>tokens</code>:</summary>
 
   - Iteration 0:
 
@@ -371,11 +367,7 @@ same regardless of whether or not that iteration was skipped.
 
   <details is-="accordion">
 
-  <summary>
-
-  <code>tokens</code>:
-
-  </summary>
+  <summary><code>tokens</code>:</summary>
 
   - Iteration 0:
 

@@ -1,6 +1,8 @@
 ---
 layout: '@/layouts/Doc.astro'
 title: "🧊 Cooling Down Checkpoints: Best Practices for Model Evaluation"
+date: 2025-11-12
+description: 'Best practices for cooling down model checkpoints before evaluation to improve validation loss comparisons.'
 ---
 
 Sam Foreman
@@ -17,13 +19,13 @@ Sam Foreman
 
 <div class="light-content">
 
-![Cool Down Comparison](./assets/cooldown.png)
+<img src="/assets/cooldown.png" alt="Cool Down Comparison" />
 
 </div>
 
 <div class="dark-content">
 
-![Cool Down Comparison](./assets/cooldown-dark.png)
+<img src="/assets/cooldown-dark.png" alt="Cool Down Comparison" />
 
 </div>
 
@@ -57,7 +59,7 @@ Sam Foreman
 
 ## ♻️ Convert to Universal (Optional)
 
-``` bash
+```bash
 TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 python3 ALCF/ds_to_universal.py \
     --input_folder test_rollback/global_step136000 \
     --output_folder test_rollback/global_step136000_universal

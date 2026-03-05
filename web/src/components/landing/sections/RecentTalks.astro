@@ -1,0 +1,111 @@
+---
+import { getCollection } from 'astro:content'
+
+const docs = await getCollection('docs')
+const talks = docs
+    .filter((doc) => doc.id.startsWith('talks/'))
+    .filter((doc) => !doc.id.endsWith('talks'))
+    .filter((doc) => doc.data.date)
+    .sort((a, b) => {
+        const da = a.data.date ? new Date(a.data.date).getTime() : 0
+        const db = b.data.date ? new Date(b.data.date).getTime() : 0
+        return db - da
+    })
+    .slice(0, 5)
+
+function formatDate(date: Date): string {
+    return new Intl.DateTimeFormat('en-US', {
+        year: '2-digit',
+        month: '2-digit',
+    }).format(date)
+}
+---
+
+<section id="recent-talks">
+    <column class="content" align-="center">
+        <h2 is-="badge" variant-="background1">&#xf0328; Recent Talks</h2>
+        <p>Presentations and workshops</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {
+                    talks.map((talk) => (
+                        <tr>
+                            <td>
+                                <a href={`/${talk.id}`}>{talk.data.title}</a>
+                            </td>
+                            <td class="talk-date">
+                                {talk.data.date
+                                    ? formatDate(new Date(talk.data.date))
+                                    : ''}
+                            </td>
+                        </tr>
+                    ))
+                }
+            </tbody>
+        </table>
+        <row>
+            <a href="/talks" is-="badge" variant-="background1">
+                View all talks &#x2192;
+            </a>
+        </row>
+    </column>
+
+    <style>
+        #recent-talks {
+            h2 {
+                padding-inline: 1ch;
+            }
+            h2::before {
+                content: '' !important;
+                color: var(--foreground0) !important;
+                margin-inline-end: 0ch;
+            }
+            background-color: var(--background0);
+            align-items: center;
+            justify-content: center;
+            padding: 1lh 2ch;
+
+            .content {
+                max-width: 80ch;
+                width: round(calc(100% - 2ch), 1ch);
+                gap: 0.5lh;
+            }
+
+            table {
+                width: 100%;
+            }
+
+            td a {
+                color: var(--foreground0);
+                text-decoration: none;
+                font-weight: 600;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+
+            .talk-date {
+                color: var(--foreground2);
+                white-space: nowrap;
+                text-align: right;
+                vertical-align: top;
+            }
+
+            a[is-='badge'] {
+                text-decoration: none;
+                color: var(--foreground1);
+
+                &:hover {
+                    color: var(--foreground0);
+                }
+            }
+        }
+    </style>
+</section>
