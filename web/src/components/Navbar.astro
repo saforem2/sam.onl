@@ -163,21 +163,21 @@ if (url.pathname === '/') {
     }
 
     #links {
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        flex: 1 1 auto;
-        row-gap: 2ch;
-        column-gap: 1lh;
+        display: flow-root;
+        /* flex-wrap: nowrap; */
+        /* align-items: center; */
+        flex: 1 1 0;
+        /* row-gap: 2ch; */
+        /* column-gap: 1lh; */
         margin-inline-start: 1ch;
         min-width: 0;
         max-width: 100%;
-        width: auto;
+        width: 0;
         overflow-x: auto;
         overflow-y: hidden;
-        scrollbar-width: thin;
-        justify-content: flex-end;
-        align-content: center;
+        /* scrollbar-width: thin; */
+        /* justify-content: flex-end; */
+        /* align-content: center; */
 
         :is(a, button) {
             flex: 0 0 auto;
