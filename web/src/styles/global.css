@@ -344,7 +344,7 @@
     }
 
     .callout-tip {
-        --callout-color: var(--background3, #838383);
+        --callout-color: var(--foreground4, #838383);
     }
     .callout-note {
         --callout-color: var(--blue, #118cc2);
@@ -384,7 +384,7 @@
         /* padding-inline: 1ch; */
 
         > :not(summary) {
-            margin-inline-start: -2ch;
+            margin-inline-start: -1ch;
         }
 
         summary {
@@ -573,7 +573,7 @@ pre.astro-code span.line::before {
     width: 3ch;
     margin-right: 1ch;
     text-align: right;
-    color: var(--foreground2);
+    color: var(--foreground4);
     user-select: none;
 }
 
@@ -596,6 +596,64 @@ p:has(> img) {
 html[data-webtui-theme|='catppuccin'] {
     --oklch-scale: 1.15;
     --foreground3: var(--overlay0);
+    --callout-bg: oklch(
+        from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c h /
+            0.1
+    );
+    --rosewater: #f5e0dc;
+    --flamingo: #f2cdcd;
+    --pink: #f5c2e7;
+    --mauve: #cba6f7;
+    --red: #f38ba8;
+    --maroon: #eba0ac;
+    --peach: #fab387;
+    --orange: #ffab70;
+    --yellow: #f9e2af;
+    --green: #a6e3a1;
+    --teal: #94e2d5;
+    --sky: #89dceb;
+    --sapphire: #74c7ec;
+    --blue: #89b4fa;
+    --lavender: #b4befe;
+
+    --background0: var(--base);
+    --background1: var(--surface0);
+    --background2: #21202e;
+    --background3: #40394a;
+    --background4: #524f67;
+    --background5: #665c54;
+    --background6: #6c7086;
+    --background7: #7f849c;
+    --background8: #9399b2;
+    --background9: #cdd6f4;
+    --background10: #f8f8f2;
+    --foreground0: var(--text);
+    --foreground1: var(--subtext1);
+    --foreground2: var(--subtext0);
+    --foreground3: var(--overlay2);
+    --foreground4: var(--overlay1);
+    --foreground5: var(--overlay0);
+    --foreground6: var(--surface2);
+    --foreground7: var(--surface1);
+    --foreground8: var(--surface0);
+    --foreground9: var(--base);
+    --foreground10: var(--mantle);
+
+    /* --call */
+
+    /* Background / Foreground Colors */
+    --text: #cdd6f4;
+    --subtext1: #bac2de;
+    --subtext0: #a6adc8;
+    --overlay2: #9399b2;
+    --overlay1: #7f849c;
+    --overlay0: #6c7086;
+    --surface2: #585b70;
+    --surface1: #45475a;
+    --surface0: #313244;
+    --base: #1e1e2e;
+    --mantle: #181825;
+    --crust: #11111b;
 
     --purple: var(--mauve);
     --orange: var(--peach);
