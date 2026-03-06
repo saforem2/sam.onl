@@ -441,7 +441,6 @@
     ol li > ul {
         margin-left: 3ch;
     }
-
 }
 
 @media (max-width: 480px) {
@@ -535,12 +534,12 @@ pre.astro-code {
 }
 
 /* Align code blocks with text after the list marker. */
-ol > li > pre.astro-code {
-    margin-inline-start: 3ch;
+li > pre.astro-code {
+    margin-left: 2ch;
 }
 
-ul > li > pre.astro-code {
-    margin-inline-start: 2ch;
+ol > li > pre.astro-code {
+    margin-left: 3ch;
 }
 
 pre.astro-code > code {
@@ -549,7 +548,7 @@ pre.astro-code > code {
     min-width: 100%;
     white-space: pre;
     counter-reset: line;
-    backcround-color: var(--background1, var(--pre-background)) !important;
+    /* background-color: var(--background1, var(--pre-background)) !important; */
 }
 
 pre.astro-code span.line[tabindex='0'] {
