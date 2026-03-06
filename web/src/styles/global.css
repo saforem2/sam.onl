@@ -286,7 +286,7 @@
             transparent
         );
     }
-    pre:not([size-]),
+    pre:not([size-]):not(.astro-code),
     [is-~='pre']:not([size-]) {
         background-color: transparent;
         background-image: none;
@@ -318,7 +318,7 @@
         overflow-x: auto;
     }
 
-    pre:not([size-]),
+    pre:not([size-]):not(.astro-code),
     [is-~='pre']:not([size-]) {
         background-color: transparent !important;
         background-image: none;
@@ -441,6 +441,7 @@
     ol li > ul {
         margin-left: 3ch;
     }
+
 }
 
 @media (max-width: 480px) {
@@ -505,7 +506,8 @@ html[data-webtui-theme='custom-dark'] .dark-content {
 
 html[data-webtui-theme='custom-light'] .astro-code,
 html[data-webtui-theme='custom-light'] .astro-code span {
-    background-color: oklch(from var(--code-bg, #f8f8f8) l c h) !important;
+    --pre-background: oklch(from var(--code-bg, #f8f8f8) l c h);
+    background-color: var(--pre-background) !important;
 }
 
 html[data-webtui-theme='custom-dark'] .astro-code span {
@@ -513,7 +515,8 @@ html[data-webtui-theme='custom-dark'] .astro-code span {
     font-style: var(--shiki-custom-dark-font-style) !important;
     font-weight: var(--shiki-custom-dark-font-weight) !important;
     text-decoration: var(--shiki-custom-dark-text-decoration) !important;
-    background-color: var(--background1) !important;
+    --pre-background: var(--background1);
+    background-color: var(--pre-background) !important;
 }
 
 html[data-webtui-theme='catppuccin'] .astro-code span {
@@ -521,12 +524,23 @@ html[data-webtui-theme='catppuccin'] .astro-code span {
     font-style: var(--shiki-catppuccin-font-style) !important;
     font-weight: var(--shiki-catppuccin-font-weight) !important;
     text-decoration: var(--shiki-catppuccin-text-decoration) !important;
-    background-color: var(--background1, var(--shiki-catppuccin-bg)) !important;
+    --pre-background: var(--background1, var(--shiki-catppuccin-bg));
+    background-color: var(--pre-background) !important ;
 }
 
 pre.astro-code {
-    padding: 0ch;
+    padding: 1ch 0ch;
     flex-shrink: 0;
+    background-color: var(--pre-background, var(--background1)) !important;
+}
+
+/* Align code blocks with text after the list marker. */
+ol > li > pre.astro-code {
+    margin-inline-start: 3ch;
+}
+
+ul > li > pre.astro-code {
+    margin-inline-start: 2ch;
 }
 
 pre.astro-code > code {
@@ -535,6 +549,7 @@ pre.astro-code > code {
     min-width: 100%;
     white-space: pre;
     counter-reset: line;
+    backcround-color: var(--background1, var(--pre-background)) !important;
 }
 
 pre.astro-code span.line[tabindex='0'] {
