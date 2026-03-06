@@ -381,7 +381,7 @@
         ) {
         background-color: var(--callout-bg);
         color: var(--callout-color);
-        padding-inline: 1ch;
+        /* padding-inline: 1ch; */
 
         > :not(summary) {
             margin-inline-start: -2ch;
@@ -391,8 +391,9 @@
             background-color: var(--callout-summary-bg);
             color: var(--callout-color);
             font-weight: var(--font-weight-bold);
-            margin-inline-end: -1ch;
-            padding-inline-end: 1ch;
+            text-indent: 4ch hanging;
+            /* margin-inline-end: -1ch; */
+            /* padding-inline-end: 1ch; */
         }
         > summary::before {
             content: '[+] ';

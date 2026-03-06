@@ -162,22 +162,33 @@ if (url.pathname === '/') {
         flex: 0 0 auto;
     }
 
+    /* #links { */
+    /*     display: flow-root; */
+    /*     flex: 1 1 0; */
+    /*     margin-inline-start: 1ch; */
+    /*     min-width: 0; */
+    /*     max-width: 100%; */
+    /*     width: 0; */
+    /*     overflow-x: auto; */
+    /*     overflow-y: hidden; */
+    /* flex-wrap: nowrap; */
+    /* align-items: center; */
+    /* row-gap: 2ch; */
+    /* column-gap: 1lh; */
+    /* scrollbar-width: thin; */
+    /* justify-content: flex-end; */
+    /* align-content: center; */
+
     #links {
-        display: flow-root;
-        /* flex-wrap: nowrap; */
-        /* align-items: center; */
-        flex: 1 1 0;
-        /* row-gap: 2ch; */
-        /* column-gap: 1lh; */
+        display: flex;
         margin-inline-start: 1ch;
         min-width: 0;
         max-width: 100%;
-        width: 0;
+        width: -webkit-fill-available;
         overflow-x: auto;
         overflow-y: hidden;
-        /* scrollbar-width: thin; */
-        /* justify-content: flex-end; */
-        /* align-content: center; */
+        gap: 2ch;
+        justify-content: right;
 
         :is(a, button) {
             flex: 0 0 auto;
