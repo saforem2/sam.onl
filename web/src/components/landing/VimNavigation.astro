@@ -11,8 +11,8 @@ const { showHL = false } = Astro.props as Props
     align-="center"
     cap-="round"
     id="vim-navigation"
-    style="background-color: var(--background2);">
-    <span style="margin-right:1ch;"> </span>
+    
+    <span class="vim-icon"> </span>
     {
         showHL && (
             <button size-="sm" variant-="background1" id="btn-h">
@@ -35,13 +35,17 @@ const { showHL = false } = Astro.props as Props
 <style>
     #vim-navigation {
         padding: 0 1ch;
-        background-color: var(--background1);
+        background-color: var(--background2);
         box-shadow: 1ch 0.5lh 0 0 var(--mantle);
+
+        .vim-icon {
+            margin-right: 1ch;
+        }
 
         button[size-='sm'] {
             padding: 0 1ch;
-            border-left: var(--foreground2);
-            border-right: var(--background1);
+            border-left-color: var(--foreground2);
+            border-right-color: var(--background1);
         }
         #btn-question {
             padding: 0 1ch;

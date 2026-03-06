@@ -60,6 +60,7 @@ if (url.pathname === '/') {
         <a href="/talks" data-active={isOn === 'talks'}>󰐨 Talks</a>
         <a href="/more" data-active={isOn === 'more'}> More</a>
         <!-- <a href="/projects" data-active={isOn === 'projects'}>  Projects </a> -->
+        <button id="theme-button" size-="small">  </button>
         <a
             id="github-button"
             href="https://github.com/saforem2/sam.onl"
@@ -68,7 +69,6 @@ if (url.pathname === '/') {
             
         </a>
         <a id="rss-button" href="/rss.xml" target="_blank" size-="small">  </a>
-        <button id="theme-button" size-="small">  </button>
         <button id="search-button" size-="small"> &#xea6d;</button>
     </row>
 </nav>
@@ -184,11 +184,11 @@ if (url.pathname === '/') {
         margin-inline-start: 1ch;
         min-width: 0;
         max-width: 100%;
-        width: -webkit-fill-available;
+        flex: 1;
         overflow-x: auto;
         overflow-y: hidden;
         gap: 2ch;
-        justify-content: right;
+        justify-content: flex-end;
 
         :is(a, button) {
             flex: 0 0 auto;
