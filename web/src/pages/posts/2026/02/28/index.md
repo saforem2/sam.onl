@@ -7,6 +7,8 @@ description: 'Benchmarking and comparing the performance of different launchers 
 
 ## `torchrun`
 
+- Comparing `torchrun`
+
 ## `ezpz`
 
 - Got through 190 steps in ~49s before I hit the kill switch
