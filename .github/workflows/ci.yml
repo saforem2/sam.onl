@@ -1,9 +1,6 @@
-name: CI & Deploy
+name: CI
 
 on:
-    push:
-        branches:
-            - main
     pull_request:
         branches:
             - main
@@ -11,10 +8,6 @@ on:
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
-
-permissions:
-    contents: read
-    pull-requests: write
 
 jobs:
     lint:
@@ -39,85 +32,3 @@ jobs:
 
             - name: Check code style
               run: bun format:check
-
-    build:
-        needs: lint
-        runs-on: ubuntu-latest
-        env:
-            PLAYWRIGHT_BROWSERS_PATH: /home/runner/.cache/ms-playwright
-            NODE_OPTIONS: '--max-old-space-size=4096'
-        steps:
-            - uses: actions/checkout@v4
-            - uses: oven-sh/setup-bun@v2
-
-            - name: Cache bun dependencies
-              uses: actions/cache@v4
-              with:
-                  path: ~/.bun/install/cache
-                  key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-                  restore-keys: |
-                      bun-${{ runner.os }}-
-
-            - name: Cache Playwright browsers
-              id: playwright-cache
-              uses: actions/cache@v4
-              with:
-                  path: ~/.cache/ms-playwright
-                  key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-
-            - name: Cache Turbo build
-              uses: actions/cache@v4
-              with:
-                  path: .turbo
-                  key: turbo-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-                  restore-keys: |
-                      turbo-${{ runner.os }}-
-
-            - name: Install dependencies
-              run: bun i
-
-            - name: Install Playwright Chromium
-              if: steps.playwright-cache.outputs.cache-hit != 'true'
-              run: npx playwright install --with-deps chromium
-
-            - name: Install Playwright system deps (cached browsers)
-              if: steps.playwright-cache.outputs.cache-hit == 'true'
-              run: npx playwright install-deps chromium
-
-            - name: Build
-              run: bun run build
-
-            - name: Upload build artifact
-              uses: actions/upload-artifact@v4
-              with:
-                  name: dist
-                  path: web/dist
-                  retention-days: 1
-
-    deploy:
-        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
-        needs: build
-        runs-on: ubuntu-latest
-        steps:
-            - name: Download build artifact
-              uses: actions/download-artifact@v4
-              with:
-                  name: dist
-                  path: web/dist
-
-            - name: Deploy to Netlify
-              uses: nwtgck/actions-netlify@v3
-              with:
-                  publish-dir: web/dist
-                  production-deploy: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-                  deploy-message: >-
-                      ${{ github.event_name == 'push'
-                        && format('Production deploy from {0}', github.sha)
-                        || format('Preview deploy for PR #{0}', github.event.pull_request.number) }}
-                  enable-pull-request-comment: true
-                  enable-commit-comment: false
-                  overwrites-pull-request-comment: true
-              env:
-                  NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-                  NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
