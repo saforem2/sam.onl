@@ -96,6 +96,7 @@ jobs:
                   retention-days: 1
 
     deploy:
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
         needs: build
         runs-on: ubuntu-latest
         steps:
