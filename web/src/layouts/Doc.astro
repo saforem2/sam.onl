@@ -176,7 +176,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                     aria-expanded="false"
                                     aria-controls="toc-container"
                                     aria-label="Collapse right sidebar (zh/zl)">
-                                    <code>&lt;zl&gt;</code>
+                                    &lt;zl&gt;
                                 </button>
                                 <div id="toc-list-container">
                                     <ul id="toc-list">
@@ -880,7 +880,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
     const setSidebarToggleLabel = (collapsed: boolean) => {
         if (!sidebarToggle) return
 
-        sidebarToggle.innerHTML = '<code>&lt;zh&gt;</code>'
+        sidebarToggle.innerHTML = '&lt;zh&gt;'
         sidebarToggle.setAttribute(
             'aria-label',
             collapsed
@@ -892,7 +892,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
     const setTocToggleLabel = (collapsed: boolean) => {
         if (!tocToggle) return
 
-        tocToggle.innerHTML = '<code>&lt;zl&gt;</code>'
+        tocToggle.innerHTML = '&lt;zl&gt;'
         tocToggle.setAttribute(
             'aria-label',
             collapsed

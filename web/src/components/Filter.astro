@@ -71,7 +71,7 @@ const themeOptions = {
             <section class="command-section" box-="square">
                 <span is-="badge" variant-="background0">Keybinds</span>
                 <div class="keybind-columns">
-                    <div class="keybind-group" box-="round">
+                    <div class="keybind-group" box-="square">
                         <span is-="badge" variant-="background1"
                             >Navigation</span
                         >
@@ -97,7 +97,7 @@ const themeOptions = {
                         </div>
                     </div>
 
-                    <div class="keybind-group" box-="round">
+                    <div class="keybind-group" box-="square">
                         <span is-="badge" variant-="background1">Layout</span>
                         <div class="keybind-grid" role="list">
                             <code role="listitem">&lt;zh&gt; / &lt;zl&gt;</code>
@@ -113,7 +113,7 @@ const themeOptions = {
                         </div>
                     </div>
 
-                    <div class="keybind-group" box-="round">
+                    <div class="keybind-group" box-="square">
                         <span is-="badge" variant-="background1">Dialogs</span>
                         <div class="keybind-grid" role="list">
                             <code role="listitem">&#x2303;P / :</code>
@@ -129,7 +129,7 @@ const themeOptions = {
                         </div>
                     </div>
 
-                    <div class="keybind-group" box-="round">
+                    <div class="keybind-group" box-="square">
                         <span is-="badge" variant-="background1">History</span>
                         <div class="keybind-grid" role="list">
                             <code role="listitem">&#x2303;N</code>
@@ -156,7 +156,7 @@ const themeOptions = {
                 >x</button
             >
         </row>
-        <column box-="round">
+        <column box-="square">
             <input id="search-input" placeholder="Filter" autofocus />
         </column>
 
@@ -333,6 +333,8 @@ const themeOptions = {
     }
 
     .command-theme-buttons button {
+        gap: 2ch;
+        margin-inline: 2ch;
         flex: 1;
     }
 

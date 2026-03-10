@@ -286,7 +286,7 @@
             transparent
         );
     }
-    pre:not([size-]),
+    pre:not([size-]):not(.astro-code),
     [is-~='pre']:not([size-]) {
         background-color: transparent;
         background-image: none;
@@ -318,7 +318,7 @@
         overflow-x: auto;
     }
 
-    pre:not([size-]),
+    pre:not([size-]):not(.astro-code),
     [is-~='pre']:not([size-]) {
         background-color: transparent !important;
         background-image: none;
@@ -344,7 +344,7 @@
     }
 
     .callout-tip {
-        --callout-color: var(--background3, #838383);
+        --callout-color: var(--foreground4, #838383);
     }
     .callout-note {
         --callout-color: var(--blue, #118cc2);
@@ -381,18 +381,19 @@
         ) {
         background-color: var(--callout-bg);
         color: var(--callout-color);
-        padding-inline: 1ch;
+        /* padding-inline: 1ch; */
 
         > :not(summary) {
-            margin-inline-start: -2ch;
+            margin-inline-start: -1ch;
         }
 
         summary {
             background-color: var(--callout-summary-bg);
             color: var(--callout-color);
             font-weight: var(--font-weight-bold);
-            margin-inline-end: -1ch;
-            padding-inline-end: 1ch;
+            text-indent: 4ch hanging;
+            /* margin-inline-end: -1ch; */
+            /* padding-inline-end: 1ch; */
         }
         > summary::before {
             content: '[+] ';
@@ -504,7 +505,8 @@ html[data-webtui-theme='custom-dark'] .dark-content {
 
 html[data-webtui-theme='custom-light'] .astro-code,
 html[data-webtui-theme='custom-light'] .astro-code span {
-    background-color: oklch(from var(--code-bg, #f8f8f8) l c h) !important;
+    --pre-background: oklch(from var(--code-bg, #f8f8f8) l c h);
+    background-color: var(--pre-background) !important;
 }
 
 html[data-webtui-theme='custom-dark'] .astro-code span {
@@ -512,7 +514,8 @@ html[data-webtui-theme='custom-dark'] .astro-code span {
     font-style: var(--shiki-custom-dark-font-style) !important;
     font-weight: var(--shiki-custom-dark-font-weight) !important;
     text-decoration: var(--shiki-custom-dark-text-decoration) !important;
-    background-color: var(--background1) !important;
+    --pre-background: var(--background1);
+    background-color: var(--pre-background) !important;
 }
 
 html[data-webtui-theme='catppuccin'] .astro-code span {
@@ -520,12 +523,24 @@ html[data-webtui-theme='catppuccin'] .astro-code span {
     font-style: var(--shiki-catppuccin-font-style) !important;
     font-weight: var(--shiki-catppuccin-font-weight) !important;
     text-decoration: var(--shiki-catppuccin-text-decoration) !important;
-    background-color: var(--background1, var(--shiki-catppuccin-bg)) !important;
+    --pre-background: var(--background1, var(--shiki-catppuccin-bg));
+    background-color: var(--pre-background) !important ;
 }
 
 pre.astro-code {
-    padding: 0ch;
+    padding: 1ch 0ch;
     flex-shrink: 0;
+    background-color: var(--pre-background, var(--background1)) !important;
+    max-height: round(calc(0.4 * 100vh), 1lh);
+}
+
+/* Align code blocks with text after the list marker. */
+li > pre.astro-code {
+    margin-left: 2ch;
+}
+
+ol > li > pre.astro-code {
+    margin-left: 3ch;
 }
 
 pre.astro-code > code {
@@ -534,6 +549,7 @@ pre.astro-code > code {
     min-width: 100%;
     white-space: pre;
     counter-reset: line;
+    /* background-color: var(--background1, var(--pre-background)) !important; */
 }
 
 pre.astro-code span.line[tabindex='0'] {
@@ -558,7 +574,7 @@ pre.astro-code span.line::before {
     width: 3ch;
     margin-right: 1ch;
     text-align: right;
-    color: var(--foreground2);
+    color: var(--foreground4);
     user-select: none;
 }
 
@@ -581,6 +597,64 @@ p:has(> img) {
 html[data-webtui-theme|='catppuccin'] {
     --oklch-scale: 1.15;
     --foreground3: var(--overlay0);
+    --callout-bg: oklch(
+        from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c h /
+            0.1
+    );
+    --rosewater: #f5e0dc;
+    --flamingo: #f2cdcd;
+    --pink: #f5c2e7;
+    --mauve: #cba6f7;
+    --red: #f38ba8;
+    --maroon: #eba0ac;
+    --peach: #fab387;
+    --orange: #ffab70;
+    --yellow: #f9e2af;
+    --green: #a6e3a1;
+    --teal: #94e2d5;
+    --sky: #89dceb;
+    --sapphire: #74c7ec;
+    --blue: #89b4fa;
+    --lavender: #b4befe;
+
+    --background0: var(--base);
+    --background1: var(--surface0);
+    --background2: #21202e;
+    --background3: #40394a;
+    --background4: #524f67;
+    --background5: #665c54;
+    --background6: #6c7086;
+    --background7: #7f849c;
+    --background8: #9399b2;
+    --background9: #cdd6f4;
+    --background10: #f8f8f2;
+    --foreground0: var(--text);
+    --foreground1: var(--subtext1);
+    --foreground2: var(--subtext0);
+    --foreground3: var(--overlay2);
+    --foreground4: var(--overlay1);
+    --foreground5: var(--overlay0);
+    --foreground6: var(--surface2);
+    --foreground7: var(--surface1);
+    --foreground8: var(--surface0);
+    --foreground9: var(--base);
+    --foreground10: var(--mantle);
+
+    /* --call */
+
+    /* Background / Foreground Colors */
+    --text: #cdd6f4;
+    --subtext1: #bac2de;
+    --subtext0: #a6adc8;
+    --overlay2: #9399b2;
+    --overlay1: #7f849c;
+    --overlay0: #6c7086;
+    --surface2: #585b70;
+    --surface1: #45475a;
+    --surface0: #313244;
+    --base: #1e1e2e;
+    --mantle: #181825;
+    --crust: #11111b;
 
     --purple: var(--mauve);
     --orange: var(--peach);

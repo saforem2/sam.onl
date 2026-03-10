@@ -781,11 +781,11 @@ const { pathname: urlPath } = Astro.url
     }
 
     ul > li > a[href] {
-        color: var(--foreground2);
+        color: var(--foreground4);
     }
 
     ul ul > li > a[href] {
-        color: var(--foreground3);
+        color: var(--foreground4);
         text-decoration: none;
         outline: none;
         display: block;
@@ -821,7 +821,7 @@ const { pathname: urlPath } = Astro.url
     #sidebar ul[marker-~='tree'] > li::before {
         grid-column: 1;
         content: '';
-        color: var(--foreground2);
+        color: var(--foreground4);
     }
 
     #sidebar ul[marker-~='tree'] > li > a {
@@ -834,13 +834,13 @@ const { pathname: urlPath } = Astro.url
     }
 
     ul > details > summary {
-        color: var(--foreground1);
+        color: var(--foreground5);
         font-weight: var(--font-weight-normal);
         background-color: transparent;
     }
 
     #category-list > a.sidebar-direct-link {
-        color: var(--foreground0);
+        color: var(--foreground4);
         text-decoration: none;
         outline: none;
         display: block;
@@ -848,6 +848,7 @@ const { pathname: urlPath } = Astro.url
             background-color: var(--background1);
         }
 
+        &:focus,
         &.active {
             background-color: oklch(
                 from var(--background-active, var(--background2, #838383))
@@ -894,9 +895,8 @@ const { pathname: urlPath } = Astro.url
     details {
         /* margin-block-end: 1lh; */
         summary {
-            /* font-weight: 500; */
             background-color: none;
-            color: var(--foreground0);
+            color: var(--foreground4);
             list-style-type: '';
             display: flex;
             align-items: baseline;
@@ -915,12 +915,14 @@ const { pathname: urlPath } = Astro.url
 
                 &::after {
                     content: '\eab6';
-                    color: var(--foreground2);
+                    color: var(--foreground4);
                 }
             }
 
+            &:focus,
             &:hover {
-                background-color: var(--background1);
+                /* background-color: var(--background1); */
+                background-color: var(--focus-hover-bg);
             }
         }
 
@@ -940,11 +942,12 @@ const { pathname: urlPath } = Astro.url
         summary {
             /* font-weight: var(--font-weight-bold); */
             .fold-icon::after {
-                color: var(--foreground3);
+                color: var(--foreground4);
             }
 
+            &:focus,
             &:hover {
-                background-color: var(--background1);
+                background-color: var(--focus-hover-bg);
             }
         }
     }
