@@ -9,7 +9,7 @@ on:
             - main
 
 concurrency:
-    group: ${{ github.workflow }}-${{ github.event_name == 'push' && github.sha || github.ref }}
+    group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
 permissions:
@@ -69,9 +69,8 @@ jobs:
               uses: actions/cache@v4
               with:
                   path: .turbo
-                  key: turbo-${{ runner.os }}-${{ hashFiles('bun.lock') }}-${{ github.sha }}
+                  key: turbo-${{ runner.os }}-${{ hashFiles('bun.lock') }}
                   restore-keys: |
-                      turbo-${{ runner.os }}-${{ hashFiles('bun.lock') }}-
                       turbo-${{ runner.os }}-
 
             - name: Install dependencies
