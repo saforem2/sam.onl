@@ -7,47 +7,214 @@ import Example from '@/components/Example.astro'
 import typographyStyle from '@webtui/css/components/typography.css?raw'
 import badgeStyle from '@webtui/css/components/badge.css?raw'
 import buttonStyle from '@webtui/css/components/button.css?raw'
+import accordionStyle from '@webtui/css/components/accordion.css?raw'
 import customStyle from '@webtui/theme-custom?raw'
+import catppuccinStyle from '@webtui/theme-catppuccin?raw'
 
 A custom theme for WebTUI with light and dark variants
 
+### Typography
+
 <Example
-    stylesheets={[typographyStyle, badgeStyle, buttonStyle, customStyle]}
+    stylesheets={[typographyStyle, customStyle, catppuccinStyle]}
     themes={{
         'custom-light': 'Custom Light',
         'custom-dark': 'Custom Dark',
+        'catppuccin-latte': 'Catppuccin Latte',
+        'catppuccin': 'Catppuccin Mocha',
     }}
     data-initial-theme="custom-dark"
     html={`
-<h1>Lots</h1>
-<h2>Of</h2>
-<h3>Colored</h3>
-<h4>Headings</h4>
-<h5>And</h5>
-<h6>Stuff</h6>
-<p>And links are <a href="https://example.com">blue</a> now and <code>code</code> is red</p>
+<h1>Heading 1</h1>
+<h2>Heading 2</h2>
+<h3>Heading 3</h3>
+<h4>Heading 4</h4>
+<h5>Heading 5</h5>
+<h6>Heading 6</h6>
+<p>Body text with <a href="https://example.com">a link</a> and <code>inline code</code> styling.</p>
+`}
+/>
+
+### Badges
+
+<Example
+    stylesheets={[badgeStyle, customStyle, catppuccinStyle]}
+    themes={{
+        'custom-light': 'Custom Light',
+        'custom-dark': 'Custom Dark',
+        'catppuccin-latte': 'Catppuccin Latte',
+        'catppuccin': 'Catppuccin Mocha',
+    }}
+    data-initial-theme="custom-dark"
+    html={`
 <span is-="badge" variant-="red">red</span>
-<span is-="badge" variant-="green">green</span>
+<span is-="badge" variant-="orange">orange</span>
 <span is-="badge" variant-="yellow">yellow</span>
+<span is-="badge" variant-="green">green</span>
+<span is-="badge" variant-="teal">teal</span>
+<span is-="badge" variant-="aqua">aqua</span>
 <span is-="badge" variant-="blue">blue</span>
 <span is-="badge" variant-="purple">purple</span>
-<span is-="badge" variant-="aqua">aqua</span>
-<span is-="badge" variant-="orange">orange</span>
 <span is-="badge" variant-="pink">pink</span>
-<span is-="badge" variant-="teal">teal</span>
+<span is-="badge" variant-="sky">sky</span>
 <span is-="badge" variant-="rosewater">rosewater</span>
 <span is-="badge" variant-="flamingo">flamingo</span>
 <span is-="badge" variant-="mauve">mauve</span>
 <span is-="badge" variant-="maroon">maroon</span>
 <span is-="badge" variant-="peach">peach</span>
-<span is-="badge" variant-="sky">sky</span>
 <span is-="badge" variant-="sapphire">sapphire</span>
-<span is-="badge" variant-="lavender">lavender</span><br/>
+<span is-="badge" variant-="lavender">lavender</span>
+`}
+/>
+
+### Buttons
+
+<Example
+    stylesheets={[buttonStyle, customStyle, catppuccinStyle]}
+    themes={{
+        'custom-light': 'Custom Light',
+        'custom-dark': 'Custom Dark',
+        'catppuccin-latte': 'Catppuccin Latte',
+        'catppuccin': 'Catppuccin Mocha',
+    }}
+    data-initial-theme="custom-dark"
+    html={`
 <button variant-="red">red</button>
-<button variant-="sky">sky</button>
+<button variant-="orange">orange</button>
+<button variant-="yellow">yellow</button>
 <button variant-="green">green</button>
+<button variant-="teal">teal</button>
+<button variant-="aqua">aqua</button>
+<button variant-="blue">blue</button>
+<button variant-="purple">purple</button>
+<button variant-="pink">pink</button>
+<button variant-="sky">sky</button>
 <button variant-="dim">dim</button>
 <button variant-="bright">bright</button>
+`}
+/>
+
+### Callouts
+
+<Example
+    stylesheets={[accordionStyle, customStyle, catppuccinStyle]}
+    themes={{
+        'custom-light': 'Custom Light',
+        'custom-dark': 'Custom Dark',
+        'catppuccin-latte': 'Catppuccin Latte',
+        'catppuccin': 'Catppuccin Mocha',
+    }}
+    data-initial-theme="custom-dark"
+    html={`
+<style>
+.callout {
+  --callout-color: var(--blue, #118cc2);
+  --callout-bg: oklch(from var(--callout-color) calc(l * var(--oklch-scale, 1.12)) c h / 0.1);
+  --callout-summary-bg: oklch(from var(--callout-color) calc(l * var(--oklch-scale, 1.08)) c h / 0.025);
+  background-color: var(--callout-bg);
+  color: var(--callout-color);
+  margin-block: 0.5rem;
+}
+.callout > :not(summary) { margin-inline-start: -1ch; }
+.callout summary {
+  background-color: var(--callout-summary-bg);
+  color: var(--callout-color);
+  font-weight: bold;
+}
+.callout > summary::before { content: '[+] '; }
+.callout[open] > summary::before { content: '[-] '; }
+.callout p { margin: 0; color: var(--foreground1); }
+.callout-note { --callout-color: var(--blue, #118cc2); }
+.callout-tip { --callout-color: var(--foreground3, #838383); }
+.callout-important { --callout-color: var(--purple, var(--accent, #9a76ce)); }
+.callout-warning { --callout-color: var(--orange, #ee8f24); }
+.callout-error { --callout-color: var(--red, #e05560); }
+.callout-success { --callout-color: var(--green, #1da811); }
+</style>
+<details is-="accordion" class="callout callout-note" open>
+  <summary>Note</summary>
+  <p>This is a note callout with useful information.</p>
+</details>
+<details is-="accordion" class="callout callout-tip" open>
+  <summary>Tip</summary>
+  <p>This is a tip callout with helpful advice.</p>
+</details>
+<details is-="accordion" class="callout callout-important" open>
+  <summary>Important</summary>
+  <p>This is an important callout you should pay attention to.</p>
+</details>
+<details is-="accordion" class="callout callout-warning" open>
+  <summary>Warning</summary>
+  <p>This is a warning callout about potential issues.</p>
+</details>
+<details is-="accordion" class="callout callout-error" open>
+  <summary>Error</summary>
+  <p>This is an error callout indicating something went wrong.</p>
+</details>
+<details is-="accordion" class="callout callout-success" open>
+  <summary>Success</summary>
+  <p>This is a success callout confirming things worked.</p>
+</details>
+`}
+/>
+
+## Theme Colors
+
+<Example
+    stylesheets={[customStyle, catppuccinStyle]}
+    themes={{
+        'custom-light': 'Custom Light',
+        'custom-dark': 'Custom Dark',
+        'catppuccin-latte': 'Catppuccin Latte',
+        'catppuccin': 'Catppuccin Mocha',
+    }}
+    data-initial-theme="custom-dark"
+    html={`
+<style>
+.color-grid { display: flex; flex-direction: column; gap: 0.5rem; font-family: monospace; font-size: 0.8rem; }
+.color-row { display: flex; gap: 0.25rem; align-items: center; }
+.color-row-label { width: 7rem; opacity: 0.6; flex-shrink: 0; }
+.swatch { width: 2.5rem; height: 1.5rem; border-radius: 3px; border: 1px solid var(--foreground2); display: inline-flex; align-items: center; justify-content: center; font-size: 0.6rem; color: var(--foreground2); }
+</style>
+<div class="color-grid">
+  <div class="color-row">
+    <span class="color-row-label">foreground</span>
+    <span class="swatch" style="background:var(--foreground0)">0</span>
+    <span class="swatch" style="background:var(--foreground1)">1</span>
+    <span class="swatch" style="background:var(--foreground2)">2</span>
+    <span class="swatch" style="background:var(--foreground3)">3</span>
+  </div>
+  <div class="color-row">
+    <span class="color-row-label">background</span>
+    <span class="swatch" style="background:var(--background0)">0</span>
+    <span class="swatch" style="background:var(--background1)">1</span>
+    <span class="swatch" style="background:var(--background2)">2</span>
+    <span class="swatch" style="background:var(--background3)">3</span>
+  </div>
+  <div class="color-row">
+    <span class="color-row-label">accents</span>
+    <span class="swatch" style="background:var(--red)" title="red"></span>
+    <span class="swatch" style="background:var(--orange)" title="orange"></span>
+    <span class="swatch" style="background:var(--yellow)" title="yellow"></span>
+    <span class="swatch" style="background:var(--green)" title="green"></span>
+    <span class="swatch" style="background:var(--teal)" title="teal"></span>
+    <span class="swatch" style="background:var(--blue)" title="blue"></span>
+    <span class="swatch" style="background:var(--purple)" title="purple"></span>
+    <span class="swatch" style="background:var(--pink)" title="pink"></span>
+    <span class="swatch" style="background:var(--aqua)" title="aqua"></span>
+    <span class="swatch" style="background:var(--accent)" title="accent"></span>
+  </div>
+  <div class="color-row">
+    <span class="color-row-label">semantic</span>
+    <span class="swatch" style="background:var(--text)" title="text"></span>
+    <span class="swatch" style="background:var(--url)" title="url"></span>
+    <span class="swatch" style="background:var(--base)" title="base"></span>
+    <span class="swatch" style="background:var(--mantle)" title="mantle"></span>
+    <span class="swatch" style="background:var(--crust)" title="crust"></span>
+    <span class="swatch" style="background:var(--code-bg)" title="code-bg"></span>
+    <span class="swatch" style="background:var(--code-fg)" title="code-fg"></span>
+  </div>
+</div>
 `}
 />
 
