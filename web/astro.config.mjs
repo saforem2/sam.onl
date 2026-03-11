@@ -278,6 +278,7 @@ export default defineConfig({
                 'custom-light': 'min-light',
                 'custom-dark': 'one-dark-pro',
                 catppuccin: 'catppuccin-mocha',
+                'catppuccin-latte': 'catppuccin-latte',
             },
             colorReplacements: {
                 'one-light': {
