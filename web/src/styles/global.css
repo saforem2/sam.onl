@@ -260,7 +260,7 @@
 
 @layer components {
     p {
-        color: unset;
+        color: var(--text);
     }
     details[is-~='accordion'] > summary {
         list-style: none;
@@ -344,7 +344,7 @@
     }
 
     .callout-tip {
-        --callout-color: var(--foreground4, #838383);
+        --callout-color: var(--foreground2, #838383);
     }
     .callout-note {
         --callout-color: var(--blue, #118cc2);
@@ -503,6 +503,22 @@ html[data-webtui-theme='custom-dark'] .dark-content {
     display: revert !important;
 }
 
+html[data-webtui-theme='catppuccin'] .light-content {
+    display: none !important;
+}
+
+html[data-webtui-theme='catppuccin'] .dark-content {
+    display: revert !important;
+}
+
+html[data-webtui-theme='catppuccin-latte'] .light-content {
+    display: revert !important;
+}
+
+html[data-webtui-theme='catppuccin-latte'] .dark-content {
+    display: none !important;
+}
+
 html[data-webtui-theme='custom-light'] .astro-code,
 html[data-webtui-theme='custom-light'] .astro-code span {
     --pre-background: oklch(from var(--code-bg, #f8f8f8) l c h);
@@ -525,6 +541,16 @@ html[data-webtui-theme='catppuccin'] .astro-code span {
     text-decoration: var(--shiki-catppuccin-text-decoration) !important;
     --pre-background: var(--background1, var(--shiki-catppuccin-bg));
     background-color: var(--pre-background) !important ;
+}
+
+html[data-webtui-theme='catppuccin-latte'] .astro-code,
+html[data-webtui-theme='catppuccin-latte'] .astro-code span {
+    color: var(--shiki-catppuccin-latte) !important;
+    font-style: var(--shiki-catppuccin-latte-font-style) !important;
+    font-weight: var(--shiki-catppuccin-latte-font-weight) !important;
+    text-decoration: var(--shiki-catppuccin-latte-text-decoration) !important;
+    --pre-background: oklch(from #e6e9ef l c h);
+    background-color: var(--pre-background) !important;
 }
 
 pre.astro-code {
@@ -574,7 +600,7 @@ pre.astro-code span.line::before {
     width: 3ch;
     margin-right: 1ch;
     text-align: right;
-    color: var(--foreground4);
+    color: var(--foreground2);
     user-select: none;
 }
 
@@ -595,66 +621,111 @@ p:has(> img) {
 }
 
 html[data-webtui-theme|='catppuccin'] {
-    --oklch-scale: 1.15;
-    --foreground3: var(--overlay0);
     --callout-bg: oklch(
         from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c h /
             0.1
     );
-    --rosewater: #f5e0dc;
-    --flamingo: #f2cdcd;
-    --pink: #f5c2e7;
-    --mauve: #cba6f7;
-    --red: #f38ba8;
-    --maroon: #eba0ac;
-    --peach: #fab387;
-    --orange: #ffab70;
-    --yellow: #f9e2af;
-    --green: #a6e3a1;
-    --teal: #94e2d5;
-    --sky: #89dceb;
-    --sapphire: #74c7ec;
-    --blue: #89b4fa;
-    --lavender: #b4befe;
 
     --background0: var(--base);
     --background1: var(--surface0);
-    --background2: #21202e;
-    --background3: #40394a;
-    --background4: #524f67;
-    --background5: #665c54;
-    --background6: #6c7086;
-    --background7: #7f849c;
-    --background8: #9399b2;
-    --background9: #cdd6f4;
-    --background10: #f8f8f2;
+    --background2: var(--surface1);
+    --background3: var(--surface2);
+
     --foreground0: var(--text);
     --foreground1: var(--subtext1);
     --foreground2: var(--subtext0);
     --foreground3: var(--overlay2);
-    --foreground4: var(--overlay1);
-    --foreground5: var(--overlay0);
-    --foreground6: var(--surface2);
-    --foreground7: var(--surface1);
-    --foreground8: var(--surface0);
-    --foreground9: var(--base);
-    --foreground10: var(--mantle);
 
-    /* --call */
+    --purple: var(--mauve);
+    --orange: var(--peach);
+    --aqua: var(--sapphire);
+    --accent: var(--mauve);
+    --url: var(--foreground2);
+    --code-bg: var(--surface1);
+    --code-fg: var(--text);
 
-    /* Background / Foreground Colors */
-    --text: #cdd6f4;
-    --subtext1: #bac2de;
-    --subtext0: #a6adc8;
-    --overlay2: #9399b2;
-    --overlay1: #7f849c;
-    --overlay0: #6c7086;
-    --surface2: #585b70;
-    --surface1: #45475a;
-    --surface0: #313244;
-    --base: #1e1e2e;
-    --mantle: #181825;
-    --crust: #11111b;
+    --h1: var(--red);
+    --h2: var(--peach);
+    --h3: var(--yellow);
+    --h4: var(--green);
+    --h5: var(--blue);
+    --h6: var(--lavender);
+}
+
+html[data-webtui-theme='catppuccin'] {
+    --oklch-scale: 1.15;
+
+    /* Catppuccin Mocha palette */
+    --rosewater: oklch(from #f5e0dc l c h);
+    --flamingo: oklch(from #f2cdcd l c h);
+    --pink: oklch(from #f5c2e7 l c h);
+    --mauve: oklch(from #cba6f7 l c h);
+    --red: oklch(from #f38ba8 l c h);
+    --maroon: oklch(from #eba0ac l c h);
+    --peach: oklch(from #fab387 l c h);
+    --yellow: oklch(from #f9e2af l c h);
+    --green: oklch(from #a6e3a1 l c h);
+    --teal: oklch(from #94e2d5 l c h);
+    --sky: oklch(from #89dceb l c h);
+    --sapphire: oklch(from #74c7ec l c h);
+    --blue: oklch(from #89b4fa l c h);
+    --lavender: oklch(from #b4befe l c h);
+
+    --text: oklch(from #cdd6f4 l c h);
+    --subtext1: oklch(from #bac2de l c h);
+    --subtext0: oklch(from #a6adc8 l c h);
+    --overlay2: oklch(from #9399b2 l c h);
+    --overlay1: oklch(from #7f849c l c h);
+    --overlay0: oklch(from #6c7086 l c h);
+    --surface2: oklch(from #585b70 l c h);
+    --surface1: oklch(from #45475a l c h);
+    --surface0: oklch(from #313244 l c h);
+    --base: oklch(from #1e1e2e l c h);
+    --mantle: oklch(from #181825 l c h);
+    --crust: oklch(from #11111b l c h);
+}
+
+html[data-webtui-theme='catppuccin-latte'] {
+    --oklch-scale: 0.85;
+
+    /* Catppuccin Latte palette */
+    --rosewater: oklch(from #dc8a78 l c h);
+    --flamingo: oklch(from #dd7878 l c h);
+    --pink: oklch(from #ea76cb l c h);
+    --mauve: oklch(from #8839ef l c h);
+    --red: oklch(from #d20f39 l c h);
+    --maroon: oklch(from #e64553 l c h);
+    --peach: oklch(from #fe640b l c h);
+    --yellow: oklch(from #df8e1d l c h);
+    --green: oklch(from #40a02b l c h);
+    --teal: oklch(from #179299 l c h);
+    --sky: oklch(from #04a5e5 l c h);
+    --sapphire: oklch(from #209fb5 l c h);
+    --blue: oklch(from #1e66f5 l c h);
+    --lavender: oklch(from #7287fd l c h);
+
+    --text: oklch(from #4c4f69 l c h);
+    --subtext1: oklch(from #5c5f77 l c h);
+    --subtext0: oklch(from #6c6f85 l c h);
+    --overlay2: oklch(from #7c7f93 l c h);
+    --overlay1: oklch(from #8c8fa1 l c h);
+    --overlay0: oklch(from #9ca0b0 l c h);
+    --surface2: oklch(from #acb0be l c h);
+    --surface1: oklch(from #bcc0cc l c h);
+    --surface0: oklch(from #ccd0da l c h);
+    --base: oklch(from #eff1f5 l c h);
+    --mantle: oklch(from #e6e9ef l c h);
+    --crust: oklch(from #dce0e8 l c h);
+
+    --background0: var(--base);
+    --background1: var(--surface0);
+    --background2: var(--surface1);
+    --background3: var(--surface2);
+
+    --foreground0: var(--text);
+    --foreground1: var(--subtext1);
+    --foreground2: var(--subtext0);
+    --foreground3: var(--overlay2);
 
     --purple: var(--mauve);
     --orange: var(--peach);
