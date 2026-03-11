@@ -108,7 +108,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                             <div is-="typography-block">
                                                 <span
                                                     is-="badge"
-                                                    variant-="background1">
+                                                    variant-="background0">
                                                     <row gap-="1">
                                                         <span>←</span>
                                                         <code>&lt;C-b&gt;</code>
@@ -136,7 +136,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                                 is-="typography-block">
                                                 <span
                                                     is-="badge"
-                                                    variant-="background1">
+                                                    variant-="background0">
                                                     <row gap-="1">
                                                         <span>Next</span>
                                                         <code>&lt;C-n&gt;</code>
@@ -828,11 +828,12 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         }
 
         const syncActiveHeading = () => {
-            const scrollTop = scrollContainer.scrollTop
+            const containerTop = scrollContainer.getBoundingClientRect().top
             let activeHeading = headingElements[0]
 
             for (const heading of headingElements) {
-                if (heading.offsetTop - 24 <= scrollTop) {
+                const top = heading.getBoundingClientRect().top - containerTop
+                if (top <= 24) {
                     activeHeading = heading
                 } else {
                     break
@@ -848,8 +849,11 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
             }
         }
 
-        scrollContainer.addEventListener('scroll', syncActiveHeading, {
+        // Use capture to intercept scroll events from any ancestor
+        // (the actual scroller may be #scroll-container, article, or body)
+        document.addEventListener('scroll', syncActiveHeading, {
             passive: true,
+            capture: true,
         })
         window.addEventListener('hashchange', syncActiveHeading)
         syncActiveHeading()
