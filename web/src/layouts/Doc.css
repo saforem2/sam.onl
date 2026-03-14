@@ -481,6 +481,16 @@ h6::before {
             pointer-events: none;
         }
 
+        .next,
+        .prev {
+            text-decoration: none;
+            &:focus,
+            &:hover {
+                background: none;
+                color: var(--accent);
+            }
+        }
+
         :is([tabindex='0'], a[href], summary):focus-visible::after,
         :is(
                 [tabindex='0'],
@@ -625,6 +635,7 @@ article {
 
     .next,
     .prev {
+        text-decoration: none;
         flex-grow: 1;
 
         code {
