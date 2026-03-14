@@ -19,14 +19,14 @@ import '@webtui/css/components/radio.css'
     #widgets-grid {
         position: absolute;
         top: 50vh;
-        left: 50vw;
+        left: 50%;
         transform: translate(round(-50%, 1ch), round(-50%, 1lh));
         display: grid;
         max-width: 90vw;
         max-height: 90vh;
-        min-width: 80ch;
+        min-width: min(80ch, 100%);
         min-height: 32lh;
-        width: round(calc(100vw - 4ch), 1ch);
+        width: round(calc(100% - 4ch), 1ch);
         height: round(calc(100vh - 2lh), 1lh);
         grid-template-columns: repeat(3, 1fr);
         grid-auto-rows: minmax(8lh, 12lh);
