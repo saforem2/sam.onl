@@ -1,0 +1,141 @@
+---
+import Neofetch from '../widgets/Neofetch.astro'
+import GitLog from '../widgets/GitLog.astro'
+import ContributionGraph from '../widgets/ContributionGraph.astro'
+import Calendar from '../widgets/Calendar.astro'
+import TechStack from '../widgets/TechStack.astro'
+import Sparkline from '../widgets/Sparkline.astro'
+import HtopBars from '../widgets/HtopBars.astro'
+import Keybindings from '../widgets/Keybindings.astro'
+
+const widgets = [
+    { name: 'neofetch', label: '1. Neofetch / System Info' },
+    { name: 'gitlog', label: '2. Git Log' },
+    { name: 'contrib', label: '3. Contribution Graph' },
+    { name: 'calendar', label: '4. Mini Calendar' },
+    { name: 'techstack', label: '5. Tech Stack' },
+    { name: 'sparkline', label: '6. Sparkline Chart' },
+    { name: 'htop', label: '7. htop-style Bars' },
+    { name: 'keybindings', label: '8. Keybindings' },
+]
+---
+
+<section id="showcase-neofetch" class="widget-showcase">
+    <column class="content" align-="center">
+        <h2 is-="badge" variant-="background1">1. Neofetch / System Info</h2>
+        <p>Site metadata styled like neofetch terminal output</p>
+        <div class="showcase-frame">
+            <Neofetch />
+        </div>
+    </column>
+</section>
+
+<section id="showcase-gitlog" class="widget-showcase">
+    <column class="content" align-="center">
+        <h2 is-="badge" variant-="background1">2. Git Log</h2>
+        <p>Recent commits in git log --oneline format</p>
+        <div class="showcase-frame">
+            <GitLog />
+        </div>
+    </column>
+</section>
+
+<section id="showcase-contrib" class="widget-showcase">
+    <column class="content" align-="center">
+        <h2 is-="badge" variant-="background1">3. Contribution Graph</h2>
+        <p>GitHub-style contribution heatmap</p>
+        <div class="showcase-frame">
+            <ContributionGraph />
+        </div>
+    </column>
+</section>
+
+<section id="showcase-calendar" class="widget-showcase">
+    <column class="content" align-="center">
+        <h2 is-="badge" variant-="background1">4. Mini Calendar</h2>
+        <p>Terminal cal-style month view with today highlighted</p>
+        <div class="showcase-frame">
+            <Calendar />
+        </div>
+    </column>
+</section>
+
+<section id="showcase-techstack" class="widget-showcase">
+    <column class="content" align-="center">
+        <h2 is-="badge" variant-="background1">5. Tech Stack</h2>
+        <p>Nerd Font icons for each technology used</p>
+        <div class="showcase-frame">
+            <TechStack />
+        </div>
+    </column>
+</section>
+
+<section id="showcase-sparkline" class="widget-showcase">
+    <column class="content" align-="center">
+        <h2 is-="badge" variant-="background1">6. Sparkline Chart</h2>
+        <p>Unicode sparklines and bar charts for activity trends</p>
+        <div class="showcase-frame">
+            <Sparkline />
+        </div>
+    </column>
+</section>
+
+<section id="showcase-htop" class="widget-showcase">
+    <column class="content" align-="center">
+        <h2 is-="badge" variant-="background1">7. htop-style Bars</h2>
+        <p>Build metrics as CPU/memory-style progress bars</p>
+        <div class="showcase-frame">
+            <HtopBars />
+        </div>
+    </column>
+</section>
+
+<section id="showcase-keybindings" class="widget-showcase">
+    <column class="content" align-="center">
+        <h2 is-="badge" variant-="background1">8. Keybindings</h2>
+        <p>Vim-style keyboard shortcut reference</p>
+        <div class="showcase-frame">
+            <Keybindings />
+        </div>
+    </column>
+</section>
+
+<style>
+    .widget-showcase {
+        background-color: var(--background0);
+        align-items: center;
+        justify-content: center;
+        padding: 1lh 2ch;
+
+        h2 {
+            padding-inline: 1ch;
+        }
+        h2::before {
+            content: '' !important;
+            margin-inline-end: 0ch;
+        }
+
+        .content {
+            max-width: min(80ch, 100%);
+            width: round(calc(100% - 2ch), 1ch);
+            gap: 0.5lh;
+        }
+    }
+
+    .showcase-frame {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 1lh 0;
+    }
+
+    .showcase-frame > :global(*) {
+        /* Override grid positioning from widget styles */
+        grid-column: unset !important;
+        grid-row: unset !important;
+        /* Let them size naturally */
+        width: min(60ch, 100%);
+        opacity: 1;
+        pointer-events: auto;
+    }
+</style>

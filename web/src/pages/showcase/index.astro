@@ -1,0 +1,130 @@
+---
+import Layout from '@/layouts/Layout.astro'
+
+const options = [
+    {
+        index: 1,
+        name: 'Neofetch / System Info',
+        desc: 'Site metadata styled like neofetch terminal output',
+    },
+    {
+        index: 2,
+        name: 'Git Log',
+        desc: 'Recent commits in git log --oneline format',
+    },
+    {
+        index: 3,
+        name: 'Contribution Graph',
+        desc: 'GitHub-style contribution heatmap',
+    },
+    { index: 4, name: 'Mini Calendar', desc: 'Terminal cal-style month view' },
+    {
+        index: 5,
+        name: 'Tech Stack',
+        desc: 'Nerd Font icons for each technology',
+    },
+    {
+        index: 6,
+        name: 'Sparkline Chart',
+        desc: 'Unicode sparklines and bar charts',
+    },
+    {
+        index: 7,
+        name: 'htop-style Bars',
+        desc: 'Build metrics as progress bars',
+    },
+    {
+        index: 8,
+        name: 'Keybindings',
+        desc: 'Vim-style keyboard shortcut reference',
+    },
+]
+---
+
+<Layout>
+    <main class="showcase-index">
+        <column class="showcase-content" align-="center">
+            <h1>Widget Showcase</h1>
+            <p>
+                Each page shows a candidate widget in the background grid,
+                replacing the file tree alongside the clock and player.
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Widget</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        options.map((o) => (
+                            <tr>
+                                <td>{o.index}</td>
+                                <td>
+                                    <a href={`/showcase/${o.index}`}>
+                                        {o.name}
+                                    </a>
+                                </td>
+                                <td class="desc">{o.desc}</td>
+                            </tr>
+                        ))
+                    }
+                </tbody>
+            </table>
+            <row>
+                <a href="/" is-="badge" variant-="background1">
+                    ← Back to home
+                </a>
+            </row>
+        </column>
+    </main>
+</Layout>
+
+<style>
+    .showcase-index {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 2lh 2ch;
+    }
+
+    .showcase-content {
+        max-width: min(80ch, 100%);
+        width: round(calc(100% - 2ch), 1ch);
+        gap: 1lh;
+    }
+
+    h1::before {
+        content: '' !important;
+    }
+
+    table {
+        width: 100%;
+    }
+
+    td a {
+        color: var(--foreground0);
+        font-weight: 600;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .desc {
+        color: var(--foreground2);
+    }
+
+    a[is-='badge'] {
+        text-decoration: none;
+        color: var(--foreground1);
+
+        &:hover {
+            color: var(--foreground0);
+        }
+    }
+</style>
