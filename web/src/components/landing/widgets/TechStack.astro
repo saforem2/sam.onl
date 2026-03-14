@@ -1,0 +1,61 @@
+---
+const techs = [
+    { name: 'Astro', icon: '\ue6b2', color: 'orange' },
+    { name: 'MDX', icon: '\uf48a', color: 'yellow' },
+    { name: 'Bun', icon: '\ue76f', color: 'foreground1' },
+    { name: 'TypeScript', icon: '\ue628', color: 'blue' },
+    { name: 'CSS', icon: '\ue749', color: 'sapphire' },
+    { name: 'KaTeX', icon: '\uf698', color: 'green' },
+    { name: 'Shiki', icon: '\uf489', color: 'purple' },
+    { name: 'Mermaid', icon: '\uf61f', color: 'aqua' },
+    { name: 'Netlify', icon: '\uf233', color: 'green' },
+    { name: 'Turborepo', icon: '\uf489', color: 'red' },
+]
+---
+
+<column box-="square" pad-="1 2" gap-="0" class="stack-widget">
+    <span class="stack-title">stack</span>
+    <column gap-="0" class="stack-list">
+        {
+            techs.map((t) => (
+                <row class="stack-item" gap-="1">
+                    <span class="stack-icon" style={`color: var(--${t.color})`}>
+                        {t.icon}
+                    </span>
+                    <span class="stack-name">{t.name}</span>
+                </row>
+            ))
+        }
+    </column>
+</column>
+
+<style>
+    .stack-widget {
+        grid-column: 1;
+        grid-row: 2 / 5;
+        gap: 0.5lh;
+    }
+
+    .stack-title {
+        color: var(--foreground1);
+        font-weight: 600;
+    }
+
+    .stack-list {
+        gap: 0;
+    }
+
+    .stack-item {
+        align-items: center;
+        line-height: 1.6;
+    }
+
+    .stack-icon {
+        width: 2ch;
+        text-align: center;
+    }
+
+    .stack-name {
+        color: var(--foreground1);
+    }
+</style>

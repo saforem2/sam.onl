@@ -1,0 +1,169 @@
+---
+const meters = [
+    { label: 'Build', value: 87, unit: 's', color: 'green', total: '48.9s' },
+    { label: 'Lighthouse', value: 96, unit: '', color: 'green', total: '96' },
+    { label: 'Pages', value: 108, unit: '', color: 'blue', total: '108' },
+    { label: 'Assets', value: 94, unit: '', color: 'aqua', total: '94' },
+]
+
+const cpuStyle = [
+    { pct: 72, colors: ['green', 'green', 'yellow', 'red'] },
+    { pct: 45, colors: ['green', 'green', 'yellow', 'red'] },
+    { pct: 88, colors: ['green', 'green', 'yellow', 'red'] },
+    { pct: 31, colors: ['green', 'green', 'yellow', 'red'] },
+]
+
+function makeBar(pct: number, width: number = 20): string {
+    const filled = Math.round((pct / 100) * width)
+    const empty = width - filled
+    return '|' + '|'.repeat(filled) + ' '.repeat(empty) + '|'
+}
+---
+
+<column box-="square" pad-="1 2" gap-="0" class="htop-widget">
+    <column gap-="0" class="htop-cpus">
+        {
+            cpuStyle.map((cpu, i) => (
+                <row gap-="0" class="htop-row">
+                    <span class="htop-cpu-label">{i + 1}</span>
+                    <span class="htop-bracket">[</span>
+                    <span class="htop-bar-track">
+                        <span
+                            class="htop-bar-fill"
+                            style={`width: ${cpu.pct}%; background-color: var(--${cpu.pct > 80 ? 'red' : cpu.pct > 60 ? 'yellow' : 'green'})`}
+                        />
+                    </span>
+                    <span class="htop-bracket">]</span>
+                    <span class="htop-pct">
+                        {cpu.pct.toString().padStart(3, ' ')}%
+                    </span>
+                </row>
+            ))
+        }
+    </column>
+
+    <span class="htop-sep"></span>
+
+    <column gap-="0" class="htop-meters">
+        {
+            meters.map((m) => (
+                <row gap-="1" class="htop-meter-row">
+                    <span class="htop-meter-label">{m.label}</span>
+                    <span class="htop-bracket">[</span>
+                    <span class="htop-bar-track">
+                        <span
+                            class="htop-bar-fill"
+                            style={`width: ${m.value}%; background-color: var(--${m.color})`}
+                        />
+                    </span>
+                    <span class="htop-bracket">]</span>
+                    <span class="htop-meter-val">{m.total}</span>
+                </row>
+            ))
+        }
+    </column>
+
+    <span class="htop-sep"></span>
+
+    <column gap-="0" class="htop-stats">
+        <row gap-="2">
+            <span
+                ><span class="htop-stat-key">Tasks:</span>
+                <span class="htop-stat-val">9</span></span
+            >
+            <span
+                ><span class="htop-stat-key">Cached:</span>
+                <span class="htop-stat-val">8</span></span
+            >
+        </row>
+        <row gap-="2">
+            <span
+                ><span class="htop-stat-key">Mem:</span>
+                <span class="htop-stat-val">1.2G/8G</span></span
+            >
+            <span
+                ><span class="htop-stat-key">Uptime:</span>
+                <span class="htop-stat-val">46.8s</span></span
+            >
+        </row>
+    </column>
+</column>
+
+<style>
+    .htop-widget {
+        grid-column: 1;
+        grid-row: 2 / 5;
+        gap: 0.25lh;
+        font-size: 0.85em;
+    }
+
+    .htop-row,
+    .htop-meter-row {
+        align-items: center;
+        gap: 0;
+    }
+
+    .htop-cpu-label {
+        color: var(--blue);
+        width: 2ch;
+        text-align: right;
+        font-weight: bold;
+    }
+
+    .htop-bracket {
+        color: var(--foreground2);
+    }
+
+    .htop-bar-track {
+        flex: 1;
+        height: 1lh;
+        background-color: var(--background2);
+        position: relative;
+        margin: 0 0.5ch;
+    }
+
+    .htop-bar-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        transition: width 0.3s;
+    }
+
+    .htop-pct {
+        color: var(--foreground1);
+        width: 5ch;
+        text-align: right;
+        white-space: pre;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .htop-sep {
+        display: block;
+        height: 0;
+        border-top: 1px solid var(--background2);
+        margin: 0.25lh 0;
+    }
+
+    .htop-meter-label {
+        color: var(--foreground2);
+        width: 10ch;
+        text-align: right;
+    }
+
+    .htop-meter-val {
+        color: var(--foreground1);
+        width: 5ch;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .htop-stat-key {
+        color: var(--foreground2);
+    }
+
+    .htop-stat-val {
+        color: var(--green);
+        font-weight: bold;
+    }
+</style>

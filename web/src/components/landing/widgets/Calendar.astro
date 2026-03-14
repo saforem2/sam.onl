@@ -1,0 +1,87 @@
+---
+const now = new Date()
+const year = now.getFullYear()
+const month = now.getMonth()
+const today = now.getDate()
+
+const monthName = now.toLocaleString('en-US', { month: 'long' })
+const firstDay = new Date(year, month, 1).getDay() // 0=Sun
+const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+const dayHeaders = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+
+// Build grid: 6 rows x 7 cols
+const cells: (number | null)[] = []
+for (let i = 0; i < firstDay; i++) cells.push(null)
+for (let d = 1; d <= daysInMonth; d++) cells.push(d)
+while (cells.length < 42) cells.push(null)
+---
+
+<column box-="square" pad-="1 2" gap-="0" class="cal-widget">
+    <span class="cal-title">{monthName} {year}</span>
+    <row gap-="0" class="cal-header">
+        {dayHeaders.map((d) => <span class="cal-hdr">{d}</span>)}
+    </row>
+    {
+        Array.from({ length: 6 }).map((_, row) => (
+            <row gap-="0" class="cal-row">
+                {cells.slice(row * 7, row * 7 + 7).map((cell) => (
+                    <span
+                        class={`cal-cell ${cell === today ? 'cal-today' : ''} ${cell === null ? 'cal-empty' : ''}`}>
+                        {cell ?? ''}
+                    </span>
+                ))}
+            </row>
+        ))
+    }
+</column>
+
+<style>
+    .cal-widget {
+        grid-column: 1;
+        grid-row: 2 / 5;
+        gap: 0;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .cal-title {
+        color: var(--foreground0);
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 0.5lh;
+    }
+
+    .cal-header {
+        border-bottom: 1px solid var(--foreground2);
+        margin-bottom: 0.25lh;
+    }
+
+    .cal-hdr {
+        width: 3ch;
+        text-align: center;
+        color: var(--foreground2);
+        font-weight: 600;
+    }
+
+    .cal-row {
+        gap: 0;
+    }
+
+    .cal-cell {
+        width: 3ch;
+        text-align: center;
+        color: var(--foreground1);
+        line-height: 1.6;
+    }
+
+    .cal-empty {
+        color: transparent;
+    }
+
+    .cal-today {
+        color: var(--background0);
+        background-color: var(--green);
+        font-weight: bold;
+        border-radius: 2px;
+    }
+</style>

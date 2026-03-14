@@ -1,0 +1,104 @@
+---
+const commits = [
+    {
+        hash: 'e05a186',
+        msg: 'docs: Expand theme-custom page',
+        date: '3 hours ago',
+        branch: 'HEAD -> main',
+    },
+    {
+        hash: '6b5270a',
+        msg: 'refactor: Reduce color scale 0-3',
+        date: '5 hours ago',
+        branch: '',
+    },
+    {
+        hash: '9a034de',
+        msg: 'fix: Improve TOC heading tracking',
+        date: '8 hours ago',
+        branch: '',
+    },
+    {
+        hash: 'a27aaab',
+        msg: 'feat: Add catppuccin-latte theme',
+        date: '1 day ago',
+        branch: '',
+    },
+    {
+        hash: '4022c8f',
+        msg: 'docs: Add deploy status badge',
+        date: '1 day ago',
+        branch: '',
+    },
+    {
+        hash: 'b3c91f2',
+        msg: 'fix: Mobile overflow on widgets',
+        date: '2 days ago',
+        branch: '',
+    },
+    {
+        hash: '7d4e8a1',
+        msg: 'feat: Add vim navigation keys',
+        date: '3 days ago',
+        branch: '',
+    },
+    {
+        hash: 'f1a29c3',
+        msg: 'refactor: Consolidate CSS layers',
+        date: '4 days ago',
+        branch: '',
+    },
+]
+---
+
+<column box-="square" pad-="1 2" gap-="0" class="gitlog-widget">
+    <span class="gl-header">$ git log --oneline -8</span>
+    {
+        commits.map((c) => (
+            <span class="gl-line">
+                <span class="gl-hash">{c.hash}</span>
+                {c.branch && <span class="gl-branch">({c.branch})</span>}{' '}
+                <span class="gl-msg">{c.msg}</span>
+                <span class="gl-date"> ({c.date})</span>
+            </span>
+        ))
+    }
+</column>
+
+<style>
+    .gitlog-widget {
+        grid-column: 1;
+        grid-row: 2 / 5;
+        font-size: 0.85em;
+        line-height: 1.5;
+        overflow: hidden;
+    }
+
+    .gl-header {
+        color: var(--foreground2);
+        margin-bottom: 0.5lh;
+    }
+
+    .gl-line {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .gl-hash {
+        color: var(--yellow);
+    }
+
+    .gl-branch {
+        color: var(--green);
+        font-weight: bold;
+    }
+
+    .gl-msg {
+        color: var(--foreground0);
+    }
+
+    .gl-date {
+        color: var(--foreground2);
+    }
+</style>

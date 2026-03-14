@@ -1,0 +1,135 @@
+---
+import { getCollection } from 'astro:content'
+
+const docs = await getCollection('docs')
+const postCount = docs.filter((d) => d.id.startsWith('posts/')).length
+const talkCount = docs
+    .filter((d) => d.id.startsWith('talks/'))
+    .filter((d) => !d.id.endsWith('talks')).length
+---
+
+<column box-="square" pad-="1 2" gap-="0" class="neofetch-widget">
+    <row gap-="2">
+        <column gap-="0" class="neofetch-ascii">
+            <span class="ascii-line c1"> ___ </span>
+            <span class="ascii-line c2"> / \ </span>
+            <span class="ascii-line c3"> | &gt;&lt; | </span>
+            <span class="ascii-line c4"> | ___ | </span>
+            <span class="ascii-line c5"> \___/ </span>
+            <span class="ascii-line c6"> /| |\ </span>
+            <span class="ascii-line c7"> / | | \</span>
+        </column>
+        <column gap-="0" class="neofetch-info">
+            <span class="nf-title">sam<span class="nf-at">@</span>sam.onl</span>
+            <span class="nf-sep">----------</span>
+            <span><span class="nf-key">OS</span>: Astro 5.x</span>
+            <span><span class="nf-key">Shell</span>: Bun 1.3.10</span>
+            <span><span class="nf-key">Theme</span>: catppuccin</span>
+            <span><span class="nf-key">Posts</span>: {postCount}</span>
+            <span><span class="nf-key">Talks</span>: {talkCount}</span>
+            <span><span class="nf-key">Uptime</span>: since 2022</span>
+            <row gap-="0" class="nf-colors">
+                <span class="swatch bg0">&nbsp;&nbsp;</span>
+                <span class="swatch bg1">&nbsp;&nbsp;</span>
+                <span class="swatch bg2">&nbsp;&nbsp;</span>
+                <span class="swatch bg3">&nbsp;&nbsp;</span>
+                <span class="swatch bg4">&nbsp;&nbsp;</span>
+                <span class="swatch bg5">&nbsp;&nbsp;</span>
+                <span class="swatch bg6">&nbsp;&nbsp;</span>
+                <span class="swatch bg7">&nbsp;&nbsp;</span>
+            </row>
+        </column>
+    </row>
+</column>
+
+<style>
+    .neofetch-widget {
+        grid-column: 1;
+        grid-row: 2 / 5;
+        font-size: 0.9em;
+        line-height: 1.4;
+    }
+
+    .neofetch-ascii {
+        white-space: pre;
+        color: var(--blue);
+        font-weight: bold;
+    }
+
+    .ascii-line.c1 {
+        color: var(--red);
+    }
+    .ascii-line.c2 {
+        color: var(--orange, var(--peach));
+    }
+    .ascii-line.c3 {
+        color: var(--yellow);
+    }
+    .ascii-line.c4 {
+        color: var(--green);
+    }
+    .ascii-line.c5 {
+        color: var(--blue);
+    }
+    .ascii-line.c6 {
+        color: var(--purple, var(--mauve));
+    }
+    .ascii-line.c7 {
+        color: var(--lavender, var(--purple));
+    }
+
+    .neofetch-info {
+        white-space: nowrap;
+    }
+
+    .nf-title {
+        font-weight: bold;
+        color: var(--green);
+    }
+
+    .nf-at {
+        color: var(--foreground2);
+    }
+
+    .nf-sep {
+        color: var(--foreground2);
+    }
+
+    .nf-key {
+        color: var(--blue);
+        font-weight: bold;
+    }
+
+    .nf-colors {
+        margin-top: 0.5lh;
+    }
+
+    .swatch {
+        display: inline-block;
+    }
+
+    .swatch.bg0 {
+        background-color: var(--red);
+    }
+    .swatch.bg1 {
+        background-color: var(--orange, var(--peach));
+    }
+    .swatch.bg2 {
+        background-color: var(--yellow);
+    }
+    .swatch.bg3 {
+        background-color: var(--green);
+    }
+    .swatch.bg4 {
+        background-color: var(--blue);
+    }
+    .swatch.bg5 {
+        background-color: var(--purple, var(--mauve));
+    }
+    .swatch.bg6 {
+        background-color: var(--aqua, var(--sapphire));
+    }
+    .swatch.bg7 {
+        background-color: var(--foreground2);
+    }
+</style>
