@@ -17,7 +17,7 @@ for (let d = 1; d <= daysInMonth; d++) cells.push(d)
 while (cells.length < 42) cells.push(null)
 ---
 
-<column box-="square" pad-="1 2" gap-="0" class="cal-widget">
+<column box-="square" pad-="2" gap-="0" class="cal-widget" tabindex="0">
     <span class="cal-title">{monthName} {year}</span>
     <row gap-="0" class="cal-header">
         {dayHeaders.map((d) => <span class="cal-hdr">{d}</span>)}
@@ -42,6 +42,8 @@ while (cells.length < 42) cells.push(null)
         grid-row: 2 / 5;
         gap: 0;
         font-variant-numeric: tabular-nums;
+        padding-block: 2lh;
+        padding-inline: 2ch;
     }
 
     .cal-title {
@@ -57,7 +59,8 @@ while (cells.length < 42) cells.push(null)
     }
 
     .cal-hdr {
-        width: 3ch;
+        flex: 1;
+        min-width: 3ch;
         text-align: center;
         color: var(--foreground2);
         font-weight: 600;
@@ -68,7 +71,8 @@ while (cells.length < 42) cells.push(null)
     }
 
     .cal-cell {
-        width: 3ch;
+        flex: 1;
+        min-width: 3ch;
         text-align: center;
         color: var(--foreground1);
         line-height: 1.6;
