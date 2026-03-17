@@ -697,6 +697,7 @@ const { pathname: urlPath } = Astro.url
         :is(a[href], summary, button:not([disabled])) {
             position: relative;
             outline: none;
+            border: 0.5ch solid rgba(0, 0, 0, 0);
         }
 
         :is(a[href], summary, button:not([disabled]))::after {
@@ -726,6 +727,9 @@ const { pathname: urlPath } = Astro.url
             color: var(--focus-fg);
             /* border-left: 1px solid var(--accent); */
             text-decoration: none;
+            /* .sidebar-category-link:hover { */
+            border: 0.5ch solid rgba(0, 0, 0, 0) !important;
+            /* } */
             /* box-shadow: */
             /*     inset var(--focus-rail-size) 0 0 0 var(--focus-marker), */
             /*     inset 0 0 0 1px var(--focus-border); */
@@ -765,8 +769,9 @@ const { pathname: urlPath } = Astro.url
             flex-direction: column;
             gap: 0lh;
             overflow-y: auto;
-            padding-inline-start: 1ch;
-            margin-inline-start: 1ch;
+            padding-block-start: 1ch;
+            /* padding-inline-start: 1ch; */
+            /* margin-inline-start: 1ch; */
             /* margin-inline: 1ch; */
         }
     }
@@ -782,7 +787,21 @@ const { pathname: urlPath } = Astro.url
 
     ul > li > a[href] {
         color: var(--foreground2);
+        border: 1ch solid rgba(0, 0, 0, 0) !important;
     }
+    /* #sidebar ul > li > a { */
+    /*     border-left: 1pt solid var(--background2); */
+    /*     padding-inline-start: 1ch; */
+    /*     margin-inline-start: calc(-2ch); */
+    /*     margin-block: 0ch; */
+    /*     border: 1ch solid var(--background0); */
+    /* } */
+    /* .sidebar-category-link a { */
+    /*     border: 1ch solid var(--background0); */
+    /* } */
+    /* .sidebar-direct-link a { */
+    /*     border: 1ch solid var(--background0); */
+    /* } */
 
     ul ul > li > a[href] {
         color: var(--foreground2);
@@ -792,8 +811,13 @@ const { pathname: urlPath } = Astro.url
         min-width: 0;
 
         &.active {
+            color: var(--accent);
             background-color: oklch(
-                from var(--background-active, var(--background2, #838383))
+                from
+                    var(
+                        --accent,
+                        var(--background-active, var(--background2, #838383))
+                    )
                     calc(l * var(--oklch-scale, 0.85)) c h / 0.1
             );
         }
@@ -850,6 +874,7 @@ const { pathname: urlPath } = Astro.url
 
         &:focus,
         &.active {
+            color: var(--accent);
             background-color: oklch(
                 from var(--background-active, var(--background2, #838383))
                     calc(l * var(--oklch-scale, 0.85)) c h / 0.1
