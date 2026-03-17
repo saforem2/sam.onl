@@ -1,0 +1,209 @@
+---
+interface Props {
+    variant: number
+    total: number
+    home?: boolean
+}
+
+const { variant, total, home = false } = Astro.props
+---
+
+<column box-="square" class="widget" pad-="2 1" id="intro-widget" tabindex="0">
+    {
+        !home && (
+            <row class="iw-variant-header">
+                <span
+                    is-="badge"
+                    variant-="green"
+                    style="--badge-text: var(--background0)">
+                    v{variant}/{total}
+                </span>
+                <span class="iw-variant-label">Intro as Widget</span>
+            </row>
+        )
+    }
+    <h1>
+        <span is-="badge" variant-="green">&#xf4b5; Sam Foreman</span>
+    </h1>
+    <span class="iw-tagline"
+        >Computational Scientist · Argonne National Laboratory</span
+    >
+    <p>
+        I'm a Computational Scientist in the{' '}
+        <a
+            href="https://www.alcf.anl.gov/about/people/group/506"
+            target="_blank">
+            AI / ML Group
+        </a>{' '}
+        at the{' '}
+        <a href="https://www.alcf.anl.gov/" target="_blank">
+            Argonne Leadership Computing Facility</a
+        >.
+        <br />
+        <br />
+        My work focuses on large-scale distributed training of foundation models for
+        scientific applications. I co-lead the Models &amp; Pre-Training team for
+        the
+        <a href="https://auroragpt.anl.gov" target="_blank">AuroraGPT</a> project.
+    </p>
+    <row class="iw-social-links">
+        <a href="https://github.com/saforem2" target="_blank" title="GitHub"
+            >&#xe65b;</a
+        >
+        <a
+            href="https://bsky.app/profile/samforeman.bsky.social"
+            target="_blank"
+            title="Bluesky">&#xe28e;</a
+        >
+        <a href="https://twitter.com/saforem2" target="_blank" title="Twitter"
+            >&#xeb72;</a
+        >
+        <a
+            href="https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en"
+            target="_blank"
+            title="Google Scholar">&#xf19d;</a
+        >
+        <a
+            href="https://www.linkedin.com/in/samforem2"
+            target="_blank"
+            title="LinkedIn">&#xe820;</a
+        >
+        <a href="mailto:sf@omg.lol" title="Email">&#xf0e0;</a>
+        {
+            home && (
+                <a
+                    href="/landing"
+                    class="iw-nav-home"
+                    style="margin-left: auto;">
+                    More &rarr;
+                </a>
+            )
+        }
+    </row>
+    {
+        !home && (
+            <>
+                <div is-="separator" />
+                <nav class="iw-nav">
+                    {variant > 1 ? (
+                        <a href={`/showcase/v${variant - 1}`}>&larr; Prev</a>
+                    ) : (
+                        <span class="iw-nav-disabled">&larr; Prev</span>
+                    )}
+                    <a href="/showcase" class="iw-nav-center">
+                        All options
+                    </a>
+                    {variant < total ? (
+                        <a href={`/showcase/v${variant + 1}`}>Next &rarr;</a>
+                    ) : (
+                        <span class="iw-nav-disabled">Next &rarr;</span>
+                    )}
+                </nav>
+            </>
+        )
+    }
+</column>
+
+<style>
+    #intro-widget {
+        pointer-events: auto;
+        gap: 0.5lh;
+
+        h1 {
+            display: inline-flex;
+        }
+
+        h1::before {
+            content: '';
+            margin-inline-start: -1ch;
+        }
+
+        a {
+            color: var(--foreground2);
+
+            &:focus,
+            &:hover {
+                color: var(--blue);
+                background-color: oklch(
+                    from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h /
+                        0.1
+                );
+                text-decoration: none;
+            }
+        }
+    }
+
+    .iw-tagline {
+        color: var(--foreground2);
+    }
+
+    .iw-variant-header {
+        align-items: baseline;
+        gap: 1ch;
+    }
+
+    .iw-variant-label {
+        color: var(--foreground1);
+        font-weight: 600;
+    }
+
+    .iw-social-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2ch;
+
+        a {
+            text-decoration: none !important;
+            padding-inline: 1ch;
+            background-color: oklch(
+                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
+                    0.1
+            );
+        }
+    }
+
+    [is-='separator'] {
+        --separator-color: var(--foreground2);
+    }
+
+    .iw-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+
+        a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5ch;
+            padding: 0 1ch;
+            color: var(--foreground1);
+            text-decoration: none;
+            background-color: oklch(
+                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
+                    0.1
+            );
+
+            &:focus,
+            &:hover {
+                background-color: oklch(
+                    from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h /
+                        0.1
+                );
+                color: var(--blue);
+                text-decoration: none;
+            }
+        }
+    }
+
+    .iw-nav-center {
+        color: var(--foreground2) !important;
+    }
+
+    .iw-nav-disabled {
+        color: var(--foreground2);
+        padding: 0 1ch;
+        opacity: 0.3;
+    }
+</style>
