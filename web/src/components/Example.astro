@@ -1,5 +1,6 @@
 ---
 import webtuiBase from '@webtui/css/base.css?raw'
+import customTheme from '@webtui/theme-custom?raw'
 
 import Dropdown from '@/components/ui/Dropdown.astro'
 import Tabs from '@/components/ui/Tabs.astro'
@@ -28,6 +29,7 @@ const { html, css, stylesheets, themes, ...rest } = Astro.props as Props
 <head>
 <style>@layer base, utils, components;</style>
 <style>${webtuiBase}</style>
+<style>${customTheme}</style>
 ${stylesheets ? stylesheets.map((stylesheet) => `<style>${stylesheet}</style>`).join('') : ''}
 <style>
 @layer base {

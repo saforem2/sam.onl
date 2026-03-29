@@ -1,0 +1,138 @@
+---
+import Navbar from '../../NavbarMinimal.astro'
+
+interface Props {
+    label: string
+    index: number
+}
+
+const { label, index } = Astro.props
+---
+
+<column class="showcase-page">
+    <Navbar />
+    <column class="showcase-center">
+        <column class="showcase-card">
+            <row class="showcase-header">
+                <span
+                    is-="badge"
+                    variant-="green"
+                    style="--badge-text: var(--background0)">{index}/8</span
+                >
+                <h2>{label}</h2>
+            </row>
+            <div class="showcase-widget">
+                <slot />
+            </div>
+            <nav class="showcase-nav">
+                {
+                    index > 1 ? (
+                        <a href={`/showcase/${index - 1}`}>← Prev</a>
+                    ) : (
+                        <span class="nav-disabled">← Prev</span>
+                    )
+                }
+                <a href="/showcase" class="nav-center">All options</a>
+                {
+                    index < 8 ? (
+                        <a href={`/showcase/${index + 1}`}>Next →</a>
+                    ) : (
+                        <span class="nav-disabled">Next →</span>
+                    )
+                }
+            </nav>
+        </column>
+    </column>
+</column>
+
+<style>
+    .showcase-page {
+        min-height: 100vh;
+        background-color: var(--background0);
+
+        > :global(nav) {
+            padding: 1ch;
+        }
+    }
+
+    .showcase-center {
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .showcase-card {
+        width: min(72ch, calc(100% - 2ch));
+        background-color: var(--background1);
+        border: 1px solid var(--background2);
+        gap: 0;
+    }
+
+    .showcase-header {
+        align-items: baseline;
+        gap: 1ch;
+        padding: 1lh 2ch 0;
+
+        h2 {
+            margin: 0;
+            color: var(--foreground0);
+        }
+
+        h2::before {
+            content: '' !important;
+            margin: 0;
+        }
+    }
+
+    .showcase-widget {
+        padding: 1lh 2ch;
+    }
+
+    .showcase-widget > :global(*) {
+        grid-column: unset !important;
+        grid-row: unset !important;
+        width: 100%;
+    }
+
+    .showcase-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid var(--background2);
+        padding: 0.5lh 2ch;
+    }
+
+    .showcase-nav a {
+        color: var(--foreground1);
+        text-decoration: none;
+        padding: 0 1ch;
+
+        &:hover {
+            color: var(--blue);
+        }
+    }
+
+    .nav-center {
+        color: var(--foreground2) !important;
+    }
+
+    .nav-disabled {
+        color: var(--foreground2);
+        padding: 0 1ch;
+        opacity: 0.3;
+    }
+
+    @media (max-width: 480px) {
+        .showcase-header {
+            padding: 1lh 1ch 0;
+        }
+
+        .showcase-widget {
+            padding: 1lh 1ch;
+        }
+
+        .showcase-nav {
+            padding: 0.5lh 1ch;
+        }
+    }
+</style>

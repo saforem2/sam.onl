@@ -54,6 +54,9 @@ h6::before {
 
     top: 0;
     z-index: 3;
+    color: var(--foreground1);
+    background-color: var(--background2);
+    border: 2px solid var(--box-border-color);
 }
 
 /* #sidebar-toggle { */
@@ -66,10 +69,13 @@ h6::before {
     /* transform: translate(-50%, -50%); */
 }
 
-/* #sidebar-toggle code, */
-/* #toc-toggle code { */
-/*     background-color: transparent; */
-/* } */
+#sidebar-toggle:hover {
+    color: var(--cyan);
+}
+
+#toc-toggle:hover {
+    color: var(--yellow);
+}
 
 #sidebar-container {
     display: flex;
@@ -101,7 +107,8 @@ h6::before {
     min-width: 0;
     max-inline-size: none;
     width: auto;
-    padding-inline: 0;
+    padding-inline-start: 1ch;
+    padding-inline-end: 0;
     transform: translate(-50%, -50%) rotate(90deg);
     transform-origin: center;
     background-color: var(--button-secondary);
@@ -280,7 +287,7 @@ h6::before {
 #toc-list a {
     display: block;
     position: relative;
-    color: var(--foreground4);
+    color: var(--foreground3);
     text-decoration: none;
     outline: none;
     /* padding-inline: 0.5ch; */
@@ -434,7 +441,7 @@ h6::before {
 
     #main-content {
         position: absolute;
-        inset: 1lh 1ch;
+        inset: 0lh 1ch;
         display: flex;
         flex-direction: column;
         gap: 1ch;
@@ -479,6 +486,16 @@ h6::before {
             color: transparent;
             width: 1ch;
             pointer-events: none;
+        }
+
+        .next,
+        .prev {
+            text-decoration: none;
+            &:focus,
+            &:hover {
+                background: none;
+                color: var(--accent);
+            }
         }
 
         :is([tabindex='0'], a[href], summary):focus-visible::after,
@@ -625,6 +642,7 @@ article {
 
     .next,
     .prev {
+        text-decoration: none;
         flex-grow: 1;
 
         code {

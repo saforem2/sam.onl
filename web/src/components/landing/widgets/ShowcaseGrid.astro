@@ -1,0 +1,22 @@
+---
+import Clock from './Clock.astro'
+import Player from './Player.astro'
+---
+
+<div id="widgets-grid" class="showcase-visible">
+    <Clock />
+    <Player />
+    <slot />
+</div>
+
+<style is:global>
+    #widgets-grid.showcase-visible {
+        opacity: 0.5;
+    }
+
+    @media (max-width: 480px) {
+        #widgets-grid.showcase-visible {
+            display: none;
+        }
+    }
+</style>

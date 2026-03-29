@@ -1,0 +1,102 @@
+---
+import { getCollection } from 'astro:content'
+
+const docs = await getCollection('docs')
+const talks = docs
+    .filter((doc) => doc.id.startsWith('talks/'))
+    .filter((doc) => !doc.id.endsWith('talks'))
+    .filter((doc) => doc.data.date)
+    .sort((a, b) => {
+        const da = a.data.date ? new Date(a.data.date).getTime() : 0
+        const db = b.data.date ? new Date(b.data.date).getTime() : 0
+        return db - da
+    })
+    .slice(0, 10)
+
+function formatDate(date: Date): string {
+    return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+    }).format(date)
+}
+---
+
+<column box-="square" pad-="2 2" gap-="0" class="talks-widget" tabindex="0">
+    <span is-="badge" variant-="orange" class="tw-title"
+        >&#xf19d; recent [<a href="/talks">talks</a>]</span
+    >
+    <column gap-="0" class="tw-list">
+        {
+            talks.map((talk) => (
+                <a href={`/${talk.id}`} class="tw-item">
+                    <span class="tw-date">
+                        {talk.data.date
+                            ? formatDate(new Date(talk.data.date))
+                            : ''}
+                    </span>
+                    <span class="tw-name">{talk.data.title}</span>
+                </a>
+            ))
+        }
+    </column>
+</column>
+
+<style>
+    .talks-widget {
+        gap: 1lh;
+        overflow: hidden;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tw-title {
+        background-image: none;
+        --badge-text: none;
+        --badge-color: none;
+        --color: var(--orange);
+        color: var(--color);
+        background-color: oklch(
+            from var(--color) calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+        );
+        a {
+            color: var(--color);
+            font-weight: bold;
+        }
+    }
+
+    .tw-list {
+        gap: 0;
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+        scrollbar-width: thin;
+        scrollbar-color: var(--foreground2) transparent;
+    }
+
+    .tw-item {
+        display: flex;
+        gap: 2ch;
+        align-items: baseline;
+        line-height: 2;
+        text-decoration: none;
+        color: var(--foreground1);
+        white-space: nowrap;
+        flex-shrink: 0;
+
+        &:hover {
+            color: var(--blue);
+        }
+    }
+
+    .tw-date {
+        color: var(--foreground2);
+        flex-shrink: 0;
+        width: 7ch;
+    }
+
+    .tw-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>

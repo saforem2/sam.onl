@@ -1,0 +1,147 @@
+---
+// Posts per quarter (decorative data)
+const postsData = [2, 4, 3, 5, 7, 4, 6, 8, 5, 3, 6, 4]
+const talksData = [1, 2, 3, 2, 4, 3, 2, 5, 3, 2, 3, 2]
+const labels = [
+    "Q1'23",
+    "Q2'23",
+    "Q3'23",
+    "Q4'23",
+    "Q1'24",
+    "Q2'24",
+    "Q3'24",
+    "Q4'24",
+    "Q1'25",
+    "Q2'25",
+    "Q3'25",
+    "Q4'25",
+]
+
+const bars = '▁▂▃▄▅▆▇█'
+
+function sparkline(data: number[]): string {
+    const max = Math.max(...data)
+    return data
+        .map((v) => {
+            const idx = Math.round((v / max) * (bars.length - 1))
+            return bars[idx]
+        })
+        .join('')
+}
+---
+
+<column box-="square" pad-="1 2" gap-="1" class="spark-widget" tabindex="0">
+    <span class="spark-title">activity</span>
+
+    <column gap-="0">
+        <row gap-="1" class="spark-row">
+            <span class="spark-label">posts</span>
+            <span class="spark-line green">{sparkline(postsData)}</span>
+            <span class="spark-val">{postsData[postsData.length - 1]}</span>
+        </row>
+        <row gap-="1" class="spark-row">
+            <span class="spark-label">talks</span>
+            <span class="spark-line blue">{sparkline(talksData)}</span>
+            <span class="spark-val">{talksData[talksData.length - 1]}</span>
+        </row>
+    </column>
+
+    <column gap-="0" class="spark-detail">
+        <span class="spark-header">posts/quarter</span>
+        <row gap-="0" class="spark-bars">
+            {
+                postsData.map((v, i) => (
+                    <column gap-="0" class="spark-bar-col">
+                        <span class="spark-bar-val">{v}</span>
+                        <span
+                            class="spark-bar"
+                            style={`height: ${(v / Math.max(...postsData)) * 6}lh`}
+                        />
+                        <span class="spark-bar-label">
+                            {labels[i].slice(0, 2)}
+                        </span>
+                    </column>
+                ))
+            }
+        </row>
+    </column>
+</column>
+
+<style>
+    .spark-widget {
+        grid-column: 1;
+        grid-row: 2 / 5;
+    }
+
+    .spark-title {
+        color: var(--foreground1);
+        font-weight: 600;
+    }
+
+    .spark-row {
+        align-items: baseline;
+    }
+
+    .spark-label {
+        color: var(--foreground2);
+        width: 6ch;
+        text-align: right;
+    }
+
+    .spark-line {
+        letter-spacing: 0.1ch;
+        font-size: 1.1em;
+    }
+
+    .spark-line.green {
+        color: var(--green);
+    }
+
+    .spark-line.blue {
+        color: var(--blue);
+    }
+
+    .spark-val {
+        color: var(--foreground2);
+        width: 2ch;
+        text-align: right;
+    }
+
+    .spark-detail {
+        margin-top: 0.5lh;
+    }
+
+    .spark-header {
+        color: var(--foreground2);
+        font-size: 0.85em;
+        margin-bottom: 0.25lh;
+    }
+
+    .spark-bars {
+        align-items: flex-end;
+        gap: 0;
+    }
+
+    .spark-bar-col {
+        align-items: center;
+        gap: 0;
+        flex: 1;
+    }
+
+    .spark-bar {
+        width: 1ch;
+        background-color: var(--green);
+        border-radius: 1px;
+        min-height: 0.5lh;
+    }
+
+    .spark-bar-val {
+        color: var(--foreground2);
+        font-size: 0.75em;
+    }
+
+    .spark-bar-label {
+        color: var(--foreground2);
+        font-size: 0.7em;
+    }
+</style>

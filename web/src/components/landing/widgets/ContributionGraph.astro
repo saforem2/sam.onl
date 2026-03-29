@@ -1,0 +1,128 @@
+---
+// Generate a decorative 7x15 contribution grid
+const weeks = 15
+const days = 7
+const dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', '']
+
+// Seeded pseudo-random pattern
+const pattern = [
+    [0, 0, 1, 0, 0, 1, 2, 1, 0, 0, 1, 2, 1, 0, 0],
+    [0, 1, 2, 1, 0, 0, 1, 2, 3, 1, 0, 1, 0, 0, 1],
+    [1, 2, 3, 2, 1, 0, 2, 3, 4, 2, 1, 2, 1, 0, 0],
+    [0, 1, 2, 3, 2, 1, 1, 2, 3, 3, 2, 3, 2, 1, 0],
+    [1, 2, 3, 4, 3, 2, 1, 3, 4, 3, 2, 2, 1, 0, 1],
+    [0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 1, 0, 0, 0],
+    [0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+]
+
+function levelClass(n: number): string {
+    if (n === 0) return 'lvl-0'
+    if (n === 1) return 'lvl-1'
+    if (n === 2) return 'lvl-2'
+    if (n === 3) return 'lvl-3'
+    return 'lvl-4'
+}
+---
+
+<column box-="square" pad-="1 2" gap-="0" class="contrib-widget" tabindex="0">
+    <span class="contrib-title">contributions</span>
+    <row gap-="0" class="contrib-grid">
+        <column gap-="0" class="contrib-labels">
+            {
+                dayLabels.map((label) => (
+                    <span class="contrib-label">{label}</span>
+                ))
+            }
+        </column>
+        {
+            Array.from({ length: weeks }).map((_, w) => (
+                <column gap-="0" class="contrib-col">
+                    {Array.from({ length: days }).map((_, d) => (
+                        <span
+                            class={`contrib-cell ${levelClass(pattern[d][w])}`}
+                        />
+                    ))}
+                </column>
+            ))
+        }
+    </row>
+    <row gap-="1" class="contrib-legend">
+        <span class="contrib-legend-label">Less</span>
+        <span class="contrib-cell lvl-0"></span>
+        <span class="contrib-cell lvl-1"></span>
+        <span class="contrib-cell lvl-2"></span>
+        <span class="contrib-cell lvl-3"></span>
+        <span class="contrib-cell lvl-4"></span>
+        <span class="contrib-legend-label">More</span>
+    </row>
+</column>
+
+<style>
+    .contrib-widget {
+        grid-column: 1;
+        grid-row: 2 / 5;
+        gap: 0.5lh;
+    }
+
+    .contrib-title {
+        color: var(--foreground1);
+        font-weight: 600;
+    }
+
+    .contrib-grid {
+        gap: 0;
+    }
+
+    .contrib-labels {
+        margin-right: 0.5ch;
+    }
+
+    .contrib-label {
+        font-size: 0.75em;
+        color: var(--foreground2);
+        height: 1.2em;
+        line-height: 1.2em;
+        margin: 1px;
+    }
+
+    .contrib-col {
+        gap: 0;
+    }
+
+    .contrib-cell {
+        width: 1.2em;
+        height: 1.2em;
+        border-radius: 2px;
+        margin: 1px;
+    }
+
+    .contrib-cell.lvl-0 {
+        background-color: var(--background2);
+    }
+
+    .contrib-cell.lvl-1 {
+        background-color: oklch(from var(--green) l c h / 0.3);
+    }
+
+    .contrib-cell.lvl-2 {
+        background-color: oklch(from var(--green) l c h / 0.55);
+    }
+
+    .contrib-cell.lvl-3 {
+        background-color: oklch(from var(--green) l c h / 0.8);
+    }
+
+    .contrib-cell.lvl-4 {
+        background-color: var(--green);
+    }
+
+    .contrib-legend {
+        align-items: center;
+        margin-top: 0.25lh;
+    }
+
+    .contrib-legend-label {
+        font-size: 0.75em;
+        color: var(--foreground2);
+    }
+</style>

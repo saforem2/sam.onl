@@ -1,37 +1,493 @@
 ---
-// import Chart from './Chart.astro'
 import Clock from './Clock.astro'
-// import SettingsWidget from './SettingsWidget.astro'
 import Player from './Player.astro'
 import FileTree from './FileTree.astro'
+import Calendar from './Calendar.astro'
+import ContributionGraph from './ContributionGraph.astro'
+import GitLog from './GitLog.astro'
+import TechStack from './TechStack.astro'
+import Sparkline from './Sparkline.astro'
+import PostsWidget from './PostsWidget.astro'
+import TalksWidget from './TalksWidget.astro'
+import IntroWidget from './IntroWidget.astro'
+import Navbar from '../../NavbarMinimal.astro'
 import '@webtui/css/components/radio.css'
+
+interface Props {
+    variant: number
+    home?: boolean
+}
+
+const { variant, home = false } = Astro.props
+const useCalendar = variant === 2 || variant === 3
+const isIntroWidget = variant >= 8 && variant <= 14
+const cols = variant === 3 ? 2 : 3
+const gridCols = isIntroWidget
+    ? {
+          8: '1fr 1fr auto',
+          9: 'repeat(3, 1fr)',
+          10: 'auto 1fr',
+          11: 'repeat(3, 1fr)',
+          12: '1fr 1fr',
+          13: '2fr 2fr 3fr 3fr',
+          14: '3fr 3fr 2fr 2fr',
+      }[variant]
+    : `repeat(${cols}, 1fr)`
+const opacity = variant === 4 ? 0.4 : isIntroWidget ? 1 : 0.3
+const hideOnMobile = variant === 1
+const total = 14
+const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
 ---
 
-<div id="widgets-grid">
-    <Clock />
-    <Player />
-    <FileTree />
-    <!-- <Chart /> -->
-    <!-- <SettingsWidget /> -->
+<div
+    id="widgets-grid"
+    class:list={[
+        {
+            'hide-mobile': hideOnMobile,
+            'intro-in-grid': isIntroWidget,
+            'home-grid': home,
+        },
+        layoutClass,
+    ]}
+    style={`grid-template-columns: ${gridCols}; opacity: ${opacity};`}>
+    {
+        isIntroWidget && (
+            <div id="grid-navbar">
+                <Navbar />
+            </div>
+        )
+    }
+    {
+        home ? (
+            <>
+                <IntroWidget {variant} {total} {home} />
+                <PostsWidget />
+                <TalksWidget />
+                <Clock />
+                <Calendar />
+                <Player />
+            </>
+        ) : (
+            <>
+                <Clock />
+                <Player />
+                {isIntroWidget ? (
+                    <>
+                        <Calendar />
+                        <GitLog />
+                        <IntroWidget {variant} {total} {home} />
+                        <ContributionGraph />
+                        {variant === 11 && <Sparkline />}
+                        {variant >= 12 && variant <= 14 && <PostsWidget />}
+                        {(variant === 13 || variant === 14) && <TalksWidget />}
+                    </>
+                ) : useCalendar ? (
+                    <Calendar />
+                ) : (
+                    <FileTree />
+                )}
+            </>
+        )
+    }
 </div>
 
 <style is:global>
     #widgets-grid {
         position: absolute;
         top: 50vh;
-        left: 50vw;
+        left: 50%;
         transform: translate(round(-50%, 1ch), round(-50%, 1lh));
         display: grid;
-        max-width: 90vw;
+        max-width: 175ch;
         max-height: 90vh;
-        min-width: 80ch;
+        min-width: min(80ch, 100%);
         min-height: 32lh;
-        width: round(calc(100vw - 4ch), 1ch);
+        width: round(80vw, 1ch);
         height: round(calc(100vh - 2lh), 1lh);
-        grid-template-columns: repeat(3, 1fr);
         grid-auto-rows: minmax(8lh, 12lh);
         grid-column-gap: 1ch;
         pointer-events: none;
-        opacity: 0.3;
+    }
+
+    #widgets-grid.hide-mobile {
+        @media (max-width: 480px) {
+            display: none;
+        }
+    }
+
+    /* Shared styles for all intro-in-grid variants */
+    #widgets-grid.intro-in-grid {
+        pointer-events: auto;
+        height: auto;
+        min-height: auto;
+        max-height: none;
+        grid-auto-rows: auto;
+    }
+
+    /* Home page: tight content-height grid */
+    #widgets-grid.home-grid > :global(*) {
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    #grid-navbar {
+        grid-column: 1 / -1;
+    }
+
+    /* Home page: stack to flex column earlier at intermediate sizes */
+    @media (max-width: 1024px) {
+        #widgets-grid.home-grid {
+            display: flex !important;
+            flex-direction: column;
+            position: static;
+            transform: none;
+            width: auto;
+            max-width: round(95vw, 1ch);
+            max-height: none;
+            min-width: 0;
+            min-height: 0;
+            height: auto;
+            margin-inline: auto;
+            padding-block-end: 2lh;
+            padding-block-start: 0lh;
+            gap: 1ch;
+        }
+
+        #widgets-grid.home-grid > :global(*) {
+            flex-shrink: 0;
+            max-height: none !important;
+            overflow: visible !important;
+            min-height: auto !important;
+            height: auto !important;
+        }
+
+        /* Let list containers auto-size instead of flex-filling
+           (flex:1 + min-height:0 collapses when parent has no definite height) */
+        #widgets-grid.home-grid :global(.pw-list),
+        #widgets-grid.home-grid :global(.tw-list) {
+            flex: 0 0 auto !important;
+            overflow: visible !important;
+            min-height: auto !important;
+        }
+
+        #widgets-grid.home-grid :global(.history-section) {
+            flex: 0 0 auto !important;
+            overflow: visible !important;
+            min-height: auto !important;
+        }
+
+        #widgets-grid.home-grid :global(#up-next) {
+            overflow: visible !important;
+            min-height: auto !important;
+        }
+    }
+
+    /* Tablet + mobile: simple flex column */
+    @media (max-width: 1024px) {
+        #widgets-grid.intro-in-grid {
+            display: flex !important;
+            flex-direction: column;
+            position: static;
+            transform: none;
+            width: auto;
+            max-width: round(95vw, 1ch);
+            max-height: none;
+            min-width: 0;
+            min-height: 0;
+            height: auto;
+            margin-inline: auto;
+            padding-block-end: 1lh;
+            padding-block-start: 1ch;
+            gap: 1ch;
+        }
+
+        /* Prevent flex children from shrinking */
+        #widgets-grid.intro-in-grid > * {
+            flex-shrink: 0;
+        }
+
+        /* Reorder: intro first, content next, decorative last */
+        #widgets-grid.intro-in-grid #intro-widget {
+            order: 1;
+        }
+        #widgets-grid.intro-in-grid .posts-widget {
+            order: 2;
+        }
+        #widgets-grid.intro-in-grid .talks-widget {
+            order: 3;
+        }
+        #widgets-grid.intro-in-grid .gitlog-widget {
+            order: 4;
+        }
+        #widgets-grid.intro-in-grid #clock-widget {
+            order: 5;
+        }
+        #widgets-grid.intro-in-grid .cal-widget {
+            order: 6;
+        }
+        #widgets-grid.intro-in-grid .contrib-widget {
+            order: 7;
+        }
+        #widgets-grid.intro-in-grid .spark-widget {
+            order: 8;
+        }
+        #widgets-grid.intro-in-grid #stats-widget {
+            order: 9;
+        }
+    }
+
+    /* v8: Bento — intro top-left, small widgets right */
+    #widgets-grid.intro-v8 {
+        #intro-widget {
+            grid-column: 1 / 3;
+            grid-row: 2;
+        }
+        #clock-widget {
+            grid-column: 3;
+            grid-row: 2;
+        }
+        .gitlog-widget {
+            grid-column: 1;
+            grid-row: 3;
+        }
+        .contrib-widget {
+            grid-column: 2;
+            grid-row: 3;
+        }
+        .cal-widget {
+            grid-column: 3;
+            grid-row: 3;
+        }
+        #stats-widget {
+            grid-column: 1 / 4;
+            grid-row: 4;
+        }
+    }
+
+    /* v9: Banner — clock top-left, intro top-right spanning 2 */
+    #widgets-grid.intro-v9 {
+        #clock-widget {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        #intro-widget {
+            grid-column: 2 / 4;
+            grid-row: 2;
+        }
+        .cal-widget {
+            grid-column: 1;
+            grid-row: 3;
+        }
+        .contrib-widget {
+            grid-column: 2;
+            grid-row: 3;
+        }
+        #stats-widget {
+            grid-column: 3;
+            grid-row: 3 / 5;
+        }
+        .gitlog-widget {
+            grid-column: 1 / 3;
+            grid-row: 4;
+        }
+    }
+
+    /* v10: 2-col — contrib full-width at bottom */
+    #widgets-grid.intro-v10 {
+        #clock-widget {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        #intro-widget {
+            grid-column: 2;
+            grid-row: 2;
+        }
+        .cal-widget {
+            grid-column: 1;
+            grid-row: 3;
+        }
+        #stats-widget {
+            grid-column: 2;
+            grid-row: 3;
+        }
+        .gitlog-widget {
+            grid-column: 1 / 3;
+            grid-row: 4;
+        }
+        .contrib-widget {
+            grid-column: 1 / 3;
+            grid-row: 5;
+        }
+    }
+
+    /* v11: 2x2 lower-left grid with sparkline */
+    #widgets-grid.intro-v11 {
+        #clock-widget {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        #intro-widget {
+            grid-column: 2 / 4;
+            grid-row: 2;
+        }
+        .cal-widget {
+            grid-column: 1;
+            grid-row: 3;
+        }
+        .spark-widget {
+            grid-column: 2;
+            grid-row: 3;
+        }
+        .gitlog-widget {
+            grid-column: 1;
+            grid-row: 4;
+        }
+        .contrib-widget {
+            grid-column: 2;
+            grid-row: 4;
+        }
+        #stats-widget {
+            grid-column: 3;
+            grid-row: 3 / 5;
+        }
+    }
+
+    /* v12: 2x2 minimal — clock+cal, intro, player, posts */
+    #widgets-grid.intro-v12 {
+        #clock-widget {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        .cal-widget {
+            display: none;
+        }
+        #intro-widget {
+            grid-column: 2;
+            grid-row: 2;
+        }
+        #stats-widget {
+            grid-column: 1;
+            grid-row: 3;
+        }
+        .posts-widget {
+            grid-column: 2;
+            grid-row: 3;
+        }
+        .gitlog-widget,
+        .contrib-widget {
+            display: none;
+        }
+    }
+
+    /* Shared: cap player height in v13/v14 to match posts/talks */
+    #widgets-grid.intro-v13 #stats-widget,
+    #widgets-grid.intro-v14 #stats-widget {
+        max-height: round(22lh, 1lh);
+        overflow: hidden;
+    }
+
+    /* v13: 4-col 40/60 split — clock+cal | intro, player | posts+talks */
+    #widgets-grid.intro-v13 {
+        #clock-widget {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        .cal-widget {
+            grid-column: 2;
+            grid-row: 2;
+        }
+        #intro-widget {
+            grid-column: 3 / 5;
+            grid-row: 2;
+        }
+        #stats-widget {
+            grid-column: 1 / 3;
+            grid-row: 3;
+        }
+        .posts-widget {
+            grid-column: 3;
+            grid-row: 3;
+        }
+        .talks-widget {
+            grid-column: 4;
+            grid-row: 3;
+        }
+
+        .gitlog-widget,
+        .contrib-widget {
+            display: none;
+        }
+    }
+
+    /* v14: swapped 40/60 — intro+posts/talks left, clock+cal+player right */
+    #widgets-grid.intro-v14 {
+        #intro-widget {
+            grid-column: 1 / 3;
+            grid-row: 2;
+        }
+        #clock-widget {
+            grid-column: 3;
+            grid-row: 2;
+        }
+        .cal-widget {
+            grid-column: 4;
+            grid-row: 2;
+        }
+        .posts-widget {
+            grid-column: 1;
+            grid-row: 3;
+        }
+        .talks-widget {
+            grid-column: 2;
+            grid-row: 3;
+        }
+        #stats-widget {
+            grid-column: 3 / 5;
+            grid-row: 3;
+        }
+        .gitlog-widget,
+        .contrib-widget {
+            display: none;
+        }
+    }
+
+    /* Home page grid placement — overrides v14 */
+    #widgets-grid.home-grid {
+        grid-template-columns: 3fr 3fr 2fr 2fr;
+        grid-template-rows: auto auto 20lh;
+
+        #intro-widget {
+            grid-column: 1 / 3;
+            grid-row: 2;
+        }
+        #clock-widget {
+            grid-column: 3;
+            grid-row: 2;
+            max-height: 15lh;
+            overflow: hidden;
+        }
+        .cal-widget {
+            grid-column: 4;
+            grid-row: 2;
+            max-height: 15lh;
+            overflow: auto;
+            display: table;
+            text-align: center;
+        }
+        .posts-widget {
+            grid-column: 1;
+            grid-row: 3;
+            max-height: 20lh;
+        }
+        .talks-widget {
+            grid-column: 2;
+            grid-row: 3;
+            max-height: 20lh;
+        }
+        #stats-widget {
+            grid-column: 3 / 5;
+            grid-row: 3;
+            max-height: 20lh;
+        }
     }
 </style>

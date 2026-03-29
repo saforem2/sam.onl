@@ -1,0 +1,269 @@
+---
+import Layout from '@/layouts/Layout.astro'
+
+const widgets = [
+    {
+        index: 1,
+        name: 'Neofetch / System Info',
+        desc: 'Site metadata styled like neofetch terminal output',
+    },
+    {
+        index: 2,
+        name: 'Git Log',
+        desc: 'Recent commits in git log --oneline format',
+    },
+    {
+        index: 3,
+        name: 'Contribution Graph',
+        desc: 'GitHub-style contribution heatmap',
+    },
+    { index: 4, name: 'Mini Calendar', desc: 'Terminal cal-style month view' },
+    {
+        index: 5,
+        name: 'Tech Stack',
+        desc: 'Nerd Font icons for each technology',
+    },
+    {
+        index: 6,
+        name: 'Sparkline Chart',
+        desc: 'Unicode sparklines and bar charts',
+    },
+    {
+        index: 7,
+        name: 'htop-style Bars',
+        desc: 'Build metrics as progress bars',
+    },
+    {
+        index: 8,
+        name: 'Keybindings',
+        desc: 'Vim-style keyboard shortcut reference',
+    },
+]
+
+const variations = [
+    {
+        id: 'v1',
+        name: 'Hide Widgets on Mobile',
+        desc: 'Hides the background widget grid on screens ≤ 480px',
+    },
+    {
+        id: 'v2',
+        name: 'Calendar Replaces FileTree',
+        desc: 'Swaps the file tree widget for a mini calendar',
+    },
+    {
+        id: 'v3',
+        name: '2-Column Grid',
+        desc: 'Condenses to 2 columns with Calendar in place of FileTree',
+    },
+    {
+        id: 'v4',
+        name: 'Higher Opacity (0.4)',
+        desc: 'Bumps background widget grid opacity from 0.3 → 0.4',
+    },
+    {
+        id: 'v5',
+        name: 'Tighter Bio Text',
+        desc: 'Merges bio paragraphs into one block, removes spacers',
+    },
+    {
+        id: 'v6',
+        name: 'Glass Card',
+        desc: 'Semi-transparent card with backdrop blur — widgets bleed through',
+    },
+    {
+        id: 'v7',
+        name: 'Nord Theme',
+        desc: 'Same layout rendered with the Nord color palette',
+    },
+    {
+        id: 'v8',
+        name: 'Bento Grid',
+        desc: 'Intro top-left, clock/calendar sidebar, full-width player at bottom',
+    },
+    {
+        id: 'v9',
+        name: 'Banner Layout',
+        desc: 'Full-width intro banner on top, widgets arranged in 3 columns below',
+    },
+    {
+        id: 'v10',
+        name: 'Bottom Contrib',
+        desc: '2-column layout with contribution graph spanning the full bottom row',
+    },
+    {
+        id: 'v11',
+        name: '2x2 Dashboard',
+        desc: 'Clock + intro top, 2x2 widget grid lower-left, player spanning right',
+    },
+    {
+        id: 'v12',
+        name: 'Minimal 2x2',
+        desc: 'Clock + intro top row, player + recent posts bottom row',
+    },
+    {
+        id: 'v13',
+        name: '40/60 Split',
+        desc: '4-column grid: clock+calendar and player left, intro and posts+talks right',
+    },
+    {
+        id: 'v14',
+        name: '60/40 Split',
+        desc: 'Swapped: intro and posts+talks left, clock+calendar and player right',
+    },
+    {
+        id: 'classic',
+        name: 'Classic',
+        desc: 'Original scroll-snap home page with intro hero, posts, talks, and widget showcase',
+    },
+]
+---
+
+<Layout>
+    <main class="showcase-index">
+        <column class="showcase-content" align-="center">
+            <h1>Widget Showcase</h1>
+            <p>
+                Browse candidate widgets and layout variations for the home page
+                intro hero.
+            </p>
+
+            <h2>Widget Options</h2>
+            <p class="section-desc">
+                Each replaces the file tree in the background grid alongside the
+                clock and player.
+            </p>
+            <div class="card-grid">
+                {
+                    widgets.map((w) => (
+                        <a href={`/showcase/${w.index}`} class="card">
+                            <row class="card-header">
+                                <span is-="badge" variant-="green">
+                                    {w.index}
+                                </span>
+                                <span class="card-name">{w.name}</span>
+                            </row>
+                            <span class="card-desc">{w.desc}</span>
+                        </a>
+                    ))
+                }
+            </div>
+
+            <h2>Layout Variations</h2>
+            <p class="section-desc">
+                Each shows the full intro hero with a single layout modification
+                applied.
+            </p>
+            <div class="card-grid">
+                {
+                    variations.map((v) => (
+                        <a href={`/showcase/${v.id}`} class="card">
+                            <row class="card-header">
+                                <span is-="badge" variant-="blue">
+                                    {v.id}
+                                </span>
+                                <span class="card-name">{v.name}</span>
+                            </row>
+                            <span class="card-desc">{v.desc}</span>
+                        </a>
+                    ))
+                }
+            </div>
+
+            <row>
+                <a href="/" is-="badge" variant-="background1">
+                    ← Back to home
+                </a>
+            </row>
+        </column>
+    </main>
+</Layout>
+
+<style>
+    .showcase-index {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 2lh 2ch;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .showcase-content {
+        max-width: 80ch;
+        width: 100%;
+        gap: 1lh;
+        margin-block: auto;
+    }
+
+    h1::before,
+    h2::before {
+        content: '' !important;
+    }
+
+    .section-desc {
+        color: var(--foreground2);
+        margin-block-start: -0.5lh;
+    }
+
+    .card-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1ch;
+    }
+
+    .card {
+        flex: 1 1 0;
+        min-width: 28ch;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 1lh 2ch;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5lh;
+        text-decoration: none;
+        color: var(--foreground1);
+        background-color: var(--background1);
+        border: 1px solid var(--background2);
+        transition: border-color 0.15s;
+
+        &:hover {
+            border-color: var(--foreground2);
+        }
+    }
+
+    .card-header {
+        align-items: baseline;
+        gap: 1ch;
+    }
+
+    .card-name {
+        color: var(--foreground0);
+        font-weight: 600;
+    }
+
+    .card-desc {
+        color: var(--foreground2);
+    }
+
+    a[is-='badge'] {
+        text-decoration: none;
+        color: var(--foreground1);
+
+        &:hover {
+            color: var(--foreground0);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .showcase-index {
+            padding-inline: 0;
+        }
+
+        .card {
+            min-width: 0;
+            flex-basis: 100%;
+        }
+    }
+</style>

@@ -1,76 +1,276 @@
 ---
 import Navbar from '../../NavbarMinimal.astro'
 import Widgets from '../widgets/Widgets.astro'
+import VimNavigation from '../VimNavigation.astro'
+import Filter from '../../Filter.astro'
+
+interface Props {
+    variant: number
+    home?: boolean
+}
+
+const { variant, home = false } = Astro.props
+
+const variants = [
+    {
+        label: 'Hide Widgets on Mobile',
+        desc: 'Hides the background widget grid on screens ≤ 480px',
+    },
+    {
+        label: 'Calendar Replaces FileTree',
+        desc: 'Swaps the file tree widget for a mini calendar',
+    },
+    {
+        label: '2-Column Grid',
+        desc: 'Condenses to 2 columns with Calendar in place of FileTree',
+    },
+    {
+        label: 'Higher Opacity (0.4)',
+        desc: 'Bumps background widget grid opacity from 0.3 → 0.4',
+    },
+    {
+        label: 'Tighter Bio Text',
+        desc: 'Merges bio paragraphs into one block, removes spacers',
+    },
+    {
+        label: 'Glass Card',
+        desc: 'Semi-transparent card with backdrop blur — widgets bleed through',
+    },
+    {
+        label: 'Nord Theme',
+        desc: 'Same layout rendered with the Nord color palette',
+    },
+    {
+        label: 'Bento Grid',
+        desc: 'Intro top-left, clock/calendar sidebar, full-width player at bottom',
+    },
+    {
+        label: 'Banner Layout',
+        desc: 'Full-width intro banner on top, widgets arranged in 3 columns below',
+    },
+    {
+        label: 'Bottom Contrib',
+        desc: '2-column layout with contribution graph spanning the full bottom row',
+    },
+    {
+        label: '2x2 Dashboard',
+        desc: 'Clock + intro top, 2x2 widget grid lower-left, player spanning right',
+    },
+    {
+        label: 'Minimal 2x2',
+        desc: 'Clock + intro top row, player + recent posts bottom row',
+    },
+    {
+        label: '40/60 Split',
+        desc: '4-column grid: clock+calendar and player left, intro and posts+talks right',
+    },
+    {
+        label: '60/40 Split',
+        desc: 'Swapped: intro and posts+talks left, clock+calendar and player right',
+    },
+]
+
+const current = variants[variant - 1]
+const total = variants.length
 ---
 
-<header id="intro">
-    <Widgets />
-    <column id="content">
-        <Navbar />
-        <column id="main" box-="square">
-            <h1>
-                <span is-="badge" variant-="green">&#xf4b5; Sam Foreman</span>
-            </h1>
-            <span id="tagline"
-                >Computational Scientist · Argonne National Laboratory</span
-            >
-            <column>
-                <p>
-                    I'm a Computational Scientist in the
-                    <a
-                        href="https://www.alcf.anl.gov/about/people/group/506"
-                        target="_blank">AI / ML Group</a
-                    > at the
-                    <a href="https://www.alcf.anl.gov/" target="_blank"
-                        >Argonne Leadership Computing Facility</a
-                    >.
-                </p>
-                &nbsp;<br />
-                <p>
-                    My work focuses on large-scale distributed training of
-                    foundation models for scientific applications. I co-lead the
-                    Models &amp; Pre-Training team for the
-                    <a href="https://auroragpt.anl.gov" target="_blank"
-                        >AuroraGPT</a
-                    > project.
-                </p>
-                &nbsp;<br />
-                <row id="social-links">
-                    <a
-                        href="https://github.com/saforem2"
-                        target="_blank"
-                        title="GitHub">&#xe65b;</a
-                    >
-                    <a
-                        href="https://bsky.app/profile/samforeman.bsky.social"
-                        target="_blank"
-                        title="Bluesky">&#xe28e;</a
-                    >
-                    <a
-                        href="https://twitter.com/saforem2"
-                        target="_blank"
-                        title="Twitter">&#xeb72;</a
-                    >
-                    <a
-                        href="https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en"
-                        target="_blank"
-                        title="Google Scholar">&#xf19d;</a
-                    >
-                    <a
-                        href="https://www.linkedin.com/in/samforem2"
-                        target="_blank"
-                        title="LinkedIn">&#xe820;</a
-                    >
-                    <a href="mailto:sf@omg.lol" title="Email">&#xf0e0;</a>
-                </row>
-                <div is-="separator"></div>
-                <row id="intro-nav">
-                    <a id="scroll-down-button" href="#recent-posts">↓ Recent</a>
-                    <a id="landing-button" href="/landing">More →</a>
-                </row>
+<header id="intro" {...variant === 7 ? { 'data-webtui-theme': 'nord' } : {}}>
+    <Widgets {variant} {home} />
+    {
+        variant < 8 && (
+            <column id="content" class:list={[{ glass: variant === 6 }]}>
+                <Navbar />
+                <column id="main" box-="square">
+                    <row class="variant-header">
+                        <span
+                            is-="badge"
+                            variant-="green"
+                            style="--badge-text: var(--background0)">
+                            v{variant}/{total}
+                        </span>
+                        <span class="variant-label">{current.label}</span>
+                    </row>
+                    <h1>
+                        <span is-="badge" variant-="green">
+                            &#xf4b5; Sam Foreman
+                        </span>
+                    </h1>
+                    <span id="tagline">
+                        Computational Scientist · Argonne National Laboratory
+                    </span>
+                    <column>
+                        {variant === 5 ? (
+                            <p>
+                                I'm a Computational Scientist in the{' '}
+                                <a
+                                    href="https://www.alcf.anl.gov/about/people/group/506"
+                                    target="_blank">
+                                    AI / ML Group
+                                </a>{' '}
+                                at the{' '}
+                                <a
+                                    href="https://www.alcf.anl.gov/"
+                                    target="_blank">
+                                    Argonne Leadership Computing Facility
+                                </a>
+                                . My work focuses on large-scale distributed
+                                training of foundation models for scientific
+                                applications. I co-lead the Models &amp;
+                                Pre-Training team for the{' '}
+                                <a
+                                    href="https://auroragpt.anl.gov"
+                                    target="_blank">
+                                    AuroraGPT
+                                </a>{' '}
+                                project.
+                            </p>
+                        ) : (
+                            <>
+                                <p>
+                                    I'm a Computational Scientist in the{' '}
+                                    <a
+                                        href="https://www.alcf.anl.gov/about/people/group/506"
+                                        target="_blank">
+                                        AI / ML Group
+                                    </a>{' '}
+                                    at the{' '}
+                                    <a
+                                        href="https://www.alcf.anl.gov/"
+                                        target="_blank">
+                                        Argonne Leadership Computing Facility
+                                    </a>
+                                    .
+                                </p>
+                                &nbsp;
+                                <br />
+                                <p>
+                                    My work focuses on large-scale distributed
+                                    training of foundation models for scientific
+                                    applications. I co-lead the Models &amp;
+                                    Pre-Training team for the{' '}
+                                    <a
+                                        href="https://auroragpt.anl.gov"
+                                        target="_blank">
+                                        AuroraGPT
+                                    </a>{' '}
+                                    project.
+                                </p>
+                                &nbsp;
+                                <br />
+                            </>
+                        )}
+                        <row id="social-links">
+                            <a
+                                href="https://github.com/saforem2"
+                                target="_blank"
+                                title="GitHub">
+                                &#xe65b;
+                            </a>
+                            <a
+                                href="https://bsky.app/profile/samforeman.bsky.social"
+                                target="_blank"
+                                title="Bluesky">
+                                &#xe28e;
+                            </a>
+                            <a
+                                href="https://twitter.com/saforem2"
+                                target="_blank"
+                                title="Twitter">
+                                &#xeb72;
+                            </a>
+                            <a
+                                href="https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en"
+                                target="_blank"
+                                title="Google Scholar">
+                                &#xf19d;
+                            </a>
+                            <a
+                                href="https://www.linkedin.com/in/samforem2"
+                                target="_blank"
+                                title="LinkedIn">
+                                &#xe820;
+                            </a>
+                            <a href="mailto:sf@omg.lol" title="Email">
+                                &#xf0e0;
+                            </a>
+                        </row>
+                        <div is-="separator" />
+                        <nav class="variant-nav">
+                            {variant > 1 ? (
+                                <a href={`/showcase/v${variant - 1}`}>← Prev</a>
+                            ) : (
+                                <span class="nav-disabled">← Prev</span>
+                            )}
+                            <a href="/showcase" class="nav-center">
+                                All options
+                            </a>
+                            {variant < total ? (
+                                <a href={`/showcase/v${variant + 1}`}>Next →</a>
+                            ) : (
+                                <span class="nav-disabled">Next →</span>
+                            )}
+                        </nav>
+                    </column>
+                </column>
             </column>
-        </column>
-    </column>
+        )
+    }
+
+    {
+        variant >= 8 && (
+            <>
+                <Filter />
+                <div id="vim-navigation-container">
+                    <VimNavigation />
+                </div>
+                <column id="statusline">
+                    <row>
+                        <span
+                            is-="badge"
+                            variant-="green"
+                            style="--badge-text: var(--background0)">
+                            NORMAL
+                        </span>
+                        <span
+                            is-="badge"
+                            variant-="background1"
+                            style="--badge-text: var(--green)">
+                            &#xe725; main
+                        </span>
+                        <row self-="grow">
+                            <span is-="badge" variant-="code-bg">
+                                sam.onl
+                            </span>
+                        </row>
+                        <row id="statusline-right">
+                            <span is-="badge" variant-="code-bg">
+                                utf-8
+                            </span>
+                            <span is-="badge" variant-="background1">
+                                Top
+                            </span>
+                            <span
+                                is-="badge"
+                                variant-="green"
+                                style="--badge-text: var(--background0)">
+                                1:1
+                            </span>
+                        </row>
+                    </row>
+                </column>
+            </>
+        )
+    }
+
+    <script>
+        import { applyVimNavigation, vimFocusElement } from '@/utils/vim'
+        const grid = document.getElementById('widgets-grid')
+        if (grid && grid.classList.contains('intro-in-grid')) {
+            applyVimNavigation(grid, '[tabindex="0"], a[href], button:not([disabled])')
+            const intro = document.getElementById('intro-widget')
+            if (intro) vimFocusElement(intro)
+        }
+    </script>
 
     <style>
         #intro {
@@ -81,6 +281,7 @@ import Widgets from '../widgets/Widgets.astro'
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            min-height: 100vh;
 
             h1::before {
                 content: '';
@@ -98,6 +299,13 @@ import Widgets from '../widgets/Widgets.astro'
                 max-width: min(80%, 80ch);
                 width: round(calc(100% - 2ch), 1ch);
 
+                &.glass {
+                    background-color: oklch(
+                        from var(--background1) l c h / 0.75
+                    );
+                    backdrop-filter: blur(6px) saturate(1.2);
+                }
+
                 nav {
                     padding: 2ch 1ch;
                 }
@@ -109,7 +317,6 @@ import Widgets from '../widgets/Widgets.astro'
 
                     a {
                         color: var(--foreground2);
-                        /* text-decoration: underline; */
 
                         &:focus,
                         &:hover {
@@ -120,12 +327,6 @@ import Widgets from '../widgets/Widgets.astro'
                             );
                             text-decoration: none;
                         }
-                    }
-                    a#recent-posts {
-                        text-decoration: none !important;
-                    }
-                    a#landing-button {
-                        text-decoration: none !important;
                     }
 
                     h1 {
@@ -139,6 +340,16 @@ import Widgets from '../widgets/Widgets.astro'
         #tagline {
             color: var(--foreground2);
             margin-block-start: -0.5lh;
+        }
+
+        .variant-header {
+            align-items: baseline;
+            gap: 1ch;
+        }
+
+        .variant-label {
+            color: var(--foreground1);
+            font-weight: 600;
         }
 
         #social-links {
@@ -176,11 +387,12 @@ import Widgets from '../widgets/Widgets.astro'
             --separator-color: var(--foreground2);
         }
 
-        #intro-nav {
+        .variant-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
+            padding: 0 !important;
 
             a {
                 display: inline-flex;
@@ -206,16 +418,93 @@ import Widgets from '../widgets/Widgets.astro'
                 }
             }
         }
-    </style>
 
-    <script>
-        document
-            .getElementById('scroll-down-button')
-            ?.addEventListener('click', (e) => {
-                e.preventDefault()
-                document
-                    .getElementById('recent-posts')
-                    ?.scrollIntoView({ behavior: 'smooth' })
-            })
-    </script>
+        .nav-center {
+            color: var(--foreground2) !important;
+        }
+
+        .nav-disabled {
+            color: var(--foreground2);
+            padding: 0 1ch;
+            opacity: 0.3;
+        }
+
+        /* Dim unfocused widgets, highlight focused */
+        :global(#widgets-grid.intro-in-grid [tabindex='0']) {
+            opacity: 0.4;
+            transition: opacity 0.15s;
+        }
+
+        :global(#widgets-grid.intro-in-grid [tabindex='0']:focus),
+        :global(
+            #widgets-grid.intro-in-grid [tabindex='0'][data-vim-focused='true']
+        ),
+        :global(#widgets-grid.intro-in-grid [tabindex='0']:has(:focus)) {
+            opacity: 1;
+        }
+
+        /* Widget focus styles for vim navigation */
+        :global(#widgets-grid.intro-in-grid [tabindex='0']:focus-visible),
+        :global(
+            #widgets-grid.intro-in-grid
+                [tabindex='0'][data-vim-focused='true']:focus
+        ),
+        :global(#widgets-grid.intro-in-grid [tabindex='0']:has(:focus)) {
+            --box-border-color: var(--green);
+            outline: none;
+            z-index: 1;
+        }
+
+        :global(
+            #widgets-grid.intro-in-grid a[href][data-vim-focused='true']:focus
+        ) {
+            background-color: oklch(
+                from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h / 0.15
+            );
+            color: var(--blue);
+            outline: none;
+            text-decoration: none;
+        }
+
+        /* Vim navigation container — fixed top-right */
+        #vim-navigation-container {
+            position: fixed;
+            bottom: 2lh;
+            right: 2ch;
+            z-index: 100;
+        }
+
+        /* Statusline — fixed bottom */
+        #statusline {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1lh;
+            background-color: var(--background1);
+            z-index: 100;
+            padding-inline: 1ch;
+        }
+
+        @media (max-width: 50ch) {
+            #statusline-right {
+                display: none;
+            }
+        }
+
+        /* Responsive widget grid — min-width override */
+        :global(#widgets-grid.intro-in-grid) {
+            min-width: 0;
+        }
+
+        /* Allow vertical overflow when grid content exceeds viewport */
+        #intro:has(:global(.intro-in-grid)) {
+            overflow: visible;
+            overflow-x: clip;
+
+            @media (max-width: 1024px) {
+                justify-content: flex-start;
+            }
+        }
+    </style>
 </header>

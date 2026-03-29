@@ -1,0 +1,221 @@
+---
+import Navbar from '../../NavbarMinimal.astro'
+import Widgets from '../widgets/WidgetsAlt.astro'
+---
+
+<header id="intro">
+    <Widgets />
+    <column id="content">
+        <Navbar />
+        <column id="main" box-="square">
+            <h1>
+                <span is-="badge" variant-="green">&#xf4b5; Sam Foreman</span>
+            </h1>
+            <span id="tagline"
+                >Computational Scientist · Argonne National Laboratory</span
+            >
+            <column>
+                <p>
+                    I'm a Computational Scientist in the
+                    <a
+                        href="https://www.alcf.anl.gov/about/people/group/506"
+                        target="_blank">AI / ML Group</a
+                    > at the
+                    <a href="https://www.alcf.anl.gov/" target="_blank"
+                        >Argonne Leadership Computing Facility</a
+                    >.
+                </p>
+                <br /><br />
+                <p>
+                    My work focuses on large-scale distributed training of
+                    foundation models for scientific applications. I co-lead the
+                    Models &amp; Pre-Training team for the
+                    <a href="https://auroragpt.anl.gov" target="_blank"
+                        >AuroraGPT</a
+                    > project.
+                </p>
+                &nbsp;<br />
+                <row id="social-links">
+                    <a
+                        href="https://github.com/saforem2"
+                        target="_blank"
+                        title="GitHub">&#xe65b;</a
+                    >
+                    <a
+                        href="https://bsky.app/profile/samforeman.bsky.social"
+                        target="_blank"
+                        title="Bluesky">&#xe28e;</a
+                    >
+                    <a
+                        href="https://twitter.com/saforem2"
+                        target="_blank"
+                        title="Twitter">&#xeb72;</a
+                    >
+                    <a
+                        href="https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en"
+                        target="_blank"
+                        title="Google Scholar">&#xf19d;</a
+                    >
+                    <a
+                        href="https://www.linkedin.com/in/samforem2"
+                        target="_blank"
+                        title="LinkedIn">&#xe820;</a
+                    >
+                    <a href="mailto:sf@omg.lol" title="Email">&#xf0e0;</a>
+                </row>
+                <div is-="separator"></div>
+                <row id="intro-nav">
+                    <a id="scroll-down-button" href="#recent-posts">↓ Recent</a>
+                    <a id="landing-button" href="/landing">More →</a>
+                </row>
+            </column>
+        </column>
+    </column>
+
+    <style>
+        #intro {
+            position: relative;
+            background-color: var(--background0);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            h1::before {
+                content: '';
+                margin-inline-start: -1ch;
+            }
+            h2::before {
+                content: '';
+                margin-inline-start: -1ch;
+            }
+
+            #content {
+                position: absolute;
+                background-color: var(--background1);
+                border: 1pt solid var(--background2);
+                max-width: min(80%, 80ch);
+                width: round(calc(100% - 2ch), 1ch);
+
+                nav {
+                    padding: 2ch 1ch;
+                }
+
+                #main {
+                    padding: 1lh 2ch;
+                    gap: 1lh;
+                    --box-border-color: var(--foreground2);
+
+                    a {
+                        color: var(--foreground2);
+                        /* text-decoration: underline; */
+
+                        &:focus,
+                        &:hover {
+                            color: var(--blue);
+                            background-color: oklch(
+                                from var(--blue)
+                                    calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+                            );
+                            text-decoration: none;
+                        }
+                    }
+                    a#recent-posts {
+                        text-decoration: none !important;
+                    }
+                    a#landing-button {
+                        text-decoration: none !important;
+                    }
+
+                    h1 {
+                        color: var(--foreground0);
+                        display: inline-flex;
+                    }
+                }
+            }
+        }
+
+        #tagline {
+            color: var(--foreground2);
+            margin-block-start: -0.5lh;
+        }
+
+        #social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2ch;
+
+            a {
+                color: var(--foreground2);
+                text-decoration: none !important;
+                padding-inline: 1ch;
+                background-color: oklch(
+                    from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c
+                        h / 0.1
+                );
+
+                &:focus,
+                &:hover {
+                    color: var(--blue);
+                    text-decoration: none;
+                }
+            }
+        }
+
+        @media (max-width: 50ch) {
+            #intro {
+                #content,
+                #main {
+                    padding: 1lh 1ch;
+                }
+            }
+        }
+
+        [is-='separator'] {
+            --separator-color: var(--foreground2);
+        }
+
+        #intro-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+
+            a {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5ch;
+                padding: 0 1ch;
+                color: var(--foreground1);
+                text-decoration: none;
+                background-color: oklch(
+                    from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c
+                        h / 0.1
+                );
+
+                &:focus,
+                &:hover {
+                    background-color: oklch(
+                        from var(--blue) calc(l * var(--oklch-scale, 0.85)) c
+                            h / 0.1
+                    );
+                    color: var(--blue);
+                    text-decoration: none;
+                }
+            }
+        }
+    </style>
+
+    <script>
+        document
+            .getElementById('scroll-down-button')
+            ?.addEventListener('click', (e) => {
+                e.preventDefault()
+                document
+                    .getElementById('recent-posts')
+                    ?.scrollIntoView({ behavior: 'smooth' })
+            })
+    </script>
+</header>

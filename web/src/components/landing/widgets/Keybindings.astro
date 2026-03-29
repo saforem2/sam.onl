@@ -1,0 +1,83 @@
+---
+const bindings = [
+    { key: 'j / k', action: 'Scroll down / up' },
+    { key: 'g / G', action: 'Go to top / bottom' },
+    { key: 'n / N', action: 'Next / prev section' },
+    { key: '/', action: 'Search' },
+    { key: 'h', action: 'Home' },
+    { key: 'p', action: 'Posts' },
+    { key: 't', action: 'Talks' },
+    { key: '?', action: 'Toggle help' },
+    { key: 'Esc', action: 'Close / cancel' },
+]
+---
+
+<column box-="square" pad-="1 2" gap-="0" class="keys-widget">
+    <span class="keys-title">keybindings</span>
+    <column gap-="0" class="keys-list">
+        {
+            bindings.map((b) => (
+                <row gap-="1" class="keys-row">
+                    <span class="keys-key">
+                        {b.key.split(' / ').map((k, i) => (
+                            <>
+                                {i > 0 && <span class="keys-sep"> / </span>}
+                                <kbd>{k}</kbd>
+                            </>
+                        ))}
+                    </span>
+                    <span class="keys-action">{b.action}</span>
+                </row>
+            ))
+        }
+    </column>
+</column>
+
+<style>
+    .keys-widget {
+        grid-column: 1;
+        grid-row: 2 / 5;
+        gap: 0.5lh;
+    }
+
+    .keys-title {
+        color: var(--foreground1);
+        font-weight: 600;
+    }
+
+    .keys-list {
+        gap: 0;
+    }
+
+    .keys-row {
+        align-items: baseline;
+        line-height: 1.8;
+    }
+
+    .keys-key {
+        width: 12ch;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .keys-sep {
+        color: var(--foreground2);
+    }
+
+    kbd {
+        display: inline-block;
+        color: var(--foreground0);
+        background-color: var(--background2);
+        border: 1px solid var(--foreground2);
+        border-radius: 3px;
+        padding: 0 0.5ch;
+        font-family: var(--font-family);
+        font-size: 0.9em;
+        min-width: 2ch;
+        text-align: center;
+    }
+
+    .keys-action {
+        color: var(--foreground2);
+    }
+</style>
