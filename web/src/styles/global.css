@@ -1,5 +1,6 @@
 /* Contains all core base styles, utilities, and components */
 @layer base, utils, components;
+@import 'katex/dist/katex.min.css';
 @import '@webtui/css/base.css';
 @import '@webtui/css/utils/box.css';
 
@@ -339,10 +340,11 @@
             from var(--callout-color) calc(l * var(--oklch-scale, 1.12)) c h /
                 0.1
         );
-        --callout-summary-bg: oklch(
-            from var(--callout-color) calc(l * var(--oklch-scale, 1.08)) c h /
-                0.025
-        );
+        border: 0.3ch solid rgba(0, 0, 0, 0);
+        /* --callout-summary-bg: oklch( */
+        /*     from var(--callout-color) calc(l * var(--oklch-scale, 1.08)) c h / */
+        /*         0.025 */
+        /* ); */
     }
     .callout blockquote {
         margin-inline: unset;
@@ -621,9 +623,11 @@ pre.astro-code span.line::before {
     display: inline-block;
     width: 3ch;
     margin-right: 1ch;
+    padding-right: 1ch;
     text-align: right;
     color: var(--foreground2);
     user-select: none;
+    border-right: 2px solid var(--background2);
 }
 
 p:has(> img) {
