@@ -34,16 +34,11 @@ $$\{\gamma_t\}_{t=0}^N = \{\gamma_0, \gamma_1, \ldots, \gamma_{N-1}, \gamma_N\}$
 
 where
 
-$$
-\begin{aligned}
-0 < \gamma_0 < \gamma_1 &< \cdots < \gamma_N < 1 \\
-\quad |\gamma_{t+1} &- \gamma_t| \ll 1.
-\end{aligned}
-$$
+$$ \begin{aligned} 0 < \gamma_0 < \gamma_1 &< \cdots < \gamma_N < 1 \\ \quad |\gamma_{t+1} &- \gamma_t| \ll 1. \end{aligned} $$
 
 We also define a complementary schedule:
 
-$$ \{\eta*t\}*{t=0}^N = \{\eta_0, \eta_1, \ldots, \eta_N\}, \quad \text{with } \gamma_i + \eta_i = 1 \implies \eta_i = 1 - \gamma_i. $$
+$$ \{\eta_t\}_{t=0}^N = \{\eta_0, \eta_1, \ldots, \eta_N\}, \quad \text{with } \gamma_i + \eta_i = 1 \implies \eta_i = 1 - \gamma_i. $$
 
 ## Mixing Definition
 
@@ -58,21 +53,15 @@ losses).
 
 The change between successive mixtures is:
 
-$$
-\begin{aligned}
-B_{i+1} - B_i
-&= \gamma_{i+1} X + (1 - \gamma_{i+1}) Y - \left[ \gamma_i X + (1 - \gamma_i) Y \right] \\
-&= (\gamma_{i+1} - \gamma_i)(X - Y).
-\end{aligned}
-$$
+$$ \begin{aligned} B_{i+1} - B_i &= \gamma_{i+1} X + (1 - \gamma_{i+1}) Y - \left[ \gamma_i X + (1 - \gamma_i) Y \right] \\ &= (\gamma_{i+1} - \gamma_i)(X - Y). \end{aligned} $$
 
 Thus,
 
-$$ |B*{i+1} - B_i| = |\gamma*{i+1} - \gamma_i| \, |X - Y|. $$
+$$ |B_{i+1} - B_i| = |\gamma_{i+1} - \gamma_i| \, |X - Y|. $$
 
 If we set $|\gamma_{i+1} - \gamma_i| = \varepsilon \ll 1$, then
 
-$$ |B\_{i+1} - B_i| \leq \varepsilon \, |X - Y|, $$
+$$ |B_{i+1} - B_i| \leq \varepsilon \, |X - Y|, $$
 
 meaning the transition between $X$ and $Y$ is arbitrarily smooth.
 
