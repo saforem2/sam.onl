@@ -4,14 +4,14 @@ title: Accordion
 ---
 
 import Example from '@/components/Example.astro'
-import accordionStyle from '@webtui/css/components/accordion.css?raw'
+import accordionStyle from '../../../../../packages/theme-custom/src/components/accordion.css?raw'
 
 Displays an accordion
 
 <Example
     stylesheets={[accordionStyle]}
     html={`
-    <details is-="accordion">
+<details is-="accordion">
         <summary>Open me</summary>
         <p>Accordion content</p>
     </details>
@@ -40,7 +40,7 @@ Displays an accordion
 <Example
     stylesheets={[accordionStyle]}
     html={`
-    <details is-="accordion">
+<details is-="accordion">
         <summary>Parent</summary>
         <details is-="accordion">
             <summary>Favorite Child</summary>

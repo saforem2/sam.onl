@@ -6,7 +6,10 @@
 
         & > summary {
             &::before {
-                content: '> ';
+                color: var(--accent);
+                font-weight: bold;
+                content: '+';
+                margin-inline-end: 1ch;
             }
 
             &::-webkit-details-marker {
@@ -24,7 +27,10 @@
         }
 
         &[open] > summary::before {
-            content: 'v ';
+            content: 'x';
+            color: var(--accent);
+            font-weight: bold;
+            margin-inline-end: 1ch;
         }
     }
 }
