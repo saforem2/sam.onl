@@ -1,0 +1,193 @@
+---
+const works = [
+    {
+        year: '2025',
+        title: 'AERIS: Argonne Earth Systems Model',
+        href: 'https://arxiv.org/abs/2509.13523',
+        badge: '✨ Gordon Bell Finalist',
+    },
+    {
+        year: '2025',
+        title: 'Aurora: Argonne\u2019s First Exascale Supercomputer',
+        href: 'https://arxiv.org/abs/2509.08207',
+    },
+    {
+        year: '2025',
+        title: 'HiPerRAG: High-Performance RAG for Scientific Insights',
+        href: 'https://arxiv.org/abs/2505.04846',
+    },
+    {
+        year: '2025',
+        title: 'Automated Tuning for HMC Mass Ratios',
+        href: 'https://www.osti.gov/biblio/2551828',
+    },
+    {
+        year: '2025',
+        title: 'MOFA: Materials for Carbon Capture with GenAI',
+        href: 'https://arxiv.org/abs/2501.10651',
+    },
+    {
+        year: '2024',
+        title: 'MProt-DPO: Multimodal Protein Design',
+        href: 'https://doi.org/10.1109/SC41406.2024.00013',
+        badge: '🌟 Gordon Bell Finalist',
+    },
+    {
+        year: '2024',
+        title: 'Intro to HPC Bootcamp: Energy Justice Projects',
+        href: 'https://jocse.org/downloads/jocse-15-1-10.pdf',
+    },
+    {
+        year: '2024',
+        title: 'Large Transformer Model Training At-Scale',
+        href: 'https://doi.org/10.1145/3639034',
+    },
+    {
+        year: '2023',
+        title: 'MLMC: Machine Learning Monte Carlo',
+        href: 'https://arxiv.org/abs/2312.08936',
+    },
+    {
+        year: '2023',
+        title: 'Protein Generation via Genome-scale Language Models',
+        href: 'https://dl.acm.org/doi/abs/10.1145/3624062.3626087',
+    },
+    {
+        year: '2023',
+        title: 'DeepSpeed4Science Initiative',
+        href: 'https://arxiv.org/abs/2310.04610',
+    },
+    {
+        year: '2023',
+        title: 'LLMs on Novel AI Accelerators',
+        href: 'https://arxiv.org/abs/2310.04607',
+    },
+    {
+        year: '2023',
+        title: 'GenSLMs: Genome-scale Language Models',
+        href: 'https://www.biorxiv.org/content/10.1101/2022.10.10.511571v1.abstract',
+        badge: '🏆 Gordon Bell Special Prize',
+    },
+    {
+        year: '2022',
+        title: 'Lattice QCD and Particle Physics',
+        href: 'https://arxiv.org/abs/2207.07641',
+    },
+    {
+        year: '2022',
+        title: 'Applications of ML to Lattice QFT',
+        href: 'https://arxiv.org/abs/2202.05838',
+    },
+    {
+        year: '2021',
+        title: 'LeapFrogLayers: Trainable Framework for Sampling',
+        href: 'https://arxiv.org/abs/2112.01582',
+    },
+    {
+        year: '2021',
+        title: 'HMC with Normalizing Flows',
+        href: 'https://arxiv.org/abs/2112.01586',
+    },
+    {
+        year: '2021',
+        title: 'Deep Learning Hamiltonian Monte Carlo',
+        href: 'https://arxiv.org/abs/2105.03418',
+    },
+    {
+        year: '2020',
+        title: 'ML and Neural Networks for Field Theory',
+        href: 'https://bit.ly/snowmass_ml2020',
+    },
+]
+---
+
+<column box-="square" pad-="2 1" gap-="0" class="work-widget" tabindex="0">
+    <span is-="badge" variant-="green" class="ww-title"
+        >&#xf0b1; [<a
+            href="https://scholar.google.com/citations?user=vV_1zDwAAAAJ"
+            target="_blank">w</a
+        >]ork</span
+    >
+    <column gap-="0" class="ww-list">
+        {
+            works.map((w) => (
+                <a href={w.href} target="_blank" class="ww-item">
+                    <span class="ww-year">{w.year}</span>
+                    <span class="ww-name">
+                        {w.title}
+                        {w.badge && <span class="ww-badge">{w.badge}</span>}
+                    </span>
+                </a>
+            ))
+        }
+    </column>
+</column>
+
+<style>
+    .work-widget {
+        gap: 1lh;
+        overflow: hidden;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ww-title {
+        background-image: none;
+        --badge-text: none;
+        --badge-color: none;
+        /* line-height: 1.5; */
+
+        --color: var(--green);
+        color: var(--color);
+        background-color: oklch(
+            from var(--color) calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+        );
+        a {
+            color: var(--color);
+            font-weight: bold;
+        }
+    }
+
+    .ww-list {
+        gap: 0;
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+        scrollbar-width: thin;
+        scrollbar-color: var(--foreground2) transparent;
+        margin-block-start: -0.5lh;
+    }
+
+    .ww-item {
+        display: flex;
+        gap: 2ch;
+        align-items: baseline;
+        /* line-height: 2; */
+        text-decoration: none;
+        color: var(--foreground1);
+        white-space: nowrap;
+        flex-shrink: 0;
+
+        &:hover {
+            color: var(--blue);
+        }
+    }
+
+    .ww-year {
+        color: var(--foreground2);
+        flex-shrink: 0;
+        width: 5ch;
+    }
+
+    .ww-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ww-badge {
+        color: var(--yellow);
+        margin-left: 1ch;
+        font-size: 0.85em;
+    }
+</style>
