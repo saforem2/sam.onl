@@ -37,14 +37,14 @@ const themeOptions = {
 <dialog id="command-dialog" size-="small" position-="center" container-="fill">
     <div box-="square" shear-="top" id="command-content">
         <row align-="between">
-            <span is-="badge" variant-="background0">&#xf120; Command</span>
+            <span is-="badge" variant-="green">&#xf120; Command</span>
             <button id="command-close-btn" variant-="foreground0" size-="small"
                 >x</button
             >
         </row>
         <div id="command-sections">
-            <section class="command-section" box-="square">
-                <span is-="badge" variant-="background0">Site Info</span>
+            <section class="command-section" box-="square" shear-="top">
+                <span is-="badge" variant-="foreground1">Site Info</span>
                 <p>
                     sam.onl is a terminal-style knowledge base and notes hub,
                     built with Astro + WebTUI. Use the keybinds below to move
@@ -52,15 +52,14 @@ const themeOptions = {
                     look with the theme picker.
                 </p>
             </section>
-            <section class="command-section" box-="square">
-                <span is-="badge" variant-="background0">Theme</span>
+            <section class="command-section" box-="square" shear-="top">
+                <span is-="badge" variant-="foreground1">Theme</span>
                 <row class="command-theme-buttons" gap-="1">
                     {
                         Object.entries(themeOptions).map(([key, value]) => (
                             <button
                                 data-theme-dropdown="true"
                                 data-theme-option={key}
-                                size-="small"
                                 variant-="background1"
                                 aria-selected="false">
                                 {value}
@@ -69,8 +68,8 @@ const themeOptions = {
                     }
                 </row>
             </section>
-            <section class="command-section" box-="square">
-                <span is-="badge" variant-="background0">Keybinds</span>
+            <section class="command-section" box-="square" shear-="top">
+                <span is-="badge" variant-="foreground1">Keybinds</span>
                 <div class="keybind-columns">
                     <div class="keybind-group" box-="square">
                         <span is-="badge" variant-="background1"
@@ -512,8 +511,10 @@ const themeOptions = {
             e.stopImmediatePropagation()
             themeDialog.showModal()
             requestAnimationFrame(() => {
-                updateThemeCurrentValue()
-                focusActiveThemeOption()
+                requestAnimationFrame(() => {
+                    updateThemeCurrentValue()
+                    focusActiveThemeOption()
+                })
             })
             return
         }
@@ -548,6 +549,7 @@ const themeOptions = {
 
         if (e.key === 'j' || e.key === 'ArrowDown') {
             e.preventDefault()
+            e.stopPropagation()
             const nextIndex = (index + 1) % themeButtons.length
             focusThemeButton(themeButtons[nextIndex])
             return
@@ -555,6 +557,7 @@ const themeOptions = {
 
         if (e.key === 'k' || e.key === 'ArrowUp') {
             e.preventDefault()
+            e.stopPropagation()
             const prevIndex =
                 (index - 1 + themeButtons.length) % themeButtons.length
             focusThemeButton(themeButtons[prevIndex])
@@ -563,6 +566,7 @@ const themeOptions = {
 
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
+            e.stopPropagation()
             themeButtons[index]?.click()
         }
     })
@@ -571,7 +575,9 @@ const themeOptions = {
         if (themeDialog.open) {
             updateThemeCurrentValue()
             requestAnimationFrame(() => {
-                focusActiveThemeOption()
+                requestAnimationFrame(() => {
+                    focusActiveThemeOption()
+                })
             })
         }
     }).observe(themeDialog, {
