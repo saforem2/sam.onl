@@ -11,19 +11,19 @@ const posts = docs
         const db = b.data.date ? new Date(b.data.date).getTime() : 0
         return db - da
     })
-    .slice(0, 10)
+    .slice(0, 20)
 
 function formatDate(date: Date): string {
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-    }).format(date)
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}/${m}/${d}`
 }
 ---
 
-<column box-="square" pad-="2 2" gap-="0" class="posts-widget" tabindex="0">
+<column box-="square" pad-="2 1" gap-="0" class="posts-widget" tabindex="0">
     <span is-="badge" variant-="blue" class="pw-title"
-        >&#xf0219; recent [<a href="/posts">posts</a>]</span
+        >&#xf02d; [<a href="/posts">p</a>]osts</span
     >
     <column gap-="0" class="pw-list">
         {
@@ -54,7 +54,7 @@ function formatDate(date: Date): string {
         background-image: none;
         --badge-text: none;
         --badge-color: none;
-        line-height: 1.5;
+        /* line-height: 1.5; */
 
         --color: var(--blue);
         color: var(--color);
@@ -74,13 +74,14 @@ function formatDate(date: Date): string {
         min-height: 0;
         scrollbar-width: thin;
         scrollbar-color: var(--foreground2) transparent;
+        margin-block-start: -0.5lh;
     }
 
     .pw-item {
         display: flex;
         gap: 2ch;
         align-items: baseline;
-        line-height: 2;
+        /* line-height: 2; */
         text-decoration: none;
         color: var(--foreground1);
         white-space: nowrap;
@@ -94,7 +95,7 @@ function formatDate(date: Date): string {
     .pw-date {
         color: var(--foreground2);
         flex-shrink: 0;
-        width: 7ch;
+        width: 10ch;
     }
 
     .pw-name {

@@ -11,19 +11,19 @@ const talks = docs
         const db = b.data.date ? new Date(b.data.date).getTime() : 0
         return db - da
     })
-    .slice(0, 10)
+    .slice(0, 20)
 
 function formatDate(date: Date): string {
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-    }).format(date)
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}/${m}/${d}`
 }
 ---
 
-<column box-="square" pad-="2 2" gap-="0" class="talks-widget" tabindex="0">
+<column box-="square" pad-="2 1" gap-="0" class="talks-widget" tabindex="0">
     <span is-="badge" variant-="orange" class="tw-title"
-        >&#xf19d; recent [<a href="/talks">talks</a>]</span
+        >&#xf19d; [<a href="/talks">t</a>]alks</span
     >
     <column gap-="0" class="tw-list">
         {
@@ -72,13 +72,14 @@ function formatDate(date: Date): string {
         min-height: 0;
         scrollbar-width: thin;
         scrollbar-color: var(--foreground2) transparent;
+        margin-block-start: -0.5lh;
     }
 
     .tw-item {
         display: flex;
         gap: 2ch;
         align-items: baseline;
-        line-height: 2;
+        /* line-height: 2; */
         text-decoration: none;
         color: var(--foreground1);
         white-space: nowrap;
@@ -92,7 +93,7 @@ function formatDate(date: Date): string {
     .tw-date {
         color: var(--foreground2);
         flex-shrink: 0;
-        width: 7ch;
+        width: 10ch;
     }
 
     .tw-name {
