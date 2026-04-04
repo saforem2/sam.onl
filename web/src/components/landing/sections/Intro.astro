@@ -68,6 +68,34 @@ const variants = [
         label: '60/40 Split',
         desc: 'Swapped: intro and posts+talks left, clock+calendar and player right',
     },
+    {
+        label: 'Dashboard',
+        desc: '5-panel bento: intro + now playing top, work + posts + talks bottom',
+    },
+    {
+        label: 'Highlights & Awards',
+        desc: 'Dashboard with career highlights and award badges in the intro',
+    },
+    {
+        label: 'Shrink to Fit',
+        desc: 'Dashboard with auto-sized top row — no whitespace padding',
+    },
+    {
+        label: 'Embedded Tech Stack',
+        desc: 'Dashboard with inline tech stack icons in the intro',
+    },
+    {
+        label: 'Professional Stats',
+        desc: 'Dashboard with compact publication/award/talk stats in the intro',
+    },
+    {
+        label: 'About Badge',
+        desc: 'Dashboard with [about] badge header in the intro, matching work/posts/talks style',
+    },
+    {
+        label: 'Name in Navbar',
+        desc: 'Dashboard with Sam Foreman moved to navbar, [about] badge in intro',
+    },
 ]
 
 const current = variants[variant - 1]
@@ -263,12 +291,40 @@ const total = variants.length
     }
 
     <script>
-        import { applyVimNavigation, vimFocusElement } from '@/utils/vim'
+        import {
+            applyVimNavigation,
+            isUserTyping,
+            vimFocusElement,
+        } from '@/utils/vim'
         const grid = document.getElementById('widgets-grid')
         if (grid && grid.classList.contains('intro-in-grid')) {
-            applyVimNavigation(grid, '[tabindex="0"], a[href], button:not([disabled])')
+            applyVimNavigation(
+                grid,
+                '[tabindex="0"], a[href], button:not([disabled])',
+            )
             const intro = document.getElementById('intro-widget')
             if (intro) vimFocusElement(intro)
+
+            const shortcuts: Record<string, string> = {
+                a: '#intro-widget',
+                w: '.work-widget',
+                p: '.posts-widget',
+                t: '.talks-widget',
+                l: '#stats-widget',
+                m: '.iw-nav-home',
+            }
+            grid.addEventListener('keydown', (e) => {
+                if (isUserTyping()) return
+                const selector = shortcuts[e.key]
+                if (!selector) return
+                const target = grid.querySelector(
+                    selector,
+                ) as HTMLElement | null
+                if (target) {
+                    e.preventDefault()
+                    vimFocusElement(target)
+                }
+            })
         }
     </script>
 
@@ -450,7 +506,7 @@ const total = variants.length
                 [tabindex='0'][data-vim-focused='true']:focus
         ),
         :global(#widgets-grid.intro-in-grid [tabindex='0']:has(:focus)) {
-            --box-border-color: var(--green);
+            --box-border-color: var(--foreground0);
             outline: none;
             z-index: 1;
         }

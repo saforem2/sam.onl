@@ -56,9 +56,11 @@ if (url.pathname === '/') {
     <!--                                                                                 -->
     <span><a href="/" id="home-link">[<span> </span>]</a></span>
     <row id="links">
-        <a href="/posts" data-active={isOn === 'posts'}> Posts</a>
-        <a href="/talks" data-active={isOn === 'talks'}>󰐨 Talks</a>
-        <a href="/more" data-active={isOn === 'more'}> More</a>
+        <span id="wages">
+             [<a href="/posts" data-active={isOn === 'posts'}>p</a>]osts &nbsp;
+            󰐨 [<a href="/talks" data-active={isOn === 'talks'}>t</a>]alks &nbsp;
+             [<a href="/more" data-active={isOn === 'more'}>m</a>]ore &nbsp;
+        </span>
         <!-- <a href="/projects" data-active={isOn === 'projects'}>  Projects </a> -->
         <button id="theme-button" size-="small">  </button>
         <a
@@ -179,7 +181,13 @@ if (url.pathname === '/') {
     /* justify-content: flex-end; */
     /* align-content: center; */
 
+    #pages {
+        display: inline-flex;
+        gap: 2ch;
+    }
+
     #links {
+        color: var(--foreground1);
         display: block;
         text-align: right;
         margin-inline-start: 1ch;
@@ -197,19 +205,18 @@ if (url.pathname === '/') {
 
         a {
             display: inline-flex;
-            gap: 1ch;
-            margin-inline: 1ch;
+            /* gap: 1ch; */
+            /* margin-inline: 1ch; */
             text-decoration: none;
             color: var(--foreground2);
 
             &[data-active='true'] {
-                /* color: var(--accent); */
-                padding: 0 1ch;
-                background-color: oklch(
-                    from var(--accent) calc(l * var(--oklch-scale, 0.85)) c h /
-                        0.1
-                );
+                /* background-color: oklch( */
+                /*     from var(--accent) calc(l * var(--oklch-scale, 0.85)) c h / */
+                /*         0.1 */
+                /* ); */
                 /* font-weight: bold; */
+                color: var(--accent);
                 text-decoration: none;
             }
 
@@ -427,12 +434,26 @@ if (url.pathname === '/') {
         searchDialog.showModal()
     })
 
+    const navShortcuts: Record<string, string> = {
+        p: '/posts',
+        t: '/talks',
+        m: '/more',
+    }
+
     window.addEventListener('keydown', (e) => {
         if (isUserTyping()) return
 
         if (e.key === '/') {
             e.preventDefault()
             searchDialog.showModal()
+            return
+        }
+
+        if (e.defaultPrevented) return
+        const href = navShortcuts[e.key]
+        if (href) {
+            e.preventDefault()
+            window.location.href = href
         }
     })
 </script>

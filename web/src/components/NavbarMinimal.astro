@@ -1,9 +1,20 @@
 ---
 import Filter from '@/components/Filter.astro'
+
+interface Props {
+    variant?: number
+}
+
+const { variant } = Astro.props
 ---
 
 <nav id="top-navbar" box-="square">
     <span><a href="/" id="home-link">[<span> </span>]</a></span>
+    {
+        variant === 21 && (
+            <span is-="badge" variant-="green" class="navbar-name" style="--badge-text: var(--background0)">Sam Foreman</span>
+        )
+    }
     <row id="links">
         <button id="theme-button" size-="small">  </button>
         <a
@@ -101,6 +112,10 @@ import Filter from '@/components/Filter.astro'
 
     nav > span {
         flex: 0 0 auto;
+    }
+
+    .navbar-name {
+        text-decoration: none;
     }
 
     #links {
