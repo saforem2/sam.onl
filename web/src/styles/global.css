@@ -466,6 +466,21 @@
     ol li > ul {
         margin-left: 3ch;
     }
+
+    input[type='checkbox']:not([is-='switch'])::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 3ch;
+        height: 1lh;
+        background: var(--foreground2);
+    }
 }
 
 @media (max-width: 480px) {
