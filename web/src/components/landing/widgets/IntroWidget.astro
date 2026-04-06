@@ -22,30 +22,64 @@ const { variant, total, home = false } = Astro.props
             </row>
         )
     }
-    <h1>
-        <span is-="badge" variant-="green">&#xf4b5; Sam Foreman</span>
-    </h1>
-    <span class="iw-tagline"
-        >Computational Scientist · Argonne National Laboratory</span
-    >
-    <p>
-        I'm a Computational Scientist in the{' '}
-        <a
-            href="https://www.alcf.anl.gov/about/people/group/506"
-            target="_blank">
-            AI / ML Group
-        </a>{' '}
-        at the{' '}
-        <a href="https://www.alcf.anl.gov/" target="_blank">
-            Argonne Leadership Computing Facility</a
-        >.
-        <br />
-        <br />
-        My work focuses on large-scale distributed training of foundation models for
-        scientific applications. I co-lead the Models &amp; Pre-Training team for
-        the
-        <a href="https://auroragpt.anl.gov" target="_blank">AuroraGPT</a> project.
-    </p>
+    {
+        (variant === 20 || variant === 21) && (
+            <span is-="badge" class="iw-about-title">
+                &#xf2bd; [<a href="/landing">a</a>]bout
+            </span>
+        )
+    }
+    {
+        variant !== 21 && (
+            <h1>
+                <span is-="badge" variant-="green">
+                    &#xf4b5; Sam Foreman
+                </span>
+            </h1>
+        )
+    }
+    <span class="iw-tagline">
+        Computational Scientist · <a href="https://anl.gov"
+            >Argonne National Laboratory</a
+        >
+        <a href="https://alcf.anl.gov">(ALCF)</a>
+    </span>
+    <div class="iw-about">
+        <p>
+            I'm a Computational Scientist in the{' '}
+            <a
+                href="https://www.alcf.anl.gov/about/people/group/506"
+                target="_blank">
+                AI / ML Group
+            </a>{' '}
+            at the{' '}
+            <a href="https://www.alcf.anl.gov/" target="_blank"> ALCF</a>, where
+            I work on training large models for scientific applications.
+        </p>
+        <p>
+            Generally, I am interested in developing novel algorithms and
+            techniques to enable the training of large language models on
+            scientific data, and in applying these models to accelerate
+            scientific discovery across a wide range of domains.
+        </p>
+        <p>
+            Some recent projects include AERIS, a large language model for
+            materials science that was a finalist for the 2025 Gordon Bell
+            Prize; MProt-DPO, a large language model for protein design that was
+            a finalist for the 2024 Gordon Bell Prize; and GenSLMs, a family of
+            large language models for genomics that won the 2023 ACM Gordon Bell
+            Special Prize for High Performance Computing-Based COVID-19
+            Research.
+        </p>
+        <!-- <p> -->
+        <!--     My work at ALCF spans a variety of projects in scientific machine -->
+        <!--     learning, high-performance computing, and large language models, and -->
+        <!--     I am the co-lead of the Models &amp; Pre-Training team for the <a -->
+        <!--         href="https://auroragpt.anl.gov" -->
+        <!--         target="_blank">AuroraGPT</a -->
+        <!--     > project. -->
+        <!-- </p> -->
+    </div>
     <row class="iw-social-links">
         <a href="https://github.com/saforem2" target="_blank" title="GitHub"
             >&#xe65b;</a
@@ -72,14 +106,108 @@ const { variant, total, home = false } = Astro.props
         {
             home && (
                 <a
-                    href="/landing"
+                    href="/more"
                     class="iw-nav-home"
                     style="margin-left: auto;">
-                    More &rarr;
+                    [m]ore &rarr;
                 </a>
             )
         }
     </row>
+    {
+        variant === 16 && (
+            <column class="iw-highlights" gap-="0">
+                <div
+                    is-="separator"
+                    style="--separator-color: var(--background2)"
+                />
+                <a
+                    href="https://www.biorxiv.org/content/10.1101/2022.10.10.511571v1.abstract"
+                    target="_blank"
+                    class="iw-hl-item">
+                    <span class="iw-hl-icon" style="color: var(--yellow)">
+                        🏆
+                    </span>
+                    <span>ACM Gordon Bell Special Prize — GenSLMs (2023)</span>
+                </a>
+                <a
+                    href="https://arxiv.org/abs/2509.13523"
+                    target="_blank"
+                    class="iw-hl-item">
+                    <span class="iw-hl-icon" style="color: var(--green)">
+                        ✨
+                    </span>
+                    <span>Gordon Bell Finalist — AERIS (2025)</span>
+                </a>
+                <a
+                    href="https://doi.org/10.1109/SC41406.2024.00013"
+                    target="_blank"
+                    class="iw-hl-item">
+                    <span class="iw-hl-icon" style="color: var(--pink)">
+                        🌟
+                    </span>
+                    <span>Gordon Bell Finalist — MProt-DPO (2024)</span>
+                </a>
+                <a
+                    href="https://auroragpt.anl.gov"
+                    target="_blank"
+                    class="iw-hl-item">
+                    <span class="iw-hl-icon">🤖</span>
+                    <span>AuroraGPT — Co-lead, Models & Pre-Training</span>
+                </a>
+            </column>
+        )
+    }
+    {
+        variant === 18 && (
+            <column class="iw-tech" gap-="0">
+                <div
+                    is-="separator"
+                    style="--separator-color: var(--background2)"
+                />
+                <row class="iw-tech-row">
+                    <span style="color: var(--orange)">&#xe6b2;</span>
+                    <span style="color: var(--yellow)">&#xf48a;</span>
+                    <span style="color: var(--foreground1)">&#xe76f;</span>
+                    <span style="color: var(--blue)">&#xe628;</span>
+                    <span style="color: var(--sapphire, var(--blue))">
+                        &#xe749;
+                    </span>
+                    <span style="color: var(--green)">&#xf698;</span>
+                    <span style="color: var(--purple, var(--mauve))">
+                        &#xf489;
+                    </span>
+                    <span style="color: var(--teal)">&#xf61f;</span>
+                    <span style="color: var(--green)">&#xf233;</span>
+                </row>
+                <span class="iw-tech-label">
+                    Astro · MDX · Bun · TypeScript · CSS · KaTeX · Shiki ·
+                    Mermaid · Netlify
+                </span>
+            </column>
+        )
+    }
+    {
+        variant === 19 && (
+            <column class="iw-stats-section" gap-="0">
+                <div
+                    is-="separator"
+                    style="--separator-color: var(--background2)"
+                />
+                <row class="iw-stats-row">
+                    <span is-="badge" variant-="green" class="iw-stat">
+                        24 publications
+                    </span>
+                    <span is-="badge" variant-="yellow" class="iw-stat">
+                        3 Gordon Bell awards
+                    </span>
+                    <span is-="badge" variant-="blue" class="iw-stat">
+                        50+ talks
+                    </span>
+                </row>
+            </column>
+        )
+    }
     {
         !home && (
             <>
@@ -120,6 +248,7 @@ const { variant, total, home = false } = Astro.props
 
         a {
             color: var(--foreground2);
+            text-decoration-color: var(--background3);
 
             &:focus,
             &:hover {
@@ -135,6 +264,8 @@ const { variant, total, home = false } = Astro.props
 
     .iw-tagline {
         color: var(--foreground2);
+        /* border-bottom: 1pt solid var(--background2); */
+        /* border-bottom-width: clamp(1px, 0.1vw, 2px); */
     }
 
     .iw-variant-header {
@@ -147,10 +278,24 @@ const { variant, total, home = false } = Astro.props
         font-weight: 600;
     }
 
+    .iw-about > p {
+        margin-block-start: 0;
+    }
+    .iw-about {
+        overflow-y: auto;
+        border-left: 2pt solid var(--background2);
+        padding-left: 1ch;
+        p {
+            color: var(--foreground1);
+            margin-block: 0.5lh;
+        }
+    }
+
     .iw-social-links {
         display: flex;
         flex-wrap: wrap;
         gap: 2ch;
+        margin-top: auto;
 
         a {
             text-decoration: none !important;
@@ -205,5 +350,78 @@ const { variant, total, home = false } = Astro.props
         color: var(--foreground2);
         padding: 0 1ch;
         opacity: 0.3;
+    }
+
+    .iw-highlights {
+        gap: 0;
+    }
+
+    .iw-hl-item {
+        display: flex;
+        align-items: baseline;
+        gap: 1ch;
+        line-height: normal;
+        text-decoration: none;
+        color: var(--foreground1);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &:hover {
+            color: var(--blue);
+        }
+    }
+
+    .iw-hl-icon {
+        flex-shrink: 0;
+        width: 2ch;
+        text-align: center;
+    }
+
+    .iw-tech {
+        gap: 0.5lh;
+    }
+
+    .iw-tech-row {
+        gap: 2ch;
+        font-size: 1.2em;
+        flex-wrap: wrap;
+    }
+
+    .iw-tech-label {
+        color: var(--foreground2);
+        font-size: 0.85em;
+    }
+
+    .iw-stats-section {
+        gap: 0.5lh;
+    }
+
+    .iw-stats-row {
+        gap: 1ch;
+        flex-wrap: wrap;
+    }
+
+    .iw-stat {
+        --badge-text: none;
+        --badge-color: none;
+        background-image: none;
+    }
+
+    #intro-widget .iw-about-title {
+        background-image: none;
+        --badge-text: none;
+        --badge-color: none;
+        /* line-height: 1.5; */
+
+        --color: var(--foreground2);
+        color: var(--color);
+        background-color: oklch(
+            from var(--color) calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+        );
+        a {
+            color: var(--color);
+            font-weight: bold;
+        }
     }
 </style>

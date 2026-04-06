@@ -10,6 +10,7 @@ import Sparkline from './Sparkline.astro'
 import PostsWidget from './PostsWidget.astro'
 import TalksWidget from './TalksWidget.astro'
 import IntroWidget from './IntroWidget.astro'
+import WorkWidget from './WorkWidget.astro'
 import Navbar from '../../NavbarMinimal.astro'
 import '@webtui/css/components/radio.css'
 
@@ -20,7 +21,7 @@ interface Props {
 
 const { variant, home = false } = Astro.props
 const useCalendar = variant === 2 || variant === 3
-const isIntroWidget = variant >= 8 && variant <= 14
+const isIntroWidget = variant >= 8 && variant <= 21
 const cols = variant === 3 ? 2 : 3
 const gridCols = isIntroWidget
     ? {
@@ -31,11 +32,18 @@ const gridCols = isIntroWidget
           12: '1fr 1fr',
           13: '2fr 2fr 3fr 3fr',
           14: '3fr 3fr 2fr 2fr',
+          15: 'repeat(10, 1fr)',
+          16: 'repeat(10, 1fr)',
+          17: 'repeat(10, 1fr)',
+          18: 'repeat(10, 1fr)',
+          19: 'repeat(10, 1fr)',
+          20: 'repeat(10, 1fr)',
+          21: 'repeat(10, 1fr)',
       }[variant]
     : `repeat(${cols}, 1fr)`
 const opacity = variant === 4 ? 0.4 : isIntroWidget ? 1 : 0.3
 const hideOnMobile = variant === 1
-const total = 14
+const total = 21
 const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
 ---
 
@@ -53,12 +61,20 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
     {
         isIntroWidget && (
             <div id="grid-navbar">
-                <Navbar />
+                <Navbar {variant} />
             </div>
         )
     }
     {
-        home ? (
+        home && variant >= 15 ? (
+            <>
+                <IntroWidget {variant} {total} {home} />
+                <Player />
+                <WorkWidget />
+                <PostsWidget />
+                <TalksWidget />
+            </>
+        ) : home ? (
             <>
                 <IntroWidget {variant} {total} {home} />
                 <PostsWidget />
@@ -80,6 +96,9 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
                         {variant === 11 && <Sparkline />}
                         {variant >= 12 && variant <= 14 && <PostsWidget />}
                         {(variant === 13 || variant === 14) && <TalksWidget />}
+                        {variant >= 15 && variant <= 21 && <WorkWidget />}
+                        {variant >= 15 && variant <= 21 && <PostsWidget />}
+                        {variant >= 15 && variant <= 21 && <TalksWidget />}
                     </>
                 ) : useCalendar ? (
                     <Calendar />
@@ -136,7 +155,15 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
 
     /* Home page: stack to flex column earlier at intermediate sizes */
     @media (max-width: 1024px) {
-        #widgets-grid.home-grid {
+        #widgets-grid.home-grid:not(
+                .intro-v15,
+                .intro-v16,
+                .intro-v17,
+                .intro-v18,
+                .intro-v19,
+                .intro-v20,
+                .intro-v21
+            ) {
             display: flex !important;
             flex-direction: column;
             position: static;
@@ -153,7 +180,16 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
             gap: 1ch;
         }
 
-        #widgets-grid.home-grid > :global(*) {
+        #widgets-grid.home-grid:not(
+                .intro-v15,
+                .intro-v16,
+                .intro-v17,
+                .intro-v18,
+                .intro-v19,
+                .intro-v20,
+                .intro-v21
+            )
+            > :global(*) {
             flex-shrink: 0;
             max-height: none !important;
             overflow: visible !important;
@@ -163,20 +199,56 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
 
         /* Let list containers auto-size instead of flex-filling
            (flex:1 + min-height:0 collapses when parent has no definite height) */
-        #widgets-grid.home-grid :global(.pw-list),
-        #widgets-grid.home-grid :global(.tw-list) {
+        #widgets-grid.home-grid:not(
+                .intro-v15,
+                .intro-v16,
+                .intro-v17,
+                .intro-v18,
+                .intro-v19,
+                .intro-v20,
+                .intro-v21
+            )
+            :global(.pw-list),
+        #widgets-grid.home-grid:not(
+                .intro-v15,
+                .intro-v16,
+                .intro-v17,
+                .intro-v18,
+                .intro-v19,
+                .intro-v20,
+                .intro-v21
+            )
+            :global(.tw-list) {
             flex: 0 0 auto !important;
             overflow: visible !important;
             min-height: auto !important;
         }
 
-        #widgets-grid.home-grid :global(.history-section) {
+        #widgets-grid.home-grid:not(
+                .intro-v15,
+                .intro-v16,
+                .intro-v17,
+                .intro-v18,
+                .intro-v19,
+                .intro-v20,
+                .intro-v21
+            )
+            :global(.history-section) {
             flex: 0 0 auto !important;
             overflow: visible !important;
             min-height: auto !important;
         }
 
-        #widgets-grid.home-grid :global(#up-next) {
+        #widgets-grid.home-grid:not(
+                .intro-v15,
+                .intro-v16,
+                .intro-v17,
+                .intro-v18,
+                .intro-v19,
+                .intro-v20,
+                .intro-v21
+            )
+            :global(#up-next) {
             overflow: visible !important;
             min-height: auto !important;
         }
@@ -231,8 +303,11 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
         #widgets-grid.intro-in-grid .spark-widget {
             order: 8;
         }
-        #widgets-grid.intro-in-grid #stats-widget {
+        #widgets-grid.intro-in-grid .work-widget {
             order: 9;
+        }
+        #widgets-grid.intro-in-grid #stats-widget {
+            order: 10;
         }
     }
 
@@ -451,8 +526,119 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
         }
     }
 
-    /* Home page grid placement — overrides v14 */
-    #widgets-grid.home-grid {
+    /* v15–v19: Dashboard — intro+player top, work+posts+talks bottom */
+    #widgets-grid.intro-v15,
+    #widgets-grid.intro-v16,
+    #widgets-grid.intro-v17,
+    #widgets-grid.intro-v18,
+    #widgets-grid.intro-v19,
+    #widgets-grid.intro-v20,
+    #widgets-grid.intro-v21 {
+        grid-template-columns: repeat(10, 1fr);
+        grid-template-rows: auto auto minmax(12lh, 1fr);
+        max-height: round(90vh, 1lh);
+        height: auto;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--foreground2) transparent;
+        top: 50vh;
+        transform: translate(round(-50%, 1ch), round(-50%, 1lh));
+
+        #intro-widget {
+            grid-column: 1 / 6;
+            grid-row: 2;
+            max-height: 15lh;
+        }
+        #stats-widget {
+            grid-column: 6 / 11;
+            grid-row: 2;
+            max-height: 15lh;
+        }
+        .work-widget {
+            grid-column: 1 / 5;
+            grid-row: 3;
+            max-height: 15lh;
+        }
+        .posts-widget {
+            grid-column: 5 / 8;
+            grid-row: 3;
+            max-height: 15lh;
+        }
+        .talks-widget {
+            grid-column: 8 / 11;
+            grid-row: 3;
+            max-height: 15lh;
+        }
+
+        .cal-widget,
+        #clock-widget,
+        .gitlog-widget,
+        .contrib-widget {
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            display: flex !important;
+            flex-direction: column;
+            position: static;
+            transform: none;
+            width: auto;
+            max-width: round(95vw, 1ch);
+            max-height: none;
+            min-width: 0;
+            min-height: 0;
+            height: auto;
+            margin-inline: auto;
+            padding-block: 1lh;
+            gap: 1ch;
+
+            #intro-widget,
+            #stats-widget,
+            .work-widget,
+            .posts-widget,
+            .talks-widget {
+                grid-column: auto;
+                grid-row: auto;
+                max-height: none;
+                flex-shrink: 0;
+            }
+
+            #intro-widget {
+                order: 1;
+            }
+            #stats-widget {
+                order: 2;
+            }
+            .work-widget {
+                order: 3;
+            }
+            .posts-widget {
+                order: 4;
+            }
+            .talks-widget {
+                order: 5;
+            }
+        }
+    }
+
+    /* v17: Shrink to fit — remove max-height caps */
+    #widgets-grid.intro-v17 {
+        #intro-widget,
+        #stats-widget {
+            max-height: none;
+        }
+    }
+
+    /* Home page grid placement — overrides v14 (not v15) */
+    #widgets-grid.home-grid:not(
+            .intro-v15,
+            .intro-v16,
+            .intro-v17,
+            .intro-v18,
+            .intro-v19,
+            .intro-v20,
+            .intro-v21
+        ) {
         grid-template-columns: 3fr 3fr 2fr 2fr;
         grid-template-rows: auto auto 20lh;
 

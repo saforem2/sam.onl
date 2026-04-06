@@ -29,10 +29,9 @@ Add "Symbols Nerd Font" to the **end** of the `--font-family` fallback stack
 
 ```css
 @layer base {
-    :root {
-        --font-family: /* fonts */
-            , Menlo, Monaco, monospace, 'Symbols Nerd Font';
-    }
+  :root {
+    --font-family: /* fonts */, Menlo, Monaco, monospace, "Symbols Nerd Font";
+  }
 }
 ```
 

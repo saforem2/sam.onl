@@ -1,0 +1,36 @@
+@layer components {
+    details[is-~='accordion'] {
+        &[open]::details-content {
+            padding-left: 2ch;
+        }
+
+        & > summary {
+            &::before {
+                color: var(--accent);
+                font-weight: bold;
+                content: '+';
+                margin-inline-end: 1ch;
+            }
+
+            &::-webkit-details-marker {
+                display: none;
+            }
+
+            &::marker {
+                content: '';
+                display: none;
+            }
+
+            &:focus {
+                text-decoration: underline;
+            }
+        }
+
+        &[open] > summary::before {
+            content: 'x';
+            color: var(--accent);
+            font-weight: bold;
+            margin-inline-end: 1ch;
+        }
+    }
+}

@@ -149,26 +149,102 @@ const variations = [
                 }
             </div>
 
-            <h2>Layout Variations</h2>
-            <p class="section-desc">
-                Each shows the full intro hero with a single layout modification
-                applied.
-            </p>
+            <h2>Variations</h2>
             <div class="card-grid">
-                {
-                    variations.map((v) => (
-                        <a href={`/showcase/${v.id}`} class="card">
-                            <row class="card-header">
-                                <span is-="badge" variant-="blue">
-                                    {v.id}
-                                </span>
-                                <span class="card-name">{v.name}</span>
-                            </row>
-                            <span class="card-desc">{v.desc}</span>
-                        </a>
-                    ))
-                }
+                <a href="/showcase/dashboard" class="card">
+                    <row class="card-header">
+                        <span is-="badge" variant-="blue">v15</span>
+                        <span class="card-name">Dashboard</span>
+                    </row>
+                    <span class="card-desc"
+                        >5-panel bento grid: intro + now playing top row, work +
+                        posts + talks bottom row</span
+                    >
+                </a>
+                <a href="/showcase/v16" class="card">
+                    <row class="card-header">
+                        <span is-="badge" variant-="blue">v16</span>
+                        <span class="card-name">Highlights & Awards</span>
+                    </row>
+                    <span class="card-desc"
+                        >Dashboard with career highlights and award badges in the
+                        intro</span
+                    >
+                </a>
+                <a href="/showcase/v17" class="card">
+                    <row class="card-header">
+                        <span is-="badge" variant-="blue">v17</span>
+                        <span class="card-name">Shrink to Fit</span>
+                    </row>
+                    <span class="card-desc"
+                        >Dashboard with auto-sized top row — no whitespace
+                        padding</span
+                    >
+                </a>
+                <a href="/showcase/v18" class="card">
+                    <row class="card-header">
+                        <span is-="badge" variant-="blue">v18</span>
+                        <span class="card-name">Embedded Tech Stack</span>
+                    </row>
+                    <span class="card-desc"
+                        >Dashboard with inline tech stack icons in the
+                        intro</span
+                    >
+                </a>
+                <a href="/showcase/v19" class="card">
+                    <row class="card-header">
+                        <span is-="badge" variant-="blue">v19</span>
+                        <span class="card-name">Professional Stats</span>
+                    </row>
+                    <span class="card-desc"
+                        >Dashboard with compact publication/award/talk stats in
+                        the intro</span
+                    >
+                </a>
+                <a href="/showcase/v20" class="card">
+                    <row class="card-header">
+                        <span is-="badge" variant-="blue">v20</span>
+                        <span class="card-name">About Badge</span>
+                    </row>
+                    <span class="card-desc"
+                        >Dashboard with [about] badge header in the intro,
+                        matching work/posts/talks style</span
+                    >
+                </a>
+                <a href="/showcase/v21" class="card">
+                    <row class="card-header">
+                        <span is-="badge" variant-="blue">v21</span>
+                        <span class="card-name">Name in Navbar</span>
+                    </row>
+                    <span class="card-desc"
+                        >Dashboard with Sam Foreman moved to navbar, [about]
+                        badge in intro</span
+                    >
+                </a>
             </div>
+
+            <details class="old-variations">
+                <summary><h2>Old Variations</h2></summary>
+                <p class="section-desc">
+                    Each shows the full intro hero with a single layout
+                    modification applied.
+                </p>
+                <div class="card-grid">
+                    {
+                        variations.map((v) => (
+                            <a href={`/showcase/${v.id}`} class="card">
+                                <row class="card-header">
+                                    <span is-="badge" variant-="blue">
+                                        {v.id}
+                                    </span>
+                                    <span class="card-name">{v.name}</span>
+                                </row>
+                                <span class="card-desc">{v.desc}</span>
+                            </a>
+                        ))
+                    }
+                </div>
+            </details>
 
             <row>
                 <a href="/" is-="badge" variant-="background1">
@@ -204,7 +280,7 @@ const variations = [
 
     .section-desc {
         color: var(--foreground2);
-        margin-block-start: -0.5lh;
+        /* margin-block-start: -0.5lh; */
     }
 
     .card-grid {
@@ -245,6 +321,32 @@ const variations = [
 
     .card-desc {
         color: var(--foreground2);
+    }
+
+    .old-variations {
+        width: 100%;
+
+        summary {
+            cursor: pointer;
+            list-style: none;
+            color: var(--foreground2);
+
+            &::before {
+                content: '▸ ';
+            }
+
+            h2 {
+                display: inline;
+            }
+        }
+
+        &[open] summary::before {
+            content: '▾ ';
+        }
+
+        .card-grid {
+            margin-top: 1lh;
+        }
     }
 
     a[is-='badge'] {

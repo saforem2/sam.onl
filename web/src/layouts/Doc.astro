@@ -175,7 +175,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                     aria-expanded="false"
                                     aria-controls="toc-container"
                                     aria-label="Collapse right sidebar (zl)">
-                                    zl ▸
+                                    <span class="key-z">z</span>[<span class="key-l">l</span>]&rsaquo;
                                 </button>
                                 <div id="toc-list-container">
                                     <ul id="toc-list">
@@ -435,6 +435,27 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         true,
     )
 
+    const keyZSpans = document.querySelectorAll(
+        '#sidebar-toggle .key-z, #toc-toggle .key-z',
+    )
+    const keyHSpan = document.querySelector('#sidebar-toggle .key-h')
+    const keyLSpan = document.querySelector('#toc-toggle .key-l')
+
+    // Shared via window so the sidebar-toggle script can access z-chord state
+    const w = window as any
+    w.__pendingZAt = 0
+    w.__keyZSpans = document.querySelectorAll(
+        '#sidebar-toggle .key-z, #toc-toggle .key-z',
+    )
+    w.__setKeyActive = (el: Element | null, active: boolean) => {
+        if (!el) return
+        if (active) {
+            el.setAttribute('data-active', 'true')
+        } else {
+            el.removeAttribute('data-active')
+        }
+    }
+
     window.addEventListener('keydown', (e) => {
         if (e.defaultPrevented) return
 
@@ -618,6 +639,21 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                 vimFocusElement(visible[0])
             }
             return
+        }
+
+        // Skip all plain keys when z-chord is pending — the sidebar-toggle script handles it
+        {
+            const pz = (window as any).__pendingZAt
+            if (
+                pz &&
+                Date.now() - pz <= 700 &&
+                !e.ctrlKey &&
+                !e.metaKey &&
+                !e.altKey &&
+                !e.shiftKey
+            ) {
+                return
+            }
         }
 
         const isShiftRegionKey =
@@ -883,7 +919,9 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
     const setSidebarToggleLabel = (collapsed: boolean) => {
         if (!sidebarToggle) return
 
-        sidebarToggle.textContent = collapsed ? 'zh ▴' : '◂ zh'
+        const arrow = collapsed ? '&uarr;' : '&larr;'
+        sidebarToggle.innerHTML = `${arrow}<span class="key-z">z</span>[<span class="key-h">h</span>]`
+
         sidebarToggle.setAttribute(
             'aria-label',
             collapsed
@@ -895,12 +933,19 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
     const setTocToggleLabel = (collapsed: boolean) => {
         if (!tocToggle) return
 
-        tocToggle.textContent = collapsed ? '▾ zl' : 'zl ▸'
+        const arrow = collapsed ? '&darr;' : '&rarr;'
+        tocToggle.innerHTML = `<span class="key-z">z</span>[<span class="key-l">l</span>]${arrow}`
         tocToggle.setAttribute(
             'aria-label',
             collapsed
                 ? 'Expand right sidebar (zl)'
                 : 'Collapse right sidebar (zl)',
+        )
+    }
+
+    const refreshKeySpans = () => {
+        ;(window as any).__keyZSpans = document.querySelectorAll(
+            '#sidebar-toggle .key-z, #toc-toggle .key-z',
         )
     }
 
@@ -911,6 +956,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         sidebarToggle.setAttribute('aria-expanded', String(!collapsed))
         localStorage.setItem('sidebar-collapsed', String(collapsed))
         setSidebarToggleLabel(collapsed)
+        refreshKeySpans()
     }
 
     const setTocCollapsed = (collapsed: boolean) => {
@@ -920,6 +966,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         tocToggle.setAttribute('aria-expanded', String(!collapsed))
         localStorage.setItem('toc-collapsed', String(collapsed))
         setTocToggleLabel(collapsed)
+        refreshKeySpans()
     }
 
     const getSidebarFocusTarget = () =>
@@ -989,7 +1036,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
     }
 
     if (sidebarContainer || tocContainer || navbar || mainContent) {
-        let pendingZAt = 0
+        const w = window as any
 
         window.addEventListener('keydown', (e) => {
             if (isUserTyping()) return
@@ -1006,23 +1053,43 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                 const now = Date.now()
 
                 if (e.key === 'z') {
-                    if (pendingZAt && now - pendingZAt <= 700) {
-                        pendingZAt = 0
+                    if (w.__pendingZAt && now - w.__pendingZAt <= 700) {
+                        w.__pendingZAt = 0
+                        w.__keyZSpans?.forEach((s: Element) =>
+                            w.__setKeyActive?.(s, false),
+                        )
                         return
                     }
 
-                    pendingZAt = now
+                    w.__pendingZAt = now
+                    w.__keyZSpans?.forEach((s: Element) =>
+                        w.__setKeyActive?.(s, true),
+                    )
+                    setTimeout(() => {
+                        if (
+                            w.__pendingZAt &&
+                            Date.now() - w.__pendingZAt >= 690
+                        ) {
+                            w.__pendingZAt = 0
+                            w.__keyZSpans?.forEach((s: Element) =>
+                                w.__setKeyActive?.(s, false),
+                            )
+                        }
+                    }, 700)
                     return
                 }
 
                 if (e.key === '[' || e.key === ']') {
-                    pendingZAt = 0
+                    w.__pendingZAt = 0
                     return // handled by heading-jump listener
                 }
 
                 const hasPendingZChord =
-                    pendingZAt > 0 && now - pendingZAt <= 700
-                pendingZAt = 0
+                    w.__pendingZAt > 0 && now - w.__pendingZAt <= 700
+                w.__pendingZAt = 0
+                w.__keyZSpans?.forEach((s: Element) =>
+                    w.__setKeyActive?.(s, false),
+                )
 
                 if (hasPendingZChord) {
                     if (e.key === 'h') {
@@ -1043,7 +1110,6 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
 
                     if (e.key === 'j') {
                         e.preventDefault()
-
                         const mainTarget = getMainFocusTarget()
                         if (mainTarget instanceof HTMLElement) {
                             vimFocusElement(mainTarget)
@@ -1053,7 +1119,6 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
 
                     if (e.key === 'k') {
                         e.preventDefault()
-
                         const navbarTarget = getNavbarFocusTarget()
                         if (navbarTarget instanceof HTMLElement) {
                             vimFocusElement(navbarTarget)
@@ -1062,7 +1127,10 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                     return
                 }
             } else {
-                pendingZAt = 0
+                w.__pendingZAt = 0
+                w.__keyZSpans?.forEach((s: Element) =>
+                    w.__setKeyActive?.(s, false),
+                )
             }
 
             if (!e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
@@ -1089,7 +1157,6 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
 
             if (key === 'j') {
                 e.preventDefault()
-
                 const mainTarget = getMainFocusTarget()
                 if (mainTarget instanceof HTMLElement) {
                     vimFocusElement(mainTarget)
@@ -1098,7 +1165,6 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
 
             if (key === 'k') {
                 e.preventDefault()
-
                 const navbarTarget = getNavbarFocusTarget()
                 if (navbarTarget instanceof HTMLElement) {
                     vimFocusElement(navbarTarget)

@@ -44,29 +44,49 @@ h6::before {
 
 #sidebar-toggle,
 #toc-toggle {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     white-space: nowrap;
     box-sizing: border-box;
-    max-inline-size: calc(100% - 0ch);
-    /* width: round(calc(100% - 2ch), 1ch); */
-
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 3;
-    color: var(--foreground1);
-    background-color: var(--background2);
-    border: 2px solid var(--box-border-color);
+    color: var(--foreground2);
+    background-color: var(--background0);
+    border: none;
+    width: min-content;
+    left: 1ch;
+    line-height: inherit;
 }
 
-/* #sidebar-toggle { */
-/*     right: 0; */
-/*     transform: translate(50%, -50%); */
-/* } */
-/**/
-#toc-toggle {
-    right: 0;
-    /* transform: translate(-50%, -50%); */
+.key-z[data-active='true'] {
+    color: var(--accent);
+}
+
+#sidebar:focus-within .key-h {
+    color: var(--accent);
+}
+
+#toc-sidebar:focus-within .key-l {
+    color: var(--accent);
+}
+
+#sidebar-toggle::after {
+    content: '';
+    flex-grow: 1;
+    margin-inline-start: 1ch;
+    height: 1lh;
+    background-image: linear-gradient(
+        0deg,
+        transparent 0,
+        transparent calc(0.5lh - 1px),
+        currentColor calc(0.5lh - 1px),
+        currentColor calc(0.5lh + 1px),
+        transparent calc(0.5lh + 1px),
+        transparent
+    );
 }
 
 #sidebar-toggle:hover {
@@ -101,18 +121,25 @@ h6::before {
 }
 
 #sidebar-container.collapsed #sidebar-toggle {
-    left: 50%;
-    right: auto;
-    top: 1lh;
+    left: 0;
+    right: 0;
+    top: 0;
     min-width: 0;
     max-inline-size: none;
-    width: auto;
-    padding-inline-start: 1ch;
-    padding-inline-end: 0;
-    transform: translate(-50%, -50%) rotate(90deg);
-    transform-origin: center;
-    background-color: var(--button-secondary);
+    width: 1lh;
+    height: 7ch;
+    margin-left: 0;
+    padding: 0;
+    writing-mode: vertical-rl;
+    transform: none;
+    background-color: var(--background2);
     color: var(--button-primary);
+    margin-inline-start: 1.4ch;
+    /* line-height: 1.6; */
+}
+
+#sidebar-container.collapsed #sidebar-toggle::after {
+    display: none;
 }
 
 /* #sidebar-container.collapsed #sidebar-toggle code { */
@@ -180,18 +207,22 @@ h6::before {
     display: none;
 }
 
-#toc-container.collapsed #toc-toggle {
-    left: 50%;
-    right: auto;
-    top: 1lh;
+#toc-container.collapsed #toc-sidebar #toc-toggle {
+    left: 0;
+    right: 0;
+    top: 0;
     min-width: 0;
     max-inline-size: none;
-    width: auto;
-    padding-inline: 0;
-    transform: translate(-50%, -50%) rotate(90deg);
-    transform-origin: center;
-    background-color: var(--button-secondary);
+    width: 1lh;
+    height: 7ch;
+    margin-left: 0;
+    padding: 0;
+    writing-mode: vertical-rl;
+    transform: none;
+    /* background-color: var(--button-secondary); */
+    background-color: var(--background2);
     color: var(--button-primary);
+    margin-inline-start: 1.4ch;
 }
 
 /* #toc-container.collapsed #toc-toggle code { */
@@ -224,6 +255,10 @@ h6::before {
     #toc-toggle {
         position: absolute;
         z-index: 3;
+        background-color: var(--background0);
+        width: min-content;
+        right: 1ch;
+        left: auto;
     }
 
     &:focus-within {

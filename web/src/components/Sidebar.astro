@@ -261,7 +261,7 @@ const { pathname: urlPath } = Astro.url
         aria-expanded="true"
         aria-controls="sidebar-container"
         aria-label="Collapse left sidebar (zh)">
-        ◂ zh
+        &lsaquo;<span class="key-z">z</span>[<span class="key-h">h</span>]
     </button>
     <div id="category-container">
         <div id="category-list">
@@ -679,10 +679,6 @@ const { pathname: urlPath } = Astro.url
         #sidebar-toggle {
             position: absolute;
             z-index: 3;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            white-space: nowrap;
         }
 
         &:focus-within {
