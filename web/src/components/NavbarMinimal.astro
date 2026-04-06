@@ -12,10 +12,20 @@ const { variant } = Astro.props
     <span><a href="/" id="home-link">[<span> </span>]</a></span>
     {
         variant === 21 && (
-            <span is-="badge" variant-="green" class="navbar-name" style="--badge-text: var(--background0)">Sam Foreman</span>
+            <span
+                is-="badge"
+                variant-="blue"
+                class="navbar-name"
+                style="--badge-text: var(--background0)">
+                Sam Foreman
+            </span>
         )
     }
     <row id="links">
+        <span id="nav-links">
+            [<a href="/posts">p</a>]osts &nbsp; 󰐨 [<a href="/talks">t</a>]alks
+            &nbsp; [<a href="/more">m</a>]ore &nbsp;
+        </span>
         <button id="theme-button" size-="small">  </button>
         <a
             id="github-button"
@@ -116,6 +126,9 @@ const { variant } = Astro.props
 
     .navbar-name {
         text-decoration: none;
+        a {
+            color: var(--background0);
+        }
     }
 
     #links {
@@ -317,12 +330,26 @@ const { variant } = Astro.props
         searchDialog.showModal()
     })
 
+    const navShortcuts: Record<string, string> = {
+        p: '/posts',
+        t: '/talks',
+        m: '/more',
+    }
+
     window.addEventListener('keydown', (e) => {
         if (isUserTyping()) return
 
         if (e.key === '/') {
             e.preventDefault()
             searchDialog.showModal()
+            return
+        }
+
+        if (e.defaultPrevented) return
+        const href = navShortcuts[e.key]
+        if (href) {
+            e.preventDefault()
+            window.location.href = href
         }
     })
 </script>
