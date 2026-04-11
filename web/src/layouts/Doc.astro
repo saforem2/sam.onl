@@ -5,6 +5,7 @@ import { makeSortedCategoryEntries } from '@/utils/content'
 import { compareUrlPaths } from '@/utils/url'
 import Navbar from '@/components/Navbar.astro'
 import { getReadingTime } from '@/utils/readingTime'
+import { getCollection } from 'astro:content'
 
 type DocHeading = {
     depth: number
@@ -72,6 +73,40 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
 
 const rawBody = await Astro.slots.render('default')
 const readingTime = getReadingTime(rawBody.replace(/<[^>]*>/g, ''))
+
+// Find related posts (same parent directory)
+const currentPath = Astro.url.pathname
+const isPost = currentPath.startsWith('/posts/')
+let relatedPosts: Array<{ title: string; date: Date; href: string }> = []
+
+if (isPost) {
+    const allDocs = await getCollection('docs')
+    const pathParts = currentPath.split('/').filter(Boolean)
+    const parentDir =
+        pathParts.length >= 3
+            ? pathParts.slice(0, pathParts.length - 1).join('/')
+            : 'posts'
+
+    relatedPosts = allDocs
+        .filter((doc) => {
+            const docPath = doc.id.replace(/\/index\.(mdx?|md)$/, '')
+            return (
+                docPath.startsWith(parentDir) &&
+                `/${docPath}` !== currentPath.replace(/\/$/, '') &&
+                doc.data.title &&
+                doc.data.date &&
+                !doc.data.draft &&
+                !doc.id.endsWith(`${parentDir}/index.mdx`)
+            )
+        })
+        .map((doc) => ({
+            title: doc.data.title,
+            date: new Date(doc.data.date!),
+            href: `/${doc.id.replace(/\/index\.(mdx?|md)$/, '/')}`,
+        }))
+        .sort((a, b) => b.date.getTime() - a.date.getTime())
+        .slice(0, 3)
+}
 ---
 
 <style is:global>
@@ -108,6 +143,34 @@ const readingTime = getReadingTime(rawBody.replace(/<[^>]*>/g, ''))
                                 aria-hidden="true"
                                 tabindex="-1"></span>
                             <slot />
+                            {
+                                relatedPosts.length > 0 && (
+                                    <aside style="margin-top: 2lh; border-top: 1px solid var(--foreground2); padding-top: 1lh;">
+                                        <h3>Related posts</h3>
+                                        <ul style="list-style: none; padding: 0;">
+                                            {relatedPosts.map((post) => (
+                                                <li>
+                                                    <a href={post.href}>
+                                                        {post.title}
+                                                    </a>
+                                                    <span style="opacity: 0.6; font-size: 0.85em;">
+                                                        {' '}
+                                                        —{' '}
+                                                        {post.date.toLocaleDateString(
+                                                            'en-US',
+                                                            {
+                                                                year: 'numeric',
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                            },
+                                                        )}
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </aside>
+                                )
+                            }
                             <div id="doc-pagination">
                                 {
                                     prevDoc && (
