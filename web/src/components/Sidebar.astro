@@ -254,12 +254,12 @@ const categoryKeybinds: Record<string, string> = {
     landing: '0',
     posts: '1',
     talks: '2',
-    projects: '4',
-    about: '5',
-    ideas: '6',
-    more: '7',
-    webtui: '8',
-    now: '9',
+    projects: '3',
+    about: '4',
+    ideas: '5',
+    more: '6',
+    webtui: '7',
+    now: '8',
 }
 
 const labelWithKey = (slug: string) => {
@@ -718,7 +718,7 @@ const { pathname: urlPath } = Astro.url
         :is(a[href], summary, button:not([disabled])) {
             position: relative;
             outline: none;
-            border: 0.3ch solid rgba(0, 0, 0, 0);
+            /* border: 0.3ch solid rgba(0, 0, 0, 0); */
         }
 
         summary > a.sidebar-category-link {
@@ -753,7 +753,7 @@ const { pathname: urlPath } = Astro.url
             /* border-left: 1px solid var(--accent); */
             text-decoration: none;
             /* .sidebar-category-link:hover { */
-            border: 0.3ch solid rgba(0, 0, 0, 0) !important;
+            /* border: 0.3ch solid rgba(0, 0, 0, 0) !important; */
             /* } */
             /* box-shadow: */
             /*     inset var(--focus-rail-size) 0 0 0 var(--focus-marker), */
