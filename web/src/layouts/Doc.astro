@@ -1340,3 +1340,97 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
     docsButton.addEventListener('click', () => setMobileActive('docs'))
     tocButton?.addEventListener('click', () => setMobileActive('toc'))
 </script>
+
+<!-- Footnote hover tooltips -->
+<script>
+    const footnoteRefs = document.querySelectorAll('a[data-footnote-ref]')
+    for (const ref of footnoteRefs) {
+        const id = ref.getAttribute('href')?.replace('#', '')
+        if (!id) continue
+        const footnoteLi = document.getElementById(id)
+        if (!footnoteLi) continue
+
+        // Clone footnote content, excluding the back-reference link
+        const clone = footnoteLi.cloneNode(true) as HTMLElement
+        clone.querySelectorAll('a[data-footnote-backref]').forEach((a) => a.remove())
+
+        // Build popover: <details is-="popover"><summary>...<sup></summary><div>...</div></details>
+        const sup = ref.parentElement
+        if (!sup || sup.tagName !== 'SUP') continue
+        const parent = sup.parentElement
+        if (!parent) continue
+
+        const details = document.createElement('details')
+        details.setAttribute('is-', 'popover')
+        details.setAttribute('position-', 'bottom')
+        details.classList.add('footnote-popover')
+
+        const summary = document.createElement('summary')
+        summary.appendChild(sup.cloneNode(true))
+
+        const content = document.createElement('div')
+        content.classList.add('footnote-popover-content')
+        content.innerHTML = clone.innerHTML
+
+        details.appendChild(summary)
+        details.appendChild(content)
+
+        // Replace original <sup> with the popover
+        parent.insertBefore(details, sup)
+        sup.remove()
+
+        // Open/close on hover
+        details.addEventListener('mouseenter', () => {
+            details.open = true
+        })
+        details.addEventListener('mouseleave', () => {
+            details.open = false
+        })
+    }
+</script>
+
+<style is:global>
+    .footnote-popover {
+        display: inline-block;
+        vertical-align: baseline;
+
+        > summary {
+            display: inline;
+            cursor: help;
+            list-style: none;
+            border: none !important;
+
+            &::-webkit-details-marker {
+                display: none;
+            }
+
+            &::marker {
+                content: '';
+            }
+
+            /* Disable the full-screen backdrop from popover.css */
+            &::before {
+                display: none !important;
+            }
+        }
+    }
+
+    .footnote-popover-content {
+        background-color: var(--background1);
+        border: 1px solid var(--foreground2);
+        padding: 0.5lh 1ch;
+        max-width: 40ch;
+        width: max-content;
+        font-size: 0.9em;
+        line-height: 1.4;
+        z-index: 10;
+
+        p {
+            margin: 0;
+        }
+
+        p + p {
+            margin-top: 0.5lh;
+        }
+    }
+</style>
