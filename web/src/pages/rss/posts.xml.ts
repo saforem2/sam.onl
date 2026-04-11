@@ -3,7 +3,6 @@ import type { APIContext } from 'astro'
 import { getCollection } from 'astro:content'
 
 export async function GET(context: APIContext) {
-    // const allDocs = await getCollection('docs')
     const allDocs = await getCollection('docs')
     const posts = allDocs
         .filter((doc) => {
@@ -27,13 +26,11 @@ export async function GET(context: APIContext) {
         })
 
     return rss({
-        title: 'Sam Foreman',
+        title: 'Sam Foreman — Posts',
         stylesheet: '/rss/styles.xsl',
-        description:
-            'Personal site and blog of Sam Foreman -- computational scientist at Argonne National Laboratory.',
+        description: 'Blog posts by Sam Foreman',
         site: context.site!.toString(),
         items: posts.map((post) => {
-            // Convert collection id (e.g. "posts/2025/09/17/index.mdx") to a URL path
             const slug = post.id
                 .replace(/\/index\.(mdx?|md)$/, '/')
                 .replace(/\.(mdx?|md)$/, '/')
@@ -42,7 +39,6 @@ export async function GET(context: APIContext) {
                 pubDate: new Date(post.data.date!),
                 description: post.data.description ?? '',
                 link: `/${slug}`,
-                content: post.data.description ?? '',
             }
         }),
     })
