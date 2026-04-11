@@ -55,7 +55,7 @@
         --font-family:
             'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace,
             'Symbols Nerd Font';
-        --font-size: 1rem;
+        --font-size: clamp(0.875rem, 0.5rem + 1vw, 1rem);
         --line-height: 1.5;
         --font-family-sans-serif: var(--font-family);
         --font-family-monospace: var(--font-family);
@@ -88,6 +88,7 @@
         color: var(--background0);
     }
     h1 {
+        font-size: clamp(1.4rem, 1rem + 2vw, 2rem);
         color: oklch(from var(--h1, var(--red)) l c h);
         &:hover,
         &:focus-visible {
@@ -107,6 +108,7 @@
     }
 
     h2 {
+        font-size: clamp(1.2rem, 0.9rem + 1.5vw, 1.6rem);
         color: oklch(from var(--h2, var(--orange)) l c h);
         &:hover,
         &:focus-visible {
@@ -118,6 +120,7 @@
     }
 
     h3 {
+        font-size: clamp(1.05rem, 0.8rem + 1vw, 1.35rem);
         color: oklch(from var(--h3, var(--green)) l c h);
         &:hover,
         &:focus-visible {
