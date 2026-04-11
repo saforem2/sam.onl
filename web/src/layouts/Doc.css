@@ -28,10 +28,22 @@
     padding: 0.25lh 0;
     flex-wrap: wrap;
 
+    .date-short {
+        display: none;
+    }
+
     @media (max-width: 480px) {
         .post-meta-links,
         .share-buttons {
             display: none;
+        }
+
+        .date-long {
+            display: none;
+        }
+
+        .date-short {
+            display: inline;
         }
     }
 }
@@ -783,7 +795,8 @@ article {
     }
 
     #doc-article {
-        padding-bottom: 4lh;
+        /* Account for fixed bottom nav height */
+        margin-bottom: 3lh;
     }
 
     .mobile-hidden {
