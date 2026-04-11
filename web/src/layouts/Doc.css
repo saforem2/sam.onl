@@ -27,6 +27,13 @@
     color: var(--foreground2);
     padding: 0.25lh 0;
     flex-wrap: wrap;
+
+    @media (max-width: 480px) {
+        .post-meta-links,
+        .share-buttons {
+            display: none;
+        }
+    }
 }
 
 .post-meta-item {
@@ -696,6 +703,37 @@ article {
 
     &:focus-within {
         --box-border-color: var(--focus-region-border);
+    }
+}
+
+@media (max-width: 120ch) {
+    #sidebar-container:not(.collapsed) {
+        max-width: 1lh;
+        width: 1lh;
+        overflow: hidden;
+    }
+
+    #sidebar-container:not(.collapsed) #category-container,
+    #sidebar-container:not(.collapsed) #sidebar-vim-nav-container {
+        display: none;
+    }
+
+    #sidebar-container:not(.collapsed) #sidebar-toggle::after {
+        display: none;
+    }
+
+    #toc-container:not(.collapsed) {
+        max-width: 1lh;
+        width: 1lh;
+        overflow: hidden;
+    }
+
+    #toc-container:not(.collapsed) #toc-list-container {
+        display: none;
+    }
+
+    #toc-container:not(.collapsed) #toc-sidebar #toc-toggle::after {
+        display: none;
     }
 }
 

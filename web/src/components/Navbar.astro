@@ -54,12 +54,26 @@ if (url.pathname === '/') {
 
 <nav id="top-navbar" box-="square">
     <!--                                                                                 -->
-    <span><a href="/" id="home-link"><span class="keyhint">[</span><span> </span><span class="keyhint">]</span></a></span>
+    <span
+        ><a href="/" id="home-link"
+            ><span class="keyhint">[</span><span> </span><span class="keyhint"
+                >]</span
+            ></a
+        ></span
+    >
     <row id="links">
         <span id="wages">
-             <span class="keyhint">[</span><a href="/posts" data-active={isOn === 'posts'}>p</a><span class="keyhint">]</span>osts &nbsp;
-            󰐨 <span class="keyhint">[</span><a href="/talks" data-active={isOn === 'talks'}>t</a><span class="keyhint">]</span>alks &nbsp;
-             <span class="keyhint">[</span><a href="/more" data-active={isOn === 'more'}>m</a><span class="keyhint">]</span>ore &nbsp;
+             <span class="keyhint">[</span><a
+                href="/posts"
+                data-active={isOn === 'posts'}>p</a
+            ><span class="keyhint">]</span>osts &nbsp; 󰐨 <span class="keyhint"
+                >[</span
+            ><a href="/talks" data-active={isOn === 'talks'}>t</a><span
+                class="keyhint">]</span
+            >alks &nbsp;  <span class="keyhint">[</span><a
+                href="/more"
+                data-active={isOn === 'more'}>m</a
+            ><span class="keyhint">]</span>ore &nbsp;
         </span>
         <!-- <a href="/projects" data-active={isOn === 'projects'}>  Projects </a> -->
         <button id="theme-button" size-="small">  </button>
@@ -343,14 +357,21 @@ if (url.pathname === '/') {
         }
     }
 
-    @media (max-width: 44ch) {
-        nav {
-            flex-direction: column;
-        }
-    }
-
     @media (max-width: 480px) {
         .keyhint {
+            display: none;
+        }
+
+        nav {
+            font-size: 0.85em;
+        }
+
+        #wages {
+            gap: 0;
+        }
+
+        #github-button,
+        #rss-button {
             display: none;
         }
     }
