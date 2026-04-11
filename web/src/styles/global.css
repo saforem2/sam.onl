@@ -504,6 +504,12 @@
         margin: 0;
         display: block;
     }
+
+    pre.astro-code,
+    pre.astro-code code {
+        font-size: clamp(0.7rem, 2.5vw, 0.875rem);
+        line-height: 1.4;
+    }
 }
 
 @media (max-width: 768px) {
@@ -664,7 +670,7 @@ p:has(> img) {
     /* max-height: 24lh; */
     /* width: auto; */
 
-    overflow-x: scroll;
+    overflow-x: auto;
     img {
         object-fit: contain;
         max-width: 100%;
