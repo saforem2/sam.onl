@@ -113,7 +113,7 @@ if (isPost) {
     @import './Doc.css';
 </style>
 
-<Layout>
+<Layout ogSlug={Astro.url.pathname.replace(/^\//, '').replace(/\/$/, '')}>
     <column self-="grow">
         <Navbar />
         <row self-="grow" gap-="1">
