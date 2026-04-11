@@ -4,6 +4,7 @@ import Layout from '@/layouts/Layout.astro'
 import { makeSortedCategoryEntries } from '@/utils/content'
 import { compareUrlPaths } from '@/utils/url'
 import Navbar from '@/components/Navbar.astro'
+import { getReadingTime } from '@/utils/readingTime'
 
 type DocHeading = {
     depth: number
@@ -16,7 +17,7 @@ type TocLine = DocHeading & {
 }
 
 const { frontmatter, headings } = Astro.props as {
-    frontmatter: { title: string }
+    frontmatter: { title: string; date?: string }
     headings: DocHeading[]
 }
 
@@ -68,6 +69,9 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         treePrefix: `${ancestorPrefix}${branchPrefix}`,
     }
 })
+
+const rawBody = await Astro.slots.render('default')
+const readingTime = getReadingTime(rawBody.replace(/<[^>]*>/g, ''))
 ---
 
 <style is:global>
@@ -87,6 +91,13 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                     <div is-="badge" variant-="background0">
                         <h1>{frontmatter.title}</h1>
                     </div>
+                    {
+                        frontmatter.date && (
+                            <span style="font-size: 0.85em; opacity: 0.7;">
+                                {readingTime}
+                            </span>
+                        )
+                    }
                 </header>
                 <row gap-="1" self-="grow">
                     <div id="scroll-container">
@@ -175,7 +186,8 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                     aria-expanded="false"
                                     aria-controls="toc-container"
                                     aria-label="Collapse right sidebar (zl)">
-                                    <span class="key-z">z</span>[<span class="key-l">l</span>]&rsaquo;
+                                    <span class="key-z">z</span>[
+                                    <span class="key-l">l</span>]&rsaquo;
                                 </button>
                                 <div id="toc-list-container">
                                     <ul id="toc-list">
