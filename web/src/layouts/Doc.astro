@@ -78,6 +78,28 @@ const readingTime = getReadingTime(rawBody.replace(/<[^>]*>/g, ''))
 // Find related posts (same parent directory)
 const currentPath = Astro.url.pathname
 const isPost = currentPath.startsWith('/posts/')
+const isTalk = currentPath.startsWith('/talks/')
+
+// Derive category from URL path (e.g. /posts/auroragpt/foo → "auroragpt")
+const pathSegments = currentPath.split('/').filter(Boolean)
+const category =
+    pathSegments.length >= 3 && isNaN(Number(pathSegments[1]))
+        ? pathSegments[1]
+        : null
+
+// Source file path for GitHub links
+const sourceFile = sortedPages.find((p) => compareUrlPaths(p.id, currentPath))
+const sourceFilePath = sourceFile ? `web/src/pages/${sourceFile.id}` : null
+const githubBase = 'https://github.com/saforem2/sam.onl'
+
+// Format date helper
+function formatDate(d: string | Date): string {
+    return new Date(d).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    })
+}
 let relatedPosts: Array<{ title: string; date: Date; href: string }> = []
 
 if (isPost) {
@@ -149,14 +171,43 @@ const articleSchema =
                         <h1>{frontmatter.title}</h1>
                     </div>
                     {
-                        (frontmatter.date || isPost) && (
+                        (frontmatter.date || isPost || isTalk) && (
                             <div class="post-meta">
+                                <span class="post-meta-item">Sam Foreman</span>
+                                {frontmatter.date && (
+                                    <span class="post-meta-item">
+                                        {formatDate(frontmatter.date)}
+                                    </span>
+                                )}
                                 {frontmatter.date && (
                                     <span class="post-meta-item">
                                         {readingTime}
                                     </span>
                                 )}
-                                {isPost && (
+                                {category && (
+                                    <a
+                                        href={`/posts/${category}/`}
+                                        class="post-meta-tag">
+                                        {category}
+                                    </a>
+                                )}
+                                {sourceFilePath && (
+                                    <span class="post-meta-links">
+                                        <a
+                                            href={`${githubBase}/blob/main/${sourceFilePath}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer">
+                                            source
+                                        </a>
+                                        <a
+                                            href={`${githubBase}/raw/main/${sourceFilePath}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer">
+                                            raw
+                                        </a>
+                                    </span>
+                                )}
+                                {(isPost || isTalk) && (
                                     <ShareButtons
                                         title={frontmatter.title}
                                         url={`https://sam.onl${Astro.url.pathname}`}

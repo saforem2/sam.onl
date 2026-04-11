@@ -12,19 +12,22 @@ const { title, url } = Astro.props
         class="share-btn"
         data-action="copy"
         data-url={url}
-        title="Copy link">&#xf0c5; copy</button>
+        title="Copy link">&#xf0c5; copy</button
+    >
     <a
         class="share-btn"
         href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`}
         target="_blank"
         rel="noopener noreferrer"
-        title="Share on Twitter/X">&#xf099;</a>
+        title="Share on Twitter/X">&#xf099;</a
+    >
     <a
         class="share-btn"
         href={`https://bsky.app/intent/compose?text=${encodeURIComponent(`${title} ${url}`)}`}
         target="_blank"
         rel="noopener noreferrer"
-        title="Share on Bluesky">&#xe28e;</a>
+        title="Share on Bluesky">&#xe28e;</a
+    >
 </span>
 
 <style>
