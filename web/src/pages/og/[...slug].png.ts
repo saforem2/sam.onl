@@ -25,6 +25,10 @@ export const getStaticPaths: GetStaticPaths = async () => {
         })
 }
 
+const fontData = await fetch(
+    'https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff',
+).then((res) => res.arrayBuffer())
+
 export const GET: APIRoute = async ({ props }) => {
     const { title, date } = props as { title: string; date: string | null }
 
@@ -87,7 +91,14 @@ export const GET: APIRoute = async ({ props }) => {
         {
             width: 1200,
             height: 630,
-            fonts: [],
+            fonts: [
+                {
+                    name: 'JetBrains Mono',
+                    data: fontData,
+                    weight: 400,
+                    style: 'normal',
+                },
+            ],
         },
     )
 

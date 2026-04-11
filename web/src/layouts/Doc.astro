@@ -1470,10 +1470,7 @@ const articleSchema =
 <script>
     const codeBlocks = document.querySelectorAll('pre.astro-code')
     for (const block of codeBlocks) {
-        const wrapper = document.createElement('div')
-        wrapper.style.position = 'relative'
-        block.parentNode?.insertBefore(wrapper, block)
-        wrapper.appendChild(block)
+        block.style.position = 'relative'
 
         const button = document.createElement('button')
         button.className = 'code-copy-btn'
@@ -1487,7 +1484,7 @@ const articleSchema =
                 button.textContent = 'copy'
             }, 2000)
         })
-        wrapper.appendChild(button)
+        block.appendChild(button)
     }
 </script>
 
