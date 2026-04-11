@@ -1,0 +1,78 @@
+---
+interface Props {
+    title: string
+    url: string
+}
+
+const { title, url } = Astro.props
+---
+
+<div class="share-buttons">
+    <span style="font-size: 0.85em; opacity: 0.7;">share:</span>
+    <button
+        class="share-btn"
+        data-action="copy"
+        data-url={url}
+        title="Copy link">
+        &#xf0c5; copy
+    </button>
+    <a
+        class="share-btn"
+        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Share on Twitter/X">
+        &#xf099; twitter
+    </a>
+    <a
+        class="share-btn"
+        href={`https://bsky.app/intent/compose?text=${encodeURIComponent(`${title} ${url}`)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Share on Bluesky">
+        &#xe28e; bluesky
+    </a>
+</div>
+
+<style>
+    .share-buttons {
+        display: flex;
+        align-items: center;
+        gap: 1ch;
+        flex-wrap: wrap;
+    }
+
+    .share-btn {
+        font-family: var(--font-family);
+        font-size: 0.85em;
+        padding: 0 1ch;
+        color: var(--foreground1);
+        background: var(--background1);
+        border: 1px solid var(--foreground2);
+        cursor: pointer;
+        text-decoration: none;
+
+        &:hover {
+            color: var(--foreground0);
+            background: var(--background2);
+        }
+    }
+</style>
+
+<script>
+    const copyButtons = document.querySelectorAll(
+        '.share-btn[data-action="copy"]',
+    )
+    for (const btn of copyButtons) {
+        btn.addEventListener('click', async () => {
+            const url = (btn as HTMLElement).dataset.url
+            if (!url) return
+            await navigator.clipboard.writeText(url)
+            const original = btn.textContent
+            btn.textContent = '\uf00c copied!'
+            setTimeout(() => {
+                btn.textContent = original
+            }, 2000)
+        })
+    }
+</script>

@@ -5,6 +5,7 @@ import { makeSortedCategoryEntries } from '@/utils/content'
 import { compareUrlPaths } from '@/utils/url'
 import Navbar from '@/components/Navbar.astro'
 import { getReadingTime } from '@/utils/readingTime'
+import ShareButtons from '@/components/ShareButtons.astro'
 import { getCollection } from 'astro:content'
 
 type DocHeading = {
@@ -155,6 +156,14 @@ const articleSchema =
                         )
                     }
                 </header>
+                {
+                    isPost && (
+                        <ShareButtons
+                            title={frontmatter.title}
+                            url={`https://sam.onl${Astro.url.pathname}`}
+                        />
+                    )
+                }
                 <row gap-="1" self-="grow">
                     <div id="scroll-progress" aria-hidden="true"></div>
                     <div id="scroll-container">
