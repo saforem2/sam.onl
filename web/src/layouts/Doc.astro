@@ -1322,6 +1322,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         sidebarContainer.classList.toggle('mobile-hidden', panel !== 'menu')
         article.classList.toggle('mobile-hidden', panel !== 'docs')
         tocContainer?.classList.toggle('mobile-hidden', panel !== 'toc')
+        tocContainer?.classList.toggle('collapsed', panel !== 'toc')
         menuButton.setAttribute(
             'variant-',
             panel === 'menu' ? '' : 'background1',
