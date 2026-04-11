@@ -250,6 +250,24 @@ const subdirLabels: Record<string, string> = {
     contributing: 'Contributing',
 }
 
+const categoryKeybinds: Record<string, string> = {
+    landing: '0',
+    posts: '1',
+    talks: '2',
+    projects: '4',
+    about: '5',
+    ideas: '6',
+    more: '7',
+    webtui: '8',
+    now: '9',
+}
+
+const labelWithKey = (slug: string) => {
+    const key = categoryKeybinds[slug]
+    const label = categoryLabels[slug]
+    return key !== undefined ? `[${key}] ${label}` : label
+}
+
 const { pathname: urlPath } = Astro.url
 ---
 
@@ -284,7 +302,7 @@ const { pathname: urlPath } = Astro.url
                                         : 'sidebar-direct-link'
                                 }
                                 data-slug={landingPage.id}>
-                                {categoryLabels[slug]}
+                                {labelWithKey(slug)}
                             </a>
                         )
                     }
@@ -319,17 +337,23 @@ const { pathname: urlPath } = Astro.url
 
                         return (
                             <details open={isCategoryActive}>
-                                <summary>
+                                <summary
+                                    class={
+                                        shouldLinkCategory &&
+                                        compareUrlPaths(urlPath, slug)
+                                            ? 'active'
+                                            : undefined
+                                    }>
                                     {shouldLinkCategory ? (
                                         <a
                                             href={`/${slug}`}
                                             class="sidebar-category-link"
                                             onclick="event.stopPropagation()"
                                             data-slug={slug}>
-                                            {categoryLabels[slug]}
+                                            {labelWithKey(slug)}
                                         </a>
                                     ) : (
-                                        categoryLabels[slug]
+                                        labelWithKey(slug)
                                     )}
                                     <span
                                         class="fold-icon"
@@ -501,7 +525,7 @@ const { pathname: urlPath } = Astro.url
                                         : 'sidebar-direct-link'
                                 }
                                 data-slug={slug}>
-                                {categoryLabels[slug]}
+                                {labelWithKey(slug)}
                             </a>
                         )
                     }
@@ -518,7 +542,7 @@ const { pathname: urlPath } = Astro.url
                                         : 'sidebar-direct-link'
                                 }
                                 data-slug={page.id}>
-                                {categoryLabels[slug]}
+                                {labelWithKey(slug)}
                             </a>
                         )
                     }
@@ -533,17 +557,23 @@ const { pathname: urlPath } = Astro.url
 
                     return (
                         <details open={isCategoryActive}>
-                            <summary>
+                            <summary
+                                class={
+                                    shouldLinkCategory &&
+                                    compareUrlPaths(urlPath, slug)
+                                        ? 'active'
+                                        : undefined
+                                }>
                                 {shouldLinkCategory ? (
                                     <a
                                         href={`/${slug}`}
                                         class="sidebar-category-link"
                                         onclick="event.stopPropagation()"
                                         data-slug={slug}>
-                                        {categoryLabels[slug]}
+                                        {labelWithKey(slug)}
                                     </a>
                                 ) : (
-                                    categoryLabels[slug]
+                                    labelWithKey(slug)
                                 )}
                                 <span class="fold-icon" aria-hidden="true" />
                             </summary>
@@ -691,6 +721,10 @@ const { pathname: urlPath } = Astro.url
             border: 0.3ch solid rgba(0, 0, 0, 0);
         }
 
+        summary > a.sidebar-category-link {
+            border: none;
+        }
+
         :is(a[href], summary, button:not([disabled]))::after {
             content: '';
             position: absolute;
@@ -770,6 +804,14 @@ const { pathname: urlPath } = Astro.url
     details > summary > a.sidebar-category-link {
         color: inherit;
         text-decoration: none;
+    }
+
+    details > summary.active {
+        color: var(--accent);
+        background-color: oklch(
+            from var(--background-active, var(--background2, #838383))
+                calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+        );
     }
 
     li {
@@ -974,9 +1016,53 @@ const { pathname: urlPath } = Astro.url
 </style>
 
 <script>
-    import { applyVimNavigation } from '@/utils/vim'
+    import { applyVimNavigation, isUserTyping } from '@/utils/vim'
 
     const sidebar = document.getElementById('sidebar')
+
+    // Number-key shortcuts for sidebar categories
+    // Maps key → child index in #category-list
+    const categoryKeys: Record<string, number> = {
+        '0': 0, // Start
+        '1': 1, // Posts
+        '2': 2, // Talks
+        '3': 3, // Projects
+        '4': 4, // About
+        '5': 5, // Ideas
+        '6': 6, // More
+        '7': 7, // WebTUI
+        '8': 8, // Now
+    }
+
+    const categoryList = document.getElementById('category-list')
+    if (categoryList) {
+        const entries = categoryList.querySelectorAll<HTMLElement>(
+            ':scope > a, :scope > details',
+        )
+        window.addEventListener('keydown', (e) => {
+            if (e.defaultPrevented || isUserTyping()) return
+            if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
+            const idx = categoryKeys[e.key]
+            if (idx === undefined) return
+            const el = entries[idx]
+            if (!el) return
+            e.preventDefault()
+            if (el.tagName === 'A') {
+                ;(el as HTMLAnchorElement).click()
+            } else if (el.tagName === 'DETAILS') {
+                const details = el as HTMLDetailsElement
+                details.open = true
+                const link = details.querySelector<HTMLAnchorElement>(
+                    'summary a.sidebar-category-link',
+                )
+                if (link) {
+                    link.click()
+                } else {
+                    details.querySelector('summary')?.focus()
+                }
+            }
+        })
+    }
     let lastInteractionWasPointer = false
 
     const revealFocusedElement = (element: HTMLElement) => {
