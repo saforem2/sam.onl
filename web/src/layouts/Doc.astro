@@ -1667,3 +1667,141 @@ const articleSchema =
         }
     }
 </style>
+
+<!-- Register custom elements used by MDX-imported components (Astro
+     doesn't hoist <script> tags from components imported in MDX) -->
+<script>
+    import { paginateElements } from '@/utils/vim'
+
+    if (!customElements.get('tabs-component')) {
+        class Tabs extends HTMLElement {
+            connectedCallback() {
+                const items = Array.from(
+                    this.querySelectorAll(
+                        '#tabs-list > button',
+                    ) as NodeListOf<HTMLButtonElement>,
+                )
+                if (items.length === 0) return
+                if (!this.hasAttribute('data-tab'))
+                    this.setAttribute(
+                        'data-tab',
+                        items[0].getAttribute('data-value')!,
+                    )
+                for (const item of items) this.initializeTab(item)
+            }
+
+            initializeTab(item: HTMLElement) {
+                const activeVariant =
+                    this.getAttribute('data-active-variant') ?? 'default'
+                const secondaryVariant =
+                    this.getAttribute('data-secondary-variant') ?? 'background1'
+                const items = this.querySelectorAll(
+                    '#tabs-list > button',
+                ) as NodeListOf<HTMLButtonElement>
+                const value =
+                    this.getAttribute('data-tab') ??
+                    items[0].getAttribute('data-value')
+
+                const setCurrentTab = () => {
+                    items.forEach((i) => {
+                        i.setAttribute('aria-selected', 'false')
+                        i.setAttribute('variant-', secondaryVariant)
+                    })
+                    this.setAttribute(
+                        'data-tab',
+                        item.getAttribute('data-value') as string,
+                    )
+                    item.setAttribute('variant-', activeVariant)
+                    item.setAttribute('aria-selected', 'true')
+                }
+
+                const isSelected = value === item.getAttribute('data-value')
+                item.setAttribute(
+                    'aria-selected',
+                    isSelected ? 'true' : 'false',
+                )
+                item.setAttribute(
+                    'variant-',
+                    isSelected ? activeVariant : secondaryVariant,
+                )
+                item.setAttribute('tabindex', '0')
+                item.setAttribute('role', 'tab')
+                item.addEventListener('click', setCurrentTab)
+                item.addEventListener('focus', setCurrentTab)
+                item.addEventListener('keydown', (e) => {
+                    const { next, prev } = paginateElements(
+                        document.activeElement as HTMLElement,
+                        items,
+                    )
+                    if (e.key === 'ArrowLeft' || e.key === 'h') prev.focus()
+                    if (e.key === 'ArrowRight' || e.key === 'l') next.focus()
+                })
+            }
+        }
+        customElements.define('tabs-component', Tabs)
+    }
+
+    if (!customElements.get('doc-example')) {
+        class Example extends HTMLElement {
+            connectedCallback() {
+                const iframe = this.querySelector(
+                    '#preview',
+                ) as HTMLIFrameElement
+                if (!iframe) return
+                const colorPreference = window.matchMedia(
+                    '(prefers-color-scheme: dark)',
+                )
+                const initialTheme = this.getAttribute('data-initial-theme')
+                const preferredTheme =
+                    initialTheme ??
+                    (colorPreference.matches ? 'custom-dark' : 'custom-light')
+
+                const iframeDocument = iframe.contentDocument
+                if (
+                    !iframeDocument ||
+                    iframeDocument.readyState === 'loading'
+                ) {
+                    iframe.addEventListener('load', () => {
+                        this.updateIframeTheme(preferredTheme)
+                    })
+                } else {
+                    this.updateIframeTheme(preferredTheme)
+                }
+
+                const themeDropdown = this.querySelector(
+                    '#theme-dropdown',
+                ) as HTMLElement
+                const html = document.querySelector('html') as HTMLElement
+
+                new MutationObserver(() => {
+                    const value = themeDropdown.getAttribute(
+                        'data-value',
+                    ) as string
+                    html.setAttribute('data-example-theme', value)
+                }).observe(themeDropdown, {
+                    attributes: true,
+                    attributeFilter: ['data-value'],
+                })
+
+                new MutationObserver(() => {
+                    const value = html.getAttribute('data-example-theme')
+                    this.updateIframeTheme(value ?? preferredTheme)
+                }).observe(html, {
+                    attributes: true,
+                    attributeFilter: ['data-example-theme'],
+                })
+            }
+
+            updateIframeTheme(theme: string) {
+                const iframe = this.querySelector(
+                    '#preview',
+                ) as HTMLIFrameElement
+                const previewHtml =
+                    iframe.contentDocument?.querySelector('html')
+                if (!previewHtml) return
+                previewHtml.setAttribute('data-webtui-theme', theme)
+            }
+        }
+        customElements.define('doc-example', Example)
+    }
+</script>
