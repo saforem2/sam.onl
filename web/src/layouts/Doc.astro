@@ -282,8 +282,10 @@ const articleSchema =
                                                     variant-="background0">
                                                     <row gap-="1">
                                                         <span>←</span>
-                                                        <code>&lt;C-b&gt;</code>
-                                                        <span>Previous</span>
+                                                        <span>
+                                                            [<strong>b</strong>
+                                                            ]ack
+                                                        </span>
                                                     </row>
                                                 </span>
                                             </div>
@@ -309,8 +311,10 @@ const articleSchema =
                                                     is-="badge"
                                                     variant-="background0">
                                                     <row gap-="1">
-                                                        <span>Next</span>
-                                                        <code>&lt;C-n&gt;</code>
+                                                        <span>
+                                                            [<strong>n</strong>
+                                                            ]ext
+                                                        </span>
                                                         <span>→</span>
                                                     </row>
                                                 </span>
@@ -917,11 +921,25 @@ const articleSchema =
         const nextHref = document.querySelector('.next')?.getAttribute('href')
         const prevHref = document.querySelector('.prev')?.getAttribute('href')
 
-        if (e.key === 'n' && e.ctrlKey && nextHref) {
+        if (
+            e.key === 'n' &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            nextHref
+        ) {
+            e.preventDefault()
             window.location.href = nextHref
         }
 
-        if (e.key === 'b' && e.ctrlKey && prevHref) {
+        if (
+            e.key === 'b' &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            prevHref
+        ) {
+            e.preventDefault()
             window.location.href = prevHref
         }
     })
