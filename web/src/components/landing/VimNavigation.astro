@@ -29,24 +29,24 @@ const { showHL = false } = Astro.props as Props
 
 <style>
     #vim-navigation {
-        padding: 0 1ch;
-        background-color: var(--background2);
-        box-shadow: 1ch 0.5lh 0 0 var(--mantle);
-        transform: translateY(-3px);
-        box-shadow: 3pt 3pt black;
+        padding: 0 0.5ch;
+        gap: 0;
+        background-color: var(--background1);
+        border: 1px solid var(--foreground2);
+        box-shadow: 2px 2px 0 0 var(--foreground2);
 
         .vim-icon {
-            margin-right: 1ch;
+            margin-right: 0.5ch;
         }
 
         button[size-='sm'] {
-            padding: 0 1ch;
-            border-left-color: var(--foreground2);
-            border-right-color: var(--background1);
+            padding: 0 0.5ch;
+            border: none;
+            background: none;
+            font-size: 0.9em;
         }
         #btn-question {
-            padding: 0 1ch;
-            margin-inline-end: -1ch;
+            padding: 0 0.5ch;
         }
     }
 
