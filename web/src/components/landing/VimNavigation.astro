@@ -7,7 +7,7 @@ const { showHL = false } = Astro.props as Props
 ---
 
 <row gap-="1" align-="center" cap-="round" id="vim-navigation">
-    <span class="vim-icon"> </span>
+    <span class="vim-icon" variant-="background2"> </span>
     {
         showHL && (
             <button size-="sm" variant-="background1" id="btn-h">
@@ -34,6 +34,8 @@ const { showHL = false } = Astro.props as Props
         background-color: var(--background1);
         border: 1px solid var(--foreground2);
         box-shadow: 2px 2px 0 0 var(--foreground2);
+        position: relative;
+        z-index: 10;
 
         .vim-icon {
             margin-right: 0.5ch;
