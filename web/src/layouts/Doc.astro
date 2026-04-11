@@ -1373,6 +1373,31 @@ const readingTime = getReadingTime(rawBody.replace(/<[^>]*>/g, ''))
     }
 </script>
 
+<!-- Code block copy buttons -->
+<script>
+    const codeBlocks = document.querySelectorAll('pre.astro-code')
+    for (const block of codeBlocks) {
+        const wrapper = document.createElement('div')
+        wrapper.style.position = 'relative'
+        block.parentNode?.insertBefore(wrapper, block)
+        wrapper.appendChild(block)
+
+        const button = document.createElement('button')
+        button.className = 'code-copy-btn'
+        button.textContent = 'copy'
+        button.addEventListener('click', async () => {
+            const code = block.querySelector('code')
+            if (!code) return
+            await navigator.clipboard.writeText(code.innerText)
+            button.textContent = 'copied!'
+            setTimeout(() => {
+                button.textContent = 'copy'
+            }, 2000)
+        })
+        wrapper.appendChild(button)
+    }
+</script>
+
 <!-- Footnote hover tooltips -->
 <script>
     const footnoteRefs = document.querySelectorAll('a[data-footnote-ref]')

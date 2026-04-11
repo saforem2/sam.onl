@@ -507,7 +507,6 @@
         margin: 0;
         display: block;
     }
-
 }
 
 @media (max-width: 768px) {
@@ -664,6 +663,31 @@ pre.astro-code span.line::before {
     user-select: none;
     border-right: 2px solid var(--background2);
     background-color: var(--background0);
+}
+
+.code-copy-btn {
+    position: absolute;
+    top: 0.5lh;
+    right: 1ch;
+    padding: 0 1ch;
+    font-size: 0.75em;
+    font-family: var(--font-family);
+    color: var(--foreground2);
+    background: var(--background1);
+    border: 1px solid var(--foreground2);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 5;
+
+    &:hover {
+        color: var(--foreground0);
+        background: var(--background2);
+    }
+}
+
+div:has(> pre.astro-code):hover .code-copy-btn {
+    opacity: 1;
 }
 
 p:has(> img) {
