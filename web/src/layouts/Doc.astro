@@ -107,6 +107,22 @@ if (isPost) {
         .sort((a, b) => b.date.getTime() - a.date.getTime())
         .slice(0, 3)
 }
+
+const articleSchema =
+    isPost && frontmatter.date
+        ? JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Article',
+              headline: frontmatter.title,
+              datePublished: new Date(frontmatter.date).toISOString(),
+              author: {
+                  '@type': 'Person',
+                  name: 'Sam Foreman',
+                  url: 'https://sam.onl',
+              },
+              description: frontmatter.description ?? '',
+          })
+        : null
 ---
 
 <style is:global>
@@ -114,6 +130,11 @@ if (isPost) {
 </style>
 
 <Layout ogSlug={Astro.url.pathname.replace(/^\//, '').replace(/\/$/, '')}>
+    {
+        articleSchema && (
+            <script type="application/ld+json" set:html={articleSchema} />
+        )
+    }
     <column self-="grow">
         <Navbar />
         <row self-="grow" gap-="1">
