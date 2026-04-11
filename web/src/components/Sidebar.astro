@@ -266,7 +266,7 @@ const labelWithKey = (slug: string) => {
     const key = categoryKeybinds[slug]
     const label = categoryLabels[slug]
     return key !== undefined
-        ? `<span class="cat-key">[${key}]</span> ${label}`
+        ? `${label}<sup class="cat-key">${key}</sup>`
         : label
 }
 
@@ -734,7 +734,9 @@ const { pathname: urlPath } = Astro.url
         }
 
         .cat-key {
-            opacity: 0.4;
+            opacity: 0.35;
+            vertical-align: super;
+            line-height: 0;
         }
 
         :is(a[href], summary, button:not([disabled]))::after {
