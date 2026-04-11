@@ -1,6 +1,14 @@
 #mobile-nav {
     display: none;
     gap: 1ch;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 0.5lh 1ch;
+    background-color: var(--background0, white);
+    border-top: 1px solid var(--foreground2, #ccc);
 
     button {
         flex-grow: 1;
@@ -669,6 +677,10 @@ article {
 
     #mobile-nav {
         display: flex;
+    }
+
+    #doc-article {
+        padding-bottom: 4lh;
     }
 
     .mobile-hidden {
