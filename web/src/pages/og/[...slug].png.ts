@@ -30,7 +30,7 @@ let fontDataPromise: Promise<ArrayBuffer | null> | null = null
 async function getFontData(): Promise<ArrayBuffer | null> {
     if (!fontDataPromise) {
         fontDataPromise = fetch(
-            'https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff',
+            'https://iosevka-webfonts.github.io/iosevka/WOFF2/Iosevka-Regular.woff2',
         ).then(
             (res) => (res.ok ? res.arrayBuffer() : null),
             () => null,
@@ -56,7 +56,7 @@ export const GET: APIRoute = async ({ props }) => {
                     padding: '60px',
                     backgroundColor: '#1c1c1c',
                     color: '#e0e0e0',
-                    fontFamily: 'JetBrains Mono',
+                    fontFamily: 'Iosevka Web',
                 },
                 children: [
                     {
@@ -105,7 +105,7 @@ export const GET: APIRoute = async ({ props }) => {
             fonts: fontData
                 ? [
                       {
-                          name: 'JetBrains Mono',
+                          name: 'Iosevka Web',
                           data: fontData,
                           weight: 400,
                           style: 'normal' as const,
