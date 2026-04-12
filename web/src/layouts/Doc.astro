@@ -1623,6 +1623,24 @@ const articleSchema =
         details.addEventListener('mouseleave', () => {
             details.open = false
         })
+
+        // Keyboard/focus accessibility
+        details.addEventListener('focusin', () => {
+            details.open = true
+        })
+        details.addEventListener('focusout', (e) => {
+            const next = (e as FocusEvent).relatedTarget as Node | null
+            if (!next || !details.contains(next)) {
+                details.open = false
+            }
+        })
+
+        // Toggle on click/tap instead of following anchor
+        const summaryLink = summary.querySelector('a')
+        summaryLink?.addEventListener('click', (e) => {
+            e.preventDefault()
+            details.open = !details.open
+        })
     }
 </script>
 
