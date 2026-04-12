@@ -344,7 +344,9 @@ const { pathname: urlPath } = Astro.url
                                         aria-hidden="true"
                                     />
                                 </summary>
-                                <ul marker-="tree open">
+                                <ul
+                                    marker-="tree open"
+                                    style="padding-inline-start: 3ch;">
                                     {moreSubCategories.map(
                                         ([subSlug, subPages]) => {
                                             const subIndexPage = subPages.find(
