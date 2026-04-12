@@ -614,13 +614,8 @@ const articleSchema =
         true,
     )
 
-    const keyZSpans = document.querySelectorAll(
-        '#sidebar-toggle .key-z, #toc-toggle .key-z',
-    )
-    const keyHSpan = document.querySelector('#sidebar-toggle .key-h')
-    const keyLSpan = document.querySelector('#toc-toggle .key-l')
-
     // Shared via window so the sidebar-toggle script can access z-chord state
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = window as any
     w.__pendingZAt = 0
     w.__keyZSpans = document.querySelectorAll(
@@ -822,6 +817,7 @@ const articleSchema =
 
         // Skip all plain keys when z-chord is pending — the sidebar-toggle script handles it
         {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const pz = (window as any).__pendingZAt
             if (
                 pz &&
@@ -1137,6 +1133,7 @@ const articleSchema =
     }
 
     const refreshKeySpans = () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(window as any).__keyZSpans = document.querySelectorAll(
             '#sidebar-toggle .key-z, #toc-toggle .key-z',
         )
@@ -1229,6 +1226,7 @@ const articleSchema =
     }
 
     if (sidebarContainer || tocContainer || navbar || mainContent) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const w = window as any
 
         window.addEventListener('keydown', (e) => {
