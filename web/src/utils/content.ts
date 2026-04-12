@@ -7,18 +7,27 @@ export const categoryOrder = [
     'landing',
     'posts',
     'talks',
+    'more',
     'projects',
     'about',
     'ideas',
-    'more',
-    'webtui',
     'now',
+    'webtui',
     // 'start',
     // 'installation',
     // 'components',
     // 'plugins',
     // 'contributing',
 ]
+
+/** Categories that should be nested under the "more" group in the sidebar */
+export const moreSidebarGroup = new Set([
+    'projects',
+    'about',
+    'ideas',
+    'now',
+    'webtui',
+])
 
 //                   
 //                   

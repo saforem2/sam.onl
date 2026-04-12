@@ -1,10 +1,18 @@
 ---
 import type { CollectionEntry } from 'astro:content'
 import { compareUrlPaths } from '@/utils/url'
-import { makeSortedCategoryEntries, categoryLabels } from '@/utils/content'
+import {
+    makeSortedCategoryEntries,
+    categoryLabels,
+    moreSidebarGroup,
+} from '@/utils/content'
 import VimNavigation from './landing/VimNavigation.astro'
 
-const categories = makeSortedCategoryEntries()
+const allCategories = makeSortedCategoryEntries()
+const categories = allCategories.filter(([slug]) => !moreSidebarGroup.has(slug))
+const moreSubCategories = allCategories.filter(([slug]) =>
+    moreSidebarGroup.has(slug),
+)
 
 const yearGroupedCategories = new Set(['posts', 'talks'])
 const linkedCategorySlugs = new Set(['posts', 'talks', 'projects'])
@@ -254,12 +262,7 @@ const categoryKeybinds: Record<string, string> = {
     landing: '0',
     posts: '1',
     talks: '2',
-    projects: '3',
-    about: '4',
-    ideas: '5',
-    more: '6',
-    webtui: '7',
-    now: '8',
+    more: '3',
 }
 
 const labelWithKey = (slug: string) => {
@@ -306,6 +309,74 @@ const { pathname: urlPath } = Astro.url
                                 data-slug={landingPage.id}>
                                 <Fragment set:html={labelWithKey(slug)} />
                             </a>
+                        )
+                    }
+
+                    if (slug === 'more') {
+                        const isMoreActive =
+                            pages.some(({ id }) =>
+                                compareUrlPaths(urlPath, id),
+                            ) ||
+                            moreSubCategories.some(([, subPages]) =>
+                                subPages.some(({ id }) =>
+                                    compareUrlPaths(urlPath, id),
+                                ),
+                            )
+                        return (
+                            <details open={isMoreActive}>
+                                <summary
+                                    class={
+                                        compareUrlPaths(urlPath, 'more')
+                                            ? 'active'
+                                            : undefined
+                                    }>
+                                    <a
+                                        href="/more"
+                                        class="sidebar-category-link"
+                                        onclick="event.stopPropagation()"
+                                        data-slug="more">
+                                        <Fragment
+                                            set:html={labelWithKey('more')}
+                                        />
+                                    </a>
+                                    <span
+                                        class="fold-icon"
+                                        aria-hidden="true"
+                                    />
+                                </summary>
+                                <ul marker-="tree open">
+                                    {moreSubCategories.map(
+                                        ([subSlug, subPages]) => {
+                                            const subIndexPage = subPages.find(
+                                                ({ id }) => id === subSlug,
+                                            )
+                                            const isSubActive = subPages.some(
+                                                ({ id }) =>
+                                                    compareUrlPaths(
+                                                        urlPath,
+                                                        id,
+                                                    ),
+                                            )
+                                            return (
+                                                <li>
+                                                    <a
+                                                        href={`/${subIndexPage?.id ?? subSlug}`}
+                                                        class={
+                                                            isSubActive
+                                                                ? 'active'
+                                                                : ''
+                                                        }
+                                                        data-slug={subSlug}>
+                                                        {categoryLabels[
+                                                            subSlug
+                                                        ] ?? subSlug}
+                                                    </a>
+                                                </li>
+                                            )
+                                        },
+                                    )}
+                                </ul>
+                            </details>
                         )
                     }
 
@@ -1040,12 +1111,7 @@ const { pathname: urlPath } = Astro.url
         '0': 0, // Start
         '1': 1, // Posts
         '2': 2, // Talks
-        '3': 3, // Projects
-        '4': 4, // About
-        '5': 5, // Ideas
-        '6': 6, // More
-        '7': 7, // WebTUI
-        '8': 8, // Now
+        '3': 3, // More
     }
 
     const categoryList = document.getElementById('category-list')
