@@ -30,7 +30,7 @@ let fontDataPromise: Promise<ArrayBuffer | null> | null = null
 async function getFontData(): Promise<ArrayBuffer | null> {
     if (!fontDataPromise) {
         fontDataPromise = fetch(
-            'https://iosevka-webfonts.github.io/iosevka/WOFF2/Iosevka-Regular.woff2',
+            'https://iosevka-webfonts.github.io/iosevka/TTF/Iosevka-Regular.ttf',
         ).then(
             (res) => (res.ok ? res.arrayBuffer() : null),
             () => null,
