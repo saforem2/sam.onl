@@ -3,9 +3,13 @@ import '@/styles/global.css'
 
 interface Props {
     ogSlug?: string
+    description?: string
+    title?: string
 }
 
-const { ogSlug } = Astro.props as Props
+const { ogSlug, description, title } = Astro.props as Props
+const pageDescription = description || "Sam Foreman's Personal Website"
+const pageTitle = title || 'Sam Foreman'
 const ogImage = ogSlug
     ? `https://sam.onl/og/${ogSlug}.png`
     : 'https://sam.onl/social-card.png'
@@ -40,7 +44,7 @@ const ogImage = ogSlug
             }
         </script>
         <meta name="generator" content={Astro.generator} />
-        <title>Sam Foreman</title>
+        <title>{pageTitle}</title>
 
         <!-- Icon(s) -->
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -49,16 +53,13 @@ const ogImage = ogSlug
         <link rel="apple-touch-icon" href="/logo@512.png" />
 
         <!-- OpenGraph / X Title -->
-        <meta property="og:title" content="Sam Foreman" />
-        <meta name="twitter:title" content="Sam Foreman" />
+        <meta property="og:title" content={pageTitle} />
+        <meta name="twitter:title" content={pageTitle} />
 
         <!-- OpenGraph / X Description -->
-        <meta name="description" content="Sam Foreman's Personal Website" />
-        <meta name="og:description" content="Sam Foreman's Personal Website" />
-        <meta
-            name="twitter:description"
-            content="Sam Foreman's Personal Website"
-        />
+        <meta name="description" content={pageDescription} />
+        <meta name="og:description" content={pageDescription} />
+        <meta name="twitter:description" content={pageDescription} />
 
         <!-- OpenGraph / X Cover Image -->
         <meta name="twitter:card" content="summary_large_image" />
@@ -261,8 +262,13 @@ const ogImage = ogSlug
             focusMainRegion()
         </script>
         <script>
-            import { initMermaid } from '@/utils/mermaid-render'
-            initMermaid()
+            if (
+                document.querySelector('.mermaid, pre[data-language="mermaid"]')
+            ) {
+                import('@/utils/mermaid-render').then(({ initMermaid }) =>
+                    initMermaid(),
+                )
+            }
         </script>
     </body>
 </html>

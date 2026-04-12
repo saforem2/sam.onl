@@ -160,7 +160,10 @@ const articleSchema =
     @import './Doc.css';
 </style>
 
-<Layout ogSlug={Astro.url.pathname.replace(/^\//, '').replace(/\/$/, '')}>
+<Layout
+    ogSlug={Astro.url.pathname.replace(/^\//, '').replace(/\/$/, '')}
+    title={frontmatter.title ? `${frontmatter.title} — Sam Foreman` : undefined}
+    description={frontmatter.description}>
     {
         articleSchema && (
             <script type="application/ld+json" set:html={articleSchema} />
