@@ -56,8 +56,8 @@ if (url.pathname === '/') {
     <!--                                                                                 -->
     <span
         ><a href="/" id="home-link"
-            ><span class="keyhint">[</span><span> </span><span class="keyhint"
-                >]</span
+            ><span class="keyhint">[</span><span>&#xef85;</span><span
+                class="keyhint">]</span
             ></a
         ></span
     >
@@ -96,9 +96,7 @@ if (url.pathname === '/') {
                 >&#xe65b; github</a
             >
             <a href="/rss.xml" target="_blank">&#xf09e; rss</a>
-            <button id="theme-button-mobile"
-                >&#xe22b; theme</button
-            >
+            <button id="theme-button-mobile">&#xe22b; theme</button>
         </div>
     </details>
 </nav>
@@ -412,10 +410,11 @@ if (url.pathname === '/') {
 
                 a,
                 button {
+                    display: block;
                     padding: 0.5lh 2ch;
                     color: var(--foreground1);
                     text-decoration: none;
-                    text-align: left;
+                    text-align: left !important;
                     background: none;
                     border: none;
                     font: inherit;

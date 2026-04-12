@@ -9,7 +9,7 @@ const { variant } = Astro.props
 ---
 
 <nav id="top-navbar" box-="square">
-    <span><a href="/" id="home-link">[<span> </span>]</a></span>
+    <span><a href="/" id="home-link">[&#xef85;]</a></span>
     {
         variant === 21 && (
             <span
@@ -48,9 +48,7 @@ const { variant } = Astro.props
                 >&#xe65b; github</a
             >
             <a href="/rss.xml" target="_blank">&#xf09e; rss</a>
-            <button id="theme-button-mobile"
-                >&#xe22b; theme</button
-            >
+            <button id="theme-button-mobile">&#xe22b; theme</button>
         </div>
     </details>
 </nav>
@@ -67,6 +65,8 @@ const { variant } = Astro.props
         container-name: navbar;
         white-space: nowrap;
         max-width: 100%;
+        position: relative;
+        z-index: 20;
         min-width: 0;
         z-index: 10;
 
@@ -270,10 +270,6 @@ const { variant } = Astro.props
             display: none;
         }
 
-        .navbar-name {
-            display: none;
-        }
-
         #nav-dropdown {
             display: block;
 
@@ -301,10 +297,11 @@ const { variant } = Astro.props
 
                 a,
                 button {
+                    display: block;
                     padding: 0.5lh 2ch;
                     color: var(--foreground1);
                     text-decoration: none;
-                    text-align: left;
+                    text-align: left !important;
                     background: none;
                     border: none;
                     font: inherit;
