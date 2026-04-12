@@ -175,7 +175,8 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                     aria-expanded="false"
                                     aria-controls="toc-container"
                                     aria-label="Collapse right sidebar (zl)">
-                                    <span class="key-z">z</span>[<span class="key-l">l</span>]&rsaquo;
+                                    <span class="key-z">z</span>[
+                                    <span class="key-l">l</span>]&rsaquo;
                                 </button>
                                 <div id="toc-list-container">
                                     <ul id="toc-list">
@@ -1352,7 +1353,9 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
 
         // Clone footnote content, excluding the back-reference link
         const clone = footnoteLi.cloneNode(true) as HTMLElement
-        clone.querySelectorAll('a[data-footnote-backref]').forEach((a) => a.remove())
+        clone
+            .querySelectorAll('a[data-footnote-backref]')
+            .forEach((a) => a.remove())
 
         // Build popover: <details is-="popover"><summary>...<sup></summary><div>...</div></details>
         const sup = ref.parentElement
@@ -1385,6 +1388,24 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         })
         details.addEventListener('mouseleave', () => {
             details.open = false
+        })
+
+        // Keyboard/focus accessibility
+        details.addEventListener('focusin', () => {
+            details.open = true
+        })
+        details.addEventListener('focusout', (e) => {
+            const next = (e as FocusEvent).relatedTarget as Node | null
+            if (!next || !details.contains(next)) {
+                details.open = false
+            }
+        })
+
+        // Toggle on click/tap instead of following anchor
+        const summaryLink = summary.querySelector('a')
+        summaryLink?.addEventListener('click', (e) => {
+            e.preventDefault()
+            details.open = !details.open
         })
     }
 </script>
