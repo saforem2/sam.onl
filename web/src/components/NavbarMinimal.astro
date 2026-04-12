@@ -68,7 +68,6 @@ const { variant } = Astro.props
         position: relative;
         z-index: 20;
         min-width: 0;
-        z-index: 10;
 
         &:focus-within {
             --box-border-color: var(--focus-region-border);
@@ -266,6 +265,15 @@ const { variant } = Astro.props
     }
 
     @media (max-width: 480px) {
+        nav {
+            padding: 0.25lh 1ch;
+            align-items: center;
+        }
+
+        .navbar-name {
+            margin-right: auto;
+        }
+
         #links {
             display: none;
         }
