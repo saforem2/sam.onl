@@ -19,23 +19,33 @@ Sam Foreman
     max-width: 44ch;
     display: flex;
     flex-direction: column;
-    transition: transform 0.15s ease;
+    padding: 1lh 2ch;
+    gap: 0.5lh;
+    background-color: var(--background1);
+    transition: background-color 0.15s ease;
   }
   .repo-card:hover {
-    transform: translateY(-2px);
-    --box-border-color: var(--foreground0);
+    background-color: var(--background2);
+    --box-border-color: var(--accent, var(--foreground0));
   }
   .repo-card h3 {
     margin: 0;
-    font-size: 1em;
     font-weight: 600;
     word-break: break-word;
     border: none !important;
+  }
+  .repo-card h3 a {
+    color: var(--accent, var(--blue));
+    text-decoration: none;
+  }
+  .repo-card h3 a:hover {
+    text-decoration: underline;
   }
   .repo-description {
     color: var(--foreground2);
     min-height: 2lh;
     margin: 0;
+    flex: 1;
   }
   .repo-meta {
     display: flex;
@@ -43,7 +53,10 @@ Sam Foreman
     align-items: center;
     gap: 1ch;
     margin-top: auto;
+    padding-top: 0.5lh;
+    border-top: 1px solid var(--background3, var(--foreground2));
     color: var(--foreground2);
+    opacity: 0.7;
   }
   .repo-meta span {
     display: inline-flex;
@@ -52,8 +65,9 @@ Sam Foreman
   }
   .repo-language-dot {
     width: 1ch;
-    height: 1ch;
+    height: 1lh;
     background: currentColor;
+    opacity: 0.6;
   }
   #repo-grid-status {
     color: var(--foreground2);
@@ -117,7 +131,7 @@ Sam Foreman
 
         const badge = document.createElement("span");
         badge.setAttribute("is-", "badge");
-        badge.setAttribute("variant-", "foreground2");
+        badge.setAttribute("variant-", "background2");
         badge.textContent = repo.private ? "Private" : "Public";
 
         header.appendChild(title);

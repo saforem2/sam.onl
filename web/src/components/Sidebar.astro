@@ -265,7 +265,9 @@ const categoryKeybinds: Record<string, string> = {
 const labelWithKey = (slug: string) => {
     const key = categoryKeybinds[slug]
     const label = categoryLabels[slug]
-    return key !== undefined ? `[${key}] ${label}` : label
+    return key !== undefined
+        ? `<sup class="cat-key">${key}</sup> ${label}`
+        : label
 }
 
 const { pathname: urlPath } = Astro.url
@@ -302,7 +304,7 @@ const { pathname: urlPath } = Astro.url
                                         : 'sidebar-direct-link'
                                 }
                                 data-slug={landingPage.id}>
-                                {labelWithKey(slug)}
+                                <Fragment set:html={labelWithKey(slug)} />
                             </a>
                         )
                     }
@@ -350,10 +352,14 @@ const { pathname: urlPath } = Astro.url
                                             class="sidebar-category-link"
                                             onclick="event.stopPropagation()"
                                             data-slug={slug}>
-                                            {labelWithKey(slug)}
+                                            <Fragment
+                                                set:html={labelWithKey(slug)}
+                                            />
                                         </a>
                                     ) : (
-                                        labelWithKey(slug)
+                                        <Fragment
+                                            set:html={labelWithKey(slug)}
+                                        />
                                     )}
                                     <span
                                         class="fold-icon"
@@ -525,7 +531,7 @@ const { pathname: urlPath } = Astro.url
                                         : 'sidebar-direct-link'
                                 }
                                 data-slug={slug}>
-                                {labelWithKey(slug)}
+                                <Fragment set:html={labelWithKey(slug)} />
                             </a>
                         )
                     }
@@ -542,7 +548,7 @@ const { pathname: urlPath } = Astro.url
                                         : 'sidebar-direct-link'
                                 }
                                 data-slug={page.id}>
-                                {labelWithKey(slug)}
+                                <Fragment set:html={labelWithKey(slug)} />
                             </a>
                         )
                     }
@@ -570,10 +576,12 @@ const { pathname: urlPath } = Astro.url
                                         class="sidebar-category-link"
                                         onclick="event.stopPropagation()"
                                         data-slug={slug}>
-                                        {labelWithKey(slug)}
+                                        <Fragment
+                                            set:html={labelWithKey(slug)}
+                                        />
                                     </a>
                                 ) : (
-                                    labelWithKey(slug)
+                                    <Fragment set:html={labelWithKey(slug)} />
                                 )}
                                 <span class="fold-icon" aria-hidden="true" />
                             </summary>
@@ -718,11 +726,17 @@ const { pathname: urlPath } = Astro.url
         :is(a[href], summary, button:not([disabled])) {
             position: relative;
             outline: none;
-            border: 0.3ch solid rgba(0, 0, 0, 0);
+            /* border: 0.3ch solid rgba(0, 0, 0, 0); */
         }
 
         summary > a.sidebar-category-link {
             border: none;
+        }
+
+        .cat-key {
+            opacity: 0.35;
+            vertical-align: super;
+            line-height: 0;
         }
 
         :is(a[href], summary, button:not([disabled]))::after {
@@ -753,7 +767,7 @@ const { pathname: urlPath } = Astro.url
             /* border-left: 1px solid var(--accent); */
             text-decoration: none;
             /* .sidebar-category-link:hover { */
-            border: 0.3ch solid rgba(0, 0, 0, 0) !important;
+            /* border: 0.3ch solid rgba(0, 0, 0, 0) !important; */
             /* } */
             /* box-shadow: */
             /*     inset var(--focus-rail-size) 0 0 0 var(--focus-marker), */

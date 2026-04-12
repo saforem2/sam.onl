@@ -1,0 +1,81 @@
+---
+interface Props {
+    title: string
+    url: string
+}
+
+const { title, url } = Astro.props as Props
+---
+
+<span class="share-buttons">
+    <button
+        class="share-btn"
+        data-action="copy"
+        data-url={url}
+        title="Copy link"
+        aria-label="Copy link">&#xf0c5; copy</button
+    >
+    <a
+        class="share-btn"
+        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Share on Twitter/X"
+        aria-label="Share on Twitter/X">&#xf099;</a
+    >
+    <a
+        class="share-btn"
+        href={`https://bsky.app/intent/compose?text=${encodeURIComponent(`${title} ${url}`)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Share on Bluesky"
+        aria-label="Share on Bluesky">&#xe28e;</a
+    >
+</span>
+
+<style>
+    .share-buttons {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5ch;
+    }
+
+    .share-btn {
+        font-family: var(--font-family);
+        font-size: 1em;
+        padding: 0 0.5ch;
+        color: var(--foreground2);
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        opacity: 0.6;
+
+        &:hover {
+            opacity: 1;
+            color: var(--foreground0);
+        }
+    }
+</style>
+
+<script>
+    const copyButtons = document.querySelectorAll(
+        '.share-btn[data-action="copy"]',
+    )
+    for (const btn of copyButtons) {
+        btn.addEventListener('click', async () => {
+            const url = (btn as HTMLElement).dataset.url
+            if (!url) return
+            const original = btn.textContent
+            try {
+                await navigator.clipboard.writeText(url)
+                btn.textContent = '\uf00c copied!'
+            } catch {
+                btn.textContent = '\uf00d failed'
+            }
+            setTimeout(() => {
+                btn.textContent = original
+            }, 2000)
+        })
+    }
+</script>

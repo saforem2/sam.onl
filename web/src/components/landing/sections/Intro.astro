@@ -303,7 +303,13 @@ const total = variants.length
                 '[tabindex="0"], a[href], button:not([disabled])',
             )
             const intro = document.getElementById('intro-widget')
-            if (intro) vimFocusElement(intro)
+            if (intro) {
+                if (window.innerWidth <= 768) {
+                    intro.focus({ preventScroll: true })
+                } else {
+                    vimFocusElement(intro)
+                }
+            }
 
             const shortcuts: Record<string, string> = {
                 a: '#intro-widget',

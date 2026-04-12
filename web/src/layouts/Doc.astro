@@ -4,6 +4,9 @@ import Layout from '@/layouts/Layout.astro'
 import { makeSortedCategoryEntries } from '@/utils/content'
 import { compareUrlPaths } from '@/utils/url'
 import Navbar from '@/components/Navbar.astro'
+import { getReadingTime } from '@/utils/readingTime'
+import ShareButtons from '@/components/ShareButtons.astro'
+import { getCollection } from 'astro:content'
 
 type DocHeading = {
     depth: number
@@ -16,7 +19,7 @@ type TocLine = DocHeading & {
 }
 
 const { frontmatter, headings } = Astro.props as {
-    frontmatter: { title: string }
+    frontmatter: { title: string; date?: string; description?: string }
     headings: DocHeading[]
 }
 
@@ -68,13 +71,104 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         treePrefix: `${ancestorPrefix}${branchPrefix}`,
     }
 })
+
+const rawBody = await Astro.slots.render('default')
+const readingTime = getReadingTime(rawBody.replace(/<[^>]*>/g, ''))
+
+// Find related posts (same parent directory)
+const currentPath = Astro.url.pathname
+const isPost = currentPath.startsWith('/posts/')
+const isTalk = currentPath.startsWith('/talks/')
+
+// Derive category from URL path (e.g. /posts/auroragpt/foo → "auroragpt")
+const pathSegments = currentPath.split('/').filter(Boolean)
+const category =
+    pathSegments.length >= 3 && isNaN(Number(pathSegments[1]))
+        ? pathSegments[1]
+        : null
+
+// Source file path for GitHub links
+const sourceFile = sortedPages.find((p) => compareUrlPaths(p.id, currentPath))
+const sourceFilePath = sourceFile ? `web/src/pages/${sourceFile.id}` : null
+const githubBase = 'https://github.com/saforem2/sam.onl'
+
+// Format date helper
+function formatDate(d: string | Date): string {
+    return new Date(d).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    })
+}
+
+function formatDateShort(d: string | Date): string {
+    const dt = new Date(d)
+    const mm = String(dt.getMonth() + 1).padStart(2, '0')
+    const dd = String(dt.getDate()).padStart(2, '0')
+    const yy = String(dt.getFullYear()).slice(-2)
+    return `${mm}/${dd}/${yy}`
+}
+let relatedPosts: Array<{ title: string; date: Date; href: string }> = []
+
+if (isPost) {
+    const allDocs = await getCollection('docs')
+    const pathParts = currentPath.split('/').filter(Boolean)
+    const parentDir =
+        pathParts.length >= 3
+            ? pathParts.slice(0, pathParts.length - 1).join('/')
+            : 'posts'
+
+    relatedPosts = allDocs
+        .filter((doc) => {
+            const docPath = doc.id.replace(/\/index\.(mdx?|md)$/, '')
+            return (
+                docPath.startsWith(parentDir) &&
+                `/${docPath}` !== currentPath.replace(/\/$/, '') &&
+                doc.data.title &&
+                doc.data.date &&
+                !doc.data.draft &&
+                !doc.id.endsWith(`${parentDir}/index.mdx`)
+            )
+        })
+        .map((doc) => ({
+            title: doc.data.title,
+            date: new Date(doc.data.date!),
+            href: `/${doc.id.replace(/\/index\.(mdx?|md)$/, '/')}`,
+        }))
+        .sort((a, b) => b.date.getTime() - a.date.getTime())
+        .slice(0, 3)
+}
+
+const articleSchema =
+    isPost && frontmatter.date
+        ? JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Article',
+              headline: frontmatter.title,
+              datePublished: new Date(frontmatter.date).toISOString(),
+              author: {
+                  '@type': 'Person',
+                  name: 'Sam Foreman',
+                  url: 'https://sam.onl',
+              },
+              description: frontmatter.description ?? '',
+          })
+        : null
 ---
 
 <style is:global>
     @import './Doc.css';
 </style>
 
-<Layout>
+<Layout
+    ogSlug={Astro.url.pathname.replace(/^\//, '').replace(/\/$/, '')}
+    title={frontmatter.title ? `${frontmatter.title} — Sam Foreman` : undefined}
+    description={frontmatter.description}>
+    {
+        articleSchema && (
+            <script type="application/ld+json" set:html={articleSchema} />
+        )
+    }
     <column self-="grow">
         <Navbar />
         <row self-="grow" gap-="1">
@@ -83,12 +177,64 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
             </div>
             <div id="sidebar-resizer" aria-hidden="true"></div>
             <article id="doc-article" box-="square" shear-="top">
-                <header is-="row" align-="between">
+                <header>
                     <div is-="badge" variant-="background0">
                         <h1>{frontmatter.title}</h1>
                     </div>
+                    {
+                        (frontmatter.date || isPost || isTalk) && (
+                            <div class="post-meta">
+                                <span class="post-meta-item">Sam Foreman</span>
+                                {frontmatter.date && (
+                                    <span class="post-meta-item">
+                                        <span class="date-long">
+                                            {formatDate(frontmatter.date)}
+                                        </span>
+                                        <span class="date-short">
+                                            {formatDateShort(frontmatter.date)}
+                                        </span>
+                                    </span>
+                                )}
+                                {frontmatter.date && (
+                                    <span class="post-meta-item">
+                                        {readingTime}
+                                    </span>
+                                )}
+                                {category && (
+                                    <a
+                                        href={`/posts/${category}/`}
+                                        class="post-meta-tag">
+                                        {category}
+                                    </a>
+                                )}
+                                {sourceFilePath && (
+                                    <span class="post-meta-links">
+                                        <a
+                                            href={`${githubBase}/blob/main/${sourceFilePath}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer">
+                                            source
+                                        </a>
+                                        <a
+                                            href={`${githubBase}/raw/main/${sourceFilePath}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer">
+                                            raw
+                                        </a>
+                                    </span>
+                                )}
+                                {(isPost || isTalk) && (
+                                    <ShareButtons
+                                        title={frontmatter.title}
+                                        url={`https://sam.onl${Astro.url.pathname}`}
+                                    />
+                                )}
+                            </div>
+                        )
+                    }
                 </header>
                 <row gap-="1" self-="grow">
+                    <div id="scroll-progress" aria-hidden="true"></div>
                     <div id="scroll-container">
                         <main id="main-content">
                             <span
@@ -96,6 +242,34 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                 aria-hidden="true"
                                 tabindex="-1"></span>
                             <slot />
+                            {
+                                relatedPosts.length > 0 && (
+                                    <aside style="margin-top: 2lh; border-top: 1px solid var(--foreground2); padding-top: 1lh;">
+                                        <h3>Related posts</h3>
+                                        <ul style="list-style: none; padding: 0;">
+                                            {relatedPosts.map((post) => (
+                                                <li>
+                                                    <a href={post.href}>
+                                                        {post.title}
+                                                    </a>
+                                                    <span style="opacity: 0.6; font-size: 0.85em;">
+                                                        {' '}
+                                                        —{' '}
+                                                        {post.date.toLocaleDateString(
+                                                            'en-US',
+                                                            {
+                                                                year: 'numeric',
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                            },
+                                                        )}
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </aside>
+                                )
+                            }
                             <div id="doc-pagination">
                                 {
                                     prevDoc && (
@@ -108,11 +282,13 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                             <div is-="typography-block">
                                                 <span
                                                     is-="badge"
-                                                    variant-="background0">
+                                                    variant-="background1">
                                                     <row gap-="1">
                                                         <span>←</span>
-                                                        <code>&lt;C-b&gt;</code>
-                                                        <span>Previous</span>
+                                                        <span>
+                                                            [<strong>b</strong>
+                                                            ]ack
+                                                        </span>
                                                     </row>
                                                 </span>
                                             </div>
@@ -136,10 +312,12 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
                                                 is-="typography-block">
                                                 <span
                                                     is-="badge"
-                                                    variant-="background0">
+                                                    variant-="background1">
                                                     <row gap-="1">
-                                                        <span>Next</span>
-                                                        <code>&lt;C-n&gt;</code>
+                                                        <span>
+                                                            [<strong>n</strong>
+                                                            ]ext
+                                                        </span>
                                                         <span>→</span>
                                                     </row>
                                                 </span>
@@ -746,11 +924,25 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         const nextHref = document.querySelector('.next')?.getAttribute('href')
         const prevHref = document.querySelector('.prev')?.getAttribute('href')
 
-        if (e.key === 'n' && e.ctrlKey && nextHref) {
+        if (
+            e.key === 'n' &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            nextHref
+        ) {
+            e.preventDefault()
             window.location.href = nextHref
         }
 
-        if (e.key === 'b' && e.ctrlKey && prevHref) {
+        if (
+            e.key === 'b' &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            prevHref
+        ) {
+            e.preventDefault()
             window.location.href = prevHref
         }
     })
@@ -1323,6 +1515,7 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         sidebarContainer.classList.toggle('mobile-hidden', panel !== 'menu')
         article.classList.toggle('mobile-hidden', panel !== 'docs')
         tocContainer?.classList.toggle('mobile-hidden', panel !== 'toc')
+        tocContainer?.classList.toggle('collapsed', panel !== 'toc')
         menuButton.setAttribute(
             'variant-',
             panel === 'menu' ? '' : 'background1',
@@ -1340,6 +1533,50 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
     menuButton.addEventListener('click', () => setMobileActive('menu'))
     docsButton.addEventListener('click', () => setMobileActive('docs'))
     tocButton?.addEventListener('click', () => setMobileActive('toc'))
+</script>
+
+<script>
+    const scrollContainer = document.getElementById('scroll-container')
+    const progressBar = document.getElementById('scroll-progress')
+
+    if (scrollContainer && progressBar) {
+        const mainContent = document.getElementById('main-content')
+        scrollContainer.addEventListener('scroll', () => {
+            if (!mainContent) return
+            const scrollTop = scrollContainer.scrollTop
+            const scrollHeight =
+                mainContent.scrollHeight - scrollContainer.clientHeight
+            const progress =
+                scrollHeight > 0 ? Math.min(scrollTop / scrollHeight, 1) : 0
+            progressBar.style.transform = `scaleX(${progress})`
+        })
+    }
+</script>
+
+<!-- Code block copy buttons -->
+<script>
+    const codeBlocks = document.querySelectorAll('pre.astro-code')
+    for (const block of codeBlocks) {
+        block.style.position = 'relative'
+
+        const button = document.createElement('button')
+        button.className = 'code-copy-btn'
+        button.textContent = 'copy'
+        button.addEventListener('click', async () => {
+            const code = block.querySelector('code')
+            if (!code) return
+            try {
+                await navigator.clipboard.writeText(code.innerText)
+                button.textContent = 'copied!'
+            } catch {
+                button.textContent = 'failed'
+            }
+            setTimeout(() => {
+                button.textContent = 'copy'
+            }, 2000)
+        })
+        block.appendChild(button)
+    }
 </script>
 
 <!-- Footnote hover tooltips -->
@@ -1455,3 +1692,141 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
         }
     }
 </style>
+
+<!-- Register custom elements used by MDX-imported components (Astro
+     doesn't hoist <script> tags from components imported in MDX) -->
+<script>
+    import { paginateElements } from '@/utils/vim'
+
+    if (!customElements.get('tabs-component')) {
+        class Tabs extends HTMLElement {
+            connectedCallback() {
+                const items = Array.from(
+                    this.querySelectorAll(
+                        '#tabs-list > button',
+                    ) as NodeListOf<HTMLButtonElement>,
+                )
+                if (items.length === 0) return
+                if (!this.hasAttribute('data-tab'))
+                    this.setAttribute(
+                        'data-tab',
+                        items[0].getAttribute('data-value')!,
+                    )
+                for (const item of items) this.initializeTab(item)
+            }
+
+            initializeTab(item: HTMLElement) {
+                const activeVariant =
+                    this.getAttribute('data-active-variant') ?? 'default'
+                const secondaryVariant =
+                    this.getAttribute('data-secondary-variant') ?? 'background1'
+                const items = this.querySelectorAll(
+                    '#tabs-list > button',
+                ) as NodeListOf<HTMLButtonElement>
+                const value =
+                    this.getAttribute('data-tab') ??
+                    items[0].getAttribute('data-value')
+
+                const setCurrentTab = () => {
+                    items.forEach((i) => {
+                        i.setAttribute('aria-selected', 'false')
+                        i.setAttribute('variant-', secondaryVariant)
+                    })
+                    this.setAttribute(
+                        'data-tab',
+                        item.getAttribute('data-value') as string,
+                    )
+                    item.setAttribute('variant-', activeVariant)
+                    item.setAttribute('aria-selected', 'true')
+                }
+
+                const isSelected = value === item.getAttribute('data-value')
+                item.setAttribute(
+                    'aria-selected',
+                    isSelected ? 'true' : 'false',
+                )
+                item.setAttribute(
+                    'variant-',
+                    isSelected ? activeVariant : secondaryVariant,
+                )
+                item.setAttribute('tabindex', '0')
+                item.setAttribute('role', 'tab')
+                item.addEventListener('click', setCurrentTab)
+                item.addEventListener('focus', setCurrentTab)
+                item.addEventListener('keydown', (e) => {
+                    const { next, prev } = paginateElements(
+                        document.activeElement as HTMLElement,
+                        items,
+                    )
+                    if (e.key === 'ArrowLeft' || e.key === 'h') prev.focus()
+                    if (e.key === 'ArrowRight' || e.key === 'l') next.focus()
+                })
+            }
+        }
+        customElements.define('tabs-component', Tabs)
+    }
+
+    if (!customElements.get('doc-example')) {
+        class Example extends HTMLElement {
+            connectedCallback() {
+                const iframe = this.querySelector(
+                    '#preview',
+                ) as HTMLIFrameElement
+                if (!iframe) return
+                const colorPreference = window.matchMedia(
+                    '(prefers-color-scheme: dark)',
+                )
+                const initialTheme = this.getAttribute('data-initial-theme')
+                const preferredTheme =
+                    initialTheme ??
+                    (colorPreference.matches ? 'custom-dark' : 'custom-light')
+
+                const iframeDocument = iframe.contentDocument
+                if (
+                    !iframeDocument ||
+                    iframeDocument.readyState === 'loading'
+                ) {
+                    iframe.addEventListener('load', () => {
+                        this.updateIframeTheme(preferredTheme)
+                    })
+                } else {
+                    this.updateIframeTheme(preferredTheme)
+                }
+
+                const themeDropdown = this.querySelector(
+                    '#theme-dropdown',
+                ) as HTMLElement
+                const html = document.querySelector('html') as HTMLElement
+
+                new MutationObserver(() => {
+                    const value = themeDropdown.getAttribute(
+                        'data-value',
+                    ) as string
+                    html.setAttribute('data-example-theme', value)
+                }).observe(themeDropdown, {
+                    attributes: true,
+                    attributeFilter: ['data-value'],
+                })
+
+                new MutationObserver(() => {
+                    const value = html.getAttribute('data-example-theme')
+                    this.updateIframeTheme(value ?? preferredTheme)
+                }).observe(html, {
+                    attributes: true,
+                    attributeFilter: ['data-example-theme'],
+                })
+            }
+
+            updateIframeTheme(theme: string) {
+                const iframe = this.querySelector(
+                    '#preview',
+                ) as HTMLIFrameElement
+                const previewHtml =
+                    iframe.contentDocument?.querySelector('html')
+                if (!previewHtml) return
+                previewHtml.setAttribute('data-webtui-theme', theme)
+            }
+        }
+        customElements.define('doc-example', Example)
+    }
+</script>
