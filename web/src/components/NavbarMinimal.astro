@@ -9,16 +9,18 @@ const { variant } = Astro.props
 ---
 
 <nav id="top-navbar" box-="square">
-    <span><a href="/" id="home-link">[&#xef85;]</a></span>
+    <span id="home-link-wrapper"><a href="/" id="home-link">[&#xef85;]</a></span
+    >
     {
         variant === 21 && (
-            <span
+            <a
+                href="/"
                 is-="badge"
                 variant-="blue"
                 class="navbar-name"
-                style="--badge-text: var(--background0)">
+                style="--badge-text: var(--background0); text-decoration: none;">
                 Sam Foreman
-            </span>
+            </a>
         )
     }
     <row id="links">
@@ -41,6 +43,7 @@ const { variant } = Astro.props
     <details id="nav-dropdown">
         <summary>&#xf0c9;</summary>
         <div class="nav-dropdown-content">
+            <a href="/">&#xef85; home</a>
             <a href="/posts">&#xf044; posts</a>
             <a href="/talks">&#xf0428; talks</a>
             <a href="/landing">&#xefa8; more</a>
@@ -264,10 +267,14 @@ const { variant } = Astro.props
         display: none;
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 768px) {
         nav {
             padding: 0.25lh 1ch;
             align-items: center;
+        }
+
+        #home-link-wrapper {
+            display: none;
         }
 
         .navbar-name {
