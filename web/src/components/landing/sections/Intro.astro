@@ -319,6 +319,25 @@ const total = variants.length
                 l: '#stats-widget',
                 m: '.iw-nav-home',
             }
+            // On mobile, focus widgets as they scroll into view
+            if (window.innerWidth <= 768) {
+                const focusables =
+                    grid.querySelectorAll<HTMLElement>('[tabindex="0"]')
+                const observer = new IntersectionObserver(
+                    (entries) => {
+                        for (const entry of entries) {
+                            if (entry.isIntersecting) {
+                                ;(entry.target as HTMLElement).focus({
+                                    preventScroll: true,
+                                })
+                            }
+                        }
+                    },
+                    { threshold: 0.5 },
+                )
+                for (const el of focusables) observer.observe(el)
+            }
+
             grid.addEventListener('keydown', (e) => {
                 if (isUserTyping()) return
                 const selector = shortcuts[e.key]
