@@ -686,8 +686,16 @@ pre.astro-code span.line::before {
     }
 }
 
-pre.astro-code:hover .code-copy-btn {
+pre.astro-code:hover .code-copy-btn,
+pre.astro-code:focus-within .code-copy-btn,
+.code-copy-btn:focus-visible {
     opacity: 1;
+}
+
+@media (pointer: coarse) {
+    .code-copy-btn {
+        opacity: 0.6;
+    }
 }
 
 p:has(> img) {

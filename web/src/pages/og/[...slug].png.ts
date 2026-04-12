@@ -25,12 +25,23 @@ export const getStaticPaths: GetStaticPaths = async () => {
         })
 }
 
-const fontData = await fetch(
-    'https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff',
-).then((res) => res.arrayBuffer())
+let fontDataPromise: Promise<ArrayBuffer | null> | null = null
+
+async function getFontData(): Promise<ArrayBuffer | null> {
+    if (!fontDataPromise) {
+        fontDataPromise = fetch(
+            'https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff',
+        ).then(
+            (res) => (res.ok ? res.arrayBuffer() : null),
+            () => null,
+        )
+    }
+    return fontDataPromise
+}
 
 export const GET: APIRoute = async ({ props }) => {
     const { title, date } = props as { title: string; date: string | null }
+    const fontData = await getFontData()
 
     const svg = await satori(
         {
@@ -45,7 +56,7 @@ export const GET: APIRoute = async ({ props }) => {
                     padding: '60px',
                     backgroundColor: '#1c1c1c',
                     color: '#e0e0e0',
-                    fontFamily: 'monospace',
+                    fontFamily: 'JetBrains Mono',
                 },
                 children: [
                     {
@@ -64,7 +75,7 @@ export const GET: APIRoute = async ({ props }) => {
                         props: {
                             style: {
                                 fontSize: title.length > 40 ? '48px' : '60px',
-                                fontWeight: 700,
+                                fontWeight: 400,
                                 lineHeight: 1.2,
                                 marginBottom: '24px',
                             },
@@ -91,14 +102,16 @@ export const GET: APIRoute = async ({ props }) => {
         {
             width: 1200,
             height: 630,
-            fonts: [
-                {
-                    name: 'JetBrains Mono',
-                    data: fontData,
-                    weight: 400,
-                    style: 'normal',
-                },
-            ],
+            fonts: fontData
+                ? [
+                      {
+                          name: 'JetBrains Mono',
+                          data: fontData,
+                          weight: 400,
+                          style: 'normal' as const,
+                      },
+                  ]
+                : [],
         },
     )
 

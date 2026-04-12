@@ -19,7 +19,7 @@ type TocLine = DocHeading & {
 }
 
 const { frontmatter, headings } = Astro.props as {
-    frontmatter: { title: string; date?: string }
+    frontmatter: { title: string; date?: string; description?: string }
     headings: DocHeading[]
 }
 
@@ -1562,8 +1562,12 @@ const articleSchema =
         button.addEventListener('click', async () => {
             const code = block.querySelector('code')
             if (!code) return
-            await navigator.clipboard.writeText(code.innerText)
-            button.textContent = 'copied!'
+            try {
+                await navigator.clipboard.writeText(code.innerText)
+                button.textContent = 'copied!'
+            } catch {
+                button.textContent = 'failed'
+            }
             setTimeout(() => {
                 button.textContent = 'copy'
             }, 2000)
