@@ -44,10 +44,13 @@ const { variant } = Astro.props
             <a href="/posts">&#xf044; posts</a>
             <a href="/talks">&#xf0428; talks</a>
             <a href="/landing">&#xefa8; more</a>
-            <a href="https://github.com/saforem2/sam.onl" target="_blank">
-                github</a
+            <a href="https://github.com/saforem2/sam.onl" target="_blank"
+                >&#xe65b; github</a
             >
-            <a href="/rss.xml" target="_blank"> rss</a>
+            <a href="/rss.xml" target="_blank">&#xf09e; rss</a>
+            <button id="theme-button-mobile" size-="small"
+                >&#xe22b; theme</button
+            >
         </div>
     </details>
 </nav>
@@ -296,10 +299,17 @@ const { variant } = Astro.props
                 box-shadow: 2px 2px 0 0 var(--foreground2);
                 min-width: 20ch;
 
-                a {
+                a,
+                button {
                     padding: 0.5lh 2ch;
                     color: var(--foreground1);
                     text-decoration: none;
+                    text-align: left;
+                    background: none;
+                    border: none;
+                    font: inherit;
+                    cursor: pointer;
+                    width: 100%;
 
                     &:hover {
                         background: var(--background1);
@@ -393,6 +403,12 @@ const { variant } = Astro.props
     document.getElementById('theme-button')?.addEventListener('click', () => {
         themeDialog.showModal()
     })
+
+    document
+        .getElementById('theme-button-mobile')
+        ?.addEventListener('click', () => {
+            themeDialog.showModal()
+        })
 
     document.getElementById('search-button')?.addEventListener('click', () => {
         searchDialog.showModal()
