@@ -86,6 +86,18 @@ if (url.pathname === '/') {
         <a id="rss-button" href="/rss.xml" target="_blank" size-="small">  </a>
         <button id="search-button" size-="small"> &#xea6d;</button>
     </row>
+    <details id="nav-dropdown">
+        <summary>&#xf0c9;</summary>
+        <div class="nav-dropdown-content">
+            <a href="/posts">&#xf044; posts</a>
+            <a href="/talks">&#xf0428; talks</a>
+            <a href="/landing">&#xefa8; more</a>
+            <a href="https://github.com/saforem2/sam.onl" target="_blank">
+                github</a
+            >
+            <a href="/rss.xml" target="_blank"> rss</a>
+        </div>
+    </details>
 </nav>
 <Filter />
 
@@ -357,22 +369,58 @@ if (url.pathname === '/') {
         }
     }
 
+    #nav-dropdown {
+        display: none;
+    }
+
     @media (max-width: 480px) {
         .keyhint {
             display: none;
         }
 
-        nav {
-            font-size: 0.85em;
-        }
-
-        #wages {
-            gap: 0;
-        }
-
-        #github-button,
-        #rss-button {
+        #links {
             display: none;
+        }
+
+        #nav-dropdown {
+            display: block;
+
+            > summary {
+                list-style: none;
+                cursor: pointer;
+                padding: 0 1ch;
+
+                &::-webkit-details-marker {
+                    display: none;
+                }
+            }
+
+            .nav-dropdown-content {
+                position: absolute;
+                right: 1ch;
+                top: 100%;
+                z-index: 200;
+                display: flex;
+                flex-direction: column;
+                background: var(--background0);
+                border: 1px solid var(--foreground2);
+                box-shadow: 2px 2px 0 0 var(--foreground2);
+                min-width: 20ch;
+
+                a {
+                    padding: 0.5lh 2ch;
+                    color: var(--foreground1);
+                    text-decoration: none;
+
+                    &:hover {
+                        background: var(--background1);
+                    }
+                }
+            }
+        }
+
+        nav {
+            position: relative;
         }
     }
 </style>
