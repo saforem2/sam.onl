@@ -416,14 +416,23 @@ const { variant } = Astro.props
         })
     })
 
+    const focusActiveThemeButton = () => {
+        const active = themeDialog.querySelector(
+            '[data-active="true"]',
+        ) as HTMLElement | null
+        active?.focus()
+    }
+
     document.getElementById('theme-button')?.addEventListener('click', () => {
         themeDialog.showModal()
+        focusActiveThemeButton()
     })
 
     document
         .getElementById('theme-button-mobile')
         ?.addEventListener('click', () => {
             themeDialog.showModal()
+            focusActiveThemeButton()
         })
 
     document.getElementById('search-button')?.addEventListener('click', () => {
