@@ -25,9 +25,9 @@ const { variant } = Astro.props
     }
     <row id="links">
         <span id="nav-links">
-            &#xf044; [<a href="/posts">p</a>]osts &nbsp; &#xf0428; [<a
-                href="/talks">t</a
-            >]alks &nbsp; &#xefa8; [<a href="/landing">m</a>]ore &nbsp;
+            <a href="/posts" class="nav-link">&#xf044; <u>p</u>osts</a>
+            <a href="/talks" class="nav-link">&#xf0428; <u>t</u>alks</a>
+            <a href="/landing" class="nav-link">&#xefa8; <u>m</u>ore</a>
         </span>
         <button id="theme-button" size-="small">  </button>
         <a
@@ -150,6 +150,17 @@ const { variant } = Astro.props
         &::before,
         &::after {
             display: none;
+        }
+    }
+
+    .nav-link {
+        text-decoration: none;
+        color: var(--foreground1);
+
+        u {
+            text-decoration: underline;
+            text-decoration-color: var(--accent);
+            text-decoration-thickness: 2pt;
         }
     }
 

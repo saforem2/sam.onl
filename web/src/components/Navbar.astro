@@ -63,44 +63,43 @@ if (url.pathname === '/') {
     >
     <row id="links">
         <span id="wages">
-             <span class="keyhint">[</span><a
-                href="/posts"
-                data-active={isOn === 'posts'}>p</a
-            ><span class="keyhint">]</span>osts &nbsp; 󰐨 <span class="keyhint"
-                >[</span
-            ><a href="/talks" data-active={isOn === 'talks'}>t</a><span
-                class="keyhint">]</span
-            >alks &nbsp;  <span class="keyhint">[</span><a
-                href="/landing"
-                data-active={isOn === 'more'}>m</a
-            ><span class="keyhint">]</span>ore &nbsp;
-        </span>
-        <!-- <a href="/projects" data-active={isOn === 'projects'}>  Projects </a> -->
-        <button id="theme-button" size-="small">  </button>
-        <a
-            id="github-button"
-            href="https://github.com/saforem2/sam.onl"
-            target="_blank"
-            size-="small"></a
-        >
-        <a id="rss-button" href="/rss.xml" target="_blank" size-="small">  </a>
-        <button id="search-button" size-="small"> &#xea6d;</button>
-    </row>
-    <details id="nav-dropdown">
-        <summary>&#xf0c9;</summary>
-        <div class="nav-dropdown-content">
-            <a href="/">&#xef85; home</a>
-            <a href="/posts">&#xf044; posts</a>
-            <a href="/talks">&#xf0428; talks</a>
-            <a href="/landing">&#xefa8; more</a>
-            <a href="https://github.com/saforem2/sam.onl" target="_blank"
-                >&#xe65b; github</a
+            <a href="/posts" class="nav-link" data-active={isOn === 'posts'}
+                >&#xf044; <u>p</u>osts</a
             >
-            <a href="/rss.xml" target="_blank">&#xf09e; rss</a>
-            <button id="theme-button-mobile">&#xe22b; theme</button>
-        </div>
-    </details>
+            <a href="/talks" class="nav-link" data-active={isOn === 'talks'}
+                >&#xf0428; <u>t</u>alks</a
+            >
+            <a href="/landing" class="nav-link" data-active={isOn === 'more'}
+                >&#xefa8; <u>m</u>ore</a
+            >
+        </span>
+    </row>
+    <!-- <a href="/projects" data-active={isOn === 'projects'}>  Projects </a> -->
+    <button id="theme-button" size-="small">  </button>
+    <a
+        id="github-button"
+        href="https://github.com/saforem2/sam.onl"
+        target="_blank"
+        size-="small"></a
+    >
+    <a id="rss-button" href="/rss.xml" target="_blank" size-="small">  </a>
+    <button id="search-button" size-="small"> &#xea6d;</button>
 </nav>
+<details id="nav-dropdown">
+    <summary>&#xf0c9;</summary>
+    <div class="nav-dropdown-content">
+        <a href="/">&#xef85; home</a>
+        <a href="/posts">&#xf044; posts</a>
+        <a href="/talks">&#xf0428; talks</a>
+        <a href="/landing">&#xefa8; more</a>
+        <a href="https://github.com/saforem2/sam.onl" target="_blank"
+            >&#xe65b; github</a
+        >
+        <a href="/rss.xml" target="_blank">&#xf09e; rss</a>
+        <button id="theme-button-mobile">&#xe22b; theme</button>
+    </div>
+</details>
+
 <Filter />
 
 <style>
@@ -375,11 +374,18 @@ if (url.pathname === '/') {
         display: none;
     }
 
-    @media (max-width: 768px) {
-        .keyhint {
-            display: none;
-        }
+    .nav-link {
+        text-decoration: none;
+        color: var(--foreground1);
 
+        u {
+            text-decoration: underline;
+            text-decoration-color: var(--accent);
+            text-decoration-thickness: 2pt;
+        }
+    }
+
+    @media (max-width: 768px) {
         #links {
             display: none;
         }
