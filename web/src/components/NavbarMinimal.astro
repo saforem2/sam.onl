@@ -413,14 +413,27 @@ const { variant } = Astro.props
         })
     })
 
+    const focusThemeOption = () => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                const active = themeDialog.querySelector(
+                    '.theme-option[aria-selected="true"]',
+                ) as HTMLElement | null
+                ;(active ?? themeDialog.querySelector('.theme-option'))?.focus()
+            })
+        })
+    }
+
     document.getElementById('theme-button')?.addEventListener('click', () => {
         themeDialog.showModal()
+        focusThemeOption()
     })
 
     document
         .getElementById('theme-button-mobile')
         ?.addEventListener('click', () => {
             themeDialog.showModal()
+            focusThemeOption()
         })
 
     document.getElementById('search-button')?.addEventListener('click', () => {
