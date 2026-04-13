@@ -228,16 +228,12 @@ if (url.pathname === '/') {
 
     #links {
         color: var(--foreground1);
-        display: block;
-        text-align: right;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 1ch;
         margin-inline-start: 1ch;
         min-width: 0;
-
-        a {
-            display: inline-block;
-            text-decoration: none;
-            color: var(--foreground2);
-        }
         max-width: 100%;
         flex: 1;
         overflow-x: auto;
