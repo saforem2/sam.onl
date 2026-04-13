@@ -144,6 +144,11 @@ const { variant } = Astro.props
     .navbar-name {
         text-decoration: none;
         flex: 0 0 auto;
+        overflow: visible;
+
+        &::after {
+            display: none;
+        }
     }
 
     #links {
