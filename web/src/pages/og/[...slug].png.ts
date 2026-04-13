@@ -43,6 +43,14 @@ export const GET: APIRoute = async ({ props }) => {
     const { title, date } = props as { title: string; date: string | null }
     const fontData = await getFontData()
 
+    if (!fontData) {
+        // Font unavailable — return a redirect to the static fallback
+        return new Response(null, {
+            status: 302,
+            headers: { Location: '/social-card.png' },
+        })
+    }
+
     const svg = await satori(
         {
             type: 'div',
@@ -102,16 +110,14 @@ export const GET: APIRoute = async ({ props }) => {
         {
             width: 1200,
             height: 630,
-            fonts: fontData
-                ? [
-                      {
-                          name: 'Iosevka Web',
-                          data: fontData,
-                          weight: 400,
-                          style: 'normal' as const,
-                      },
-                  ]
-                : [],
+            fonts: [
+                {
+                    name: 'Iosevka Web',
+                    data: fontData,
+                    weight: 400 as const,
+                    style: 'normal' as const,
+                },
+            ],
         },
     )
 
