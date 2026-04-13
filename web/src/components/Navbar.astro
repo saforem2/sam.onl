@@ -469,10 +469,7 @@ if (url.pathname === '/') {
             const value = button.getAttribute('data-theme-option')
             const isActive = value === theme
             button.setAttribute('aria-selected', String(isActive))
-            button.setAttribute(
-                'variant-',
-                isActive ? 'default' : 'background1',
-            )
+            button.setAttribute('variant-', 'background1')
             button.setAttribute('data-active', String(isActive))
         })
 
@@ -511,23 +508,14 @@ if (url.pathname === '/') {
         })
     })
 
-    const focusActiveThemeButton = () => {
-        const active = themeDialog.querySelector(
-            '[data-active="true"]',
-        ) as HTMLElement | null
-        active?.focus()
-    }
-
     document.getElementById('theme-button')?.addEventListener('click', () => {
         themeDialog.showModal()
-        focusActiveThemeButton()
     })
 
     document
         .getElementById('theme-button-mobile')
         ?.addEventListener('click', () => {
             themeDialog.showModal()
-            focusActiveThemeButton()
         })
 
     document.getElementById('search-button')?.addEventListener('click', () => {
