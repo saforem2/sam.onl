@@ -153,9 +153,14 @@ const { variant } = Astro.props
         }
     }
 
-    .nav-link {
+    #nav-links > a.nav-link {
         text-decoration: none;
-        color: var(--foreground1);
+        color: var(--foreground2);
+        gap: 0.5ch;
+
+        &:visited {
+            color: var(--foreground2);
+        }
 
         u {
             text-decoration: underline;
