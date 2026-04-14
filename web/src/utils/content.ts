@@ -21,13 +21,7 @@ export const categoryOrder = [
 ]
 
 /** Categories that should be nested under the "more" group in the sidebar */
-export const moreSidebarGroup = new Set([
-    'projects',
-    'about',
-    'ideas',
-    'now',
-    'webtui',
-])
+export const moreSidebarGroup = new Set(['projects', 'about', 'ideas', 'now'])
 
 //                   
 //                   
@@ -67,7 +61,7 @@ export const categoryLabels: Record<(typeof categoryOrder)[number], string> = {
     about: '  About',
     ideas: '  Ideas',
     more: '  More',
-    webtui: '  WebTUI',
+    webtui: '  Style',
     now: '  Now',
     // start: '\uf024 Start',
     // installation: '\uf019 Installation',
