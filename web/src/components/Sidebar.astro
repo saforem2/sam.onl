@@ -263,7 +263,6 @@ const categoryKeybinds: Record<string, string> = {
     posts: '1',
     talks: '2',
     more: '3',
-    webtui: '4',
 }
 
 const labelWithKey = (slug: string) => {
@@ -360,6 +359,71 @@ const { pathname: urlPath } = Astro.url
                                                         id,
                                                     ),
                                             )
+                                            const subChildPages =
+                                                subPages.filter(
+                                                    ({ id }) => id !== subSlug,
+                                                )
+                                            const hasChildren =
+                                                subChildPages.length > 0
+
+                                            if (hasChildren) {
+                                                return (
+                                                    <li>
+                                                        <details
+                                                            open={isSubActive}>
+                                                            <summary>
+                                                                <a
+                                                                    href={`/${subIndexPage?.id ?? subSlug}`}
+                                                                    class={`sidebar-category-link ${compareUrlPaths(urlPath, subSlug) ? 'active' : ''}`}
+                                                                    onclick="event.stopPropagation()"
+                                                                    data-slug={
+                                                                        subSlug
+                                                                    }>
+                                                                    {categoryLabels[
+                                                                        subSlug
+                                                                    ] ??
+                                                                        subSlug}
+                                                                </a>
+                                                                <span
+                                                                    class="fold-icon"
+                                                                    aria-hidden="true"
+                                                                />
+                                                            </summary>
+                                                            <ul marker-="tree open">
+                                                                {subChildPages.map(
+                                                                    ({
+                                                                        id,
+                                                                        data: {
+                                                                            title,
+                                                                        },
+                                                                    }) => (
+                                                                        <li>
+                                                                            <a
+                                                                                href={`/${id}`}
+                                                                                class={
+                                                                                    compareUrlPaths(
+                                                                                        urlPath,
+                                                                                        id,
+                                                                                    )
+                                                                                        ? 'active'
+                                                                                        : ''
+                                                                                }
+                                                                                data-slug={
+                                                                                    id
+                                                                                }>
+                                                                                {
+                                                                                    title
+                                                                                }
+                                                                            </a>
+                                                                        </li>
+                                                                    ),
+                                                                )}
+                                                            </ul>
+                                                        </details>
+                                                    </li>
+                                                )
+                                            }
+
                                             return (
                                                 <li>
                                                     <a
@@ -1116,7 +1180,6 @@ const { pathname: urlPath } = Astro.url
         '1': 1, // Posts
         '2': 2, // Talks
         '3': 3, // More
-        '4': 4, // WebTUI
     }
 
     const categoryList = document.getElementById('category-list')

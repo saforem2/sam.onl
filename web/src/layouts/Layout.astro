@@ -29,9 +29,8 @@ const ogImage = ogSlug
         ></script>
         <script is:inline>
             window.dataLayer = window.dataLayer || []
-            // eslint-disable-next-line prefer-rest-params
-            function gtag() {
-                dataLayer.push(arguments)
+            function gtag(...args) {
+                dataLayer.push(args)
             }
             gtag('js', new Date())
             gtag('config', 'G-RD883HJ1J2')

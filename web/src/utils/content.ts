@@ -21,7 +21,13 @@ export const categoryOrder = [
 ]
 
 /** Categories that should be nested under the "more" group in the sidebar */
-export const moreSidebarGroup = new Set(['projects', 'about', 'ideas', 'now'])
+export const moreSidebarGroup = new Set([
+    'projects',
+    'about',
+    'ideas',
+    'now',
+    'webtui',
+])
 
 //                   
 //                   
