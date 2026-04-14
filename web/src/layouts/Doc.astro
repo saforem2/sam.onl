@@ -184,9 +184,19 @@ const articleSchema =
                     {
                         (frontmatter.date || isPost || isTalk) && (
                             <div class="post-meta">
-                                <span class="post-meta-item">Sam Foreman</span>
+                                <span
+                                    is-="badge"
+                                    variant-="background1"
+                                    class="post-meta-item"
+                                    tabindex="0">
+                                    Sam Foreman
+                                </span>
                                 {frontmatter.date && (
-                                    <span class="post-meta-item">
+                                    <span
+                                        is-="badge"
+                                        variant-="background1"
+                                        class="post-meta-item"
+                                        tabindex="0">
                                         <span class="date-long">
                                             {formatDate(frontmatter.date)}
                                         </span>
@@ -196,14 +206,21 @@ const articleSchema =
                                     </span>
                                 )}
                                 {frontmatter.date && (
-                                    <span class="post-meta-item">
+                                    <span
+                                        is-="badge"
+                                        variant-="background1"
+                                        class="post-meta-item"
+                                        tabindex="0">
                                         {readingTime}
                                     </span>
                                 )}
                                 {category && (
                                     <a
                                         href={`/posts/${category}/`}
-                                        class="post-meta-tag">
+                                        is-="badge"
+                                        variant-="background1"
+                                        class="post-meta-tag"
+                                        tabindex="0">
                                         {category}
                                     </a>
                                 )}
@@ -212,13 +229,19 @@ const articleSchema =
                                         <a
                                             href={`${githubBase}/blob/main/${sourceFilePath}`}
                                             target="_blank"
-                                            rel="noopener noreferrer">
+                                            rel="noopener noreferrer"
+                                            is-="badge"
+                                            variant-="background1"
+                                            tabindex="0">
                                             source
                                         </a>
                                         <a
                                             href={`${githubBase}/raw/main/${sourceFilePath}`}
                                             target="_blank"
-                                            rel="noopener noreferrer">
+                                            rel="noopener noreferrer"
+                                            is-="badge"
+                                            variant-="background1"
+                                            tabindex="0">
                                             raw
                                         </a>
                                     </span>

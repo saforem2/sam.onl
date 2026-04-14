@@ -23,7 +23,6 @@
     display: flex;
     align-items: center;
     gap: 1ch;
-    font-size: 0.8em;
     color: var(--foreground2);
     padding: 0.25lh 0;
     flex-wrap: wrap;
@@ -49,53 +48,16 @@
 }
 
 .post-meta-item {
-    opacity: 0.7;
-
-    &::after {
-        content: '·';
-        margin-left: 1ch;
-        opacity: 0.4;
-    }
-
-    &:last-of-type::after {
-        content: none;
-    }
+    text-decoration: none;
 }
 
 .post-meta-tag {
-    font-size: 0.9em;
-    padding: 0 0.5ch;
-    color: var(--foreground1);
-    background: var(--background1);
-    border: 1px solid var(--foreground2);
     text-decoration: none;
-    opacity: 0.7;
-
-    &:hover {
-        opacity: 1;
-        color: var(--foreground0);
-    }
 }
 
 .post-meta-links {
     display: inline-flex;
     gap: 0.5ch;
-    opacity: 0.5;
-
-    a {
-        color: var(--foreground2);
-        text-decoration: none;
-
-        &:hover {
-            color: var(--foreground0);
-            text-decoration: underline;
-        }
-    }
-
-    &::before {
-        content: '·';
-        opacity: 0.4;
-    }
 }
 
 h1::before {
