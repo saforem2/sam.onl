@@ -374,8 +374,15 @@ const articleSchema =
                                     aria-expanded="false"
                                     aria-controls="toc-container"
                                     aria-label="Collapse right sidebar (zl)">
-                                    <span class="key-z">z</span>[
-                                    <span class="key-l">l</span>]&rsaquo;
+                                    <>
+                                        <span class="key-z">z</span>
+                                        <span class="key-bracket">[</span>
+                                    </>
+                                    <>
+                                        <span class="key-l">l</span>
+                                        <span class="key-bracket">]</span>
+                                    </>
+                                    &rsaquo;
                                 </button>
                                 <div id="toc-list-container">
                                     <ul id="toc-list">
@@ -512,15 +519,7 @@ const articleSchema =
             : []
 
     const isLastNavbarElement = (activeElement: HTMLElement) => {
-        const navbarElements = getNavbarElements()
-        if (navbarElements.length === 0) return false
-
-        const activeIndex = navbarElements.indexOf(activeElement)
-        if (activeIndex !== -1) {
-            return activeIndex === navbarElements.length - 1
-        }
-
-        const visibleNavbarElements = navbarElements.filter(isVimVisible)
+        const visibleNavbarElements = getNavbarElements().filter(isVimVisible)
         return (
             visibleNavbarElements.length > 0 &&
             activeElement === visibleNavbarElements.at(-1)
