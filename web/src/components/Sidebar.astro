@@ -15,7 +15,7 @@ const moreSubCategories = allCategories.filter(([slug]) =>
 )
 
 const yearGroupedCategories = new Set(['posts', 'talks'])
-const linkedCategorySlugs = new Set(['posts', 'talks', 'projects'])
+const linkedCategorySlugs = new Set(['posts', 'talks', 'projects', 'webtui'])
 const dateGroupedCategories = new Set(['posts', 'talks'])
 const yearPattern = /^\d{4}$/
 const datePattern = /(^|\n)(\d{4})-(\d{2})-(\d{2})\b/m
@@ -263,6 +263,7 @@ const categoryKeybinds: Record<string, string> = {
     posts: '1',
     talks: '2',
     more: '3',
+    webtui: '4',
 }
 
 const labelWithKey = (slug: string) => {
@@ -1182,6 +1183,7 @@ const { pathname: urlPath } = Astro.url
         '1': 1, // Posts
         '2': 2, // Talks
         '3': 3, // More
+        '4': 4, // Style (WebTUI)
     }
 
     const categoryList = document.getElementById('category-list')
