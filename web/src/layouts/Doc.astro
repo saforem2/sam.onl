@@ -89,8 +89,15 @@ const category =
 
 // Source file path for GitHub links
 const sourceFile = sortedPages.find((p) => compareUrlPaths(p.id, currentPath))
-const sourceFilePath = sourceFile ? `web/src/pages/${sourceFile.id}` : null
+const sourceId = sourceFile?.id ?? ''
+// The collection id strips index.md(x) — reconstruct the full file path
+const sourceFilePath = sourceFile
+    ? sourceId.endsWith('.md') || sourceId.endsWith('.mdx')
+        ? `web/src/pages/${sourceId}`
+        : `web/src/pages/${sourceId}/index.mdx`
+    : null
 const githubBase = 'https://github.com/saforem2/sam.onl'
+const githubRawBase = 'https://raw.githubusercontent.com/saforem2/sam.onl'
 
 // Format date helper
 function formatDate(d: string | Date): string {
@@ -236,7 +243,7 @@ const articleSchema =
                                             source
                                         </a>
                                         <a
-                                            href={`${githubBase}/raw/main/${sourceFilePath}`}
+                                            href={`${githubRawBase}/main/${sourceFilePath}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             is-="badge"
