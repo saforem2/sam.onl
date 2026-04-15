@@ -61,7 +61,7 @@ export const categoryLabels: Record<(typeof categoryOrder)[number], string> = {
     about: '  About',
     ideas: '  Ideas',
     more: '  More',
-    webtui: '  Style',
+    webtui: '  Style',
     now: '  Now',
     // start: '\uf024 Start',
     // installation: '\uf019 Installation',
