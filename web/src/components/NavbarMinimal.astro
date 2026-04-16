@@ -151,6 +151,13 @@ const { variant } = Astro.props
         &::after {
             display: none;
         }
+
+        &:focus-visible,
+        &:focus,
+        &[data-vim-focused='true']:focus {
+            background-color: var(--blue) !important;
+            color: var(--background0) !important;
+        }
     }
 
     #nav-links {
