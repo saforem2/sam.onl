@@ -25,9 +25,9 @@ const { variant } = Astro.props
     }
     <row id="links">
         <span id="nav-links">
-            <a href="/posts" class="nav-link">&#xf044; <u>p</u>osts</a>
-            <a href="/talks" class="nav-link">&#xf0428; <u>t</u>alks</a>
-            <a href="/landing" class="nav-link">&#xefa8; <u>m</u>ore</a>
+            <a href="/posts" class="nav-link"><u>p</u>osts</a>
+            <a href="/talks" class="nav-link"><u>t</u>alks</a>
+            <a href="/landing" class="nav-link"><u>m</u>ore</a>
         </span>
         <button id="theme-button" size-="small">  </button>
         <a
@@ -168,10 +168,21 @@ const { variant } = Astro.props
         }
 
         u {
-            text-decoration: underline;
-            text-decoration-color: var(--accent);
-            text-decoration-thickness: 2pt;
+            /* font-weight: bold; */
+            text-decoration: none !important;
+            /* text-decoration: underline; */
+            /* text-decoration-color: var(--foreground0); */
         }
+    }
+
+    #nav-links > a.nav-link u::before {
+        content: '[';
+        font-weight: normal;
+    }
+
+    #nav-links > a.nav-link u::after {
+        font-weight: normal;
+        content: ']';
     }
 
     #links {
@@ -300,7 +311,7 @@ const { variant } = Astro.props
 
     @media (max-width: 768px) {
         nav {
-            padding: 0.25lh 1ch;
+            padding: 0.5lh 1ch;
             align-items: center;
         }
 
