@@ -443,21 +443,16 @@ if (url.pathname === '/') {
 
                 a,
                 button {
+                    all: unset;
                     display: block;
                     padding: 0.5lh 2ch;
                     color: var(--foreground1);
-                    text-decoration: none;
-                    text-align: left !important;
-                    background: none;
-                    border: none !important;
-                    font: inherit;
                     cursor: pointer;
-                    width: 100%;
-                    min-width: 0 !important;
                     box-sizing: border-box;
+                    width: 100%;
 
                     &:hover {
-                        background: var(--background1) !important;
+                        background: var(--background1);
                     }
                 }
             }
