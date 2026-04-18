@@ -10,13 +10,13 @@
     "format": "prettier --write \"src/**/*.{ts,css,astro}\"",
     "format:check": "prettier --check \"src/**/*.{ts,css,astro}\"",
     "lint": "eslint src/",
-    "astro": "astro"
+    "astro": "astro",
+    "og": "bun run ../scripts/generate-og-images.ts"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^6.3.8",
     "@astrojs/mdx": "^4.1.0",
     "@astrojs/rss": "^4.0.15",
-    "@resvg/resvg-js": "^2.6.2",
     "@shikijs/transformers": "^3.2.1",
     "@webtui/css": "workspace:*",
     "@webtui/plugin-nf": "workspace:*",
@@ -33,7 +33,6 @@
     "rehype-katex": "^7.0.1",
     "rehype-mermaid": "^3.0.0",
     "remark-math": "^6.0.0",
-    "satori": "^0.26.0",
     "sharp": "^0.34.5",
     "shiki": "^3.13.0",
     "unist-util-visit": "^5.0.0"
