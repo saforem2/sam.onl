@@ -367,7 +367,7 @@ const { variant } = Astro.props
                     color: var(--foreground1);
                     text-decoration: none;
                     text-align: left !important;
-                    background: none !important;
+                    background: none;
                     border: none !important;
                     font: inherit;
                     cursor: pointer;
@@ -376,7 +376,7 @@ const { variant } = Astro.props
                     box-sizing: border-box;
 
                     &:hover {
-                        background: var(--background1);
+                        background: var(--background1) !important;
                     }
                 }
             }
