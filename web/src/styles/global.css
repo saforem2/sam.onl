@@ -703,10 +703,20 @@ pre.astro-code:focus-within .code-copy-btn,
     color: inherit;
 
     u {
-        text-decoration: underline;
-        text-decoration-color: var(--accent);
-        text-decoration-thickness: 2pt;
+        /* text-decoration: underline; */
+        text-decoration: none !important;
+        /* font-weight: bold; */
+        /* text-decoration-color: inherit; */
+        /* text-decoration-thickness: 2pt; */
     }
+}
+
+.widget-link u::before {
+    content: '[';
+}
+
+.widget-link u::after {
+    content: ']';
 }
 
 p:has(> img) {

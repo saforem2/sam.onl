@@ -270,7 +270,7 @@ const labelWithKey = (slug: string) => {
     const key = categoryKeybinds[slug]
     const label = categoryLabels[slug]
     return key !== undefined
-        ? `<sup class="cat-key">${key}</sup> ${label}`
+        ? `<sup class="cat-key">${key}</sup>${label}`
         : label
 }
 
@@ -285,7 +285,10 @@ const { pathname: urlPath } = Astro.url
         aria-expanded="true"
         aria-controls="sidebar-container"
         aria-label="Collapse left sidebar (zh)">
-        &lsaquo;<span class="key-z">z</span>[<span class="key-h">h</span>]
+        <span class="key-bracket"></span>&lsaquo;<span class="key-z">z</span
+        ><span class="key-bracket">[</span><span class="key-h">h</span><span
+            class="key-bracket">]</span
+        >
     </button>
     <div id="category-container">
         <div id="category-list">
@@ -347,7 +350,7 @@ const { pathname: urlPath } = Astro.url
                                 </summary>
                                 <ul
                                     marker-="tree open"
-                                    style="padding-inline-start: 3ch;">
+                                    style="padding-inline-start: 2ch;">
                                     {moreSubCategories.map(
                                         ([subSlug, subPages]) => {
                                             const subIndexPage = subPages.find(
@@ -392,7 +395,7 @@ const { pathname: urlPath } = Astro.url
                                                             </summary>
                                                             <ul
                                                                 marker-="tree open"
-                                                                style="padding-inline-start: 3ch;">
+                                                                style="padding-inline-start: 2ch;">
                                                                 {subChildPages.map(
                                                                     ({
                                                                         id,
@@ -851,13 +854,13 @@ const { pathname: urlPath } = Astro.url
         overflow: hidden;
         flex-grow: 1;
         padding-inline: 1ch;
-        /* margin-inline-start: 1ch; */
-        /* line-height: 1.5; */
-        /* line-height: var(--line-height, 1.227); */
+        color: var(--foreground2);
 
         #sidebar-toggle {
             position: absolute;
             z-index: 3;
+            color: var(--foreground3);
+            background-color: var(--background0);
         }
 
         &:focus-within {
@@ -879,6 +882,15 @@ const { pathname: urlPath } = Astro.url
             vertical-align: super;
             line-height: 0;
         }
+        /* .key-z { */
+        /*     opacity: 0.35; */
+        /* } */
+        /* .key-h { */
+        /*     opacity: 0.35; */
+        /* } */
+        /* .key-bracket { */
+        /*     opacity: 0.35; */
+        /* } */
 
         :is(a[href], summary, button:not([disabled]))::after {
             content: '';
@@ -1152,7 +1164,7 @@ const { pathname: urlPath } = Astro.url
     }
 
     ul > details {
-        padding-inline-start: 3ch;
+        padding-inline-start: 2ch;
         summary {
             /* font-weight: var(--font-weight-bold); */
             .fold-icon::after {
