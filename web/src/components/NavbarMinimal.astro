@@ -367,11 +367,13 @@ const { variant } = Astro.props
                     color: var(--foreground1);
                     text-decoration: none;
                     text-align: left !important;
-                    background: none;
-                    border: none;
+                    background: none !important;
+                    border: none !important;
                     font: inherit;
                     cursor: pointer;
                     width: 100%;
+                    min-width: 0 !important;
+                    box-sizing: border-box;
 
                     &:hover {
                         background: var(--background1);
