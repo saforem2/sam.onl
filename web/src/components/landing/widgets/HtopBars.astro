@@ -12,12 +12,6 @@ const cpuStyle = [
     { pct: 88, colors: ['green', 'green', 'yellow', 'red'] },
     { pct: 31, colors: ['green', 'green', 'yellow', 'red'] },
 ]
-
-function makeBar(pct: number, width: number = 20): string {
-    const filled = Math.round((pct / 100) * width)
-    const empty = width - filled
-    return '|' + '|'.repeat(filled) + ' '.repeat(empty) + '|'
-}
 ---
 
 <column box-="square" pad-="1 2" gap-="0" class="htop-widget">

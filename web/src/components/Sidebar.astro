@@ -1,13 +1,21 @@
 ---
 import type { CollectionEntry } from 'astro:content'
 import { compareUrlPaths } from '@/utils/url'
-import { makeSortedCategoryEntries, categoryLabels } from '@/utils/content'
+import {
+    makeSortedCategoryEntries,
+    categoryLabels,
+    moreSidebarGroup,
+} from '@/utils/content'
 import VimNavigation from './landing/VimNavigation.astro'
 
-const categories = makeSortedCategoryEntries()
+const allCategories = makeSortedCategoryEntries()
+const categories = allCategories.filter(([slug]) => !moreSidebarGroup.has(slug))
+const moreSubCategories = allCategories.filter(([slug]) =>
+    moreSidebarGroup.has(slug),
+)
 
 const yearGroupedCategories = new Set(['posts', 'talks'])
-const linkedCategorySlugs = new Set(['posts', 'talks', 'projects'])
+const linkedCategorySlugs = new Set(['posts', 'talks', 'projects', 'webtui'])
 const dateGroupedCategories = new Set(['posts', 'talks'])
 const yearPattern = /^\d{4}$/
 const datePattern = /(^|\n)(\d{4})-(\d{2})-(\d{2})\b/m
@@ -250,6 +258,22 @@ const subdirLabels: Record<string, string> = {
     contributing: 'Contributing',
 }
 
+const categoryKeybinds: Record<string, string> = {
+    landing: '0',
+    posts: '1',
+    talks: '2',
+    more: '3',
+    webtui: '4',
+}
+
+const labelWithKey = (slug: string) => {
+    const key = categoryKeybinds[slug]
+    const label = categoryLabels[slug]
+    return key !== undefined
+        ? `<sup class="cat-key">${key}</sup>${label}`
+        : label
+}
+
 const { pathname: urlPath } = Astro.url
 ---
 
@@ -261,7 +285,10 @@ const { pathname: urlPath } = Astro.url
         aria-expanded="true"
         aria-controls="sidebar-container"
         aria-label="Collapse left sidebar (zh)">
-        &lsaquo;<span class="key-z">z</span>[<span class="key-h">h</span>]
+        <span class="key-bracket"></span>&lsaquo;<span class="key-z">z</span
+        ><span class="key-bracket">[</span><span class="key-h">h</span><span
+            class="key-bracket">]</span
+        >
     </button>
     <div id="category-container">
         <div id="category-list">
@@ -284,8 +311,145 @@ const { pathname: urlPath } = Astro.url
                                         : 'sidebar-direct-link'
                                 }
                                 data-slug={landingPage.id}>
-                                {categoryLabels[slug]}
+                                <Fragment set:html={labelWithKey(slug)} />
                             </a>
+                        )
+                    }
+
+                    if (slug === 'more') {
+                        const isMoreActive =
+                            pages.some(({ id }) =>
+                                compareUrlPaths(urlPath, id),
+                            ) ||
+                            moreSubCategories.some(([, subPages]) =>
+                                subPages.some(({ id }) =>
+                                    compareUrlPaths(urlPath, id),
+                                ),
+                            )
+                        return (
+                            <details open={isMoreActive}>
+                                <summary
+                                    class={
+                                        compareUrlPaths(urlPath, 'more')
+                                            ? 'active'
+                                            : undefined
+                                    }>
+                                    <a
+                                        href="/more"
+                                        class="sidebar-category-link"
+                                        onclick="event.stopPropagation()"
+                                        data-slug="more">
+                                        <Fragment
+                                            set:html={labelWithKey('more')}
+                                        />
+                                    </a>
+                                    <span
+                                        class="fold-icon"
+                                        aria-hidden="true"
+                                    />
+                                </summary>
+                                <ul
+                                    marker-="tree open"
+                                    style="padding-inline-start: 2ch;">
+                                    {moreSubCategories.map(
+                                        ([subSlug, subPages]) => {
+                                            const subIndexPage = subPages.find(
+                                                ({ id }) => id === subSlug,
+                                            )
+                                            const isSubActive = subPages.some(
+                                                ({ id }) =>
+                                                    compareUrlPaths(
+                                                        urlPath,
+                                                        id,
+                                                    ),
+                                            )
+                                            const subChildPages =
+                                                subPages.filter(
+                                                    ({ id }) => id !== subSlug,
+                                                )
+                                            const hasChildren =
+                                                subChildPages.length > 0
+
+                                            if (hasChildren) {
+                                                return (
+                                                    <li>
+                                                        <details
+                                                            open={isSubActive}>
+                                                            <summary>
+                                                                <a
+                                                                    href={`/${subIndexPage?.id ?? subSlug}`}
+                                                                    class={`sidebar-category-link ${compareUrlPaths(urlPath, subSlug) ? 'active' : ''}`}
+                                                                    onclick="event.stopPropagation()"
+                                                                    data-slug={
+                                                                        subSlug
+                                                                    }>
+                                                                    {categoryLabels[
+                                                                        subSlug
+                                                                    ] ??
+                                                                        subSlug}
+                                                                </a>
+                                                                <span
+                                                                    class="fold-icon"
+                                                                    aria-hidden="true"
+                                                                />
+                                                            </summary>
+                                                            <ul
+                                                                marker-="tree open"
+                                                                style="padding-inline-start: 2ch;">
+                                                                {subChildPages.map(
+                                                                    ({
+                                                                        id,
+                                                                        data: {
+                                                                            title,
+                                                                        },
+                                                                    }) => (
+                                                                        <li>
+                                                                            <a
+                                                                                href={`/${id}`}
+                                                                                class={
+                                                                                    compareUrlPaths(
+                                                                                        urlPath,
+                                                                                        id,
+                                                                                    )
+                                                                                        ? 'active'
+                                                                                        : ''
+                                                                                }
+                                                                                data-slug={
+                                                                                    id
+                                                                                }>
+                                                                                {
+                                                                                    title
+                                                                                }
+                                                                            </a>
+                                                                        </li>
+                                                                    ),
+                                                                )}
+                                                            </ul>
+                                                        </details>
+                                                    </li>
+                                                )
+                                            }
+
+                                            return (
+                                                <li>
+                                                    <a
+                                                        href={`/${subIndexPage?.id ?? subSlug}`}
+                                                        class={
+                                                            isSubActive
+                                                                ? 'active'
+                                                                : ''
+                                                        }
+                                                        data-slug={subSlug}>
+                                                        {categoryLabels[
+                                                            subSlug
+                                                        ] ?? subSlug}
+                                                    </a>
+                                                </li>
+                                            )
+                                        },
+                                    )}
+                                </ul>
+                            </details>
                         )
                     }
 
@@ -319,17 +483,27 @@ const { pathname: urlPath } = Astro.url
 
                         return (
                             <details open={isCategoryActive}>
-                                <summary>
+                                <summary
+                                    class={
+                                        shouldLinkCategory &&
+                                        compareUrlPaths(urlPath, slug)
+                                            ? 'active'
+                                            : undefined
+                                    }>
                                     {shouldLinkCategory ? (
                                         <a
                                             href={`/${slug}`}
                                             class="sidebar-category-link"
                                             onclick="event.stopPropagation()"
                                             data-slug={slug}>
-                                            {categoryLabels[slug]}
+                                            <Fragment
+                                                set:html={labelWithKey(slug)}
+                                            />
                                         </a>
                                     ) : (
-                                        categoryLabels[slug]
+                                        <Fragment
+                                            set:html={labelWithKey(slug)}
+                                        />
                                     )}
                                     <span
                                         class="fold-icon"
@@ -501,7 +675,7 @@ const { pathname: urlPath } = Astro.url
                                         : 'sidebar-direct-link'
                                 }
                                 data-slug={slug}>
-                                {categoryLabels[slug]}
+                                <Fragment set:html={labelWithKey(slug)} />
                             </a>
                         )
                     }
@@ -518,7 +692,7 @@ const { pathname: urlPath } = Astro.url
                                         : 'sidebar-direct-link'
                                 }
                                 data-slug={page.id}>
-                                {categoryLabels[slug]}
+                                <Fragment set:html={labelWithKey(slug)} />
                             </a>
                         )
                     }
@@ -533,17 +707,25 @@ const { pathname: urlPath } = Astro.url
 
                     return (
                         <details open={isCategoryActive}>
-                            <summary>
+                            <summary
+                                class={
+                                    shouldLinkCategory &&
+                                    compareUrlPaths(urlPath, slug)
+                                        ? 'active'
+                                        : undefined
+                                }>
                                 {shouldLinkCategory ? (
                                     <a
                                         href={`/${slug}`}
                                         class="sidebar-category-link"
                                         onclick="event.stopPropagation()"
                                         data-slug={slug}>
-                                        {categoryLabels[slug]}
+                                        <Fragment
+                                            set:html={labelWithKey(slug)}
+                                        />
                                     </a>
                                 ) : (
-                                    categoryLabels[slug]
+                                    <Fragment set:html={labelWithKey(slug)} />
                                 )}
                                 <span class="fold-icon" aria-hidden="true" />
                             </summary>
@@ -672,13 +854,13 @@ const { pathname: urlPath } = Astro.url
         overflow: hidden;
         flex-grow: 1;
         padding-inline: 1ch;
-        /* margin-inline-start: 1ch; */
-        /* line-height: 1.5; */
-        /* line-height: var(--line-height, 1.227); */
+        color: var(--foreground2);
 
         #sidebar-toggle {
             position: absolute;
             z-index: 3;
+            color: var(--foreground3);
+            background-color: var(--background0);
         }
 
         &:focus-within {
@@ -688,8 +870,27 @@ const { pathname: urlPath } = Astro.url
         :is(a[href], summary, button:not([disabled])) {
             position: relative;
             outline: none;
-            border: 0.3ch solid rgba(0, 0, 0, 0);
+            /* border: 0.3ch solid rgba(0, 0, 0, 0); */
         }
+
+        summary > a.sidebar-category-link {
+            border: none;
+        }
+
+        .cat-key {
+            opacity: 0.35;
+            vertical-align: super;
+            line-height: 0;
+        }
+        /* .key-z { */
+        /*     opacity: 0.35; */
+        /* } */
+        /* .key-h { */
+        /*     opacity: 0.35; */
+        /* } */
+        /* .key-bracket { */
+        /*     opacity: 0.35; */
+        /* } */
 
         :is(a[href], summary, button:not([disabled]))::after {
             content: '';
@@ -719,7 +920,7 @@ const { pathname: urlPath } = Astro.url
             /* border-left: 1px solid var(--accent); */
             text-decoration: none;
             /* .sidebar-category-link:hover { */
-            border: 0.3ch solid rgba(0, 0, 0, 0) !important;
+            /* border: 0.3ch solid rgba(0, 0, 0, 0) !important; */
             /* } */
             /* box-shadow: */
             /*     inset var(--focus-rail-size) 0 0 0 var(--focus-marker), */
@@ -772,6 +973,14 @@ const { pathname: urlPath } = Astro.url
         text-decoration: none;
     }
 
+    details > summary.active {
+        color: var(--accent);
+        background-color: oklch(
+            from var(--background-active, var(--background2, #838383))
+                calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+        );
+    }
+
     li {
         padding-inline-start: 0ch;
     }
@@ -779,6 +988,7 @@ const { pathname: urlPath } = Astro.url
     ul > li > a[href] {
         color: var(--foreground2);
         border: 0.33ch solid rgba(0, 0, 0, 0) !important;
+        text-decoration: none;
     }
     /* #sidebar ul > li > a { */
     /*     border-left: 1pt solid var(--background2); */
@@ -954,7 +1164,7 @@ const { pathname: urlPath } = Astro.url
     }
 
     ul > details {
-        padding-inline-start: 3ch;
+        padding-inline-start: 2ch;
         summary {
             /* font-weight: var(--font-weight-bold); */
             .fold-icon::after {
@@ -974,9 +1184,49 @@ const { pathname: urlPath } = Astro.url
 </style>
 
 <script>
-    import { applyVimNavigation } from '@/utils/vim'
+    import { applyVimNavigation, isUserTyping } from '@/utils/vim'
 
     const sidebar = document.getElementById('sidebar')
+
+    // Number-key shortcuts for sidebar categories
+    // Maps key → child index in #category-list
+    const categoryKeys: Record<string, number> = {
+        '0': 0, // Start
+        '1': 1, // Posts
+        '2': 2, // Talks
+        '3': 3, // More
+        '4': 4, // Style (WebTUI)
+    }
+
+    const categoryList = document.getElementById('category-list')
+    if (categoryList) {
+        const entries = categoryList.querySelectorAll<HTMLElement>(
+            ':scope > a, :scope > details',
+        )
+        window.addEventListener('keydown', (e) => {
+            if (e.defaultPrevented || isUserTyping()) return
+            if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
+            const idx = categoryKeys[e.key]
+            if (idx === undefined) return
+            const el = entries[idx]
+            if (!el) return
+            e.preventDefault()
+            if (el.tagName === 'A') {
+                ;(el as HTMLAnchorElement).click()
+            } else if (el.tagName === 'DETAILS') {
+                const details = el as HTMLDetailsElement
+                details.open = true
+                const link = details.querySelector<HTMLAnchorElement>(
+                    'summary a.sidebar-category-link',
+                )
+                if (link) {
+                    link.click()
+                } else {
+                    details.querySelector('summary')?.focus()
+                }
+            }
+        })
+    }
     let lastInteractionWasPointer = false
 
     const revealFocusedElement = (element: HTMLElement) => {

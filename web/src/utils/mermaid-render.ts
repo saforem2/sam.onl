@@ -53,7 +53,8 @@ export function initMermaid() {
         const theme =
             document.documentElement.getAttribute('data-webtui-theme') ??
             'custom-light'
-        return theme === 'custom-light' ? 'default' : 'dark'
+        const lightThemes = ['custom-light', 'catppuccin-latte']
+        return lightThemes.includes(theme) ? 'default' : 'dark'
     }
 
     const resolveMermaidFontFamily = () => {

@@ -7,18 +7,21 @@ export const categoryOrder = [
     'landing',
     'posts',
     'talks',
-    'projects',
-    'about',
-    'ideas',
     'more',
-    'webtui',
+    'about',
+    'projects',
+    'ideas',
     'now',
+    'webtui',
     // 'start',
     // 'installation',
     // 'components',
     // 'plugins',
     // 'contributing',
 ]
+
+/** Categories that should be nested under the "more" group in the sidebar */
+export const moreSidebarGroup = new Set(['projects', 'about', 'ideas', 'now'])
 
 //                   
 //                   
@@ -45,21 +48,40 @@ export const categoryOrder = [
 // home:   Home
 // posts:   Posts
 // talks 󰐨  Talks
-// more:   More
+// more: 󰐱    More
 // projects:   Projects
 export const categoryLabels: Record<(typeof categoryOrder)[number], string> = {
+    landing: 'Start',
+    posts: 'Posts',
+    talks: 'Talks',
+    about: 'About Me',
+    projects: 'Projects',
+    ideas: 'Ideas',
+    more: 'About',
+    webtui: 'Style',
+    now: 'Now',
+    // ---------------------------
+    // landing: '  Start',
+    // posts: '  Posts',
+    // talks: '  Talks',
+    // projects: '  Projects',
+    // about: '  About',
+    // ideas: '  Ideas',
+    // more: '  More',
+    // webtui: '  Style',
+    // now: '  Now',
+    // ---------------------------
     // landing: '  Landing',
     // landing: '󱠡  Hello!',
     // landing: '󱠡  Hello!',
-    landing: '󱠡  Start',
-    posts: '  Posts',
-    talks: '󰐨  Talks',
-    projects: '  Projects',
-    about: '  About',
-    ideas: '  Ideas',
-    more: '  More',
-    webtui: '  WebTUI',
-    now: '  Now',
+    // landing: '  Start',
+    // posts: '  Posts',
+    // projects: '  Projects',
+    // ideas: '󱠃 Ideas',
+    // more: '󰩦  More',
+    // webtui: '󰸌  Style',
+    // webtui: '  Style',
+    // webtui: '  Style',
     // start: '\uf024 Start',
     // installation: '\uf019 Installation',
     // components: '\uf121 Components',

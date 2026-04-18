@@ -54,24 +54,60 @@ if (url.pathname === '/') {
 
 <nav id="top-navbar" box-="square">
     <!--                                                                                 -->
-    <span><a href="/" id="home-link">[<span> </span>]</a></span>
+    <span
+        ><a href="/" id="home-link"
+            ><span class="keyhint">[</span><span>&#xef85;</span><span
+                class="keyhint">]</span
+            ></a
+        ></span
+    >
     <row id="links">
         <span id="wages">
-             [<a href="/posts" data-active={isOn === 'posts'}>p</a>]osts &nbsp;
-            󰐨 [<a href="/talks" data-active={isOn === 'talks'}>t</a>]alks &nbsp;
-             [<a href="/more" data-active={isOn === 'more'}>m</a>]ore &nbsp;
+            <a href="/posts" class="nav-link" data-active={isOn === 'posts'}
+                ><u>p</u>osts</a
+            >
+            <a href="/talks" class="nav-link" data-active={isOn === 'talks'}
+                ><u>t</u>alks</a
+            >
+            <a href="/landing" class="nav-link" data-active={isOn === 'more'}
+                ><u>m</u>ore</a
+            >
         </span>
-        <!-- <a href="/projects" data-active={isOn === 'projects'}>  Projects </a> -->
-        <button id="theme-button" size-="small">  </button>
+        <!-- <span id="wages"> -->
+        <!--     <a href="/posts" class="nav-link" data-active={isOn === 'posts'} -->
+        <!--         >&#xf044; <u>p</u>osts</a -->
+        <!--     > -->
+        <!--     <a href="/talks" class="nav-link" data-active={isOn === 'talks'} -->
+        <!--         >&#xf0428; <u>t</u>alks</a -->
+        <!--     > -->
+        <!--     <a href="/landing" class="nav-link" data-active={isOn === 'more'} -->
+        <!--         >&#xefa8; <u>m</u>ore</a -->
+        <!--     > -->
+        <!-- </span> -->
+        <button id="theme-button" size-="small"> </button>
         <a
             id="github-button"
             href="https://github.com/saforem2/sam.onl"
             target="_blank"
             size-="small"></a
         >
-        <a id="rss-button" href="/rss.xml" target="_blank" size-="small">  </a>
-        <button id="search-button" size-="small"> &#xea6d;</button>
+        <a id="rss-button" href="/rss.xml" target="_blank" size-="small"> </a>
+        <button id="search-button" size-="small">&#xea6d;</button>
     </row>
+    <details id="nav-dropdown">
+        <summary>&#xf0c9;</summary>
+        <div class="nav-dropdown-content">
+            <a href="/">&#xef85; home</a>
+            <a href="/posts">&#xf044; posts</a>
+            <a href="/talks">&#xf0428; talks</a>
+            <a href="/landing">&#xefa8; more</a>
+            <a href="https://github.com/saforem2/sam.onl" target="_blank"
+                >&#xe65b; github</a
+            >
+            <a href="/rss.xml" target="_blank">&#xf09e; rss</a>
+            <button id="theme-button-mobile">&#xe22b; theme</button>
+        </div>
+    </details>
 </nav>
 <Filter />
 
@@ -81,7 +117,8 @@ if (url.pathname === '/') {
         flex-direction: row;
         justify-content: space-between;
         gap: 1ch;
-        padding: 1lh 2ch;
+        padding-inline: 2ch;
+        /* padding: 1lh 2ch; */
         container-type: inline-size;
         container-name: navbar;
         white-space: nowrap;
@@ -188,8 +225,10 @@ if (url.pathname === '/') {
 
     #links {
         color: var(--foreground1);
-        display: block;
-        text-align: right;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 1ch;
         margin-inline-start: 1ch;
         min-width: 0;
         max-width: 100%;
@@ -343,9 +382,84 @@ if (url.pathname === '/') {
         }
     }
 
-    @media (max-width: 44ch) {
+    #nav-dropdown {
+        display: none;
+    }
+
+    #wages {
+        display: flex;
+        gap: 2ch;
+    }
+
+    .nav-link {
+        display: inline;
+        text-decoration: none;
+        color: var(--foreground1);
+
+        u {
+            /* font-weight: bold; */
+            text-decoration: none !important;
+            /* text-decoration: underline; */
+            /* text-decoration-color: var(--foreground0); */
+            /* text-decoration-thickness: 2pt; */
+        }
+    }
+    .nav-link u::before {
+        content: '[';
+    }
+    .nav-link u::after {
+        content: ']';
+    }
+
+    @media (max-width: 768px) {
+        #links {
+            display: none;
+        }
+
+        #nav-dropdown {
+            display: block;
+
+            > summary {
+                list-style: none;
+                cursor: pointer;
+                padding: 0 1ch;
+
+                &::-webkit-details-marker {
+                    display: none;
+                }
+            }
+
+            .nav-dropdown-content {
+                position: absolute;
+                right: 1ch;
+                top: 100%;
+                z-index: 200;
+                display: flex;
+                flex-direction: column;
+                background: var(--background0);
+                border: 1px solid var(--foreground2);
+                box-shadow: 2px 2px 0 0 var(--foreground2);
+                min-width: 20ch;
+
+                a,
+                button {
+                    all: unset;
+                    display: block;
+                    padding: 0.5lh 2ch;
+                    color: var(--foreground1);
+                    cursor: pointer;
+                    box-sizing: border-box;
+                    width: 100%;
+
+                    &:hover {
+                        background: var(--background1);
+                    }
+                }
+            }
+        }
+
         nav {
-            flex-direction: column;
+            position: relative;
         }
     }
 </style>
@@ -384,10 +498,7 @@ if (url.pathname === '/') {
             const value = button.getAttribute('data-theme-option')
             const isActive = value === theme
             button.setAttribute('aria-selected', String(isActive))
-            button.setAttribute(
-                'variant-',
-                isActive ? 'default' : 'background1',
-            )
+            button.setAttribute('variant-', 'background1')
             button.setAttribute('data-active', String(isActive))
         })
 
@@ -426,9 +537,28 @@ if (url.pathname === '/') {
         })
     })
 
+    const focusThemeOption = () => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                const active = themeDialog.querySelector(
+                    '.theme-option[aria-selected="true"]',
+                ) as HTMLElement | null
+                ;(active ?? themeDialog.querySelector('.theme-option'))?.focus()
+            })
+        })
+    }
+
     document.getElementById('theme-button')?.addEventListener('click', () => {
         themeDialog.showModal()
+        focusThemeOption()
     })
+
+    document
+        .getElementById('theme-button-mobile')
+        ?.addEventListener('click', () => {
+            themeDialog.showModal()
+            focusThemeOption()
+        })
 
     document.getElementById('search-button')?.addEventListener('click', () => {
         searchDialog.showModal()
@@ -437,7 +567,7 @@ if (url.pathname === '/') {
     const navShortcuts: Record<string, string> = {
         p: '/posts',
         t: '/talks',
-        m: '/more',
+        m: '/landing',
     }
 
     window.addEventListener('keydown', (e) => {

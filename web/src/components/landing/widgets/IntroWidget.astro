@@ -25,7 +25,10 @@ const { variant, total, home = false } = Astro.props
     {
         (variant === 20 || variant === 21) && (
             <span is-="badge" class="iw-about-title">
-                &#xf2bd; [<a href="/landing">a</a>]bout
+                &#xf2bd;{' '}
+                <a href="/landing" class="widget-link">
+                    <u>a</u>bout
+                </a>
             </span>
         )
     }
@@ -106,7 +109,7 @@ const { variant, total, home = false } = Astro.props
         {
             home && (
                 <a
-                    href="/more"
+                    href="/landing"
                     class="iw-nav-home"
                     style="margin-left: auto;">
                     [m]ore &rarr;

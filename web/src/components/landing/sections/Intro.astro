@@ -303,16 +303,48 @@ const total = variants.length
                 '[tabindex="0"], a[href], button:not([disabled])',
             )
             const intro = document.getElementById('intro-widget')
-            if (intro) vimFocusElement(intro)
+            if (intro && window.innerWidth > 768) {
+                vimFocusElement(intro)
+            }
 
             const shortcuts: Record<string, string> = {
                 a: '#intro-widget',
-                o: '.work-widget',
-                s: '.posts-widget',
-                d: '.talks-widget',
+                w: '.work-widget',
+                o: '.posts-widget',
+                s: '.talks-widget',
                 l: '#stats-widget',
                 m: '.iw-nav-home',
             }
+            // On mobile, visually highlight widgets as they scroll into view
+            // Uses data-vim-focused attribute only — no focus() call to avoid
+            // browser scroll snapping
+            if (window.innerWidth <= 768) {
+                let userScrolled = false
+                const onFirstScroll = () => {
+                    if (userScrolled) return
+                    userScrolled = true
+                    window.removeEventListener('scroll', onFirstScroll, true)
+                    const focusables =
+                        grid.querySelectorAll<HTMLElement>('[tabindex="0"]')
+                    const observer = new IntersectionObserver(
+                        (entries) => {
+                            for (const entry of entries) {
+                                const el = entry.target as HTMLElement
+                                if (entry.isIntersecting) {
+                                    focusables.forEach((f) =>
+                                        f.removeAttribute('data-vim-focused'),
+                                    )
+                                    el.setAttribute('data-vim-focused', 'true')
+                                }
+                            }
+                        },
+                        { threshold: 0.5 },
+                    )
+                    for (const el of focusables) observer.observe(el)
+                }
+                window.addEventListener('scroll', onFirstScroll, true)
+            }
+
             grid.addEventListener('keydown', (e) => {
                 if (isUserTyping()) return
                 const selector = shortcuts[e.key]
