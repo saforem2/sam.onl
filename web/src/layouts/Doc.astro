@@ -99,6 +99,22 @@ const sourceFilePath = sourceFile
 const githubBase = 'https://github.com/saforem2/sam.onl'
 const githubRawBase = 'https://raw.githubusercontent.com/saforem2/sam.onl'
 
+// Get file last-modified date
+import { stat } from 'node:fs/promises'
+let fileModifiedDate: Date | null = null
+if (sourceFilePath) {
+    try {
+        const resolvedPath = new URL(
+            `../${sourceFilePath.replace('web/', '')}`,
+            import.meta.url,
+        ).pathname
+        const fileStat = await stat(resolvedPath)
+        fileModifiedDate = fileStat.mtime
+    } catch {
+        // File not found, skip
+    }
+}
+
 // Format date helper
 function formatDate(d: string | Date): string {
     return new Date(d).toLocaleDateString('en-US', {
@@ -191,74 +207,102 @@ const articleSchema =
                     {
                         (frontmatter.date || isPost || isTalk) && (
                             <div class="post-meta">
-                                <span
-                                    is-="badge"
-                                    variant-="background1"
-                                    class="post-meta-item"
-                                    tabindex="0">
-                                    Sam Foreman
-                                </span>
-                                {frontmatter.date && (
+                                <div class="post-meta-row">
                                     <span
                                         is-="badge"
                                         variant-="background1"
                                         class="post-meta-item"
                                         tabindex="0">
-                                        <span class="date-long">
-                                            {formatDate(frontmatter.date)}
-                                        </span>
-                                        <span class="date-short">
-                                            {formatDateShort(frontmatter.date)}
-                                        </span>
+                                        Sam Foreman
                                     </span>
-                                )}
-                                {frontmatter.date && (
-                                    <span
-                                        is-="badge"
-                                        variant-="background1"
-                                        class="post-meta-item"
-                                        tabindex="0">
-                                        {readingTime}
-                                    </span>
-                                )}
-                                {category && (
-                                    <a
-                                        href={`/posts/${category}/`}
-                                        is-="badge"
-                                        variant-="background1"
-                                        class="post-meta-tag"
-                                        tabindex="0">
-                                        {category}
-                                    </a>
-                                )}
-                                {sourceFilePath && (
-                                    <span class="post-meta-links">
-                                        <a
-                                            href={`${githubBase}/blob/main/${sourceFilePath}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                    {frontmatter.date && (
+                                        <span
                                             is-="badge"
                                             variant-="background1"
+                                            class="post-meta-item"
                                             tabindex="0">
-                                            source
-                                        </a>
-                                        <a
-                                            href={`${githubRawBase}/main/${sourceFilePath}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                            <span class="date-long">
+                                                {formatDate(frontmatter.date)}
+                                            </span>
+                                            <span class="date-short">
+                                                {formatDateShort(
+                                                    frontmatter.date,
+                                                )}
+                                            </span>
+                                        </span>
+                                    )}
+                                    {fileModifiedDate &&
+                                        frontmatter.date &&
+                                        formatDate(fileModifiedDate) !==
+                                            formatDate(frontmatter.date) && (
+                                            <span
+                                                is-="badge"
+                                                variant-="background1"
+                                                class="post-meta-item"
+                                                tabindex="0">
+                                                updated:{' '}
+                                                <span class="date-long">
+                                                    {formatDate(
+                                                        fileModifiedDate,
+                                                    )}
+                                                </span>
+                                                <span class="date-short">
+                                                    {formatDateShort(
+                                                        fileModifiedDate,
+                                                    )}
+                                                </span>
+                                            </span>
+                                        )}
+                                    {frontmatter.date && (
+                                        <span
                                             is-="badge"
                                             variant-="background1"
+                                            class="post-meta-item"
                                             tabindex="0">
-                                            raw
+                                            {readingTime}
+                                        </span>
+                                    )}
+                                    {category && (
+                                        <a
+                                            href={`/posts/${category}/`}
+                                            is-="badge"
+                                            variant-="background1"
+                                            class="post-meta-tag"
+                                            tabindex="0">
+                                            {category}
                                         </a>
-                                    </span>
-                                )}
-                                {(isPost || isTalk) && (
-                                    <ShareButtons
-                                        title={frontmatter.title}
-                                        url={`https://sam.onl${Astro.url.pathname}`}
-                                    />
-                                )}
+                                    )}
+                                </div>
+                                <div class="post-meta-row">
+                                    {sourceFilePath && (
+                                        <span class="post-meta-links">
+                                            <a
+                                                href={`${githubBase}/blob/main/${sourceFilePath}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                is-="badge"
+                                                variant-="background1"
+                                                tabindex="0">
+                                                source
+                                            </a>
+                                            <a
+                                                href={`${githubRawBase}/main/${sourceFilePath}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                is-="badge"
+                                                variant-="background1"
+                                                tabindex="0">
+                                                raw
+                                            </a>
+                                        </span>
+                                    )}
+                                    {(isPost || isTalk) && (
+                                        <ShareButtons
+                                            title={frontmatter.title}
+                                            url={`https://sam.onl${Astro.url.pathname}`}
+                                        />
+                                    )}
+                                </div>
                             </div>
                         )
                     }
