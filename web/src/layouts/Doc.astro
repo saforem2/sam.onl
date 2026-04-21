@@ -1648,6 +1648,61 @@ const articleSchema =
     }
 </script>
 
+<!-- Collapsible headings: wrap h2-h6 sections in <details> -->
+<script>
+    const mainContent = document.getElementById('main-content')
+    if (mainContent) {
+        const headingTags = new Set(['H2', 'H3', 'H4', 'H5', 'H6'])
+        const headings = Array.from(
+            mainContent.querySelectorAll(':scope > :is(h2, h3, h4, h5, h6)'),
+        ) as HTMLElement[]
+
+        for (let i = headings.length - 1; i >= 0; i--) {
+            const heading = headings[i]
+            const level = parseInt(heading.tagName[1])
+            const details = document.createElement('details')
+            details.setAttribute('is-', 'accordion')
+            details.classList.add('heading-collapse')
+            details.open = true
+            const summary = document.createElement('summary')
+            // Keep the actual heading element inside summary
+            summary.appendChild(heading.cloneNode(true))
+            details.appendChild(summary)
+            heading.parentNode!.insertBefore(details, heading)
+            heading.remove()
+            let next = details.nextSibling
+            while (next) {
+                const sibling = next
+                next = sibling.nextSibling
+                if (
+                    sibling.nodeType === 1 &&
+                    headingTags.has((sibling as HTMLElement).tagName) &&
+                    parseInt((sibling as HTMLElement).tagName[1]) <= level
+                ) {
+                    break
+                }
+                details.appendChild(sibling)
+            }
+        }
+    }
+</script>
+
+<style is:global>
+    .heading-collapse > summary {
+        background-color: transparent !important;
+        list-style: none;
+        cursor: pointer;
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+
+        > :is(h2, h3, h4, h5, h6) {
+            display: inline;
+        }
+    }
+</style>
+
 <!-- Footnote hover tooltips -->
 <script>
     const footnoteRefs = document.querySelectorAll('a[data-footnote-ref]')
