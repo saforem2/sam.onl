@@ -259,19 +259,26 @@ const subdirLabels: Record<string, string> = {
 }
 
 const categoryKeybinds: Record<string, string> = {
-    landing: '0',
-    posts: '1',
-    talks: '2',
-    more: '3',
-    webtui: '4',
+    landing: 's',
+    posts: 'p',
+    talks: 't',
+    more: 'a',
+    webtui: 'y',
 }
 
 const labelWithKey = (slug: string) => {
     const key = categoryKeybinds[slug]
     const label = categoryLabels[slug]
-    return key !== undefined
-        ? `<sup class="cat-key">${key}</sup>${label}`
-        : label
+    if (key === undefined) return label
+    // Insert [k] bracket around the keybind letter in the label text
+    // Label format: "icon  Text" — find the key char in the text portion
+    const keyIndex = label.toLowerCase().indexOf(key.toLowerCase())
+    if (keyIndex === -1) return `[${key}] ${label}`
+    return (
+        label.slice(0, keyIndex) +
+        `<span class="cat-key">[</span>${label[keyIndex]}<span class="cat-key">]</span>` +
+        label.slice(keyIndex + 1)
+    )
 }
 
 const { pathname: urlPath } = Astro.url
@@ -879,8 +886,6 @@ const { pathname: urlPath } = Astro.url
 
         .cat-key {
             opacity: 0.35;
-            vertical-align: super;
-            line-height: 0;
         }
         /* .key-z { */
         /*     opacity: 0.35; */
@@ -1191,11 +1196,11 @@ const { pathname: urlPath } = Astro.url
     // Number-key shortcuts for sidebar categories
     // Maps key → child index in #category-list
     const categoryKeys: Record<string, number> = {
-        '0': 0, // Start
-        '1': 1, // Posts
-        '2': 2, // Talks
-        '3': 3, // More
-        '4': 4, // Style (WebTUI)
+        s: 0, // start
+        p: 1, // posts
+        t: 2, // talks
+        a: 3, // about (More)
+        y: 4, // style (WebTUI)
     }
 
     const categoryList = document.getElementById('category-list')
