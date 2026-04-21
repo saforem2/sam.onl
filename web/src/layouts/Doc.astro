@@ -1653,13 +1653,14 @@ const articleSchema =
     const mainContent = document.getElementById('main-content')
     if (mainContent) {
         const headingTags = new Set(['H2', 'H3', 'H4', 'H5', 'H6'])
+        // Only wrap top-level h2 headings — sub-headings fold with their parent
         const headings = Array.from(
-            mainContent.querySelectorAll(':scope > :is(h2, h3, h4, h5, h6)'),
+            mainContent.querySelectorAll(':scope > h2'),
         ) as HTMLElement[]
 
         for (let i = headings.length - 1; i >= 0; i--) {
             const heading = headings[i]
-            const level = parseInt(heading.tagName[1])
+            const level = 2
             const details = document.createElement('details')
             details.setAttribute('is-', 'accordion')
             details.classList.add('heading-collapse')
