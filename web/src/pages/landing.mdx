@@ -4,6 +4,25 @@ title: 'Sam Foreman'
 order: 0
 ---
 
+import { getCollection } from 'astro:content'
+
+export const recentPosts = (await getCollection('docs'))
+    .filter((doc) => {
+        const id = doc.id
+        return (
+            id.startsWith('posts/') &&
+            !id.startsWith('posts/drafts/') &&
+            !id.endsWith('posts/index.mdx') &&
+            !id.match(/^posts\/\d{4}\/index\.mdx$/) &&
+            !id.match(/^posts\/\d{4}\/\d{2}\/index\.mdx$/) &&
+            !id.match(/^posts\/(auroragpt|ai-for-physics|jupyter)\/index\.mdx$/) &&
+            doc.data.date &&
+            !doc.data.draft
+        )
+    })
+    .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+    .slice(0, 8)
+
 ## 🧑🏻‍💻 About
 <div id="flex-container" style="display: flex; flex-direction: row; gap: 1ch; width: 100%; justify-content: space-between">
 <div style="width: round(50%, 1ch);">
@@ -244,9 +263,17 @@ Pre-Training group] for the [AuroraGPT] project.
 
 ## 📬 Posts
 
-<div id="listing-posts">
-
-</div>
+<table>
+<thead><tr><th>Date</th><th>Title</th></tr></thead>
+<tbody>
+{recentPosts.map((post) => (
+<tr>
+<td>{new Date(post.data.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+<td><a href={`/${post.id.replace(/\/index\.(mdx?|md)$/, '/')}`}>{post.data.title}</a></td>
+</tr>
+))}
+</tbody>
+</table>
 
 ## 📊 Talks
 
