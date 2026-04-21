@@ -36,6 +36,13 @@
 
 .flex-container.icon-flex a {
     text-decoration: none;
+    padding: 0.5lh 1ch;
+    background-color: var(--background1);
+    color: var(--foreground1);
+
+    &:hover {
+        background-color: var(--background2);
+    }
 }
 
 @layer base {
@@ -433,11 +440,7 @@
     details[is-~='accordion'] {
         /* only apply background-color to the summary element */
         summary {
-            background-color: oklch(
-                from var(--background3) calc(l * var(--oklch-scale, 1.15)) c h /
-                    0.1
-            );
-            /* color: oklch(from var(--background3) l c h); */
+            background-color: var(--background1);
         }
     }
     details[is-~='accordion'] {
