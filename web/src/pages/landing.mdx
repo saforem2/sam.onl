@@ -263,7 +263,7 @@ Pre-Training group] for the [AuroraGPT] project.
 
 ## 📬 Posts
 
-<table box-="square" style="width: fit-content;">
+<table class="recent-posts-table">
 <thead><tr><th>Date</th><th>Title</th></tr></thead>
 <tbody>
 {recentPosts.map((post) => (
@@ -1739,3 +1739,43 @@ Loading repositories from GitHub…
 [SC23 Workshop: High Performance Python for Science at Scale (HPPSS)]: https://hppss.github.io/SC23/
 [Machine Learning and Quantum Computing for Earth Sciences]: https://17.usnccm.org/702
 [guestbooks]: https://guestbooks.meadow.cafe/guestbook/745
+
+<style>{`
+.recent-posts-table {
+    width: fit-content;
+    border-collapse: collapse;
+}
+.recent-posts-table th,
+.recent-posts-table td {
+    border: 1px solid var(--foreground2);
+    padding: 0.25lh 1ch;
+}
+.recent-posts-table th {
+    background-color: var(--background1);
+}
+`}</style>
+
+<script>{`
+// Make h2 headings collapsible on the landing page
+document.querySelectorAll('#main-content > h2').forEach((heading) => {
+    const details = document.createElement('details');
+    details.setAttribute('is-', 'accordion');
+    details.open = true;
+    const summary = document.createElement('summary');
+    summary.innerHTML = heading.innerHTML;
+    summary.id = heading.id;
+    // Copy heading styles
+    for (const cls of heading.classList) summary.classList.add(cls);
+    details.appendChild(summary);
+    // Move all siblings until next h2 into the details
+    heading.parentNode.insertBefore(details, heading);
+    heading.remove();
+    let next = details.nextSibling;
+    while (next) {
+        const sibling = next;
+        next = sibling.nextSibling;
+        if (sibling.nodeType === 1 && sibling.tagName === 'H2') break;
+        details.appendChild(sibling);
+    }
+});
+`}</script>
