@@ -43,9 +43,62 @@
     align-items: center;
     background-color: var(--background1);
     color: var(--foreground1);
+    transition:
+        background-color 0.15s,
+        color 0.15s;
 
-    &:hover {
-        background-color: var(--background2);
+    &[href*='github']:hover,
+    &[href*='github']:focus-visible {
+        background-color: oklch(from #6e5494 l c h / 0.15);
+        color: #6e5494;
+    }
+
+    &[href*='twitter']:hover,
+    &[href*='twitter']:focus-visible {
+        background-color: oklch(from #1da1f2 l c h / 0.15);
+        color: #1da1f2;
+    }
+
+    &[href*='bsky']:hover,
+    &[href*='bsky']:focus-visible {
+        background-color: oklch(from #0085ff l c h / 0.15);
+        color: #0085ff;
+    }
+
+    &[href*='scholar']:hover,
+    &[href*='scholar']:focus-visible {
+        background-color: oklch(from #4285f4 l c h / 0.15);
+        color: #4285f4;
+    }
+
+    &[href*='linkedin']:hover,
+    &[href*='linkedin']:focus-visible {
+        background-color: oklch(from #0077b5 l c h / 0.15);
+        color: #0077b5;
+    }
+
+    &[href*='mailto']:hover,
+    &[href*='mailto']:focus-visible {
+        background-color: oklch(from #ea4335 l c h / 0.15);
+        color: #ea4335;
+    }
+
+    &[href*='last.fm']:hover,
+    &[href*='last.fm']:focus-visible {
+        background-color: oklch(from #d51007 l c h / 0.15);
+        color: #d51007;
+    }
+
+    &[href*='spotify']:hover,
+    &[href*='spotify']:focus-visible {
+        background-color: oklch(from #1db954 l c h / 0.15);
+        color: #1db954;
+    }
+
+    &[href*='sam.onl']:hover,
+    &[href*='sam.onl']:focus-visible {
+        background-color: oklch(from var(--accent, var(--blue)) l c h / 0.15);
+        color: var(--accent, var(--blue));
     }
 }
 
@@ -221,18 +274,15 @@
         width: 2ch;
     }
     body a {
-        color: var(--url, var(--blue));
+        color: oklch(from var(--url, var(--blue)) l c h / 0.7);
+        text-decoration: none !important;
     }
     body a:hover {
-        text-decoration: none !important;
+        text-decoration: underline !important;
         transition:
-            color 0.3s ease,
-            background-color 0.3s ease;
+            color 0.15s ease,
+            background-color 0.15s ease;
         color: var(--blue, var(--red));
-        background-color: oklch(
-            from var(--blue, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
-                h / 0.1
-        );
     }
 
     pre:not([size-]),
@@ -376,6 +426,14 @@
 
     .callout p {
         color: var(--foreground1);
+    }
+
+    .callout > p:first-child {
+        margin-top: 0;
+    }
+
+    .callout > p:last-child {
+        margin-bottom: 0;
     }
 
     .callout-tip {
@@ -702,6 +760,134 @@ pre.astro-code:focus-within .code-copy-btn,
 @media (pointer: coarse) {
     .code-copy-btn {
         opacity: 0.6;
+    }
+}
+
+/* Highlight text with angled underline effect */
+.highlight,
+.highlight-yellow {
+    position: relative;
+    color: var(--yellow);
+    font-weight: 500;
+
+    &::before {
+        background: oklch(from var(--yellow) calc(l * 1.15) c h / 0.2);
+        content: '';
+        position: absolute;
+        width: calc(100% + 4px);
+        height: 60%;
+        left: -2px;
+        bottom: 0;
+        z-index: -1;
+        transform: rotate(-2deg);
+    }
+}
+
+.highlight-pink {
+    position: relative;
+    color: var(--pink, var(--red));
+    font-weight: 500;
+
+    &::before {
+        background: oklch(from var(--pink, var(--red)) calc(l * 1.15) c h / 0.2);
+        content: '';
+        position: absolute;
+        width: calc(100% + 4px);
+        height: 60%;
+        left: -2px;
+        bottom: 0;
+        z-index: -1;
+        transform: rotate(-2deg);
+    }
+}
+
+.highlight-blue {
+    position: relative;
+    color: var(--blue);
+    font-weight: 500;
+
+    &::before {
+        background: oklch(from var(--blue) calc(l * 1.15) c h / 0.2);
+        content: '';
+        position: absolute;
+        width: calc(100% + 4px);
+        height: 60%;
+        left: -2px;
+        bottom: 0;
+        z-index: -1;
+        transform: rotate(-2deg);
+    }
+}
+
+.highlight-green {
+    position: relative;
+    color: var(--green);
+    font-weight: 500;
+
+    &::before {
+        background: oklch(from var(--green) calc(l * 1.15) c h / 0.2);
+        content: '';
+        position: absolute;
+        width: calc(100% + 4px);
+        height: 60%;
+        left: -2px;
+        bottom: 0;
+        z-index: -1;
+        transform: rotate(-2deg);
+    }
+}
+
+.highlight-red {
+    position: relative;
+    color: var(--red);
+    font-weight: 500;
+
+    &::before {
+        background: oklch(from var(--red) calc(l * 1.15) c h / 0.2);
+        content: '';
+        position: absolute;
+        width: calc(100% + 4px);
+        height: 60%;
+        left: -2px;
+        bottom: 0;
+        z-index: -1;
+        transform: rotate(-2deg);
+    }
+}
+
+.highlight-orange {
+    position: relative;
+    color: var(--orange);
+    font-weight: 500;
+
+    &::before {
+        background: oklch(from var(--orange) calc(l * 1.15) c h / 0.2);
+        content: '';
+        position: absolute;
+        width: calc(100% + 4px);
+        height: 60%;
+        left: -2px;
+        bottom: 0;
+        z-index: -1;
+        transform: rotate(-2deg);
+    }
+}
+
+.highlight-purple {
+    position: relative;
+    color: var(--purple);
+    font-weight: 500;
+
+    &::before {
+        background: oklch(from var(--purple) calc(l * 1.15) c h / 0.2);
+        content: '';
+        position: absolute;
+        width: calc(100% + 4px);
+        height: 60%;
+        left: -2px;
+        bottom: 0;
+        z-index: -1;
+        transform: rotate(-2deg);
     }
 }
 

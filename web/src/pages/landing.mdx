@@ -9,6 +9,7 @@ import { getCollection } from 'astro:content'
 export const recentPosts = (await getCollection('docs'))
     .filter((doc) => {
         const id = doc.id
+        if (!id) return false
         return (
             id.startsWith('posts/') &&
             !id.startsWith('posts/drafts/') &&
@@ -16,6 +17,20 @@ export const recentPosts = (await getCollection('docs'))
             !id.match(/^posts\/\d{4}\/index\.mdx$/) &&
             !id.match(/^posts\/\d{4}\/\d{2}\/index\.mdx$/) &&
             !id.match(/^posts\/(auroragpt|ai-for-physics|jupyter)\/index\.mdx$/) &&
+            doc.data.date &&
+            !doc.data.draft
+        )
+    })
+    .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+    .slice(0, 8)
+
+export const recentTalks = (await getCollection('docs'))
+    .filter((doc) => {
+        const id = doc.id
+        if (!id) return false
+        return (
+            id.startsWith('talks/') &&
+            id !== 'talks/index.mdx' &&
             doc.data.date &&
             !doc.data.draft
         )
@@ -47,7 +62,7 @@ Pre-Training group] for the [AuroraGPT] project.
 <a href="https://bsky.app/profile/samforeman.bsky.social" target="_blank" size-="small">&#xe28e;</a>
 <a href="https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en" target="_blank" size-="small">&#xf19d;</a>
 <a href="mailto:sf@omg.lol" size-="small">&#xf0e0;</a>
-<a href="https://last.fm/user/saforem2" target="_blank" size-="small">&#xeae5;</a>
+<a href="https://last.fm/user/saforem2" target="_blank" size-="small"> </a>
 <a href="https://www.linkedin.com/in/samforem2" target="_blank" size-="small">&#xe820;</a>
 <a href="https://open.spotify.com/user/saforem2" target="_blank" size-="small">&#xf1bc;</a>
 
@@ -276,6 +291,19 @@ Pre-Training group] for the [AuroraGPT] project.
 </table>
 
 ## 📊 Talks
+
+<table class="recent-posts-table">
+<thead><tr><th>Date</th><th>Title</th><th>Location</th></tr></thead>
+<tbody>
+{recentTalks.map((talk) => (
+<tr>
+<td>{(() => { const d = new Date(talk.data.date); return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`; })()}</td>
+<td><a href={`/${talk.id.replace(/\/index\.(mdx?|md)$/, '/')}`}>{talk.data.title}</a></td>
+<td>{talk.data.location ?? ''}</td>
+</tr>
+))}
+</tbody>
+</table>
 
 > [!NOTE] Note
 >
@@ -807,9 +835,8 @@ Pre-Training group] for the [AuroraGPT] project.
 ## 📝 Work
 
 > [!NOTE] Note
->
 > <span style="color:#4582ec;">
->     You can find a full list of my publications on my [Google Scholar]
+> You can find a full list of my publications on my [Google Scholar](https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en)
 > </span>
 
 1.  🌎 [<span class="highlight-green">**AERIS**</span>: **Argonne Earth
@@ -1435,44 +1462,24 @@ Loading repositories from GitHub…
     - [Machine Learning and Quantum Computing for Earth Sciences] at
       17th U. S. National Congress on Computational Mechanics, July 2023
 
+## ➕ More
+
 ### 🎶 Music
 
-<div style="text-align: center;">
+<div style="text-align: center; max-width: 100%; overflow: hidden;">
 
 <div class="light-content">
 
-<div class="flex-container" style="gap: 10pt; text-align: center;">
+<div class="flex-container" style="gap: 1ch; text-align: center; flex-wrap: wrap; align-items: stretch;">
 
-<a href="https://github.com/kittinan/spotify-github-profile">
-    <img
-        loading="lazy"
-        src="https://spotify-github-profile.kittinanx.com/api/view?uid=saforem2&cover_image=true&loading=lazy&theme=default&show_offline=false&background_color=f8f8f8&interchange=false"
-    />
+<a href="https://github.com/kittinan/spotify-github-profile" style="flex: 1 1 30%;">
+    <img loading="lazy" style="max-width: 100%; height: auto;" src="https://spotify-github-profile.kittinanx.com/api/view?uid=saforem2&cover_image=true&loading=lazy&theme=default&show_offline=false&background_color=f8f8f8&interchange=false" />
 </a>
 
-<a href="https://music-profile.rayriffy.com">
-    <img
-        width="85%"
-        loading="lazy"
-        src="https://music-profile.rayriffy.com/theme/light.svg?uid=002028.5a338f21979147c78f6193b6138a1ec7.1532"
-        align="center"
-    />
-</a>
+<iframe loading="lazy" src="https://descent.live/saforem2" style="flex: 1 1 30%; border: none; height: 20lh;"></iframe>
 
-</div>
-
-<div class="flex-container" style="gap: 10pt; text-align: center;">
-
-<iframe loading="lazy" width="auto" src="https://descent.live/saforem2" style="width: 100%; border: none; height: min(800px, calc(0.8*100vh)); border-radius: 4pt;">
-
-</iframe>
-
-<a href="https://last.fm/user/saforem2">
-    <img
-        loading="lazy"
-        src="https://lastfm-recently-played.vercel.app/api?user=saforem2"
-        align="center"
-    />
+<a href="https://last.fm/user/saforem2" style="flex: 1 1 30%;">
+    <img loading="lazy" style="max-width: 100%; height: auto;" src="https://lastfm-recently-played.vercel.app/api?user=saforem2" />
 </a>
 
 </div>
@@ -1481,38 +1488,16 @@ Loading repositories from GitHub…
 
 <div class="dark-content">
 
-<div class="flex-container" style="gap: 10pt; text-align: center;">
+<div class="flex-container" style="gap: 1ch; text-align: center; flex-wrap: wrap; align-items: stretch;">
 
-<a href="https://github.com/kittinan/spotify-github-profile">
-    <img
-        loading="lazy"
-        src="https://spotify-github-profile.kittinanx.com/api/view?uid=saforem2&cover_image=true&loading=lazy&theme=default&show_offline=false&background_color=1c1c1c&interchange=false"
-    />
+<a href="https://github.com/kittinan/spotify-github-profile" style="flex: 1 1 30%;">
+    <img loading="lazy" style="max-width: 100%; height: auto;" src="https://spotify-github-profile.kittinanx.com/api/view?uid=saforem2&cover_image=true&loading=lazy&theme=default&show_offline=false&background_color=1c1c1c&interchange=false" />
 </a>
 
-<a href="https://music-profile.rayriffy.com">
-    <img
-        width="85%"
-        loading="lazy"
-        src="https://music-profile.rayriffy.com/theme/dark.svg?uid=002028.5a338f21979147c78f6193b6138a1ec7.1532"
-        align="center"
-    />
-</a>
+<iframe loading="lazy" src="https://descent.live/saforem2" style="flex: 1 1 30%; border: none; height: 20lh;"></iframe>
 
-</div>
-
-<div class="flex-container" style="gap: 10pt; text-align: center;">
-
-<iframe loading="lazy" width="auto" src="https://descent.live/saforem2" style="width: 100%; border: none; height: min(800px, calc(0.8*100vh)); border-radius: 4pt;">
-
-</iframe>
-
-<a href="https://last.fm/user/saforem2">
-    <img
-        loading="lazy"
-        src="https://lastfm-recently-played.vercel.app/api?user=saforem2"
-        align="center"
-    />
+<a href="https://last.fm/user/saforem2" style="flex: 1 1 30%;">
+    <img loading="lazy" style="max-width: 100%; height: auto;" src="https://lastfm-recently-played.vercel.app/api?user=saforem2" />
 </a>
 
 </div>
@@ -1520,8 +1505,6 @@ Loading repositories from GitHub…
 </div>
 
 </div>
-
-### ➕ More
 
 <div class="panel-tabset" style="justify-content: center;">
 

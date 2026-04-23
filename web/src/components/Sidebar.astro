@@ -6,7 +6,6 @@ import {
     categoryLabels,
     moreSidebarGroup,
 } from '@/utils/content'
-import VimNavigation from './landing/VimNavigation.astro'
 
 const allCategories = makeSortedCategoryEntries()
 const categories = allCategories.filter(([slug]) => !moreSidebarGroup.has(slug))
@@ -840,20 +839,9 @@ const { pathname: urlPath } = Astro.url
             }
         </div>
     </div>
-    <div id="sidebar-vim-nav-container">
-        <VimNavigation showHL />
-    </div>
 </nav>
 
 <style>
-    #sidebar-vim-nav-container {
-        padding-left: 1ch;
-        padding-right: 2ch;
-        padding-top: 1lh;
-        padding-bottom: 1lh;
-        display: flex;
-        flex-direction: row;
-    }
     #sidebar {
         position: relative;
         display: flex;
@@ -990,11 +978,6 @@ const { pathname: urlPath } = Astro.url
         padding-inline-start: 0ch;
     }
 
-    ul > li > a[href] {
-        color: var(--foreground2);
-        border: 0.33ch solid rgba(0, 0, 0, 0) !important;
-        text-decoration: none;
-    }
     /* #sidebar ul > li > a { */
     /*     border-left: 1pt solid var(--background2); */
     /*     padding-inline-start: 1ch; */

@@ -464,6 +464,29 @@ const articleSchema =
                 )
             }
         </row>
+        <div id="vim-statusline">
+            <span class="vsl-vim-icon">&#xe62b; </span>
+            <span class="vsl-mode">NORMAL</span>
+            <span class="vsl-branch">&#xe725; main</span>
+            <span class="vsl-file"
+                >{
+                    sourceFilePath?.replace(
+                        'web/src/pages/',
+                        '',
+                    ) ?? Astro.url.pathname
+                }</span
+            >
+            <span class="vsl-spacer"></span>
+            <span class="vsl-keys">
+                <span id="vsl-last-key"></span>
+                <button id="vsl-btn-j" tabindex="-1">j</button>
+                <button id="vsl-btn-k" tabindex="-1">k</button>
+                <button id="vsl-btn-q" tabindex="-1">?</button>
+            </span>
+            <span class="vsl-clock">&#xe382; <span id="vsl-clock-text"></span></span>
+            <span class="vsl-pos">Top</span>
+            <span class="vsl-loc">1:1</span>
+        </div>
         <div id="mobile-nav">
             <button size-="small" variant-="background1" id="menu-button">
                 &#xeb86; Menu
@@ -759,7 +782,11 @@ const articleSchema =
                 document.querySelectorAll(
                     '#main-content h1[id], #main-content h2[id], #main-content h3[id], #main-content h4[id], #main-content h5[id], #main-content h6[id]',
                 ),
-            ) as HTMLElement[]
+            ).map((h) => {
+                // If heading is inside a summary (collapsible), target the summary
+                const summary = h.closest('summary')
+                return (summary ?? h) as HTMLElement
+            })
             if (headings.length === 0) return
 
             const scrollerTop = scroller.getBoundingClientRect().top
@@ -1605,16 +1632,14 @@ const articleSchema =
 </script>
 
 <script>
-    const scrollContainer = document.getElementById('scroll-container')
+    const mainContent = document.getElementById('main-content')
     const progressBar = document.getElementById('scroll-progress')
 
-    if (scrollContainer && progressBar) {
-        const mainContent = document.getElementById('main-content')
-        scrollContainer.addEventListener('scroll', () => {
-            if (!mainContent) return
-            const scrollTop = scrollContainer.scrollTop
+    if (mainContent && progressBar) {
+        mainContent.addEventListener('scroll', () => {
+            const scrollTop = mainContent.scrollTop
             const scrollHeight =
-                mainContent.scrollHeight - scrollContainer.clientHeight
+                mainContent.scrollHeight - mainContent.clientHeight
             const progress =
                 scrollHeight > 0 ? Math.min(scrollTop / scrollHeight, 1) : 0
             progressBar.style.transform = `scaleX(${progress})`
@@ -1648,51 +1673,189 @@ const articleSchema =
     }
 </script>
 
+<!-- Vim statusline scroll position + clock -->
+<script>
+    const mainContent = document.getElementById('main-content')
+    const posEl = document.querySelector('.vsl-pos')
+    const locEl = document.querySelector('.vsl-loc')
+    const clockEl = document.getElementById('vsl-clock-text')
+
+    if (mainContent && posEl) {
+        const update = () => {
+            const scrollTop = mainContent.scrollTop
+            const scrollHeight =
+                mainContent.scrollHeight - mainContent.clientHeight
+            if (scrollHeight <= 0) {
+                posEl.textContent = 'All'
+            } else {
+                posEl.textContent =
+                    Math.round((scrollTop / scrollHeight) * 100) + '%'
+            }
+            // Approximate line number from scroll position
+            const totalLines = Math.ceil(mainContent.scrollHeight / 24)
+            const currentLine = Math.max(
+                1,
+                Math.ceil((scrollTop / mainContent.scrollHeight) * totalLines),
+            )
+            if (locEl) locEl.textContent = `${currentLine}:1`
+        }
+        mainContent.addEventListener('scroll', update)
+        update()
+    }
+
+    // Live clock
+    if (clockEl) {
+        const pad = (n: number) => String(n).padStart(2, '0')
+        const tick = () => {
+            const d = new Date()
+            clockEl.textContent = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+        }
+        tick()
+        setInterval(tick, 10_000)
+    }
+
+    // Visual feedback for statusline keys + last-key indicator
+    const vslBtnJ = document.getElementById('vsl-btn-j')
+    const vslBtnK = document.getElementById('vsl-btn-k')
+    const vslBtnQ = document.getElementById('vsl-btn-q')
+    const lastKeyEl = document.getElementById('vsl-last-key')
+    let lastKeyTimer: ReturnType<typeof setTimeout> | null = null
+    const keyMap: Record<string, HTMLElement | null> = {
+        j: vslBtnJ,
+        ArrowDown: vslBtnJ,
+        k: vslBtnK,
+        ArrowUp: vslBtnK,
+        '?': vslBtnQ,
+    }
+    window.addEventListener('keydown', (e) => {
+        const btn = keyMap[e.key]
+        if (btn) btn.style.color = 'var(--foreground0)'
+        // Show last pressed key
+        if (lastKeyEl && e.key.length === 1) {
+            lastKeyEl.textContent = e.key
+            if (lastKeyTimer) clearTimeout(lastKeyTimer)
+            lastKeyTimer = setTimeout(() => {
+                lastKeyEl.textContent = ''
+            }, 2000)
+        }
+    })
+    window.addEventListener('keyup', (e) => {
+        const btn = keyMap[e.key]
+        if (btn) btn.style.color = ''
+    })
+</script>
+
 <!-- Collapsible headings: wrap h2-h6 sections in <details> -->
 <script>
     const mainContent = document.getElementById('main-content')
     if (mainContent) {
-        // Snapshot all h2 positions before mutating the DOM
-        const headings = Array.from(
-            mainContent.querySelectorAll(':scope > h2'),
-        ) as HTMLElement[]
+        // Process each heading level top-down (h2 first, then h3, etc.)
+        // so parent sections are established before children are wrapped
+        for (let level = 2; level <= 6; level++) {
+            const tag = `H${level}`
+            // Find headings at this level — search within mainContent
+            // and within already-created .heading-collapse details
+            const headings = Array.from(
+                mainContent.querySelectorAll(
+                    `:scope > ${tag}, :scope > .heading-collapse ${tag}`,
+                ),
+            ).filter(
+                // Only direct content headings, not ones inside summary
+                (h) => !h.closest('summary'),
+            ) as HTMLElement[]
 
-        // Process forward: each h2 collects siblings until the NEXT h2
-        for (let i = 0; i < headings.length; i++) {
-            const heading = headings[i]
-            const nextHeading = headings[i + 1] ?? null
-            const details = document.createElement('details')
-            details.setAttribute('is-', 'accordion')
-            details.classList.add('heading-collapse')
-            details.open = true
-            const summary = document.createElement('summary')
-            summary.appendChild(heading.cloneNode(true))
-            details.appendChild(summary)
-            heading.parentNode!.insertBefore(details, heading)
-            heading.remove()
-            // Collect siblings until we hit the next h2 (still in DOM)
-            let next = details.nextSibling
-            while (next && next !== nextHeading) {
-                const sibling = next
-                next = sibling.nextSibling
-                details.appendChild(sibling)
+            for (const heading of headings) {
+                const parent = heading.parentNode!
+                const details = document.createElement('details')
+                details.setAttribute('is-', 'accordion')
+                details.classList.add('heading-collapse')
+                details.open = true
+                details.dataset.headingLevel = String(level)
+                const summary = document.createElement('summary')
+                summary.appendChild(heading.cloneNode(true))
+                details.appendChild(summary)
+                parent.insertBefore(details, heading)
+                heading.remove()
+                // Collect siblings until next heading of same or higher level
+                let next = details.nextSibling
+                while (next) {
+                    const sibling = next
+                    next = sibling.nextSibling
+                    if (
+                        sibling.nodeType === 1 &&
+                        /^H[1-6]$/.test((sibling as HTMLElement).tagName) &&
+                        parseInt((sibling as HTMLElement).tagName[1]) <= level
+                    ) {
+                        break
+                    }
+                    details.appendChild(sibling)
+                }
             }
         }
     }
 </script>
 
 <style is:global>
-    .heading-collapse > summary {
-        background-color: transparent !important;
-        list-style: none;
-        cursor: pointer;
+    .heading-collapse {
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
 
-        &::-webkit-details-marker {
-            display: none;
+        &[open]::details-content {
+            padding-left: 0 !important;
         }
 
-        > :is(h2, h3, h4, h5, h6) {
-            display: inline;
+        > summary {
+            background-color: transparent !important;
+            list-style: none;
+            cursor: pointer;
+            padding: 0 !important;
+
+            &::before {
+                content: none !important;
+            }
+
+            &::-webkit-details-marker {
+                display: none;
+            }
+
+            > :is(h2, h3, h4, h5, h6) {
+                display: block;
+            }
+        }
+
+        /* When collapsed, dim + tinted bg + ellipsis */
+        &:not([open]) > summary {
+            &::after {
+                content: ' ...';
+                color: var(--foreground2);
+            }
+        }
+
+        &:not([open])[data-heading-level='2'] > summary {
+            background-color: oklch(
+                from var(--h2, var(--orange)) l c h / 0.1
+            ) !important;
+        }
+        &:not([open])[data-heading-level='3'] > summary {
+            background-color: oklch(
+                from var(--h3, var(--green)) l c h / 0.1
+            ) !important;
+        }
+        &:not([open])[data-heading-level='4'] > summary {
+            background-color: oklch(
+                from var(--h4, var(--blue)) l c h / 0.1
+            ) !important;
+        }
+        &:not([open])[data-heading-level='5'] > summary {
+            background-color: oklch(
+                from var(--h5, var(--purple)) l c h / 0.1
+            ) !important;
+        }
+        &:not([open])[data-heading-level='6'] > summary {
+            background-color: oklch(
+                from var(--h6, var(--aqua)) l c h / 0.1
+            ) !important;
         }
     }
 </style>
@@ -1767,7 +1930,7 @@ const articleSchema =
 
 <style is:global>
     .footnote-popover {
-        display: inline-block;
+        display: inline-block !important;
         vertical-align: baseline;
 
         > summary {

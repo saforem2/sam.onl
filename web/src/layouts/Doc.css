@@ -68,6 +68,96 @@
     gap: 0.5ch;
 }
 
+#vim-statusline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 1lh;
+    line-height: 1lh;
+    background-color: var(--background0);
+    color: var(--foreground3);
+    white-space: nowrap;
+    overflow: hidden;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+#vim-statusline > span {
+    padding: 0 1ch;
+}
+
+.vsl-mode {
+    background-color: var(--foreground2);
+    color: var(--background0);
+    font-weight: bold;
+}
+
+.vsl-branch {
+    background-color: var(--background2);
+    color: var(--foreground1);
+}
+
+.vsl-file {
+    color: var(--foreground1);
+}
+
+.vsl-spacer {
+    flex: 1;
+    padding: 0 !important;
+}
+
+.vsl-clock {
+    color: var(--foreground2);
+}
+
+.vsl-pos {
+    background-color: var(--background2);
+    color: var(--foreground1);
+}
+
+.vsl-loc {
+    background-color: var(--background2);
+    color: var(--foreground1);
+}
+
+.vsl-vim-icon {
+    background-color: var(--blue);
+    color: var(--background0);
+    padding: 0 0.5ch !important;
+}
+
+.vsl-keys {
+    display: flex;
+    gap: 0;
+    padding: 0 !important;
+    background-color: var(--background2);
+
+    #vsl-last-key {
+        padding: 0 1ch;
+        color: var(--foreground0);
+        min-width: 1ch;
+        text-align: center;
+        border-right: 1px solid var(--background1);
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    button {
+        all: unset;
+        padding: 0 1ch;
+        color: var(--foreground2);
+        cursor: default;
+        border-right: 1px solid var(--background1);
+        transition: color 0.1s;
+
+        &:last-child {
+            border-right: none;
+        }
+    }
+}
+
 h1::before {
     content: '#';
     color: var(--h1);
@@ -353,6 +443,10 @@ h6::before {
     box-sizing: border-box;
 }
 
+#main-content details[is-~='accordion'] + details[is-~='accordion'] {
+    margin-top: 0.25lh;
+}
+
 #main-content :is(h1, h2, h3, h4, h5, h6) {
     &::before {
         content: none;
@@ -536,8 +630,7 @@ h6::before {
     color: var(--h6);
 }
 
-#sidebar-container.collapsed #category-container,
-#sidebar-container.collapsed #sidebar-vim-nav-container {
+#sidebar-container.collapsed #category-container {
     display: none;
 }
 
@@ -644,7 +737,7 @@ h6::before {
             text-indent: 4ch hanging;
         }
         ol > li::marker {
-            content: counter(list-item) '.';
+            content: counter(list-item) '. ';
         }
 
         /* p { */
@@ -711,8 +804,7 @@ article {
         overflow: hidden;
     }
 
-    #sidebar-container:not(.collapsed) #category-container,
-    #sidebar-container:not(.collapsed) #sidebar-vim-nav-container {
+    #sidebar-container:not(.collapsed) #category-container {
         display: none;
     }
 
@@ -763,8 +855,7 @@ article {
         width: 100%;
     }
 
-    #sidebar-container.collapsed #category-container,
-    #sidebar-container.collapsed #sidebar-vim-nav-container {
+    #sidebar-container.collapsed #category-container {
         display: block;
     }
 
@@ -778,6 +869,10 @@ article {
 
     #mobile-nav {
         display: flex;
+    }
+
+    #vim-statusline {
+        display: none;
     }
 
     #doc-article {
