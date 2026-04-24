@@ -72,7 +72,9 @@
     display: flex;
     align-items: center;
     gap: 0;
+    /* height: calc(1lh + 4px); */
     height: 1lh;
+    /* box-shadow: inset 0 1px 0 var(--background2), inset 0 -1px 0 var(--background2); */
     line-height: 1lh;
     background-color: var(--background0);
     color: var(--foreground3);
@@ -80,6 +82,12 @@
     overflow: hidden;
     z-index: 10;
     flex-shrink: 0;
+    width: round(calc(100vw), 1ch);
+    margin-inline: -1ch;
+    /* border-left: 2px solid var(--background0); */
+    /* border-right: 2px solid var(--background0); */
+    /* border: 1px solid var(--background2); */
+    /* padding-bottom: 1ch; */
 }
 
 #vim-statusline > span {
@@ -87,14 +95,18 @@
 }
 
 .vsl-mode {
-    background-color: var(--foreground2);
-    color: var(--background0);
+    background-color: oklch( from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.5 );
+    color: var(--foreground0);
+    /* background-color: oklch(from #D3F9D8 l c h); */
+    /* background-color: oklch(from #51CF66 l c h); */
     font-weight: bold;
 }
 
 .vsl-branch {
-    background-color: var(--background2);
-    color: var(--foreground1);
+    background-color: oklch( from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.2 );
+    color: var(--foreground2);
+    /* color: var(--green, oklch(from #51CF66 l c h)); */
+    /* background-color: var(--green, oklch(from #51CF66 l c h)); */
 }
 
 .vsl-file {
@@ -108,36 +120,43 @@
 
 .vsl-clock {
     color: var(--foreground2);
+    background-color: oklch( from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.33 );
 }
 
 .vsl-pos {
-    background-color: var(--background2);
-    color: var(--foreground1);
+    background-color: oklch( from var(--foreground1) calc(l * var(--oklch-scale, 1.15)) c h / 0.5 );
+    color: var(--background1);
 }
 
 .vsl-loc {
-    background-color: var(--background2);
-    color: var(--foreground1);
+    background-color: var(--foreground2);
+    color: var(--background2);
 }
 
 .vsl-vim-icon {
-    background-color: var(--blue);
+    /* background-color: var(--green, var(--accent)); */
+    background-color: var(--blue, oklch(from #339AF0 l c h));
     color: var(--background0);
     padding: 0 0.5ch !important;
+    padding-inline-start: 1ch !important;
+    padding-inline-end: 0.5ch!important;
 }
 
 .vsl-keys {
     display: flex;
-    gap: 0;
+    gap: 1;
     padding: 0 !important;
-    background-color: var(--background2);
+    /* background-color: var(--background1); */
+    color: var(--foreground3);
+    background-color: oklch( from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.2 );
+
 
     #vsl-last-key {
         padding: 0 1ch;
-        color: var(--foreground0);
+        color: var(--background0);
+        background-color: var(--accent);
         min-width: 1ch;
         text-align: center;
-        border-right: 1px solid var(--background1);
 
         &:empty {
             display: none;
@@ -448,6 +467,7 @@ h6::before {
 }
 
 #main-content :is(h1, h2, h3, h4, h5, h6) {
+  margin-block: 0.5lh;
     &::before {
         content: none;
     }
@@ -645,7 +665,7 @@ h6::before {
         inset: 0lh 1ch;
         display: flex;
         flex-direction: column;
-        gap: 1ch;
+        gap: 0ch;
         overflow-x: hidden;
         color: var(--foreground1);
 

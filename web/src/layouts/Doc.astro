@@ -468,6 +468,7 @@ const articleSchema =
             <span class="vsl-vim-icon">&#xe62b; </span>
             <span class="vsl-mode">NORMAL</span>
             <span class="vsl-branch">&#xe725; main</span>
+            <span class="vsl-site">sam.onl</span>
             <span class="vsl-file"
                 >{
                     sourceFilePath?.replace(
@@ -1769,7 +1770,9 @@ const articleSchema =
                 const details = document.createElement('details')
                 details.setAttribute('is-', 'accordion')
                 details.classList.add('heading-collapse')
-                details.open = true
+                // Collapse year-section headings (e.g. "📆 2025") by default
+                const headingText = heading.textContent?.trim() ?? ''
+                details.open = !/\b(19|20)\d{2}\s*$/.test(headingText)
                 details.dataset.headingLevel = String(level)
                 const summary = document.createElement('summary')
                 summary.appendChild(heading.cloneNode(true))
