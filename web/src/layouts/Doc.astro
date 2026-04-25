@@ -2113,4 +2113,67 @@ const articleSchema =
         }
         customElements.define('doc-example', Example)
     }
+
+    if (!customElements.get('select-dropdown')) {
+        class Dropdown extends HTMLElement {
+            connectedCallback() {
+                // eslint-disable-next-line @typescript-eslint/no-this-alias
+                const self = this
+                const items = Array.from(
+                    self.querySelectorAll(
+                        '#options > button',
+                    ) as NodeListOf<HTMLButtonElement>,
+                )
+
+                const trigger = self.querySelector('summary')!
+                const details = self.querySelector('details')!
+
+                items.forEach((item) => {
+                    item.setAttribute('tabindex', '0')
+
+                    item.addEventListener('click', () => {
+                        items.forEach((i) => {
+                            i.setAttribute('aria-selected', 'false')
+                            i.setAttribute('variant-', 'background1')
+                        })
+                        item.setAttribute('variant-', 'default')
+                        item.setAttribute('aria-selected', 'true')
+                        self.setAttribute(
+                            'data-value',
+                            item.getAttribute('data-value')!,
+                        )
+                        trigger.click()
+                    })
+                })
+
+                details.addEventListener('toggle', () => {
+                    if (!details.open) return
+                    const dataValue = self.getAttribute('data-value')
+                    const activeItem = items.find(
+                        (i) => i.getAttribute('data-value') === dataValue,
+                    )
+                    if (activeItem) activeItem.focus()
+                })
+
+                self.addEventListener('keydown', (e) => {
+                    if (!details.open) return
+                    const { next, prev } = paginateElements(
+                        document.activeElement as HTMLElement,
+                        items,
+                    )
+                    if (e.key === 'ArrowDown' || e.key === 'j') {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        next.focus()
+                    }
+                    if (e.key === 'ArrowUp' || e.key === 'k') {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        prev.focus()
+                    }
+                })
+            }
+        }
+        customElements.define('select-dropdown', Dropdown)
+    }
 </script>
