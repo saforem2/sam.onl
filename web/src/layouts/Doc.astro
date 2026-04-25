@@ -624,32 +624,37 @@ const articleSchema =
         const isCodeBlock = (el: Element) =>
             el.tagName === 'PRE' && el.classList.contains('astro-code')
 
-        // Collapsible heading wrappers are navigated via their <summary>,
-        // so skip the <details> to avoid focusing the entire section.
+        // Collapsible heading wrappers — don't make the <details> itself
+        // focusable, but recurse into its children (skip the <summary>
+        // since it's already focusable).
         const isHeadingCollapse = (el: Element) =>
             el.tagName === 'DETAILS' && el.classList.contains('heading-collapse')
 
-        const children = Array.from(mainContent.children)
-        children.forEach((child) => {
-            if (!(child instanceof HTMLElement)) return
-            if (isFocusableElement(child)) return
-            if (isListContainer(child)) return
-            if (isHeadingCollapse(child)) return
-            if (isCodeBlock(child)) {
-                // Remove tabindex from the <pre> wrapper so it's not a
-                // navigation stop itself (the rehype plugin sets it).
-                child.removeAttribute('tabindex')
-                // Make each line individually focusable
-                child.querySelectorAll('span.line').forEach((line) => {
-                    if (line instanceof HTMLElement) {
-                        line.setAttribute('tabindex', '0')
-                    }
-                })
-                return
-            }
-            if (child.hasAttribute('tabindex')) return
-            child.setAttribute('tabindex', '0')
-        })
+        const processChildren = (container: Element) => {
+            Array.from(container.children).forEach((child) => {
+                if (!(child instanceof HTMLElement)) return
+                if (child.tagName === 'SUMMARY') return
+                if (isFocusableElement(child)) return
+                if (isListContainer(child)) return
+                if (isHeadingCollapse(child)) {
+                    processChildren(child)
+                    return
+                }
+                if (isCodeBlock(child)) {
+                    child.removeAttribute('tabindex')
+                    child.querySelectorAll('span.line').forEach((line) => {
+                        if (line instanceof HTMLElement) {
+                            line.setAttribute('tabindex', '0')
+                        }
+                    })
+                    return
+                }
+                if (child.hasAttribute('tabindex')) return
+                child.setAttribute('tabindex', '0')
+            })
+        }
+
+        processChildren(mainContent)
 
         const listItems = Array.from(mainContent.querySelectorAll('li'))
         listItems.forEach((item) => {
@@ -661,6 +666,9 @@ const articleSchema =
     }
 
     applyMainContentTabIndex()
+
+    // Re-apply after collapsible headings restructure the DOM
+    window.addEventListener('headings-collapsed', applyMainContentTabIndex)
 
     mainContent.addEventListener(
         'keydown',
@@ -1801,6 +1809,8 @@ const articleSchema =
                 }
             }
         }
+        // Signal vim navigation to re-apply tabindex to restructured content
+        window.dispatchEvent(new Event('headings-collapsed'))
     }
 </script>
 
