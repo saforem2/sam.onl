@@ -1793,17 +1793,27 @@ const articleSchema =
                 details.appendChild(summary)
                 parent.insertBefore(details, heading)
                 heading.remove()
-                // Collect siblings until next heading of same or higher level
+                // Collect siblings until next heading of same or higher level,
+                // or a container that holds such a heading
+                const headingSelector = Array.from(
+                    { length: level },
+                    (_, i) => `h${i + 1}`,
+                ).join(',')
                 let next = details.nextSibling
                 while (next) {
                     const sibling = next
                     next = sibling.nextSibling
-                    if (
-                        sibling.nodeType === 1 &&
-                        /^H[1-6]$/.test((sibling as HTMLElement).tagName) &&
-                        parseInt((sibling as HTMLElement).tagName[1]) <= level
-                    ) {
-                        break
+                    if (sibling.nodeType === 1) {
+                        const el = sibling as HTMLElement
+                        if (
+                            /^H[1-6]$/.test(el.tagName) &&
+                            parseInt(el.tagName[1]) <= level
+                        ) {
+                            break
+                        }
+                        if (el.querySelector(headingSelector)) {
+                            break
+                        }
                     }
                     details.appendChild(sibling)
                 }
