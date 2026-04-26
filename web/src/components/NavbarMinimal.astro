@@ -16,7 +16,7 @@ const isOn = path.startsWith('/posts')
         : null
 ---
 
-<nav id="top-navbar" box-="square">
+<nav id="top-navbar">
     <span id="home-link-wrapper"><a href="/" id="home-link">[&#xef85;]</a></span
     >
     {
@@ -69,15 +69,18 @@ const isOn = path.startsWith('/posts')
     nav {
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
         align-items: center;
-        gap: 1ch;
-        padding: 0.5lh 2ch;
+        gap: 0;
+        height: 1lh;
+        line-height: 1lh;
         white-space: nowrap;
         max-width: 100%;
         position: relative;
         z-index: 20;
         min-width: 0;
+        background-color: var(--background0);
+        color: var(--foreground3);
+        overflow: hidden;
 
         &:focus-within {
             --box-border-color: var(--focus-region-border);
@@ -129,18 +132,16 @@ const isOn = path.startsWith('/posts')
             display: inline-flex;
             align-items: center;
             text-decoration: none;
-            -moz-osx-font-smoothing: grayscale;
-            -webkit-font-smoothing: subpixel-antialiased;
-            font-weight: var(--font-weight-bold);
-            color: var(--foreground1);
-            gap: 1ch;
-
-            img {
-                display: block;
-            }
+            background-color: var(--blue, oklch(from #339AF0 l c h));
+            color: var(--background0);
+            padding: 0 1ch;
+            font-weight: bold;
 
             &:hover {
-                text-decoration: underline;
+                text-decoration: none;
+                background-color: oklch(
+                    from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h
+                );
             }
         }
     }
@@ -170,13 +171,22 @@ const isOn = path.startsWith('/posts')
 
     #nav-links {
         display: flex;
-        gap: 2ch;
+        gap: 0;
+        background-color: oklch(
+            from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
+        );
     }
 
     #nav-links > a.nav-link {
         display: inline;
         text-decoration: none;
         color: var(--foreground2);
+        padding: 0 1ch;
+        border-right: 1px solid var(--background1);
+
+        &:last-child {
+            border-right: none;
+        }
 
         &:visited {
             color: var(--foreground2);
@@ -184,6 +194,14 @@ const isOn = path.startsWith('/posts')
 
         &[data-active='true'] {
             color: var(--foreground0);
+            background-color: oklch(
+                from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
+            );
+        }
+
+        &:hover {
+            color: var(--foreground0);
+            background-color: var(--focus-hover-bg);
         }
 
         u {
@@ -206,116 +224,64 @@ const isOn = path.startsWith('/posts')
         flex-wrap: nowrap;
         align-items: center;
         flex: 1 1 auto;
-        row-gap: 2ch;
-        column-gap: 1lh;
-        margin-inline-start: 1ch;
+        gap: 0;
         min-width: 0;
         max-width: 100%;
-        width: auto;
-
-        a {
-            display: inline-block;
-            text-decoration: none;
-            color: var(--foreground2);
-        }
         overflow-x: auto;
         overflow-y: hidden;
-        scrollbar-width: thin;
+        scrollbar-width: none;
         justify-content: flex-end;
-        align-content: center;
 
         :is(a, button) {
             flex: 0 0 auto;
-        }
-
-        a {
-            display: inline-flex;
-            gap: 1ch;
+            padding: 0 1ch;
             text-decoration: none;
             color: var(--foreground2);
+            border-right: 1px solid var(--background1);
 
-            &:focus,
+            &:last-child {
+                border-right: none;
+            }
+
             &:hover {
-                text-decoration: underline;
+                text-decoration: none;
             }
         }
 
         #github-button {
-            display: inline-flex;
-            gap: 1ch;
-            padding-inline: 1ch;
-            color: var(--foreground1);
-            text-decoration: none;
-            background-color: oklch(
-                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
-                    0.1
-            );
-
-            &:focus,
-            &:hover {
-                background-color: oklch(
-                    from var(--purple) calc(l * var(--oklch-scale, 0.85)) c h /
-                        0.1
-                );
+            &:hover,
+            &:focus-visible {
+                background-color: oklch(from var(--purple) l c h / 0.15);
                 color: var(--purple);
-                text-decoration: none;
             }
         }
 
         #rss-button {
-            display: inline-flex;
-            gap: 1ch;
-            padding-inline: 1ch;
-            color: var(--foreground1);
-            text-decoration: none;
-            background-color: oklch(
-                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
-                    0.1
-            );
-
-            &:focus,
-            &:hover {
-                background-color: oklch(
-                    from var(--orange) calc(l * var(--oklch-scale, 0.85)) c h /
-                        0.1
-                );
+            &:hover,
+            &:focus-visible {
+                background-color: oklch(from var(--orange) l c h / 0.15);
                 color: var(--orange);
-                text-decoration: none;
             }
         }
 
         #theme-button {
-            display: inline-flex;
-            gap: 1ch;
-            padding-inline: 1ch;
-            color: var(--foreground1);
-            background-color: oklch(
-                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
-                    0.1
-            );
-
-            &:focus,
-            &:hover {
-                background-color: oklch(
-                    from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h /
-                        0.1
-                );
+            &:hover,
+            &:focus-visible {
+                background-color: oklch(from var(--blue) l c h / 0.15);
                 color: var(--blue);
             }
         }
 
         #search-button {
-            display: inline-flex;
-            padding-inline: 1ch;
-            gap: 1ch;
-            background-color: var(--foreground0);
+            background-color: oklch(
+                from var(--foreground1) calc(l * var(--oklch-scale, 1.15)) c h /
+                    0.5
+            );
+            color: var(--background1);
 
-            &:focus,
-            &:hover {
-                background-color: oklch(
-                    from var(--green) calc(l * var(--oklch-scale, 0.85)) c h /
-                        0.1
-                );
+            &:hover,
+            &:focus-visible {
+                background-color: oklch(from var(--green) l c h / 0.15);
                 color: var(--green);
             }
         }
