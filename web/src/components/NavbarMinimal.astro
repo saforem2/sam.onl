@@ -51,7 +51,7 @@ const isOn = path.startsWith('/posts')
         align-items: stretch;
         justify-content: space-between;
         gap: 0;
-        height: calc(1lh + 1ch);
+        height: 1lh;
         line-height: 1lh;
         white-space: nowrap;
         max-width: 100%;
@@ -60,7 +60,7 @@ const isOn = path.startsWith('/posts')
         z-index: 20;
         min-width: 0;
         background-color: var(--background1);
-        border: 6pt solid var(--background1);
+        padding: 2pt 0;
         margin-top: -1ch;
 
         :is(a[href], button:not([disabled])) {
@@ -105,9 +105,12 @@ const isOn = path.startsWith('/posts')
         }
 
         .navbar-name {
+            display: inline-flex;
+            align-items: center;
             text-decoration: none;
-            border-right: 1px solid var(--background1);
-            padding: 0 1ch;
+            border-right: 1px solid var(--background2);
+            padding: 0 1ch !important;
+            line-height: 1;
 
             &:hover {
                 opacity: 0.85;
