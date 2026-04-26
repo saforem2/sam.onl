@@ -17,29 +17,49 @@ const isOn = path.startsWith('/posts')
 ---
 
 <nav id="top-navbar">
-    <span id="nav-tabs">
-        <a href="/" class="nav-tab" data-active={isOn === null}> sam.onl</a>
-        <a href="/posts" class="nav-tab" data-active={isOn === 'posts'}> <u>p</u>osts</a>
-        <a href="/talks" class="nav-tab" data-active={isOn === 'talks'}> <u>t</u>alks</a>
-        <a href="/landing" class="nav-tab" data-active={isOn === 'more'}> <u>m</u>ore</a>
-    </span>
-    <span id="nav-spacer"></span>
-    <span id="nav-actions">
-        <button id="theme-button"></button>
-        <a id="github-button" href="https://github.com/saforem2/sam.onl" target="_blank"></a>
-        <a id="rss-button" href="/rss.xml" target="_blank"></a>
-        <button id="search-button"></button>
-    </span>
+    <span id="home-link-wrapper"><a href="/" id="home-link">[&#xef85;]</a></span
+    >
+    {
+        variant === 21 && (
+            <a
+                href="/"
+                is-="badge"
+                variant-="blue"
+                class="navbar-name"
+                style="--badge-text: var(--background0); text-decoration: none;">
+                Sam Foreman
+            </a>
+        )
+    }
+    <row id="links">
+        <span id="nav-links">
+            <a href="/posts" class="nav-link" data-active={isOn === 'posts'}><u>p</u>osts</a>
+            <a href="/talks" class="nav-link" data-active={isOn === 'talks'}><u>t</u>alks</a>
+            <a href="/landing" class="nav-link" data-active={isOn === 'more'}><u>m</u>ore</a>
+        </span>
+        <button id="theme-button" size-="small">  </button>
+        <a
+            id="github-button"
+            href="https://github.com/saforem2/sam.onl"
+            target="_blank"
+            size-="small">
+            
+        </a>
+        <a id="rss-button" href="/rss.xml" target="_blank" size-="small">  </a>
+        <button id="search-button" size-="small"> &#xea6d;</button>
+    </row>
     <details id="nav-dropdown">
-        <summary></summary>
+        <summary>&#xf0c9;</summary>
         <div class="nav-dropdown-content">
-            <a href="/"> home</a>
-            <a href="/posts"> posts</a>
-            <a href="/talks">8 talks</a>
-            <a href="/landing"> more</a>
-            <a href="https://github.com/saforem2/sam.onl" target="_blank"> github</a>
-            <a href="/rss.xml" target="_blank"> rss</a>
-            <button id="theme-button-mobile"> theme</button>
+            <a href="/">&#xef85; home</a>
+            <a href="/posts">&#xf044; posts</a>
+            <a href="/talks">&#xf0428; talks</a>
+            <a href="/landing">&#xefa8; more</a>
+            <a href="https://github.com/saforem2/sam.onl" target="_blank"
+                >&#xe65b; github</a
+            >
+            <a href="/rss.xml" target="_blank">&#xf09e; rss</a>
+            <button id="theme-button-mobile">&#xe22b; theme</button>
         </div>
     </details>
 </nav>
@@ -48,66 +68,126 @@ const isOn = path.startsWith('/posts')
 <style>
     nav {
         display: flex;
-        align-items: stretch;
-        gap: 0;
-        height: 1lh;
-        line-height: 1lh;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1ch;
+        padding: 0 2ch;
         white-space: nowrap;
         max-width: 100%;
         position: relative;
         z-index: 20;
         min-width: 0;
         background-color: var(--background2);
-        color: var(--foreground3);
-        overflow: hidden;
+        border-bottom: 1px solid var(--background1);
+
+        &:focus-within {
+            --box-border-color: var(--focus-region-border);
+        }
 
         :is(a[href], button:not([disabled])) {
             position: relative;
             outline: none;
+        }
+
+        :is(a[href], button:not([disabled]))::after {
+            content: '';
+            position: absolute;
+            inset-inline-start: -1ch;
+            inset-block-start: 0;
+            color: transparent;
+            width: 1ch;
+            pointer-events: none;
+        }
+
+        :is(a[href], button:not([disabled])) {
             transition:
                 background-color 100ms linear,
-                color 100ms linear;
+                color 100ms linear,
+                box-shadow 100ms linear;
         }
 
         :is(a[href], button:not([disabled])):focus-visible,
         :is(a[href], button:not([disabled]))[data-vim-focused='true']:focus {
             background-color: var(--focus-bg-strong);
             color: var(--focus-fg);
+            /* border-left: 2px solid var(--accent); */
             text-decoration: none;
         }
 
+        :is(a[href], button:not([disabled])):focus-visible::after,
+        :is(
+                a[href],
+                button:not([disabled])
+            )[data-vim-focused='true']:focus::after {
+            color: var(--focus-marker);
+        }
+
         :is(a[href], button:not([disabled])):hover {
-            background-color: var(--background1);
+            background-color: var(--focus-hover-bg);
+        }
+
+        #home-link {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-font-smoothing: subpixel-antialiased;
+            font-weight: var(--font-weight-bold);
+            color: var(--foreground1);
+            gap: 1ch;
+
+            img {
+                display: block;
+            }
+
+            &:hover {
+                text-decoration: underline;
+            }
         }
     }
 
-    /* Tabs — left-aligned, like vim buffer tabs */
-    #nav-tabs {
-        display: flex;
-        gap: 0;
+    nav > span {
         flex: 0 0 auto;
     }
 
-    .nav-tab {
-        display: inline-flex;
-        align-items: center;
-        padding: 0 1ch;
+    .navbar-name {
         text-decoration: none;
-        color: var(--foreground3);
-        border-right: 1px solid var(--background1);
+        flex: 0 0 auto;
+        overflow: visible;
+        padding: 0 2ch;
+
+        &::before,
+        &::after {
+            display: none;
+        }
+
+        &:focus-visible,
+        &:focus,
+        &[data-vim-focused='true']:focus {
+            background-color: var(--blue) !important;
+            color: var(--background0) !important;
+        }
+    }
+
+    #nav-links {
+        display: flex;
+        gap: 2ch;
+    }
+
+    #nav-links > a.nav-link {
+        display: inline;
+        text-decoration: none;
+        color: var(--foreground2);
 
         &:visited {
-            color: var(--foreground3);
+            color: var(--foreground2);
         }
 
         &[data-active='true'] {
-            background-color: var(--background0);
             color: var(--foreground0);
-        }
-
-        &:hover {
-            color: var(--foreground1);
-            background-color: var(--background1);
+            background-color: var(--background0);
+            padding: 0 1ch;
         }
 
         u {
@@ -115,54 +195,133 @@ const isOn = path.startsWith('/posts')
         }
     }
 
-    /* Spacer — fills remaining space with tab bar background */
-    #nav-spacer {
-        flex: 1;
-        border-bottom: 1px solid var(--background1);
+    #nav-links > a.nav-link u::before {
+        content: '[';
+        font-weight: normal;
     }
 
-    /* Action buttons — right-aligned */
-    #nav-actions {
+    #nav-links > a.nav-link u::after {
+        font-weight: normal;
+        content: ']';
+    }
+
+    #links {
         display: flex;
-        gap: 0;
-        flex: 0 0 auto;
-        align-items: stretch;
+        flex-wrap: nowrap;
+        align-items: center;
+        flex: 1 1 auto;
+        row-gap: 2ch;
+        column-gap: 1lh;
+        margin-inline-start: 1ch;
+        min-width: 0;
+        max-width: 100%;
+        width: auto;
+
+        a {
+            display: inline-block;
+            text-decoration: none;
+            color: var(--foreground2);
+        }
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: thin;
+        justify-content: flex-end;
+        align-content: center;
 
         :is(a, button) {
+            flex: 0 0 auto;
+        }
+
+        a {
             display: inline-flex;
-            align-items: center;
-            padding: 0 1ch;
-            color: var(--foreground3);
+            gap: 1ch;
             text-decoration: none;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font: inherit;
-            border-left: 1px solid var(--background1);
+            color: var(--foreground2);
+
+            &:focus,
+            &:hover {
+                text-decoration: underline;
+            }
         }
 
-        #theme-button:hover,
-        #theme-button:focus-visible {
-            background-color: oklch(from var(--blue) l c h / 0.15);
-            color: var(--blue);
+        #github-button {
+            display: inline-flex;
+            gap: 1ch;
+            padding-inline: 1ch;
+            color: var(--foreground1);
+            text-decoration: none;
+            background-color: oklch(
+                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
+                    0.1
+            );
+
+            &:focus,
+            &:hover {
+                background-color: oklch(
+                    from var(--purple) calc(l * var(--oklch-scale, 0.85)) c h /
+                        0.1
+                );
+                color: var(--purple);
+                text-decoration: none;
+            }
         }
 
-        #github-button:hover,
-        #github-button:focus-visible {
-            background-color: oklch(from var(--purple) l c h / 0.15);
-            color: var(--purple);
+        #rss-button {
+            display: inline-flex;
+            gap: 1ch;
+            padding-inline: 1ch;
+            color: var(--foreground1);
+            text-decoration: none;
+            background-color: oklch(
+                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
+                    0.1
+            );
+
+            &:focus,
+            &:hover {
+                background-color: oklch(
+                    from var(--orange) calc(l * var(--oklch-scale, 0.85)) c h /
+                        0.1
+                );
+                color: var(--orange);
+                text-decoration: none;
+            }
         }
 
-        #rss-button:hover,
-        #rss-button:focus-visible {
-            background-color: oklch(from var(--orange) l c h / 0.15);
-            color: var(--orange);
+        #theme-button {
+            display: inline-flex;
+            gap: 1ch;
+            padding-inline: 1ch;
+            color: var(--foreground1);
+            background-color: oklch(
+                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
+                    0.1
+            );
+
+            &:focus,
+            &:hover {
+                background-color: oklch(
+                    from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h /
+                        0.1
+                );
+                color: var(--blue);
+            }
         }
 
-        #search-button:hover,
-        #search-button:focus-visible {
-            background-color: oklch(from var(--green) l c h / 0.15);
-            color: var(--green);
+        #search-button {
+            display: inline-flex;
+            padding-inline: 1ch;
+            gap: 1ch;
+            background-color: var(--foreground0);
+
+            &:focus,
+            &:hover {
+                background-color: oklch(
+                    from var(--green) calc(l * var(--oklch-scale, 0.85)) c h /
+                        0.1
+                );
+                color: var(--green);
+            }
         }
     }
 
@@ -171,27 +330,31 @@ const isOn = path.startsWith('/posts')
     }
 
     @media (max-width: 768px) {
-        #nav-tabs {
-            overflow-x: auto;
-            flex: 1;
+        nav {
+            padding: 1lh 2ch;
+            align-items: center;
+            margin-bottom: 0;
         }
 
-        #nav-actions {
+        #home-link-wrapper {
+            display: none;
+        }
+
+        .navbar-name {
+            margin-right: auto;
+        }
+
+        #links {
             display: none;
         }
 
         #nav-dropdown {
             display: block;
-            position: relative;
 
-            summary {
-                display: flex;
-                align-items: center;
-                padding: 0 1ch;
-                cursor: pointer;
+            > summary {
                 list-style: none;
-                color: var(--foreground2);
-                border-left: 1px solid var(--background1);
+                cursor: pointer;
+                padding: 0 1ch;
 
                 &::-webkit-details-marker {
                     display: none;
@@ -200,31 +363,35 @@ const isOn = path.startsWith('/posts')
 
             .nav-dropdown-content {
                 position: absolute;
-                right: 0;
+                right: 1ch;
                 top: 100%;
+                z-index: 200;
                 display: flex;
                 flex-direction: column;
                 background: var(--background0);
                 border: 1px solid var(--foreground2);
                 box-shadow: 2px 2px 0 0 var(--foreground2);
-                z-index: 30;
-                min-width: 16ch;
+                min-width: 20ch;
 
-                :is(a, button) {
-                    padding: 0.25lh 2ch;
-                    text-decoration: none;
+                a,
+                button {
+                    all: unset;
+                    display: block;
+                    padding: 0.5lh 2ch;
                     color: var(--foreground1);
-                    border: none;
-                    background: none;
                     cursor: pointer;
-                    font: inherit;
-                    text-align: left;
+                    box-sizing: border-box;
+                    width: 100%;
 
                     &:hover {
                         background: var(--background1);
                     }
                 }
             }
+        }
+
+        nav {
+            position: relative;
         }
     }
 </style>
