@@ -35,9 +35,10 @@ const nextDoc =
         : sortedPages.at(pageIndex + 1)
 const prevDoc = pageIndex === 0 ? undefined : sortedPages.at(pageIndex - 1)
 
-const tocHeadings: DocHeading[] = headings.filter(
-    (heading) => heading.depth >= 1,
-)
+const tocHeadings: DocHeading[] = [
+    { depth: 1, text: frontmatter.title, slug: 'toc-page-title' },
+    ...headings.filter((heading) => heading.depth >= 2),
+]
 
 const hasSiblingAfter = (items: DocHeading[], index: number) => {
     const currentDepth = items[index].depth
@@ -1188,42 +1189,33 @@ const articleSchema =
                 const titleEl = document.querySelector(
                     '#doc-article > header h1',
                 ) as HTMLElement | null
-                if (titleEl) {
-                    // Save original content once
+                const mainEl = document.getElementById('main-content')
+                if (titleEl && mainEl) {
                     if (titleEl.dataset.originalHtml === undefined) {
                         titleEl.dataset.originalHtml = titleEl.innerHTML
                     }
 
-                    // Only replace when header is scrolled out of view
-                    const header = document.querySelector(
-                        '#doc-article > header',
-                    ) as HTMLElement | null
-                    const headerBottom = header
-                        ? header.getBoundingClientRect().bottom
-                        : 0
-                    const articleTop = document
-                        .getElementById('doc-article')
-                        ?.getBoundingClientRect().top ?? 0
-                    const headerScrolledOut = headerBottom < articleTop + 10
+                    // Only replace once the user has scrolled past
+                    // the first screenful of content
+                    const hasScrolled = mainEl.scrollTop > 100
 
-                    if (!headerScrolledOut) {
-                        titleEl.innerHTML = titleEl.dataset.originalHtml
-                    } else {
-                        const activeH2 =
-                            activeHeading.tagName === 'H2'
-                                ? activeHeading
-                                : activeHeading.closest?.(
-                                      '.heading-collapse[data-heading-level="2"]',
-                                  )?.querySelector('summary h2') ?? null
-                        if (activeH2) {
-                            const text =
-                                activeH2.textContent?.replace(/^#+\s*/, '') ?? ''
-                            if (text) {
-                                titleEl.innerHTML = `<span style="color: var(--h2); margin-inline-end: 1ch;">##</span>${text}`
-                            }
-                        } else {
-                            titleEl.innerHTML = titleEl.dataset.originalHtml
+                    const activeH2 =
+                        activeHeading.tagName === 'H2'
+                            ? activeHeading
+                            : activeHeading.closest?.(
+                                  '.heading-collapse[data-heading-level="2"]',
+                              )?.querySelector('summary h2') ?? null
+
+                    if (hasScrolled && activeH2) {
+                        // Get text without the heading anchor prefix
+                        const clone = activeH2.cloneNode(true) as HTMLElement
+                        clone.querySelector('.heading-anchor')?.remove()
+                        const text = clone.textContent?.trim() ?? ''
+                        if (text) {
+                            titleEl.innerHTML = `<span class="heading-anchor" style="color: var(--h2); margin-inline-end: 1ch;">##</span>${text}`
                         }
+                    } else {
+                        titleEl.innerHTML = titleEl.dataset.originalHtml
                     }
                 }
             }
