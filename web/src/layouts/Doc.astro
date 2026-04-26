@@ -1207,14 +1207,15 @@ const articleSchema =
                               )?.querySelector('summary h2') ?? null
 
                     if (hasScrolled && activeH2) {
-                        // Get text without the heading anchor prefix
                         const clone = activeH2.cloneNode(true) as HTMLElement
                         clone.querySelector('.heading-anchor')?.remove()
                         const text = clone.textContent?.trim() ?? ''
                         if (text) {
+                            titleEl.style.setProperty('--h1-prefix', 'none')
                             titleEl.innerHTML = `<span class="heading-anchor" style="color: var(--h2); margin-inline-end: 1ch;">##</span>${text}`
                         }
                     } else {
+                        titleEl.style.removeProperty('--h1-prefix')
                         titleEl.innerHTML = titleEl.dataset.originalHtml
                     }
                 }
