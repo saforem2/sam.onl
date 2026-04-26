@@ -29,32 +29,12 @@
         li,
         [is-~='typography-block'] {
             a {
-                position: relative;
-                overflow: hidden;
                 color: var(--url);
-                text-decoration: none;
-
-                &::after {
-                    content: '';
-                    background: oklch(from var(--url) l c h / 0.25);
-                    position: absolute;
-                    left: 1ch;
-                    bottom: -0.5ch;
-                    width: calc(100% - 0.5ch);
-                    height: calc(100% - 0.5ch);
-                    z-index: -1;
-                    transition: 0.35s cubic-bezier(0.25, 0.1, 0, 2.05);
-                }
+                text-decoration: underline dashed;
 
                 &:hover {
                     color: var(--accent, var(--blue));
-
-                    &::after {
-                        left: 0;
-                        bottom: -2px;
-                        width: 100%;
-                        height: 100%;
-                    }
+                    text-decoration: underline wavy;
                 }
             }
 
