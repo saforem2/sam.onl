@@ -544,6 +544,10 @@ h6::before {
     content: '';
 }
 
+#toc-list a.depth-1.active::before {
+    content: '#';
+    color: var(--h1);
+}
 #toc-list a.depth-2.active::before {
     content: '##';
     color: var(--h2);
@@ -563,6 +567,10 @@ h6::before {
 #toc-list a.depth-6.active::before {
     content: '#######';
     color: var(--h6);
+}
+
+#toc-list .depth-1 {
+    padding-inline-start: 0;
 }
 
 #toc-list .depth-2 {
@@ -595,6 +603,10 @@ h6::before {
         from var(--background1, var(--foreground, #838383))
             calc(l * var(--oklch-scale, 0.85)) c h / 0.1
     );
+}
+
+#toc-list a.depth-1.active {
+    color: var(--h1);
 }
 
 #toc-list a.depth-2.active {
@@ -630,6 +642,11 @@ h6::before {
         inset 0 0 0 1px var(--focus-border);
     outline: none;
     text-decoration: none;
+}
+
+#toc-list a.depth-1.active:focus-visible,
+#toc-list a.depth-1.active[data-vim-focused='true']:focus {
+    color: var(--h1);
 }
 
 #toc-list a.depth-2.active:focus-visible,

@@ -36,7 +36,7 @@ const nextDoc =
 const prevDoc = pageIndex === 0 ? undefined : sortedPages.at(pageIndex - 1)
 
 const tocHeadings: DocHeading[] = headings.filter(
-    (heading) => heading.depth >= 2,
+    (heading) => heading.depth >= 1,
 )
 
 const hasSiblingAfter = (items: DocHeading[], index: number) => {
@@ -1189,20 +1189,41 @@ const articleSchema =
                     '#doc-article > header h1',
                 ) as HTMLElement | null
                 if (titleEl) {
-                    const activeH2 =
-                        activeHeading.tagName === 'H2'
-                            ? activeHeading
-                            : activeHeading.closest?.(
-                                  '.heading-collapse[data-heading-level="2"]',
-                              )?.querySelector('summary h2') ?? null
-                    if (activeH2) {
-                        const text = activeH2.textContent?.replace(/^#+\s*/, '') ?? ''
-                        if (text && titleEl.dataset.original === undefined) {
-                            titleEl.dataset.original = titleEl.textContent ?? ''
+                    // Save original content once
+                    if (titleEl.dataset.originalHtml === undefined) {
+                        titleEl.dataset.originalHtml = titleEl.innerHTML
+                    }
+
+                    // Only replace when header is scrolled out of view
+                    const header = document.querySelector(
+                        '#doc-article > header',
+                    ) as HTMLElement | null
+                    const headerBottom = header
+                        ? header.getBoundingClientRect().bottom
+                        : 0
+                    const articleTop = document
+                        .getElementById('doc-article')
+                        ?.getBoundingClientRect().top ?? 0
+                    const headerScrolledOut = headerBottom < articleTop + 10
+
+                    if (!headerScrolledOut) {
+                        titleEl.innerHTML = titleEl.dataset.originalHtml
+                    } else {
+                        const activeH2 =
+                            activeHeading.tagName === 'H2'
+                                ? activeHeading
+                                : activeHeading.closest?.(
+                                      '.heading-collapse[data-heading-level="2"]',
+                                  )?.querySelector('summary h2') ?? null
+                        if (activeH2) {
+                            const text =
+                                activeH2.textContent?.replace(/^#+\s*/, '') ?? ''
+                            if (text) {
+                                titleEl.innerHTML = `<span style="color: var(--h2); margin-inline-end: 1ch;">##</span>${text}`
+                            }
+                        } else {
+                            titleEl.innerHTML = titleEl.dataset.originalHtml
                         }
-                        if (text) titleEl.textContent = text
-                    } else if (titleEl.dataset.original) {
-                        titleEl.textContent = titleEl.dataset.original
                     }
                 }
             }
