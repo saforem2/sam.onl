@@ -50,7 +50,7 @@ const isOn = path.startsWith('/posts')
         align-items: stretch;
         justify-content: space-between;
         gap: 0;
-        height: 1lh;
+        height: calc(1lh + 1ch);
         line-height: 1lh;
         white-space: nowrap;
         max-width: 100%;
@@ -58,8 +58,9 @@ const isOn = path.startsWith('/posts')
         position: relative;
         z-index: 20;
         min-width: 0;
-        background-color: var(--background2);
-        border-bottom: 1px solid var(--background1);
+        background-color: var(--background1);
+        border: 6pt solid var(--background1);
+        margin-top: -1ch;
 
         :is(a[href], button:not([disabled])) {
             position: relative;
