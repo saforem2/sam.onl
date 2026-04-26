@@ -1475,10 +1475,69 @@ const articleSchema =
                         if (navbarTarget instanceof HTMLElement) {
                             vimFocusElement(navbarTarget)
                         }
+                        return
+                    }
+
+                    if (e.key === 'M') {
+                        e.preventDefault()
+                        document
+                            .querySelectorAll(
+                                '#main-content details[open]',
+                            )
+                            .forEach((d) => {
+                                ;(d as HTMLDetailsElement).open = false
+                            })
+                        return
+                    }
+
+                    if (e.key === 'R') {
+                        e.preventDefault()
+                        document
+                            .querySelectorAll(
+                                '#main-content details:not([open])',
+                            )
+                            .forEach((d) => {
+                                ;(d as HTMLDetailsElement).open = true
+                            })
+                        return
                     }
                     return
                 }
             } else {
+                // Allow z-chord with Shift for zM/zR (collapse/expand all)
+                if (
+                    e.shiftKey &&
+                    !e.ctrlKey &&
+                    !e.metaKey &&
+                    !e.altKey &&
+                    w.__pendingZAt > 0 &&
+                    Date.now() - w.__pendingZAt <= 700
+                ) {
+                    w.__pendingZAt = 0
+                    w.__keyZSpans?.forEach((s: Element) =>
+                        w.__setKeyActive?.(s, false),
+                    )
+                    if (e.key === 'M') {
+                        e.preventDefault()
+                        document
+                            .querySelectorAll('#main-content details[open]')
+                            .forEach((d) => {
+                                ;(d as HTMLDetailsElement).open = false
+                            })
+                        return
+                    }
+                    if (e.key === 'R') {
+                        e.preventDefault()
+                        document
+                            .querySelectorAll(
+                                '#main-content details:not([open])',
+                            )
+                            .forEach((d) => {
+                                ;(d as HTMLDetailsElement).open = true
+                            })
+                        return
+                    }
+                }
                 w.__pendingZAt = 0
                 w.__keyZSpans?.forEach((s: Element) =>
                     w.__setKeyActive?.(s, false),
