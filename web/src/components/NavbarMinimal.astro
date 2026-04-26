@@ -136,15 +136,15 @@ const isOn = path.startsWith('/posts')
         gap: 0;
 
         :is(a, button) {
+            all: unset;
             display: inline-flex;
             align-items: center;
             padding: 0 1ch;
             color: var(--foreground3);
-            text-decoration: none;
-            border: none;
-            background: none;
             cursor: pointer;
-            font: inherit;
+            font-family: var(--font-family);
+            font-size: inherit;
+            line-height: inherit;
             border-left: 1px solid var(--background1);
         }
 
