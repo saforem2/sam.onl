@@ -1185,7 +1185,7 @@ const articleSchema =
                 ) as HTMLAnchorElement | null
                 activeLink?.scrollIntoView({ block: 'nearest' })
 
-                // Update the article border label with the active h2
+                // Update the article border label with the active heading
                 const titleEl = document.querySelector(
                     '#doc-article > header h1',
                 ) as HTMLElement | null
@@ -1195,25 +1195,35 @@ const articleSchema =
                         titleEl.dataset.originalHtml = titleEl.innerHTML
                     }
 
-                    // Only replace once the user has scrolled past
-                    // the first screenful of content
                     const hasScrolled = mainEl.scrollTop > 100
 
-                    const activeH2 =
-                        activeHeading.tagName === 'H2'
-                            ? activeHeading
-                            : activeHeading.closest?.(
-                                  '.heading-collapse[data-heading-level="2"]',
-                              )?.querySelector('summary h2') ?? null
+                    // Find the nearest heading (walk up through
+                    // collapsible wrappers to find the actual heading)
+                    let target: HTMLElement | null = null
+                    if (/^H[1-6]$/.test(activeHeading.tagName)) {
+                        target = activeHeading
+                    } else {
+                        // Inside a collapsible — find the heading in
+                        // the nearest summary
+                        const collapse = activeHeading.closest?.(
+                            '.heading-collapse',
+                        )
+                        target = collapse?.querySelector(
+                            'summary :is(h1,h2,h3,h4,h5,h6)',
+                        ) as HTMLElement | null
+                    }
 
-                    if (hasScrolled && activeH2) {
-                        const clone = activeH2.cloneNode(true) as HTMLElement
+                    if (hasScrolled && target) {
+                        const level = parseInt(target.tagName[1])
+                        const prefix = '#'.repeat(level)
+                        const colorVar = `var(--h${level})`
+                        const clone = target.cloneNode(true) as HTMLElement
                         clone.querySelector('.heading-anchor')?.remove()
                         const text = clone.textContent?.trim() ?? ''
                         if (text) {
                             titleEl.style.setProperty('--h1-prefix', 'none')
-                            titleEl.style.color = 'var(--h2)'
-                            titleEl.innerHTML = `<span class="heading-anchor" style="color: var(--h2); margin-inline-end: 1ch;">##</span>${text}`
+                            titleEl.style.color = colorVar
+                            titleEl.innerHTML = `<span class="heading-anchor" style="color: ${colorVar}; margin-inline-end: 1ch;">${prefix}</span>${text}`
                         }
                     } else {
                         titleEl.style.removeProperty('--h1-prefix')
