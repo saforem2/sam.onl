@@ -251,44 +251,56 @@ const total = variants.length
                 <div id="vim-navigation-container">
                     <VimNavigation />
                 </div>
-                <column id="statusline">
-                    <row>
-                        <span
-                            is-="badge"
-                            variant-="green"
-                            style="--badge-text: var(--background0)">
-                            NORMAL
-                        </span>
-                        <span
-                            is-="badge"
-                            variant-="background1"
-                            style="--badge-text: var(--green)">
-                            &#xe725; main
-                        </span>
-                        <row self-="grow">
-                            <span is-="badge" variant-="code-bg">
-                                sam.onl
-                            </span>
-                        </row>
-                        <row id="statusline-right">
-                            <span is-="badge" variant-="code-bg">
-                                utf-8
-                            </span>
-                            <span is-="badge" variant-="background1">
-                                Top
-                            </span>
-                            <span
-                                is-="badge"
-                                variant-="green"
-                                style="--badge-text: var(--background0)">
-                                1:1
-                            </span>
-                        </row>
-                    </row>
-                </column>
+                <div id="vim-statusline">
+                    <span class="vsl-vim-icon">&#xe62b; </span>
+                    <span class="vsl-mode">NORMAL</span>
+                    <span class="vsl-branch">&#xe725; main</span>
+                    <span class="vsl-file">sam.onl</span>
+                    <span class="vsl-spacer"></span>
+                    <span class="vsl-keys">
+                        <span id="vsl-last-key"></span>
+                        <button id="vsl-btn-j" tabindex="-1">j</button>
+                        <button id="vsl-btn-k" tabindex="-1">k</button>
+                        <button id="vsl-btn-q" tabindex="-1">?</button>
+                    </span>
+                    <span class="vsl-clock">&#xe382; <span id="vsl-clock-text"></span></span>
+                    <span class="vsl-pos">Top</span>
+                    <span class="vsl-loc">1:1</span>
+                </div>
             </>
         )
     }
+
+    <script>
+        import { isUserTyping } from '@/utils/vim'
+
+        const clockEl = document.getElementById('vsl-clock-text')
+        const lastKeyEl = document.getElementById('vsl-last-key')
+
+        if (clockEl) {
+            const pad = (n: number) => String(n).padStart(2, '0')
+            const tick = () => {
+                const d = new Date()
+                clockEl.textContent = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+            }
+            tick()
+            setInterval(tick, 10_000)
+        }
+
+        if (lastKeyEl) {
+            let timer: ReturnType<typeof setTimeout> | null = null
+            window.addEventListener('keydown', (e) => {
+                if (isUserTyping()) return
+                if (e.key.length === 1) {
+                    lastKeyEl.textContent = e.key
+                    if (timer) clearTimeout(timer)
+                    timer = setTimeout(() => {
+                        lastKeyEl.textContent = ''
+                    }, 2000)
+                }
+            })
+        }
+    </script>
 
     <script>
         import {
@@ -563,20 +575,97 @@ const total = variants.length
         }
 
         /* Statusline — fixed bottom */
-        #statusline {
+        #vim-statusline {
             position: fixed;
             bottom: 0;
             left: 0;
-            width: 100%;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 0;
             height: 1lh;
-            background-color: var(--background1);
+            line-height: 1lh;
+            background-color: var(--background0);
+            color: var(--foreground3);
+            white-space: nowrap;
+            overflow: hidden;
             z-index: 100;
-            padding-inline: 1ch;
+            flex-shrink: 0;
         }
 
-        @media (max-width: 50ch) {
-            #statusline-right {
-                display: none;
+        #vim-statusline > span {
+            padding: 0 1ch;
+        }
+
+        .vsl-mode {
+            color: var(--background1);
+            background-color: var(--blue, var(--foreground1));
+            font-weight: bold;
+        }
+
+        .vsl-branch {
+            color: var(--background2);
+            background-color: var(--green, oklch(from #51CF66 l c h));
+        }
+
+        .vsl-file {
+            color: var(--foreground1);
+        }
+
+        .vsl-spacer {
+            flex: 1;
+            padding: 0 !important;
+        }
+
+        .vsl-clock {
+            color: var(--foreground2);
+        }
+
+        .vsl-pos {
+            background-color: var(--background2);
+            color: var(--foreground1);
+        }
+
+        .vsl-loc {
+            background-color: var(--background2);
+            color: var(--foreground1);
+        }
+
+        .vsl-vim-icon {
+            background-color: var(--red, var(--accent));
+            color: var(--background0);
+            padding: 0 0.5ch !important;
+        }
+
+        .vsl-keys {
+            display: flex;
+            gap: 0;
+            padding: 0 !important;
+            background-color: var(--background2);
+
+            #vsl-last-key {
+                padding: 0 1ch;
+                color: var(--foreground0);
+                min-width: 1ch;
+                text-align: center;
+                border-right: 1px solid var(--background1);
+
+                &:empty {
+                    display: none;
+                }
+            }
+
+            button {
+                all: unset;
+                padding: 0 1ch;
+                color: var(--foreground2);
+                cursor: default;
+                border-right: 1px solid var(--background1);
+                transition: color 0.1s;
+
+                &:last-child {
+                    border-right: none;
+                }
             }
         }
 
