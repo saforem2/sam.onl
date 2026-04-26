@@ -31,7 +31,13 @@
             a {
                 color: var(--url);
                 text-decoration: none;
+            }
+        }
 
+        /* Bracket hover effect — scoped to #main-content to avoid
+           overriding ::before in TOC, sidebar, and nav links */
+        #main-content :is(p, blockquote, li, [is-~='typography-block']) {
+            a:not(.heading-anchor) {
                 &::before {
                     content: '[';
                     margin-right: -1ch;
