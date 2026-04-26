@@ -32,30 +32,34 @@
                 color: var(--url);
                 text-decoration: none;
 
-                &::before,
-                &::after {
-                    opacity: 0;
-                    transition: all 0.3s ease;
-                }
-
                 &::before {
                     content: '[';
+                    margin-right: -1ch;
+                    opacity: 0;
+                    transition:
+                        margin 0.3s ease,
+                        opacity 0.3s ease;
                 }
 
                 &::after {
                     content: ']';
+                    margin-left: -1ch;
+                    opacity: 0;
+                    transition:
+                        margin 0.3s ease,
+                        opacity 0.3s ease;
                 }
 
                 &:hover {
                     color: var(--accent, var(--blue));
 
                     &::before {
-                        margin-right: 0.5ch;
+                        margin-right: 0;
                         opacity: 1;
                     }
 
                     &::after {
-                        margin-left: 0.5ch;
+                        margin-left: 0;
                         opacity: 1;
                     }
                 }
