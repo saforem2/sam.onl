@@ -6,6 +6,14 @@ interface Props {
 }
 
 const { variant } = Astro.props
+const path = Astro.url.pathname
+const isOn = path.startsWith('/posts')
+    ? 'posts'
+    : path.startsWith('/talks')
+      ? 'talks'
+      : path.startsWith('/landing') || path.startsWith('/more')
+        ? 'more'
+        : null
 ---
 
 <nav id="top-navbar" box-="square">
@@ -25,9 +33,9 @@ const { variant } = Astro.props
     }
     <row id="links">
         <span id="nav-links">
-            <a href="/posts" class="nav-link"><u>p</u>osts</a>
-            <a href="/talks" class="nav-link"><u>t</u>alks</a>
-            <a href="/landing" class="nav-link"><u>m</u>ore</a>
+            <a href="/posts" class="nav-link" data-active={isOn === 'posts'}>[<u>p</u>]osts</a>
+            <a href="/talks" class="nav-link" data-active={isOn === 'talks'}>[<u>t</u>]alks</a>
+            <a href="/landing" class="nav-link" data-active={isOn === 'more'}>[<u>m</u>]ore</a>
         </span>
         <button id="theme-button" size-="small">  </button>
         <a
@@ -174,11 +182,12 @@ const { variant } = Astro.props
             color: var(--foreground2);
         }
 
+        &[data-active='true'] {
+            color: var(--foreground0);
+        }
+
         u {
-            /* font-weight: bold; */
             text-decoration: none !important;
-            /* text-decoration: underline; */
-            /* text-decoration-color: var(--foreground0); */
         }
     }
 
