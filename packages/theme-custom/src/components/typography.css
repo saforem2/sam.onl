@@ -30,11 +30,34 @@
         [is-~='typography-block'] {
             a {
                 color: var(--url);
-                text-decoration: underline dashed;
+                text-decoration: none;
+
+                &::before,
+                &::after {
+                    opacity: 0;
+                    transition: all 0.3s ease;
+                }
+
+                &::before {
+                    content: '[';
+                }
+
+                &::after {
+                    content: ']';
+                }
 
                 &:hover {
                     color: var(--accent, var(--blue));
-                    text-decoration: underline wavy;
+
+                    &::before {
+                        margin-right: 0.5ch;
+                        opacity: 1;
+                    }
+
+                    &::after {
+                        margin-left: 0.5ch;
+                        opacity: 1;
+                    }
                 }
             }
 
