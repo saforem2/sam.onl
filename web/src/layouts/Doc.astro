@@ -1183,6 +1183,28 @@ const articleSchema =
                     '#toc-list a.active',
                 ) as HTMLAnchorElement | null
                 activeLink?.scrollIntoView({ block: 'nearest' })
+
+                // Update the article border label with the active h2
+                const titleEl = document.querySelector(
+                    '#doc-article > header h1',
+                ) as HTMLElement | null
+                if (titleEl) {
+                    const activeH2 =
+                        activeHeading.tagName === 'H2'
+                            ? activeHeading
+                            : activeHeading.closest?.(
+                                  '.heading-collapse[data-heading-level="2"]',
+                              )?.querySelector('summary h2') ?? null
+                    if (activeH2) {
+                        const text = activeH2.textContent?.replace(/^#+\s*/, '') ?? ''
+                        if (text && titleEl.dataset.original === undefined) {
+                            titleEl.dataset.original = titleEl.textContent ?? ''
+                        }
+                        if (text) titleEl.textContent = text
+                    } else if (titleEl.dataset.original) {
+                        titleEl.textContent = titleEl.dataset.original
+                    }
+                }
             }
         }
 
