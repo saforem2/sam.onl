@@ -1195,16 +1195,12 @@ const articleSchema =
                         titleEl.dataset.originalHtml = titleEl.innerHTML
                     }
 
-                    const hasScrolled = mainEl.scrollTop > 100
-
                     // Find the nearest heading (walk up through
                     // collapsible wrappers to find the actual heading)
                     let target: HTMLElement | null = null
                     if (/^H[1-6]$/.test(activeHeading.tagName)) {
                         target = activeHeading
                     } else {
-                        // Inside a collapsible — find the heading in
-                        // the nearest summary
                         const collapse = activeHeading.closest?.(
                             '.heading-collapse',
                         )
@@ -1213,7 +1209,14 @@ const articleSchema =
                         ) as HTMLElement | null
                     }
 
-                    if (hasScrolled && target) {
+                    // Only show in border once the heading has scrolled
+                    // above the visible content area
+                    const headingAbove = target
+                        ? target.getBoundingClientRect().bottom <
+                          mainEl.getBoundingClientRect().top
+                        : false
+
+                    if (headingAbove && target) {
                         const level = parseInt(target.tagName[1])
                         const prefix = '#'.repeat(level)
                         const colorVar = `var(--h${level})`
