@@ -19,6 +19,11 @@ const isOn = path.startsWith('/posts')
 <nav id="top-navbar">
     <span id="nav-left">
         <a href="/" id="home-link"></a>
+        <a href="/posts" class="nav-link" data-active={isOn === 'posts'}><u>p</u>osts</a>
+        <a href="/talks" class="nav-link" data-active={isOn === 'talks'}><u>t</u>alks</a>
+        <a href="/landing" class="nav-link" data-active={isOn === 'more'}><u>m</u>ore</a>
+    </span>
+    <span id="nav-right">
         <button id="theme-button"></button>
         <a id="github-button" href="https://github.com/saforem2/sam.onl" target="_blank"></a>
         <a id="rss-button" href="/rss.xml" target="_blank"></a>
@@ -43,6 +48,7 @@ const isOn = path.startsWith('/posts')
     nav {
         display: flex;
         align-items: stretch;
+        justify-content: space-between;
         gap: 0;
         height: calc(1lh + 1ch);
         line-height: 1lh;
@@ -72,7 +78,60 @@ const isOn = path.startsWith('/posts')
         }
     }
 
+    /* Left group: home + nav links as tabs */
     #nav-left {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+
+        > a {
+            display: inline-flex;
+            align-items: center;
+            padding: 0 1ch;
+            text-decoration: none;
+            color: var(--foreground3);
+            border-right: 1px solid var(--background1);
+
+            &:hover {
+                background-color: var(--background1);
+                color: var(--foreground1);
+            }
+        }
+
+        #home-link {
+            color: var(--foreground1);
+            font-weight: bold;
+        }
+
+        .nav-link {
+
+            &:visited {
+                color: var(--foreground3);
+            }
+
+            &[data-active='true'] {
+                background-color: var(--background0);
+                color: var(--foreground0);
+                border-bottom: 1px solid var(--background0);
+                margin-bottom: -1px;
+            }
+
+            u {
+                text-decoration: none !important;
+            }
+        }
+
+        .nav-link u::before {
+            content: '[';
+        }
+
+        .nav-link u::after {
+            content: ']';
+        }
+    }
+
+    /* Right group: action buttons */
+    #nav-right {
         display: flex;
         align-items: stretch;
         gap: 0;
@@ -87,18 +146,7 @@ const isOn = path.startsWith('/posts')
             font-family: var(--font-family);
             font-size: inherit;
             line-height: inherit;
-            text-decoration: none;
-            border-right: 1px solid var(--background2);
-        }
-
-        #home-link {
-            color: var(--foreground1);
-            font-weight: bold;
-        }
-
-        :is(a, button):hover {
-            background-color: var(--background2);
-            color: var(--foreground1);
+            border-left: 1px solid var(--background1);
         }
 
         #theme-button:hover,
@@ -131,6 +179,15 @@ const isOn = path.startsWith('/posts')
     }
 
     @media (max-width: 768px) {
+        #nav-left {
+            overflow-x: auto;
+            flex: 1;
+        }
+
+        #nav-right {
+            display: none;
+        }
+
         #nav-dropdown {
             display: block;
 
@@ -141,7 +198,7 @@ const isOn = path.startsWith('/posts')
                 cursor: pointer;
                 list-style: none;
                 color: var(--foreground2);
-                border-left: 1px solid var(--background2);
+                border-left: 1px solid var(--background1);
 
                 &::-webkit-details-marker {
                     display: none;
