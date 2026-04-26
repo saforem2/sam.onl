@@ -17,49 +17,29 @@ const isOn = path.startsWith('/posts')
 ---
 
 <nav id="top-navbar">
-    <span id="home-link-wrapper"><a href="/" id="home-link">[&#xef85;]</a></span
-    >
-    {
-        variant === 21 && (
-            <a
-                href="/"
-                is-="badge"
-                variant-="blue"
-                class="navbar-name"
-                style="--badge-text: var(--background0); text-decoration: none;">
-                Sam Foreman
-            </a>
-        )
-    }
-    <row id="links">
-        <span id="nav-links">
-            <a href="/posts" class="nav-link" data-active={isOn === 'posts'}><u>p</u>osts</a>
-            <a href="/talks" class="nav-link" data-active={isOn === 'talks'}><u>t</u>alks</a>
-            <a href="/landing" class="nav-link" data-active={isOn === 'more'}><u>m</u>ore</a>
-        </span>
-        <button id="theme-button" size-="small">  </button>
-        <a
-            id="github-button"
-            href="https://github.com/saforem2/sam.onl"
-            target="_blank"
-            size-="small">
-            
-        </a>
-        <a id="rss-button" href="/rss.xml" target="_blank" size-="small">  </a>
-        <button id="search-button" size-="small"> &#xea6d;</button>
-    </row>
+    <span id="nav-tabs">
+        <a href="/" class="nav-tab" data-active={isOn === null}> sam.onl</a>
+        <a href="/posts" class="nav-tab" data-active={isOn === 'posts'}> <u>p</u>osts</a>
+        <a href="/talks" class="nav-tab" data-active={isOn === 'talks'}> <u>t</u>alks</a>
+        <a href="/landing" class="nav-tab" data-active={isOn === 'more'}> <u>m</u>ore</a>
+    </span>
+    <span id="nav-spacer"></span>
+    <span id="nav-actions">
+        <button id="theme-button"></button>
+        <a id="github-button" href="https://github.com/saforem2/sam.onl" target="_blank"></a>
+        <a id="rss-button" href="/rss.xml" target="_blank"></a>
+        <button id="search-button"></button>
+    </span>
     <details id="nav-dropdown">
-        <summary>&#xf0c9;</summary>
+        <summary></summary>
         <div class="nav-dropdown-content">
-            <a href="/">&#xef85; home</a>
-            <a href="/posts">&#xf044; posts</a>
-            <a href="/talks">&#xf0428; talks</a>
-            <a href="/landing">&#xefa8; more</a>
-            <a href="https://github.com/saforem2/sam.onl" target="_blank"
-                >&#xe65b; github</a
-            >
-            <a href="/rss.xml" target="_blank">&#xf09e; rss</a>
-            <button id="theme-button-mobile">&#xe22b; theme</button>
+            <a href="/"> home</a>
+            <a href="/posts"> posts</a>
+            <a href="/talks">8 talks</a>
+            <a href="/landing"> more</a>
+            <a href="https://github.com/saforem2/sam.onl" target="_blank"> github</a>
+            <a href="/rss.xml" target="_blank"> rss</a>
+            <button id="theme-button-mobile"> theme</button>
         </div>
     </details>
 </nav>
@@ -68,8 +48,7 @@ const isOn = path.startsWith('/posts')
 <style>
     nav {
         display: flex;
-        flex-direction: row;
-        align-items: center;
+        align-items: stretch;
         gap: 0;
         height: 1lh;
         line-height: 1lh;
@@ -78,130 +57,57 @@ const isOn = path.startsWith('/posts')
         position: relative;
         z-index: 20;
         min-width: 0;
-        background-color: var(--background0);
+        background-color: var(--background2);
         color: var(--foreground3);
         overflow: hidden;
-
-        &:focus-within {
-            --box-border-color: var(--focus-region-border);
-        }
 
         :is(a[href], button:not([disabled])) {
             position: relative;
             outline: none;
-        }
-
-        :is(a[href], button:not([disabled]))::after {
-            content: '';
-            position: absolute;
-            inset-inline-start: -1ch;
-            inset-block-start: 0;
-            color: transparent;
-            width: 1ch;
-            pointer-events: none;
-        }
-
-        :is(a[href], button:not([disabled])) {
             transition:
                 background-color 100ms linear,
-                color 100ms linear,
-                box-shadow 100ms linear;
+                color 100ms linear;
         }
 
         :is(a[href], button:not([disabled])):focus-visible,
         :is(a[href], button:not([disabled]))[data-vim-focused='true']:focus {
             background-color: var(--focus-bg-strong);
             color: var(--focus-fg);
-            /* border-left: 2px solid var(--accent); */
             text-decoration: none;
-        }
-
-        :is(a[href], button:not([disabled])):focus-visible::after,
-        :is(
-                a[href],
-                button:not([disabled])
-            )[data-vim-focused='true']:focus::after {
-            color: var(--focus-marker);
         }
 
         :is(a[href], button:not([disabled])):hover {
-            background-color: var(--focus-hover-bg);
-        }
-
-        #home-link {
-            display: inline-flex;
-            align-items: center;
-            text-decoration: none;
-            background-color: var(--blue, oklch(from #339AF0 l c h));
-            color: var(--background0);
-            padding: 0 1ch;
-            font-weight: bold;
-
-            &:hover {
-                text-decoration: none;
-                background-color: oklch(
-                    from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h
-                );
-            }
+            background-color: var(--background1);
         }
     }
 
-    nav > span {
-        flex: 0 0 auto;
-    }
-
-    .navbar-name {
-        text-decoration: none;
-        flex: 0 0 auto;
-        overflow: visible;
-        padding: 0 2ch;
-
-        &::before,
-        &::after {
-            display: none;
-        }
-
-        &:focus-visible,
-        &:focus,
-        &[data-vim-focused='true']:focus {
-            background-color: var(--blue) !important;
-            color: var(--background0) !important;
-        }
-    }
-
-    #nav-links {
+    /* Tabs — left-aligned, like vim buffer tabs */
+    #nav-tabs {
         display: flex;
         gap: 0;
-        background-color: oklch(
-            from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
-        );
+        flex: 0 0 auto;
     }
 
-    #nav-links > a.nav-link {
-        display: inline;
-        text-decoration: none;
-        color: var(--foreground2);
+    .nav-tab {
+        display: inline-flex;
+        align-items: center;
         padding: 0 1ch;
+        text-decoration: none;
+        color: var(--foreground3);
         border-right: 1px solid var(--background1);
 
-        &:last-child {
-            border-right: none;
-        }
-
         &:visited {
-            color: var(--foreground2);
+            color: var(--foreground3);
         }
 
         &[data-active='true'] {
+            background-color: var(--background0);
             color: var(--foreground0);
-            background-color: oklch(
-                from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
-            );
         }
 
         &:hover {
-            color: var(--foreground0);
-            background-color: var(--focus-hover-bg);
+            color: var(--foreground1);
+            background-color: var(--background1);
         }
 
         u {
@@ -209,81 +115,54 @@ const isOn = path.startsWith('/posts')
         }
     }
 
-    #nav-links > a.nav-link u::before {
-        content: '[';
-        font-weight: normal;
+    /* Spacer — fills remaining space with tab bar background */
+    #nav-spacer {
+        flex: 1;
+        border-bottom: 1px solid var(--background1);
     }
 
-    #nav-links > a.nav-link u::after {
-        font-weight: normal;
-        content: ']';
-    }
-
-    #links {
+    /* Action buttons — right-aligned */
+    #nav-actions {
         display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        flex: 1 1 auto;
         gap: 0;
-        min-width: 0;
-        max-width: 100%;
-        overflow-x: auto;
-        overflow-y: hidden;
-        scrollbar-width: none;
-        justify-content: flex-end;
+        flex: 0 0 auto;
+        align-items: stretch;
 
         :is(a, button) {
-            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
             padding: 0 1ch;
+            color: var(--foreground3);
             text-decoration: none;
-            color: var(--foreground2);
-            border-right: 1px solid var(--background1);
-
-            &:last-child {
-                border-right: none;
-            }
-
-            &:hover {
-                text-decoration: none;
-            }
+            border: none;
+            background: none;
+            cursor: pointer;
+            font: inherit;
+            border-left: 1px solid var(--background1);
         }
 
-        #github-button {
-            &:hover,
-            &:focus-visible {
-                background-color: oklch(from var(--purple) l c h / 0.15);
-                color: var(--purple);
-            }
+        #theme-button:hover,
+        #theme-button:focus-visible {
+            background-color: oklch(from var(--blue) l c h / 0.15);
+            color: var(--blue);
         }
 
-        #rss-button {
-            &:hover,
-            &:focus-visible {
-                background-color: oklch(from var(--orange) l c h / 0.15);
-                color: var(--orange);
-            }
+        #github-button:hover,
+        #github-button:focus-visible {
+            background-color: oklch(from var(--purple) l c h / 0.15);
+            color: var(--purple);
         }
 
-        #theme-button {
-            &:hover,
-            &:focus-visible {
-                background-color: oklch(from var(--blue) l c h / 0.15);
-                color: var(--blue);
-            }
+        #rss-button:hover,
+        #rss-button:focus-visible {
+            background-color: oklch(from var(--orange) l c h / 0.15);
+            color: var(--orange);
         }
 
-        #search-button {
-            background-color: oklch(
-                from var(--foreground1) calc(l * var(--oklch-scale, 1.15)) c h /
-                    0.5
-            );
-            color: var(--background1);
-
-            &:hover,
-            &:focus-visible {
-                background-color: oklch(from var(--green) l c h / 0.15);
-                color: var(--green);
-            }
+        #search-button:hover,
+        #search-button:focus-visible {
+            background-color: oklch(from var(--green) l c h / 0.15);
+            color: var(--green);
         }
     }
 
@@ -292,31 +171,27 @@ const isOn = path.startsWith('/posts')
     }
 
     @media (max-width: 768px) {
-        nav {
-            padding: 1lh 2ch;
-            align-items: center;
-            margin-bottom: 0;
+        #nav-tabs {
+            overflow-x: auto;
+            flex: 1;
         }
 
-        #home-link-wrapper {
-            display: none;
-        }
-
-        .navbar-name {
-            margin-right: auto;
-        }
-
-        #links {
+        #nav-actions {
             display: none;
         }
 
         #nav-dropdown {
             display: block;
+            position: relative;
 
-            > summary {
-                list-style: none;
-                cursor: pointer;
+            summary {
+                display: flex;
+                align-items: center;
                 padding: 0 1ch;
+                cursor: pointer;
+                list-style: none;
+                color: var(--foreground2);
+                border-left: 1px solid var(--background1);
 
                 &::-webkit-details-marker {
                     display: none;
@@ -325,35 +200,31 @@ const isOn = path.startsWith('/posts')
 
             .nav-dropdown-content {
                 position: absolute;
-                right: 1ch;
+                right: 0;
                 top: 100%;
-                z-index: 200;
                 display: flex;
                 flex-direction: column;
                 background: var(--background0);
                 border: 1px solid var(--foreground2);
                 box-shadow: 2px 2px 0 0 var(--foreground2);
-                min-width: 20ch;
+                z-index: 30;
+                min-width: 16ch;
 
-                a,
-                button {
-                    all: unset;
-                    display: block;
-                    padding: 0.5lh 2ch;
+                :is(a, button) {
+                    padding: 0.25lh 2ch;
+                    text-decoration: none;
                     color: var(--foreground1);
+                    border: none;
+                    background: none;
                     cursor: pointer;
-                    box-sizing: border-box;
-                    width: 100%;
+                    font: inherit;
+                    text-align: left;
 
                     &:hover {
                         background: var(--background1);
                     }
                 }
             }
-        }
-
-        nav {
-            position: relative;
         }
     }
 </style>
