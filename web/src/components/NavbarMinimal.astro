@@ -17,49 +17,28 @@ const isOn = path.startsWith('/posts')
 ---
 
 <nav id="top-navbar">
-    <span id="home-link-wrapper"><a href="/" id="home-link">[&#xef85;]</a></span
-    >
-    {
-        variant === 21 && (
-            <a
-                href="/"
-                is-="badge"
-                variant-="blue"
-                class="navbar-name"
-                style="--badge-text: var(--background0); text-decoration: none;">
-                Sam Foreman
-            </a>
-        )
-    }
-    <row id="links">
-        <span id="nav-links">
-            <a href="/posts" class="nav-link" data-active={isOn === 'posts'}><u>p</u>osts</a>
-            <a href="/talks" class="nav-link" data-active={isOn === 'talks'}><u>t</u>alks</a>
-            <a href="/landing" class="nav-link" data-active={isOn === 'more'}><u>m</u>ore</a>
-        </span>
-        <button id="theme-button" size-="small">  </button>
-        <a
-            id="github-button"
-            href="https://github.com/saforem2/sam.onl"
-            target="_blank"
-            size-="small">
-            
-        </a>
-        <a id="rss-button" href="/rss.xml" target="_blank" size-="small">  </a>
-        <button id="search-button" size-="small"> &#xea6d;</button>
-    </row>
+    <span id="nav-left">
+        <a href="/" id="home-link"></a>
+        <a href="/posts" class="nav-link" data-active={isOn === 'posts'}><u>p</u>osts</a>
+        <a href="/talks" class="nav-link" data-active={isOn === 'talks'}><u>t</u>alks</a>
+        <a href="/landing" class="nav-link" data-active={isOn === 'more'}><u>m</u>ore</a>
+    </span>
+    <span id="nav-right">
+        <button id="theme-button"></button>
+        <a id="github-button" href="https://github.com/saforem2/sam.onl" target="_blank"></a>
+        <a id="rss-button" href="/rss.xml" target="_blank"></a>
+        <button id="search-button"></button>
+    </span>
     <details id="nav-dropdown">
-        <summary>&#xf0c9;</summary>
+        <summary></summary>
         <div class="nav-dropdown-content">
-            <a href="/">&#xef85; home</a>
-            <a href="/posts">&#xf044; posts</a>
-            <a href="/talks">&#xf0428; talks</a>
-            <a href="/landing">&#xefa8; more</a>
-            <a href="https://github.com/saforem2/sam.onl" target="_blank"
-                >&#xe65b; github</a
-            >
-            <a href="/rss.xml" target="_blank">&#xf09e; rss</a>
-            <button id="theme-button-mobile">&#xe22b; theme</button>
+            <a href="/"> home</a>
+            <a href="/posts"> posts</a>
+            <a href="/talks">8 talks</a>
+            <a href="/landing"> more</a>
+            <a href="https://github.com/saforem2/sam.onl" target="_blank"> github</a>
+            <a href="/rss.xml" target="_blank"> rss</a>
+            <button id="theme-button-mobile"> theme</button>
         </div>
     </details>
 </nav>
@@ -68,11 +47,9 @@ const isOn = path.startsWith('/posts')
 <style>
     nav {
         display: flex;
-        flex-direction: row;
+        align-items: stretch;
         justify-content: space-between;
-        align-items: center;
-        gap: 1ch;
-        padding: 0 2ch;
+        gap: 0;
         white-space: nowrap;
         max-width: 100%;
         position: relative;
@@ -81,247 +58,115 @@ const isOn = path.startsWith('/posts')
         background-color: var(--background2);
         border-bottom: 1px solid var(--background1);
 
-        &:focus-within {
-            --box-border-color: var(--focus-region-border);
-        }
-
         :is(a[href], button:not([disabled])) {
             position: relative;
             outline: none;
-        }
-
-        :is(a[href], button:not([disabled]))::after {
-            content: '';
-            position: absolute;
-            inset-inline-start: -1ch;
-            inset-block-start: 0;
-            color: transparent;
-            width: 1ch;
-            pointer-events: none;
-        }
-
-        :is(a[href], button:not([disabled])) {
             transition:
                 background-color 100ms linear,
-                color 100ms linear,
-                box-shadow 100ms linear;
+                color 100ms linear;
         }
 
         :is(a[href], button:not([disabled])):focus-visible,
         :is(a[href], button:not([disabled]))[data-vim-focused='true']:focus {
             background-color: var(--focus-bg-strong);
             color: var(--focus-fg);
-            /* border-left: 2px solid var(--accent); */
             text-decoration: none;
         }
+    }
 
-        :is(a[href], button:not([disabled])):focus-visible::after,
-        :is(
-                a[href],
-                button:not([disabled])
-            )[data-vim-focused='true']:focus::after {
-            color: var(--focus-marker);
-        }
+    /* Left group: home + nav links as tabs */
+    #nav-left {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
 
-        :is(a[href], button:not([disabled])):hover {
-            background-color: var(--focus-hover-bg);
+        > a {
+            display: inline-flex;
+            align-items: center;
+            padding: 0 1ch;
+            text-decoration: none;
+            color: var(--foreground3);
+            border-right: 1px solid var(--background1);
+
+            &:hover {
+                background-color: var(--background1);
+                color: var(--foreground1);
+            }
         }
 
         #home-link {
-            display: inline-flex;
-            align-items: center;
-            text-decoration: none;
-            -moz-osx-font-smoothing: grayscale;
-            -webkit-font-smoothing: subpixel-antialiased;
-            font-weight: var(--font-weight-bold);
             color: var(--foreground1);
-            gap: 1ch;
+            font-weight: bold;
+        }
 
-            img {
-                display: block;
+        .nav-link {
+
+            &:visited {
+                color: var(--foreground3);
             }
 
-            &:hover {
-                text-decoration: underline;
+            &[data-active='true'] {
+                background-color: var(--background0);
+                color: var(--foreground0);
+                border-bottom: 1px solid var(--background0);
+                margin-bottom: -1px;
+            }
+
+            u {
+                text-decoration: none !important;
             }
         }
-    }
 
-    nav > span {
-        flex: 0 0 auto;
-    }
-
-    .navbar-name {
-        text-decoration: none;
-        flex: 0 0 auto;
-        overflow: visible;
-        padding: 0 2ch;
-
-        &::before,
-        &::after {
-            display: none;
+        .nav-link u::before {
+            content: '[';
         }
 
-        &:focus-visible,
-        &:focus,
-        &[data-vim-focused='true']:focus {
-            background-color: var(--blue) !important;
-            color: var(--background0) !important;
+        .nav-link u::after {
+            content: ']';
         }
     }
 
-    #nav-links {
+    /* Right group: action buttons */
+    #nav-right {
         display: flex;
-        gap: 2ch;
-    }
-
-    #nav-links > a.nav-link {
-        display: inline;
-        text-decoration: none;
-        color: var(--foreground2);
-
-        &:visited {
-            color: var(--foreground2);
-        }
-
-        &[data-active='true'] {
-            color: var(--foreground0);
-            background-color: var(--background0);
-            padding: 0 1ch;
-        }
-
-        u {
-            text-decoration: none !important;
-        }
-    }
-
-    #nav-links > a.nav-link u::before {
-        content: '[';
-        font-weight: normal;
-    }
-
-    #nav-links > a.nav-link u::after {
-        font-weight: normal;
-        content: ']';
-    }
-
-    #links {
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        flex: 1 1 auto;
-        row-gap: 2ch;
-        column-gap: 1lh;
-        margin-inline-start: 1ch;
-        min-width: 0;
-        max-width: 100%;
-        width: auto;
-
-        a {
-            display: inline-block;
-            text-decoration: none;
-            color: var(--foreground2);
-        }
-        overflow-x: auto;
-        overflow-y: hidden;
-        scrollbar-width: thin;
-        justify-content: flex-end;
-        align-content: center;
+        align-items: stretch;
+        gap: 0;
 
         :is(a, button) {
-            flex: 0 0 auto;
-        }
-
-        a {
             display: inline-flex;
-            gap: 1ch;
+            align-items: center;
+            padding: 0 1ch;
+            color: var(--foreground3);
             text-decoration: none;
-            color: var(--foreground2);
-
-            &:focus,
-            &:hover {
-                text-decoration: underline;
-            }
+            border: none;
+            background: none;
+            cursor: pointer;
+            font: inherit;
+            border-left: 1px solid var(--background1);
         }
 
-        #github-button {
-            display: inline-flex;
-            gap: 1ch;
-            padding-inline: 1ch;
-            color: var(--foreground1);
-            text-decoration: none;
-            background-color: oklch(
-                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
-                    0.1
-            );
-
-            &:focus,
-            &:hover {
-                background-color: oklch(
-                    from var(--purple) calc(l * var(--oklch-scale, 0.85)) c h /
-                        0.1
-                );
-                color: var(--purple);
-                text-decoration: none;
-            }
+        #theme-button:hover,
+        #theme-button:focus-visible {
+            background-color: oklch(from var(--blue) l c h / 0.15);
+            color: var(--blue);
         }
 
-        #rss-button {
-            display: inline-flex;
-            gap: 1ch;
-            padding-inline: 1ch;
-            color: var(--foreground1);
-            text-decoration: none;
-            background-color: oklch(
-                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
-                    0.1
-            );
-
-            &:focus,
-            &:hover {
-                background-color: oklch(
-                    from var(--orange) calc(l * var(--oklch-scale, 0.85)) c h /
-                        0.1
-                );
-                color: var(--orange);
-                text-decoration: none;
-            }
+        #github-button:hover,
+        #github-button:focus-visible {
+            background-color: oklch(from var(--purple) l c h / 0.15);
+            color: var(--purple);
         }
 
-        #theme-button {
-            display: inline-flex;
-            gap: 1ch;
-            padding-inline: 1ch;
-            color: var(--foreground1);
-            background-color: oklch(
-                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
-                    0.1
-            );
-
-            &:focus,
-            &:hover {
-                background-color: oklch(
-                    from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h /
-                        0.1
-                );
-                color: var(--blue);
-            }
+        #rss-button:hover,
+        #rss-button:focus-visible {
+            background-color: oklch(from var(--orange) l c h / 0.15);
+            color: var(--orange);
         }
 
-        #search-button {
-            display: inline-flex;
-            padding-inline: 1ch;
-            gap: 1ch;
-            background-color: var(--foreground0);
-
-            &:focus,
-            &:hover {
-                background-color: oklch(
-                    from var(--green) calc(l * var(--oklch-scale, 0.85)) c h /
-                        0.1
-                );
-                color: var(--green);
-            }
+        #search-button:hover,
+        #search-button:focus-visible {
+            background-color: oklch(from var(--green) l c h / 0.15);
+            color: var(--green);
         }
     }
 
@@ -330,31 +175,26 @@ const isOn = path.startsWith('/posts')
     }
 
     @media (max-width: 768px) {
-        nav {
-            padding: 1lh 2ch;
-            align-items: center;
-            margin-bottom: 0;
+        #nav-left {
+            overflow-x: auto;
+            flex: 1;
         }
 
-        #home-link-wrapper {
-            display: none;
-        }
-
-        .navbar-name {
-            margin-right: auto;
-        }
-
-        #links {
+        #nav-right {
             display: none;
         }
 
         #nav-dropdown {
             display: block;
 
-            > summary {
-                list-style: none;
-                cursor: pointer;
+            summary {
+                display: flex;
+                align-items: center;
                 padding: 0 1ch;
+                cursor: pointer;
+                list-style: none;
+                color: var(--foreground2);
+                border-left: 1px solid var(--background1);
 
                 &::-webkit-details-marker {
                     display: none;
@@ -363,35 +203,31 @@ const isOn = path.startsWith('/posts')
 
             .nav-dropdown-content {
                 position: absolute;
-                right: 1ch;
+                right: 0;
                 top: 100%;
-                z-index: 200;
                 display: flex;
                 flex-direction: column;
                 background: var(--background0);
                 border: 1px solid var(--foreground2);
                 box-shadow: 2px 2px 0 0 var(--foreground2);
-                min-width: 20ch;
+                z-index: 30;
+                min-width: 16ch;
 
-                a,
-                button {
-                    all: unset;
-                    display: block;
-                    padding: 0.5lh 2ch;
+                :is(a, button) {
+                    padding: 0.25lh 2ch;
+                    text-decoration: none;
                     color: var(--foreground1);
+                    border: none;
+                    background: none;
                     cursor: pointer;
-                    box-sizing: border-box;
-                    width: 100%;
+                    font: inherit;
+                    text-align: left;
 
                     &:hover {
                         background: var(--background1);
                     }
                 }
             }
-        }
-
-        nav {
-            position: relative;
         }
     }
 </style>
