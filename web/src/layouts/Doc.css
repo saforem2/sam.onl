@@ -713,8 +713,8 @@ h6::before {
         /*     background-color: var(--focus-hover-bg); */
         /* } */
 
-        :is([tabindex='0'], a[href], summary):focus-visible,
-        :is([tabindex='0'], a[href], summary)[data-vim-focused='true']:focus {
+        :is([tabindex='0'], a[href], summary):not(.icon-flex a):focus-visible,
+        :is([tabindex='0'], a[href], summary):not(.icon-flex a)[data-vim-focused='true']:focus {
             background-color: var(--focus-bg-strong);
             color: var(--focus-fg);
             box-shadow:
