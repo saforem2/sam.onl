@@ -197,83 +197,6 @@ Pre-Training group] for the [AuroraGPT] project.</p>
 
 </div>
 
-> [!TIP] ➕ More
->
-> > [!TIP] 🔥 What I Work on
-> >
-> > As a member of the [AI / ML Group] at [ALCF], I work on:
-> >
-> > <div class="flex-container">
-> >
-> > <div class="flex-container">
-> >
-> > - 🤖 🧪 [AI + Science]
-> > - 🎲 [Building better sampling methods for Lattice QCD][`l2hmc-qcd`]
-> > - 🧬 [Genome-Scale Language Models]
-> >     - [ GenSLM]
-> >     - 🥇 [ACM Gordon Bell Special Prize]
-> >
-> > </div>
-> >
-> > <div class="flex-container">
-> >
-> > - 🌍 [Foundation models for long term climate forecasting]
-> > - 🏃‍♂️ [Scaling Large Language Models]
-> > - 🏎️ [Distributed training across thousands of GPUs]
-> >
-> > </div>
-> >
-> > </div>
->
-> > [!TIP] 📍 How I got here
-> >
-> > My [current research] focuses on using deep generative modeling to
-> > help build better sampling algorithms in lattice gauge theory. In
-> > particular, I’m interested in building gauge equivariant neural
-> > network architectures and using inductive priors to incorporate
-> > physical symmetries into machine learning models.
-> >
-> > Prior to this, I received my PhD in Physics from the University of Iowa
-> > in 2019, where I used ML to build better Markov Chain Monte Carlo sampling
-> > techniques for Lattice Quantum Chromodynamics ([`l2hmc-qcd`]).
-> >
-> > <br />
-> >
-> > I received my PhD in Physics from the University of Iowa in 2019 and
-> > my thesis was on [Learning Better Physics: A Machine Learning
-> >
-> > Approach to Lattice Gauge Theory].
-> >
-> > <br />
-> >
-> >
-> > Prior to this, I completed two bachelors degrees (Engineering
-> > Physics and Applied Mathematics, 2015) at The University of Illinois
-> > at Urbana-Champaign. My undergraduate dissertation was titled
-> > [Energy Storage in Quantum Resonators] and was supervised by
-> > Professor [Alfred Hübler] within the Center for Complex Systems
-> > Research at UIUC.
-> >
-> > This work ultimately resulted in a [patent] !!
->
-> > [!TIP] 💌 Contact
-> >
-> > <script
-> >     data-letterbirduser="sam"
-> >     src="https://letterbird.co/embed/v1.js"></script>
->
-> <div style="text-align:center;">
->
-> <img
->     loading="lazy"
->     alt="hits"
->     src="https://hitscounter.dev/api/hit?url=samforeman.me&label=samforeman.me&icon=check2-square&color=%236c757d"
-> />
->
-> <span class="dim-text">© Copyright 2025 [Sam Foreman]</span>
->
-> </div>
-
 ## 📬 Posts
 
 <table class="recent-posts-table">
@@ -1143,28 +1066,28 @@ Pre-Training group] for the [AuroraGPT] project.</p>
   .repo-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 1ch;
     justify-content: flex-start;
     align-items: stretch;
-    margin-top: 1.5rem;
   }
   .repo-card {
     flex: 1 1 260px; /* responsive: min width ~260px */
     max-width: 360px;
     border-radius: 0pt;
-    padding: 1rem 1.1rem;
-    border: 1px solid var(--background2, #dee2e6);
+    padding: 1ch;
+    border: 1px solid var(--foreground3, #dee2e6);
     background-color: oklch(from var(--background0, #f8f9fa) calc(var(--l) + 0.02) var(--c) var(--h));
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); */
+    /* box-shadow: 2pt 2pt black; */
     display: flex;
     flex-direction: column;
     transition: transform 0.15s ease, box-shadow 0.15s ease,
                 border-color 0.15s ease, background-color 0.15s ease;
   }
   .repo-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 3pt 3pt black;
-    /* border-color: var(--bs-primary, #0d6efd); */
+    transform: translate(-2px, -2px);
+    box-shadow: 3px 3px black;
+    border: 1pt solid var(--foreground0, black);
   }
   .repo-header {
     display: flex;
@@ -1200,10 +1123,10 @@ Pre-Training group] for the [AuroraGPT] project.</p>
     white-space: nowrap;
   }
   .repo-description {
-    font-size: 0.9rem;
     margin: 0.3rem 0 0.6rem;
     color: var(--bs-secondary-color, #6c757d);
     min-height: 2.2em; /* keep rows roughly aligned */
+    margin-block-end: 0pt!important;
   }
   .repo-meta {
     display: flex;
@@ -1243,17 +1166,7 @@ Pre-Training group] for the [AuroraGPT] project.</p>
 
 <div class="repo-grid-container">
 
-<h2 class="anchored">
-
-<a href="https://github.com/saforem2/"><code>saforem2</code></a>s GitHub
-Repositories
-</h2>
-
-<p class="repo-grid-loading" id="repo-grid-status">
-
-Loading repositories from GitHub…
-
-</p>
+<a href="https://github.com/saforem2/"><code>saforem2</code></a>s GitHub Repositories
 
 <div id="repo-grid" class="repo-grid" data-github-user="saforem2">
 
@@ -1762,7 +1675,7 @@ Loading repositories from GitHub…
 .recent-posts-table th,
 .recent-posts-table td {
     border: 1px solid var(--foreground2);
-    padding: 0.25lh 1ch;
+    padding: 0 1ch;
 }
 .recent-posts-table th {
     background-color: var(--background1);
