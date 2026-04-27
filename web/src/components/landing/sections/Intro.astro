@@ -369,6 +369,9 @@ const total = variants.length
         }
     </script>
 
+    <style is:global>
+        @import '@/layouts/Doc.css' layer(doc);
+    </style>
     <style>
         #intro {
             position: relative;
@@ -574,99 +577,13 @@ const total = variants.length
         }
 
         /* Vim navigation container — fixed top-right */
-        /* Statusline — fixed bottom, matching Doc.css */
+        /* Statusline — position only, colors from Doc.css */
         #vim-statusline {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            display: flex;
-            align-items: center;
-            gap: 0;
-            height: 1lh;
-            line-height: 1lh;
-            background-color: var(--background0);
-            color: var(--foreground3);
-            white-space: nowrap;
-            overflow: hidden;
             z-index: 100;
-            flex-shrink: 0;
-        }
-
-        #vim-statusline > span {
-            padding: 0 1ch;
-        }
-
-        .vsl-mode {
-            background-color: oklch(from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.5);
-            color: var(--foreground0);
-            font-weight: bold;
-        }
-
-        .vsl-branch {
-            background-color: oklch(from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.2);
-            color: var(--foreground2);
-        }
-
-        .vsl-author {
-            color: var(--foreground1);
-        }
-
-        .vsl-site {
-            color: var(--foreground2);
-        }
-
-        .vsl-spacer {
-            flex: 1;
-            padding: 0 !important;
-        }
-
-        .vsl-clock {
-            color: var(--foreground2);
-            background-color: oklch(from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.33);
-        }
-
-        .vsl-pos {
-            background-color: oklch(from var(--foreground1) calc(l * var(--oklch-scale, 1.15)) c h / 0.5);
-            color: var(--background1);
-        }
-
-        .vsl-loc {
-            background-color: var(--foreground2);
-            color: var(--background2);
-        }
-
-        .vsl-keys {
-            display: flex;
-            gap: 0;
-            padding: 0 !important;
-            color: var(--foreground3);
-            background-color: oklch(from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.2);
-
-            #vsl-last-key {
-                padding: 0 1ch;
-                color: var(--background0);
-                background-color: var(--accent);
-                min-width: 1ch;
-                text-align: center;
-
-                &:empty {
-                    display: none;
-                }
-            }
-
-            button {
-                all: unset;
-                padding: 0 1ch;
-                color: var(--foreground2);
-                cursor: default;
-                border-right: 1px solid var(--background1);
-                transition: color 0.1s;
-
-                &:last-child {
-                    border-right: none;
-                }
-            }
         }
 
         /* Responsive widget grid — min-width override */
