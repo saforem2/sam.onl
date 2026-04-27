@@ -17,13 +17,8 @@ const isOn = path.startsWith('/posts')
 ---
 
 <nav id="top-navbar">
-    <span id="nav-left">
-        <a href="/" id="home-link"></a>
-        <a href="/" is-="badge" size-="small" variant-="blue" class="navbar-name" style="--badge-text: var(--background0); text-decoration: none;">Sam Foreman</a>
-        <a href="/posts" class="nav-link" data-active={isOn === 'posts'}><u>p</u>osts</a>
-        <a href="/talks" class="nav-link" data-active={isOn === 'talks'}><u>t</u>alks</a>
-        <a href="/landing" class="nav-link" data-active={isOn === 'more'}><u>m</u>ore</a>
-    </span>
+    <a href="/" id="home-link"></a>
+    <span id="nav-spacer"></span>
     <span id="nav-right">
         <button id="theme-button"></button>
         <a id="github-button" href="https://github.com/saforem2/sam.onl" target="_blank"></a>
@@ -49,7 +44,6 @@ const isOn = path.startsWith('/posts')
     nav {
         display: flex;
         align-items: stretch;
-        justify-content: space-between;
         gap: 0;
         height: 1lh;
         line-height: 1lh;
@@ -78,72 +72,28 @@ const isOn = path.startsWith('/posts')
         }
     }
 
-    /* Left group: home + nav links as tabs */
-    #nav-left {
-        display: flex;
-        align-items: stretch;
-        gap: 0;
+    #home-link {
+        all: unset;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 1ch;
+        color: var(--foreground1);
+        font-weight: bold;
+        cursor: pointer;
+        font-family: var(--font-family);
+        text-decoration: none;
+        border-right: 1px solid var(--background2);
 
-        > a:not(.navbar-name) {
-            display: inline-flex;
-            align-items: center;
-            padding: 0 1ch;
-            text-decoration: none;
-            color: var(--foreground3);
-            border-right: 1px solid var(--background1);
-
-            &:hover {
-                background-color: var(--background1);
-                color: var(--foreground1);
-            }
-        }
-
-        #home-link {
-            color: var(--foreground1);
-            font-weight: bold;
-        }
-
-        .navbar-name {
-            display: inline-flex;
-            align-items: center;
-            text-decoration: none;
-            border-right: 1px solid var(--background2);
-            padding: 0 1ch !important;
-            line-height: 1;
-
-            &:hover {
-                opacity: 0.85;
-            }
-        }
-
-        .nav-link {
-
-            &:visited {
-                color: var(--foreground3);
-            }
-
-            &[data-active='true'] {
-                background-color: var(--background0);
-                color: var(--foreground0);
-                border-bottom: 1px solid var(--background0);
-                margin-bottom: -1px;
-            }
-
-            u {
-                text-decoration: none !important;
-            }
-        }
-
-        .nav-link u::before {
-            content: '[';
-        }
-
-        .nav-link u::after {
-            content: ']';
+        &:hover {
+            background-color: var(--background2);
         }
     }
 
-    /* Right group: action buttons */
+    #nav-spacer {
+        flex: 1;
+        background-color: var(--background0);
+    }
+
     #nav-right {
         display: flex;
         align-items: stretch;
@@ -159,7 +109,8 @@ const isOn = path.startsWith('/posts')
             font-family: var(--font-family);
             font-size: inherit;
             line-height: inherit;
-            border-left: 1px solid var(--background1);
+            text-decoration: none;
+            border-left: 1px solid var(--background2);
         }
 
         #theme-button:hover,
@@ -192,11 +143,6 @@ const isOn = path.startsWith('/posts')
     }
 
     @media (max-width: 768px) {
-        #nav-left {
-            overflow-x: auto;
-            flex: 1;
-        }
-
         #nav-right {
             display: none;
         }
@@ -211,7 +157,7 @@ const isOn = path.startsWith('/posts')
                 cursor: pointer;
                 list-style: none;
                 color: var(--foreground2);
-                border-left: 1px solid var(--background1);
+                border-left: 1px solid var(--background2);
 
                 &::-webkit-details-marker {
                     display: none;
