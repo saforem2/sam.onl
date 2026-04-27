@@ -284,6 +284,13 @@ const { pathname: urlPath } = Astro.url
 ---
 
 <nav box-="square" shear-="top" id="sidebar">
+    <div id="sidebar-actions">
+        <a href="/" class="sidebar-action" title="Home">&#xef85;</a>
+        <button id="theme-button-sidebar" class="sidebar-action" title="Theme">&#xe22b;</button>
+        <a href="https://github.com/saforem2/sam.onl" target="_blank" class="sidebar-action" title="GitHub">&#xe65b;</a>
+        <a href="/rss.xml" target="_blank" class="sidebar-action" title="RSS">&#xf09e;</a>
+        <button id="search-button-sidebar" class="sidebar-action" title="Search">&#xea6d;</button>
+    </div>
     <div id="category-container">
         <div id="category-list">
             {
@@ -944,10 +951,46 @@ const { pathname: urlPath } = Astro.url
             background-color: var(--focus-hover-bg);
         }
 
+        #sidebar-actions {
+            display: flex;
+            gap: 0;
+            background-color: var(--background3, var(--background2));
+            box-shadow: 2px 2px 0 0 var(--foreground0);
+            position: relative;
+            z-index: 10;
+            margin: 0.5ch 1ch;
+            width: fit-content;
+            height: 1lh;
+            line-height: 1lh;
+
+            .sidebar-action {
+                all: unset;
+                display: inline-flex;
+                align-items: center;
+                padding: 0 0.5ch;
+                color: var(--foreground2);
+                cursor: pointer;
+                font-family: var(--font-family);
+                font-size: inherit;
+                line-height: inherit;
+                text-decoration: none;
+                transition: color 0.1s;
+                border-right: 1px solid var(--background1);
+
+                &:last-child {
+                    border-right: none;
+                }
+
+                &:hover {
+                    color: var(--foreground0);
+                }
+            }
+        }
+
         #category-container {
             position: relative;
             flex-grow: 1;
-            margin-top: 1ch;
+            margin-top: 0.5ch;
         }
 
         #category-list {
@@ -1176,6 +1219,25 @@ const { pathname: urlPath } = Astro.url
 
 <script>
     import { applyVimNavigation, isUserTyping } from '@/utils/vim'
+
+    // Sidebar action buttons
+    document
+        .getElementById('theme-button-sidebar')
+        ?.addEventListener('click', () => {
+            const dialog = document.getElementById(
+                'theme-dialog',
+            ) as HTMLDialogElement | null
+            dialog?.showModal()
+        })
+
+    document
+        .getElementById('search-button-sidebar')
+        ?.addEventListener('click', () => {
+            const dialog = document.getElementById(
+                'search-dialog',
+            ) as HTMLDialogElement | null
+            dialog?.showModal()
+        })
 
     const sidebar = document.getElementById('sidebar')
 
