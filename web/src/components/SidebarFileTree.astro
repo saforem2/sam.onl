@@ -899,60 +899,25 @@ const ICON_CHEVRON_DOWN = '\u25be'
         flex-shrink: 0;
         color: var(--foreground3);
         user-select: none;
-        position: relative;
-
-        /* Horizontal connector ── */
-        &::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 1ch;
-            border-bottom: 1px solid var(--foreground3);
-        }
-
-        /* Vertical line │ from top to center */
-        &::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 50%;
-            border-left: 1px solid var(--foreground3);
-        }
+        text-align: left;
     }
 
-    /* Last item: vertical line only goes to center (└) */
-    [data-last] > .tree-line::before,
-    [data-last] > summary > .tree-line::before {
-        bottom: 50%;
+    .tree-file > .tree-line::before,
+    .tree-folder > summary > .tree-line::before {
+        content: '├';
     }
 
-    /* Non-last items: vertical line extends full height (├) */
-    :not([data-last]) > .tree-line::before,
-    :not([data-last]) > summary > .tree-line::before {
-        bottom: 0;
+    .tree-file[data-last] > .tree-line::before,
+    .tree-folder[data-last] > summary > .tree-line::before {
+        content: '└';
     }
 
     /* Vertical continuation lines in nested children */
     .tree-children {
         position: relative;
-        padding-inline-start: 2ch;
-    }
-
-    /* Vertical line running down the left of children */
-    .tree-children::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        border-left: 1px solid var(--foreground3);
-    }
-
-    /* Last child's parent shouldn't extend the line past the last item */
-    [data-last] > .tree-children::before {
-        display: none;
+        margin-inline-start: 0.5ch;
+        padding-inline-start: 1ch;
+        border-inline-start: 1px solid var(--foreground3);
     }
 
     /* ── Chevron (expand/collapse indicator) ── */
