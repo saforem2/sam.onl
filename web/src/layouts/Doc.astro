@@ -1,9 +1,9 @@
 ---
 import Sidebar from '@/components/Sidebar.astro'
+import Filter from '@/components/Filter.astro'
 import Layout from '@/layouts/Layout.astro'
 import { makeSortedCategoryEntries } from '@/utils/content'
 import { compareUrlPaths } from '@/utils/url'
-import Navbar from '@/components/NavbarMinimal.astro'
 import { getReadingTime } from '@/utils/readingTime'
 import ShareButtons from '@/components/ShareButtons.astro'
 import { getCollection } from 'astro:content'
@@ -194,7 +194,7 @@ const articleSchema =
         )
     }
     <column self-="grow">
-        <Navbar />
+        <Filter />
         <row self-="grow" gap-="1">
             <div id="sidebar-container" class="mobile-hidden">
                 <Sidebar />
@@ -469,7 +469,7 @@ const articleSchema =
             <span class="vsl-vim-icon">&#xe62b; </span>
             <span class="vsl-mode">NORMAL</span>
             <span class="vsl-branch">&#xe725; main</span>
-            <span class="vsl-site">sam.onl</span>
+            <span class="vsl-site">sam.onl/</span>
             <span class="vsl-file"
                 >{
                     sourceFilePath?.replace(
