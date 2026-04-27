@@ -1210,14 +1210,10 @@ const articleSchema =
                         ) as HTMLElement | null
                     }
 
-                    // Only show in border once the heading has scrolled
-                    // above the visible content area
-                    const headingAbove = target
-                        ? target.getBoundingClientRect().bottom <
-                          mainEl.getBoundingClientRect().top
-                        : false
+                    // Show in border when we've scrolled past the top
+                    const hasScrolled = mainEl.scrollTop > 50
 
-                    if (headingAbove && target) {
+                    if (hasScrolled && target) {
                         const level = parseInt(target.tagName[1])
                         const prefix = '#'.repeat(level)
                         const colorVar = `var(--h${level})`
