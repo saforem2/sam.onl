@@ -915,9 +915,20 @@ const ICON_CHEVRON_DOWN = '\u25be'
     /* Vertical continuation lines in nested children */
     .tree-children {
         position: relative;
-        margin-inline-start: 0;
-        padding-inline-start: 1ch;
+        padding-inline-start: 0;
+    }
+
+    /* Each item in tree-children gets a left border for the vertical line */
+    .tree-children > .tree-entry,
+    .tree-children > .tree-folder > summary {
         border-inline-start: 1px solid var(--foreground2);
+        margin-inline-start: 0;
+    }
+
+    /* Last item switches to no border (the └─ handles it) */
+    .tree-children > [data-last],
+    .tree-children > [data-last] > summary {
+        border-inline-start: 1px solid transparent;
     }
 
     /* ── Chevron (expand/collapse indicator) ── */
