@@ -894,15 +894,30 @@ const ICON_CHEVRON_DOWN = '\u25be'
     /* ── Tree line characters (vertical bars + connectors) ── */
 
     .tree-line {
-        display: none;
+        display: inline-block;
+        width: 2ch;
+        flex-shrink: 0;
+        color: var(--foreground3);
+        user-select: none;
+        text-align: left;
+    }
+
+    .tree-file > .tree-line::before,
+    .tree-folder > summary > .tree-line::before {
+        content: '├─';
+    }
+
+    .tree-file[data-last] > .tree-line::before,
+    .tree-folder[data-last] > summary > .tree-line::before {
+        content: '└─';
     }
 
     /* Vertical continuation lines in nested children */
     .tree-children {
         position: relative;
-        padding-inline-start: 1ch;
-        margin-inline-start: 0.5ch;
-        border-inline-start: 1px solid var(--foreground2);
+        margin-inline-start: 0.45ch;
+        padding-inline-start: 1.55ch;
+        border-inline-start: 1.5px solid var(--foreground3);
     }
 
     /* ── Chevron (expand/collapse indicator) ── */
