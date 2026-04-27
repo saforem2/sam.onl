@@ -902,20 +902,20 @@ const ICON_CHEVRON_DOWN = '\u25be'
 
     /* For file entries: show connector */
     .tree-file > .tree-line::before {
-        content: '\251c\2500';  /* |-- */
+        content: '├─';  /* ├─ */
     }
 
     .tree-file[data-last] > .tree-line::before {
-        content: '\2514\2500';  /* \-- */
+        content: '└─';  /* └─ */
     }
 
     /* For folder summaries: show connector */
     .tree-folder > summary > .tree-line::before {
-        content: '\251c\2500';  /* |-- */
+        content: '├─';  /* ├─ */
     }
 
     .tree-folder[data-last] > summary > .tree-line::before {
-        content: '\2514\2500';  /* \-- */
+        content: '└─';  /* └─ */
     }
 
     /* Vertical continuation lines in nested children */
@@ -953,12 +953,12 @@ const ICON_CHEVRON_DOWN = '\u25be'
     }
 
     .folder-icon::before {
-        content: '\uf07b';  /* closed folder */
+        content: '';  /* closed folder */
         color: var(--foreground2);
     }
 
     details[open] > summary > .folder-icon::before {
-        content: '\uf07c';  /* open folder */
+        content: '';  /* open folder */
     }
 
     .file-icon {
