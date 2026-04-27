@@ -490,7 +490,9 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                         )
 
                                         const entries = [
-                                            ...yearPages.map((page) => ({
+                                            ...yearPages
+                                                .filter((page) => page.data.title && !page.id.match(/\/(index|readme)\.(mdx?|md)$/i))
+                                                .map((page) => ({
                                                 type: 'page',
                                                 title: page.data.title,
                                                 href: `/${page.id}`,
