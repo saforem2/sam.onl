@@ -82,8 +82,8 @@
     overflow: hidden;
     z-index: 10;
     flex-shrink: 0;
-    margin-block-end: 1ch;
-    width: round(calc(100vw), 1ch);
+    /* margin-block-end: 1ch; */
+    /* width: round(calc(100vw), 1ch); */
     /* margin-inline: -1ch; */
     /* border-left: 2px solid var(--background0); */
     /* border-right: 2px solid var(--background0); */
@@ -217,7 +217,7 @@ h6::before {
     justify-content: flex-start;
     white-space: nowrap;
     box-sizing: border-box;
-    top: 0;
+    bottom: 0;
     left: 0;
     right: 0;
     z-index: 3;
@@ -434,6 +434,7 @@ h6::before {
 
     #toc-toggle {
         position: absolute;
+        bottom: 0;
         z-index: 3;
         background-color: var(--background0);
         width: min-content;

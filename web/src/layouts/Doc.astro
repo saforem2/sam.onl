@@ -419,23 +419,6 @@ const articleSchema =
                                 shear-="top"
                                 id="toc-sidebar"
                                 aria-label="Table of contents">
-                                <button
-                                    id="toc-toggle"
-                                    type="button"
-                                    size-="small"
-                                    aria-expanded="false"
-                                    aria-controls="toc-container"
-                                    aria-label="Collapse right sidebar (zl)">
-                                    <>
-                                        <span class="key-z">z</span>
-                                        <span class="key-bracket">[</span>
-                                    </>
-                                    <>
-                                        <span class="key-l">l</span>
-                                        <span class="key-bracket">]</span>
-                                    </>
-                                    &rsaquo;
-                                </button>
                                 <div id="toc-list-container">
                                     <ul id="toc-list">
                                         {tocLines.map((heading) => (
@@ -459,6 +442,23 @@ const articleSchema =
                                         ))}
                                     </ul>
                                 </div>
+                                <button
+                                    id="toc-toggle"
+                                    type="button"
+                                    size-="small"
+                                    aria-expanded="false"
+                                    aria-controls="toc-container"
+                                    aria-label="Collapse right sidebar (zl)">
+                                    <>
+                                        <span class="key-z">z</span>
+                                        <span class="key-bracket">[</span>
+                                    </>
+                                    <>
+                                        <span class="key-l">l</span>
+                                        <span class="key-bracket">]</span>
+                                    </>
+                                    &rsaquo;
+                                </button>
                             </nav>
                         </aside>
                     </>

@@ -284,18 +284,6 @@ const { pathname: urlPath } = Astro.url
 ---
 
 <nav box-="square" shear-="top" id="sidebar">
-    <button
-        id="sidebar-toggle"
-        type="button"
-        size-="small"
-        aria-expanded="true"
-        aria-controls="sidebar-container"
-        aria-label="Collapse left sidebar (zh)">
-        <span class="key-bracket"></span>&lsaquo;<span class="key-z">z</span
-        ><span class="key-bracket">[</span><span class="key-h">h</span><span
-            class="key-bracket">]</span
-        >
-    </button>
     <div id="category-container">
         <div id="category-list">
             {
@@ -839,6 +827,18 @@ const { pathname: urlPath } = Astro.url
             }
         </div>
     </div>
+    <button
+        id="sidebar-toggle"
+        type="button"
+        size-="small"
+        aria-expanded="true"
+        aria-controls="sidebar-container"
+        aria-label="Collapse left sidebar (zh)">
+        <span class="key-bracket"></span>&lsaquo;<span class="key-z">z</span
+        ><span class="key-bracket">[</span><span class="key-h">h</span><span
+            class="key-bracket">]</span
+        >
+    </button>
 </nav>
 
 <style>
@@ -853,6 +853,9 @@ const { pathname: urlPath } = Astro.url
 
         #sidebar-toggle {
             position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
             z-index: 3;
             color: var(--foreground3);
             background-color: var(--background0);
