@@ -1,127 +1,1392 @@
 ---
+import type { CollectionEntry } from 'astro:content'
 import { compareUrlPaths } from '@/utils/url'
+import {
+    makeSortedCategoryEntries,
+    categoryLabels,
+    moreSidebarGroup,
+} from '@/utils/content'
 
-type SidebarLink = {
-    type: 'link'
-    id?: string
-    text?: string
-    href?: string
+const allCategories = makeSortedCategoryEntries()
+const categories = allCategories.filter(([slug]) => !moreSidebarGroup.has(slug))
+const moreSubCategories = allCategories.filter(([slug]) =>
+    moreSidebarGroup.has(slug),
+)
+
+const yearGroupedCategories = new Set(['posts', 'talks'])
+const linkedCategorySlugs = new Set(['posts', 'talks', 'projects', 'webtui'])
+const dateGroupedCategories = new Set(['posts', 'talks'])
+const yearPattern = /^\d{4}$/
+const datePattern = /(^|\n)(\d{4})-(\d{2})-(\d{2})\b/m
+
+const getPageDate = (page: CollectionEntry<'docs'>) => {
+    const dataDate = (page.data as { date?: string | Date }).date
+    if (dataDate instanceof Date) return dataDate
+    if (typeof dataDate === 'string') {
+        const parsed = new Date(dataDate)
+        if (!Number.isNaN(parsed.getTime())) return parsed
+    }
+
+    const body = page.body ?? ''
+    const match = body.match(datePattern)
+    if (match?.[2]) {
+        const parsed = new Date(`${match[2]}-${match[3]}-${match[4]}`)
+        if (!Number.isNaN(parsed.getTime())) return parsed
+    }
+
+    return null
 }
 
-type SidebarSection = {
-    type: 'section'
-    id?: string
-    label: string
-    href?: string
-    collapseLevel?: number
-    children?: SidebarItem[]
+const getPageYear = (page: CollectionEntry<'docs'>, slug: string) => {
+    if (dateGroupedCategories.has(slug)) {
+        const date = getPageDate(page)
+        if (date) return String(date.getFullYear())
+    }
+
+    const [, year] = page.id.split('/')
+    return year && yearPattern.test(year) ? year : null
 }
 
-type SidebarItem = SidebarLink | SidebarSection
+const talkExternalLinks = [
+    {
+        year: '2024',
+        month: '03',
+        title: 'Parallel Training Techniques',
+        href: 'https://github.com/saforem2/parallel-training-slides',
+        event: 'AI-4-Science Training Series',
+    },
+    {
+        year: '2024',
+        month: '02',
+        title: 'LLMs from Scratch',
+        href: 'https://saforem2.github.io/llm-workshop-talk',
+        event: 'LLM Tutorial Workshop',
+    },
+    {
+        year: '2023',
+        month: '11',
+        title: 'Creating Small(-ish) LLMs',
+        href: 'https://saforem2.github.io/LLM-tutorial',
+        event: 'LLM Tutorial Workshop (1)',
+    },
+    {
+        year: '2023',
+        month: '10',
+        title: 'Exascale Science on Aurora',
+        href: 'https://saforem2.github.io/oneapi-talk',
+        event: 'Intel oneAPI Workshop @ UIC',
+    },
+    {
+        year: '2023',
+        month: '10',
+        title: 'LLM Lunch Talk',
+        href: 'https://saforem2.github.io/llm-lunch-talk',
+        event: 'ALCF Hands On HPC Workshop',
+    },
+    {
+        year: '2023',
+        month: '08',
+        title: 'Scaling LLMs for Science',
+        href: 'https://saforem2.github.io/scaling4science',
+        event: 'Data-Intensive Computing + AI/ML at Scale',
+    },
+    {
+        year: '2023',
+        month: '07',
+        title: 'MLMC: Machine Learning Monte Carlo',
+        href: 'https://saforem2.github.io/lattice23',
+        event: 'Lattice 2023',
+    },
+    {
+        year: '2023',
+        month: '07',
+        title: 'Generative Modeling and Efficient Sampling',
+        href: 'https://saforem2.github.io/lqcd-pasc23/',
+        event: 'PASC23',
+    },
+    {
+        year: '2023',
+        month: '04',
+        title: 'Efficient Sampling for LGT',
+        href: 'https://saforem2.github.io/deep-fridays',
+        event: 'Deep Fridays @ U. Bologna',
+    },
+    {
+        year: '2022',
+        month: '11',
+        title: 'Large Scale Training',
+        href: 'https://saforem2.github.io/ai4sci-large-scale-training',
+        event: 'AI4Science on Supercomputers (ALCF)',
+    },
+    {
+        year: '2022',
+        month: '10',
+        title: 'Hyperparameter Management',
+        href: 'https://saforem2.github.io/hparam-management-sdl2022/',
+        event: 'ALCF SDL Workshop',
+    },
+    {
+        year: '2022',
+        month: '08',
+        title: 'Statistical Learning',
+        href: 'https://saforem2.github.io/ATPESC-StatisticalLearning',
+        event: 'ATPESC 2022',
+    },
+    {
+        year: '2022',
+        month: '05',
+        title: 'Scientific Data Science: An Emerging Symbiosis',
+        href: 'https://saforem2.github.io/anl-job-talk/',
+        event: 'ANL',
+    },
+    {
+        year: '2022',
+        month: '03',
+        title: 'Machine Learning in HEP',
+        href: 'https://saforem2.github.io/physicsSeminar',
+        event: 'UNC Greensboro',
+    },
+    {
+        year: '2021',
+        month: '12',
+        title: 'Accelerated Sampling Methods for LGT',
+        href: 'https://saforem2.github.io/l2hmc-dwq25/',
+        event: 'DWQ @ 25 [BNL]',
+    },
+    {
+        year: '2021',
+        month: '09',
+        title: 'Training Topological Samplers for LGT',
+        href: 'https://saforem2.github.io/l2hmc_talk_ect2021',
+        event: 'ML4HEP, ECT* Trento',
+    },
+    {
+        year: '2021',
+        month: '05',
+        title: 'Deep Learning HMC for Improved Gauge Generation',
+        href: 'https://bit.ly/mainz21',
+        event: 'ML in LQCD Workshop',
+    },
+    {
+        year: '2020',
+        month: '02',
+        title: 'Machine Learning for Lattice QCD',
+        href: 'https://slides.com/samforeman/l2hmc-qcd/embed',
+        event: 'U. Iowa',
+    },
+]
 
-interface Props {
-    items?: SidebarItem[]
-    depth?: number
-    parentCollapseLevel?: number
-    trunk?: boolean[]
-    urlPath: string
+const talkExternalByYear = talkExternalLinks.reduce((map, link) => {
+    const group = map.get(link.year) ?? []
+    group.push(link)
+    map.set(link.year, group)
+    return map
+}, new Map<string, typeof talkExternalLinks>())
+
+const groupPagesByYear = (pages: CollectionEntry<'docs'>[], slug: string) => {
+    const grouped = new Map<string, CollectionEntry<'docs'>[]>()
+    const misc: CollectionEntry<'docs'>[] = []
+
+    const addPage = (year: string, page: CollectionEntry<'docs'>) => {
+        const group = grouped.get(year) ?? []
+        group.push(page)
+        grouped.set(year, group)
+    }
+
+    for (const page of pages) {
+        const year = dateGroupedCategories.has(slug)
+            ? getPageYear(page, slug)
+            : page.id.split('/')[1]
+
+        if (year && yearPattern.test(year)) {
+            addPage(year, page)
+        } else {
+            misc.push(page)
+        }
+    }
+
+    for (const [, yearPages] of grouped.entries()) {
+        if (dateGroupedCategories.has(slug)) {
+            yearPages.sort((a, b) => {
+                const dateA = getPageDate(a)?.getTime() ?? 0
+                const dateB = getPageDate(b)?.getTime() ?? 0
+                if (dateA !== dateB) return dateB - dateA
+                return a.id.localeCompare(b.id)
+            })
+        } else {
+            yearPages.sort((a, b) => a.id.localeCompare(b.id))
+        }
+    }
+
+    const years = Array.from(grouped.keys()).sort((a, b) => b.localeCompare(a))
+    return { years, grouped, misc }
 }
 
-const {
-    items,
-    depth = 0,
-    parentCollapseLevel,
-    trunk = [],
-    urlPath,
-} = Astro.props as Props
+/** Group pages by their first sub-directory under the category slug. */
+const groupPagesBySubdir = (pages: CollectionEntry<'docs'>[]) => {
+    const grouped = new Map<string, CollectionEntry<'docs'>[]>()
+    const misc: CollectionEntry<'docs'>[] = []
 
-const isExternal = (href?: string) => !!href && /^https?:\/\//.test(href)
+    for (const page of pages) {
+        const parts = page.id.split('/')
+        // parts[0] is the category slug, parts[1] may be a sub-directory
+        if (parts.length > 2 && parts[1]) {
+            const subdir = parts[1]
+            const group = grouped.get(subdir) ?? []
+            group.push(page)
+            grouped.set(subdir, group)
+        } else {
+            misc.push(page)
+        }
+    }
 
-const makePrefix = (
-    branchStates: boolean[],
-    isLast: boolean,
-    depth: number,
-) => {
-    if (depth === 0) return ''
+    // Sort pages within each group alphabetically by title
+    for (const [, groupPages] of grouped.entries()) {
+        groupPages.sort((a, b) => a.data.title.localeCompare(b.data.title))
+    }
 
-    const trunkPrefix = branchStates
-        .map((hasNext) => (hasNext ? ' ' : '  '))
-        .join('')
-    const branch = isLast ? '  ' : '  '
-    return `${trunkPrefix}${branch}`
+    const subdirs = Array.from(grouped.keys()).sort()
+    return { subdirs, grouped, misc }
 }
+
+const subdirLabels: Record<string, string> = {
+    start: 'Start',
+    installation: 'Installation',
+    components: 'Components',
+    plugins: 'Plugins',
+    contributing: 'Contributing',
+}
+
+const categoryKeybinds: Record<string, string> = {
+    landing: 's',
+    posts: 'p',
+    talks: 't',
+    more: 'a',
+    webtui: 'y',
+}
+
+const labelWithKey = (slug: string) => {
+    const key = categoryKeybinds[slug]
+    const label = categoryLabels[slug]
+    if (key === undefined) return label
+    // Insert [k] bracket around the keybind letter in the label text
+    // Label format: "icon  Text" — find the key char in the text portion
+    const keyIndex = label.toLowerCase().indexOf(key.toLowerCase())
+    if (keyIndex === -1) return `[${key}] ${label}`
+    return (
+        label.slice(0, keyIndex) +
+        `<span class="cat-key">[</span>${label[keyIndex]}<span class="cat-key">]</span>` +
+        label.slice(keyIndex + 1)
+    )
+}
+
+const { pathname: urlPath } = Astro.url
 ---
 
-{
-    items?.map((item, index) => {
-        const isLast = index === (items?.length ?? 0) - 1
-        const prefix = makePrefix(trunk, isLast, depth)
-        const childTrunk = [...trunk, !isLast]
+<nav box-="square" shear-="top" id="sidebar">
+    <div id="sidebar-actions">
+        <a href="/" class="sidebar-action" title="Home">&#xef85;</a>
+        <button id="theme-button-sidebar" class="sidebar-action" title="Theme">&#xe22b;</button>
+        <a href="https://github.com/saforem2/sam.onl" target="_blank" class="sidebar-action" title="GitHub">&#xe65b;</a>
+        <a href="/rss.xml" target="_blank" class="sidebar-action" title="RSS">&#xf09e;</a>
+        <button id="search-button-sidebar" class="sidebar-action" title="Search">&#xea6d;</button>
+    </div>
+    <div id="category-container">
+        <div id="category-list">
+            {
+                categories.map(([slug, pages]) => {
+                    if (slug === 'landing') {
+                        const landingPage =
+                            pages.find(({ id }) => id === 'landing') ?? pages[0]
 
-        if (item.type === 'section') {
-            const collapseLevel = item.collapseLevel ?? parentCollapseLevel
-            const isOpen =
-                collapseLevel === undefined
-                    ? depth === 0
-                    : depth < collapseLevel
+                        if (!landingPage) {
+                            return null
+                        }
 
-            return (
-                <details open={isOpen} class="sidebar-section">
-                    <summary class="sidebar-tree-summary">
-                        {prefix ? (
-                            <span class="tree-prefix" aria-hidden="true">
-                                {prefix}
-                            </span>
-                        ) : null}
-                        {item.href ? (
+                        return (
                             <a
-                                href={item.href}
-                                class={`sidebar-tree-link ${
-                                    compareUrlPaths(urlPath, item.href)
-                                        ? 'active'
-                                        : ''
-                                }`}>
-                                <span class="sidebar-tree-label">
-                                    {item.label}
-                                </span>
+                                href={`/${landingPage.id}`}
+                                class={
+                                    compareUrlPaths(urlPath, landingPage.id)
+                                        ? 'sidebar-direct-link active'
+                                        : 'sidebar-direct-link'
+                                }
+                                data-slug={landingPage.id}>
+                                <Fragment set:html={labelWithKey(slug)} />
                             </a>
-                        ) : (
-                            <span class="sidebar-tree-label">{item.label}</span>
-                        )}
-                    </summary>
-                    <div class="sidebar-children">
-                        <Astro.self
-                            items={item.children}
-                            depth={depth + 1}
-                            parentCollapseLevel={collapseLevel}
-                            trunk={childTrunk}
-                            urlPath={urlPath}
-                        />
-                    </div>
-                </details>
-            )
+                        )
+                    }
+
+                    if (slug === 'more') {
+                        const isMoreActive =
+                            pages.some(({ id }) =>
+                                compareUrlPaths(urlPath, id),
+                            ) ||
+                            moreSubCategories.some(([, subPages]) =>
+                                subPages.some(({ id }) =>
+                                    compareUrlPaths(urlPath, id),
+                                ),
+                            )
+                        return (
+                            <details open={isMoreActive}>
+                                <summary
+                                    class={
+                                        compareUrlPaths(urlPath, 'more')
+                                            ? 'active'
+                                            : undefined
+                                    }>
+                                    <a
+                                        href="/more"
+                                        class="sidebar-category-link"
+                                        onclick="event.stopPropagation()"
+                                        data-slug="more">
+                                        <Fragment
+                                            set:html={labelWithKey('more')}
+                                        />
+                                    </a>
+                                    <span
+                                        class="fold-icon"
+                                        aria-hidden="true"
+                                    />
+                                </summary>
+                                <ul
+                                    marker-="tree open"
+                                    style="padding-inline-start: 2ch;">
+                                    {moreSubCategories.map(
+                                        ([subSlug, subPages]) => {
+                                            const subIndexPage = subPages.find(
+                                                ({ id }) => id === subSlug,
+                                            )
+                                            const isSubActive = subPages.some(
+                                                ({ id }) =>
+                                                    compareUrlPaths(
+                                                        urlPath,
+                                                        id,
+                                                    ),
+                                            )
+                                            const subChildPages =
+                                                subPages.filter(
+                                                    ({ id }) => id !== subSlug,
+                                                )
+                                            const hasChildren =
+                                                subChildPages.length > 0
+
+                                            if (hasChildren) {
+                                                return (
+                                                    <li>
+                                                        <details
+                                                            open={isSubActive}>
+                                                            <summary>
+                                                                <a
+                                                                    href={`/${subIndexPage?.id ?? subSlug}`}
+                                                                    class={`sidebar-category-link ${compareUrlPaths(urlPath, subSlug) ? 'active' : ''}`}
+                                                                    onclick="event.stopPropagation()"
+                                                                    data-slug={
+                                                                        subSlug
+                                                                    }>
+                                                                    {categoryLabels[
+                                                                        subSlug
+                                                                    ] ??
+                                                                        subSlug}
+                                                                </a>
+                                                                <span
+                                                                    class="fold-icon"
+                                                                    aria-hidden="true"
+                                                                />
+                                                            </summary>
+                                                            <ul
+                                                                marker-="tree open"
+                                                                style="padding-inline-start: 2ch;">
+                                                                {subChildPages.map(
+                                                                    ({
+                                                                        id,
+                                                                        data: {
+                                                                            title,
+                                                                        },
+                                                                    }) => (
+                                                                        <li>
+                                                                            <a
+                                                                                href={`/${id}`}
+                                                                                class={
+                                                                                    compareUrlPaths(
+                                                                                        urlPath,
+                                                                                        id,
+                                                                                    )
+                                                                                        ? 'active'
+                                                                                        : ''
+                                                                                }
+                                                                                data-slug={
+                                                                                    id
+                                                                                }>
+                                                                                {
+                                                                                    title
+                                                                                }
+                                                                            </a>
+                                                                        </li>
+                                                                    ),
+                                                                )}
+                                                            </ul>
+                                                        </details>
+                                                    </li>
+                                                )
+                                            }
+
+                                            return (
+                                                <li>
+                                                    <a
+                                                        href={`/${subIndexPage?.id ?? subSlug}`}
+                                                        class={
+                                                            isSubActive
+                                                                ? 'active'
+                                                                : ''
+                                                        }
+                                                        data-slug={subSlug}>
+                                                        {categoryLabels[
+                                                            subSlug
+                                                        ] ?? subSlug}
+                                                    </a>
+                                                </li>
+                                            )
+                                        },
+                                    )}
+                                </ul>
+                            </details>
+                        )
+                    }
+
+                    const categoryIndexPage = pages.find(
+                        ({ id }) => id === slug,
+                    )
+                    const shouldLinkCategory =
+                        linkedCategorySlugs.has(slug) &&
+                        Boolean(categoryIndexPage)
+                    const categoryPages = shouldLinkCategory
+                        ? pages.filter(({ id }) => id !== slug)
+                        : pages
+                    const isCategoryActive = pages.some(({ id }) =>
+                        compareUrlPaths(urlPath, id),
+                    )
+
+                    if (yearGroupedCategories.has(slug)) {
+                        const { years, grouped, misc } = groupPagesByYear(
+                            categoryPages,
+                            slug,
+                        )
+                        const mergedYears =
+                            slug === 'talks'
+                                ? Array.from(
+                                      new Set([
+                                          ...years,
+                                          ...talkExternalByYear.keys(),
+                                      ]),
+                                  ).sort((a, b) => b.localeCompare(a))
+                                : years
+
+                        return (
+                            <details open={isCategoryActive}>
+                                <summary
+                                    class={
+                                        shouldLinkCategory &&
+                                        compareUrlPaths(urlPath, slug)
+                                            ? 'active'
+                                            : undefined
+                                    }>
+                                    {shouldLinkCategory ? (
+                                        <a
+                                            href={`/${slug}`}
+                                            class="sidebar-category-link"
+                                            onclick="event.stopPropagation()"
+                                            data-slug={slug}>
+                                            <Fragment
+                                                set:html={labelWithKey(slug)}
+                                            />
+                                        </a>
+                                    ) : (
+                                        <Fragment
+                                            set:html={labelWithKey(slug)}
+                                        />
+                                    )}
+                                    <span
+                                        class="fold-icon"
+                                        aria-hidden="true"
+                                    />
+                                </summary>
+                                <ul marker-="tree open">
+                                    {mergedYears.map((year) => {
+                                        const yearPages =
+                                            grouped.get(year) ?? []
+                                        const yearExternals =
+                                            slug === 'talks'
+                                                ? (talkExternalByYear.get(
+                                                      year,
+                                                  ) ?? [])
+                                                : []
+                                        const isYearActive = yearPages.some(
+                                            ({ id }) =>
+                                                compareUrlPaths(urlPath, id),
+                                        )
+
+                                        const entries = [
+                                            ...yearPages.map((page) => ({
+                                                type: 'page',
+                                                title: page.data.title,
+                                                href: `/${page.id}`,
+                                                date: getPageDate(page),
+                                                isActive: compareUrlPaths(
+                                                    urlPath,
+                                                    page.id,
+                                                ),
+                                            })),
+                                            ...yearExternals.map(
+                                                (external) => ({
+                                                    type: 'external',
+                                                    title: `${external.title}`,
+                                                    href: external.href,
+                                                    date: new Date(
+                                                        `${external.year}-${external.month}-01`,
+                                                    ),
+                                                    isActive: false,
+                                                }),
+                                            ),
+                                        ].sort((a, b) => {
+                                            const dateA =
+                                                a.date instanceof Date
+                                                    ? a.date.getTime()
+                                                    : 0
+                                            const dateB =
+                                                b.date instanceof Date
+                                                    ? b.date.getTime()
+                                                    : 0
+                                            if (dateA !== dateB)
+                                                return dateB - dateA
+                                            return a.title.localeCompare(
+                                                b.title,
+                                            )
+                                        })
+
+                                        return (
+                                            <details
+                                                open={isYearActive}
+                                                is-="accordion"
+                                                class="sidebar-year">
+                                                <summary>
+                                                    {year}
+                                                    <span
+                                                        class="fold-icon"
+                                                        aria-hidden="true"
+                                                    />
+                                                </summary>
+                                                <ul marker-="tree open">
+                                                    {entries.map((entry) => (
+                                                        <li>
+                                                            <a
+                                                                href={
+                                                                    entry.href
+                                                                }
+                                                                class={
+                                                                    entry.isActive
+                                                                        ? 'active'
+                                                                        : entry.type ===
+                                                                            'external'
+                                                                          ? 'external'
+                                                                          : ''
+                                                                }
+                                                                data-slug={
+                                                                    entry.type ===
+                                                                    'page'
+                                                                        ? entry.href.replace(
+                                                                              /^\//,
+                                                                              '',
+                                                                          )
+                                                                        : undefined
+                                                                }
+                                                                target={
+                                                                    entry.type ===
+                                                                    'external'
+                                                                        ? '_blank'
+                                                                        : undefined
+                                                                }
+                                                                rel={
+                                                                    entry.type ===
+                                                                    'external'
+                                                                        ? 'noreferrer'
+                                                                        : undefined
+                                                                }>
+                                                                {entry.title}
+                                                            </a>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </details>
+                                        )
+                                    })}
+                                    {misc.length > 0 ? (
+                                        <details
+                                            open={misc.some(({ id }) =>
+                                                compareUrlPaths(urlPath, id),
+                                            )}
+                                            is-="accordion"
+                                            class="sidebar-year">
+                                            <summary>
+                                                Other
+                                                <span
+                                                    class="fold-icon"
+                                                    aria-hidden="true"
+                                                />
+                                            </summary>
+                                            <ul marker-="tree open">
+                                                {misc.map(
+                                                    ({
+                                                        id,
+                                                        data: { title },
+                                                    }) => (
+                                                        <li>
+                                                            <a
+                                                                href={`/${id}`}
+                                                                class={
+                                                                    compareUrlPaths(
+                                                                        urlPath,
+                                                                        id,
+                                                                    )
+                                                                        ? 'active'
+                                                                        : ''
+                                                                }
+                                                                data-slug={id}>
+                                                                {title}
+                                                            </a>
+                                                        </li>
+                                                    ),
+                                                )}
+                                            </ul>
+                                        </details>
+                                    ) : null}
+                                </ul>
+                            </details>
+                        )
+                    }
+
+                    if (shouldLinkCategory && categoryPages.length === 0) {
+                        return (
+                            <a
+                                href={`/${slug}`}
+                                class={
+                                    isCategoryActive
+                                        ? 'sidebar-direct-link active'
+                                        : 'sidebar-direct-link'
+                                }
+                                data-slug={slug}>
+                                <Fragment set:html={labelWithKey(slug)} />
+                            </a>
+                        )
+                    }
+
+                    // Single-page category → render as direct link
+                    if (categoryPages.length === 1) {
+                        const page = categoryPages[0]
+                        return (
+                            <a
+                                href={`/${page.id}`}
+                                class={
+                                    isCategoryActive
+                                        ? 'sidebar-direct-link active'
+                                        : 'sidebar-direct-link'
+                                }
+                                data-slug={page.id}>
+                                <Fragment set:html={labelWithKey(slug)} />
+                            </a>
+                        )
+                    }
+
+                    // Check if this category has sub-directory structure
+                    const {
+                        subdirs,
+                        grouped: subdirGrouped,
+                        misc: subdirMisc,
+                    } = groupPagesBySubdir(categoryPages)
+                    const hasSubdirs = subdirs.length > 0
+
+                    return (
+                        <details open={isCategoryActive}>
+                            <summary
+                                class={
+                                    shouldLinkCategory &&
+                                    compareUrlPaths(urlPath, slug)
+                                        ? 'active'
+                                        : undefined
+                                }>
+                                {shouldLinkCategory ? (
+                                    <a
+                                        href={`/${slug}`}
+                                        class="sidebar-category-link"
+                                        onclick="event.stopPropagation()"
+                                        data-slug={slug}>
+                                        <Fragment
+                                            set:html={labelWithKey(slug)}
+                                        />
+                                    </a>
+                                ) : (
+                                    <Fragment set:html={labelWithKey(slug)} />
+                                )}
+                                <span class="fold-icon" aria-hidden="true" />
+                            </summary>
+                            <ul marker-="tree open">
+                                {hasSubdirs ? (
+                                    <>
+                                        {subdirs.map((subdir) => {
+                                            const subdirPages =
+                                                subdirGrouped.get(subdir) ?? []
+                                            const isSubdirActive =
+                                                subdirPages.some(({ id }) =>
+                                                    compareUrlPaths(
+                                                        urlPath,
+                                                        id,
+                                                    ),
+                                                )
+                                            return (
+                                                <details
+                                                    open={isSubdirActive}
+                                                    is-="accordion"
+                                                    class="sidebar-year">
+                                                    <summary>
+                                                        {subdirLabels[subdir] ??
+                                                            subdir}
+                                                        <span
+                                                            class="fold-icon"
+                                                            aria-hidden="true"
+                                                        />
+                                                    </summary>
+                                                    <ul marker-="tree open">
+                                                        {subdirPages.map(
+                                                            ({
+                                                                id,
+                                                                data: { title },
+                                                            }) => (
+                                                                <li>
+                                                                    <a
+                                                                        href={`/${id}`}
+                                                                        class={
+                                                                            compareUrlPaths(
+                                                                                urlPath,
+                                                                                id,
+                                                                            )
+                                                                                ? 'active'
+                                                                                : ''
+                                                                        }
+                                                                        data-slug={
+                                                                            id
+                                                                        }>
+                                                                        {title}
+                                                                    </a>
+                                                                </li>
+                                                            ),
+                                                        )}
+                                                    </ul>
+                                                </details>
+                                            )
+                                        })}
+                                        {subdirMisc.length > 0 &&
+                                            subdirMisc.map(
+                                                ({ id, data: { title } }) => (
+                                                    <li>
+                                                        <a
+                                                            href={`/${id}`}
+                                                            class={
+                                                                compareUrlPaths(
+                                                                    urlPath,
+                                                                    id,
+                                                                )
+                                                                    ? 'active'
+                                                                    : ''
+                                                            }
+                                                            data-slug={id}>
+                                                            {title}
+                                                        </a>
+                                                    </li>
+                                                ),
+                                            )}
+                                    </>
+                                ) : (
+                                    categoryPages.map(
+                                        ({ id, data: { title } }) => (
+                                            <li>
+                                                <a
+                                                    href={`/${id}`}
+                                                    class={
+                                                        compareUrlPaths(
+                                                            urlPath,
+                                                            id,
+                                                        )
+                                                            ? 'active'
+                                                            : ''
+                                                    }
+                                                    data-slug={id}>
+                                                    {title}
+                                                </a>
+                                            </li>
+                                        ),
+                                    )
+                                )}
+                            </ul>
+                        </details>
+                    )
+                })
+            }
+        </div>
+    </div>
+    <button
+        id="sidebar-toggle"
+        type="button"
+        size-="small"
+        aria-expanded="true"
+        aria-controls="sidebar-container"
+        aria-label="Collapse left sidebar (zh)">
+        <span class="key-bracket"></span>&lsaquo;<span class="key-z">z</span
+        ><span class="key-bracket">[</span><span class="key-h">h</span><span
+            class="key-bracket">]</span
+        >
+    </button>
+</nav>
+
+<style>
+    /* ================================================================
+     * SidebarTree.astro — File-tree variant of Sidebar.astro
+     *
+     * Identical HTML structure, component logic, and scripts.
+     * CSS-only changes:
+     *   1. Nerd Font folder icons before category names
+     *   2. Triangle chevrons (▸/▾) replacing codicon arrows
+     *   3. Tree-line indentation via border-left on nested lists
+     * ================================================================ */
+
+    #sidebar {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        flex-grow: 1;
+        padding-inline: 1ch;
+        color: var(--foreground2);
+
+        #sidebar-toggle {
+            position: absolute;
+            bottom: 0;
+            left: 2ch;
+            right: auto;
+            z-index: 3;
+            color: var(--foreground3);
+            background-color: var(--background0);
         }
 
-        const href = item.href ?? '#'
-        const external = isExternal(href)
-        const text = item.text ?? item.id ?? href
+        &:focus-within {
+            --box-border-color: var(--focus-region-border);
+        }
 
-        return (
-            <a
-                href={href}
-                class={`sidebar-tree-link ${
-                    compareUrlPaths(urlPath, href) ? 'active' : ''
-                }`}
-                data-slug={item.id}
-                target={external ? '_blank' : undefined}
-                rel={external ? 'noreferrer' : undefined}>
-                {prefix ? (
-                    <span class="tree-prefix" aria-hidden="true">
-                        {prefix}
-                    </span>
-                ) : null}
-                <span class="sidebar-tree-label">{text}</span>
-            </a>
+        :is(a[href], summary, button:not([disabled])) {
+            position: relative;
+            outline: none;
+        }
+
+        summary > a.sidebar-category-link {
+            border: none;
+        }
+
+        .cat-key {
+            opacity: 0.35;
+        }
+
+        :is(a[href], summary, button:not([disabled]))::after {
+            content: '';
+            position: absolute;
+            inset-inline-start: -1ch;
+            inset-block-start: 0;
+            color: transparent;
+            width: 1ch;
+            pointer-events: none;
+        }
+
+        :is(a[href], summary, button:not([disabled])) {
+            transition:
+                background-color 100ms linear,
+                color 100ms linear,
+                box-shadow 100ms linear;
+        }
+
+        :is(a[href], summary, button:not([disabled])):focus-visible,
+        :is(
+                a[href],
+                summary,
+                button:not([disabled])
+            )[data-vim-focused='true']:focus {
+            background-color: var(--focus-bg-strong);
+            color: var(--focus-fg);
+            text-decoration: none;
+        }
+
+        :is(a[href], summary, button:not([disabled])):focus-visible::after,
+        :is(
+                a[href],
+                summary,
+                button:not([disabled])
+            )[data-vim-focused='true']:focus::after {
+            color: var(--focus-marker);
+        }
+
+        :is(a[href], summary, button:not([disabled])):hover {
+            background-color: var(--focus-hover-bg);
+        }
+
+        #sidebar-actions {
+            display: flex;
+            gap: 0;
+            background-color: var(--background0);
+            position: relative;
+            z-index: 10;
+            width: fit-content;
+            margin-inline-start: 1ch;
+
+            .sidebar-action {
+                all: unset;
+                display: inline-flex;
+                align-items: center;
+                padding: 0 0.5ch;
+                color: var(--foreground3);
+                cursor: pointer;
+                font-family: var(--font-family);
+                font-size: inherit;
+                line-height: inherit;
+                text-decoration: none;
+                transition: color 0.15s;
+
+                &:hover,
+                &:focus-visible,
+                &[data-vim-focused='true']:focus {
+                    color: var(--foreground0);
+                    background-color: transparent !important;
+                    box-shadow: none !important;
+                }
+            }
+        }
+
+        #category-container {
+            position: relative;
+            flex-grow: 1;
+            margin-top: 0.5ch;
+        }
+
+        #category-list {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0lh;
+            overflow-y: auto;
+        }
+    }
+
+    /* ------------------------------------------------------------------
+     * Folder icons on category links (Nerd Font codepoints)
+     *   \uf07b = nf-fa-folder        (closed)
+     *   \uf07c = nf-fa-folder_open   (open)
+     * ------------------------------------------------------------------ */
+
+    details > summary > a.sidebar-category-link {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    /* Closed-folder icon before top-level category names */
+    details > summary > a.sidebar-category-link::before {
+        content: '\f07b';
+        margin-inline-end: 1ch;
+        color: var(--foreground3);
+    }
+
+    /* Open-folder icon when the category is expanded */
+    details[open] > summary > a.sidebar-category-link::before {
+        content: '\f07c';
+    }
+
+    details > summary.active {
+        color: var(--accent);
+        background-color: oklch(
+            from var(--background-active, var(--background2, #838383))
+                calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+        );
+    }
+
+    li {
+        padding-inline-start: 0ch;
+    }
+
+    ul ul > li > a[href] {
+        color: var(--foreground2);
+        text-decoration: none;
+        outline: none;
+        display: block;
+        min-width: 0;
+
+        &.active {
+            color: var(--accent);
+            background-color: oklch(
+                from
+                    var(
+                        --accent,
+                        var(--background-active, var(--background2, #838383))
+                    )
+                    calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+            );
+        }
+    }
+
+    ul > li > a.external {
+        color: var(--foreground2);
+        font-style: italic;
+    }
+
+    #sidebar ul[marker-~='tree'] > li {
+        display: list-item;
+    }
+
+    #sidebar ul[marker-~='tree'] ul > li {
+        margin-inline-start: 0;
+    }
+    #sidebar ul[marker-~='tree'] > li::before {
+        grid-column: 1;
+        content: '';
+        color: var(--foreground2);
+    }
+
+    #sidebar ul[marker-~='tree'] > li > a {
+        grid-column: 2;
+    }
+
+    ul > details {
+        display: block;
+        padding-left: 0;
+    }
+
+    ul > details > summary {
+        color: var(--foreground2);
+        font-weight: var(--font-weight-normal);
+        background-color: transparent;
+    }
+
+    #category-list > a.sidebar-direct-link {
+        color: var(--foreground2);
+        text-decoration: none;
+        outline: none;
+        display: block;
+        &:hover {
+            background-color: var(--background1);
+        }
+
+        &:focus,
+        &.active {
+            color: var(--accent);
+            background-color: oklch(
+                from var(--background-active, var(--background2, #838383))
+                    calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+            );
+        }
+    }
+
+    #category-list > a.sidebar-direct-link::before {
+        content: '';
+    }
+
+    ul > details > summary {
+        padding-inline-start: 0ch;
+    }
+
+    ul ul {
+        margin: 0;
+    }
+
+    details.sidebar-year {
+        margin: 0;
+
+        > summary::before {
+            content: none;
+        }
+
+        > ul {
+            padding-inline-start: 0;
+        }
+    }
+
+    /* ------------------------------------------------------------------
+     * Fold icon — triangle chevrons instead of codicon arrows
+     *   Collapsed: ▸  (U+25B8, BLACK RIGHT-POINTING SMALL TRIANGLE)
+     *   Expanded:  ▾  (U+25BE, BLACK DOWN-POINTING SMALL TRIANGLE)
+     * ------------------------------------------------------------------ */
+
+    details {
+        summary {
+            background-color: none;
+            color: var(--foreground2);
+            list-style-type: '';
+            display: flex;
+            align-items: baseline;
+
+            &::marker {
+                content: '';
+            }
+
+            &::-webkit-details-marker {
+                display: none;
+            }
+
+            .fold-icon {
+                margin-inline-start: auto;
+                padding-inline-end: 1ch;
+
+                &::after {
+                    content: '\25B8'; /* ▸ collapsed */
+                    color: var(--foreground3);
+                }
+            }
+
+            &:focus,
+            &:hover {
+                background-color: var(--focus-hover-bg);
+            }
+        }
+
+        &[open] > summary .fold-icon::after {
+            content: '\25BE'; /* ▾ expanded */
+        }
+    }
+
+    details[open] a.hidden,
+    details.hidden,
+    .hidden {
+        display: none;
+    }
+
+    /* ------------------------------------------------------------------
+     * Tree-line indentation — vertical connector lines on nested lists
+     * ------------------------------------------------------------------ */
+
+    ul > details {
+        padding-inline-start: 2ch;
+        summary {
+            .fold-icon::after {
+                color: var(--foreground3);
+            }
+
+            &:focus,
+            &:hover {
+                background-color: var(--focus-hover-bg);
+            }
+        }
+    }
+
+    /* Vertical tree lines on nested <ul> elements */
+    #sidebar ul[marker-~='tree'] {
+        border-inline-start: 1px solid var(--foreground3, #555);
+        margin-inline-start: 1ch;
+        padding-inline-start: 1ch;
+    }
+
+    /* Top-level category child lists also get the tree line */
+    #category-list > details > ul[marker-~='tree'] {
+        border-inline-start: 1px solid var(--foreground3, #555);
+        margin-inline-start: 1ch;
+        padding-inline-start: 1ch;
+    }
+
+    /* Sub-folder icon for year/subdir group summaries */
+    ul > details.sidebar-year > summary::before {
+        content: '\f07b';
+        margin-inline-end: 1ch;
+        color: var(--foreground3);
+    }
+
+    ul > details.sidebar-year[open] > summary::before {
+        content: '\f07c';
+    }
+
+    /* Sub-category folder icons in nested details (e.g. "More" children) */
+    ul > li > details > summary > a.sidebar-category-link::before {
+        content: '\f07b';
+        margin-inline-end: 1ch;
+        color: var(--foreground3);
+    }
+
+    ul > li > details[open] > summary > a.sidebar-category-link::before {
+        content: '\f07c';
+    }
+
+    summary::-webkit-details-marker {
+        display: none;
+    }
+</style>
+
+<script>
+    import { applyVimNavigation, isUserTyping } from '@/utils/vim'
+
+    // Sidebar action buttons
+    document
+        .getElementById('theme-button-sidebar')
+        ?.addEventListener('click', () => {
+            const dialog = document.getElementById(
+                'theme-dialog',
+            ) as HTMLDialogElement | null
+            dialog?.showModal()
+        })
+
+    document
+        .getElementById('search-button-sidebar')
+        ?.addEventListener('click', () => {
+            const dialog = document.getElementById(
+                'search-dialog',
+            ) as HTMLDialogElement | null
+            dialog?.showModal()
+        })
+
+    const sidebar = document.getElementById('sidebar')
+
+    // Number-key shortcuts for sidebar categories
+    // Maps key → child index in #category-list
+    const categoryKeys: Record<string, number> = {
+        s: 0, // start
+        p: 1, // posts
+        t: 2, // talks
+        a: 3, // about (More)
+        y: 4, // style (WebTUI)
+    }
+
+    const categoryList = document.getElementById('category-list')
+    if (categoryList) {
+        const entries = categoryList.querySelectorAll<HTMLElement>(
+            ':scope > a, :scope > details',
         )
+        window.addEventListener('keydown', (e) => {
+            if (e.defaultPrevented || isUserTyping()) return
+            if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
+            const idx = categoryKeys[e.key]
+            if (idx === undefined) return
+            const el = entries[idx]
+            if (!el) return
+            e.preventDefault()
+            if (el.tagName === 'A') {
+                ;(el as HTMLAnchorElement).click()
+            } else if (el.tagName === 'DETAILS') {
+                const details = el as HTMLDetailsElement
+                details.open = true
+                const link = details.querySelector<HTMLAnchorElement>(
+                    'summary a.sidebar-category-link',
+                )
+                if (link) {
+                    link.click()
+                } else {
+                    details.querySelector('summary')?.focus()
+                }
+            }
+        })
+    }
+    let lastInteractionWasPointer = false
+
+    const revealFocusedElement = (element: HTMLElement) => {
+        let parent = element.parentElement
+
+        while (parent) {
+            if (parent instanceof HTMLDetailsElement) {
+                parent.open = true
+            }
+
+            if (parent.id === 'sidebar') break
+            parent = parent.parentElement
+        }
+    }
+
+    if (sidebar) {
+        sidebar.addEventListener('pointerdown', () => {
+            lastInteractionWasPointer = true
+        })
+
+        sidebar.addEventListener('keydown', () => {
+            lastInteractionWasPointer = false
+        })
+
+        applyVimNavigation(
+            sidebar,
+            '#category-list > a:not(.hidden), details:not(.hidden)[open] a:not(.hidden), details:not(.hidden) summary',
+            (element) => {
+                if (lastInteractionWasPointer) {
+                    return
+                }
+
+                if (element.tagName === 'SUMMARY') {
+                    return
+                }
+
+                revealFocusedElement(element)
+            },
+        )
+    }
+
+    // Theme management (moved from NavbarMinimal)
+    const root = document.documentElement
+    const themeStorageKey = 'webtui-theme'
+    const themeButtons = Array.from(
+        document.querySelectorAll('[data-theme-option]'),
+    ) as HTMLButtonElement[]
+
+    const setTheme = (theme: string) => {
+        if (root.getAttribute('data-webtui-theme') !== theme) {
+            root.setAttribute('data-webtui-theme', theme)
+        }
+        themeButtons.forEach((button) => {
+            const value = button.getAttribute('data-theme-option')
+            const isActive = value === theme
+            button.setAttribute('aria-selected', String(isActive))
+            button.setAttribute('variant-', 'background1')
+            button.setAttribute('data-active', String(isActive))
+        })
+        localStorage.setItem(themeStorageKey, theme)
+    }
+
+    const storedTheme = localStorage.getItem(themeStorageKey)
+    if (storedTheme) {
+        setTheme(storedTheme)
+    }
+
+    themeButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const value = button.getAttribute('data-theme-option')
+            if (!value) return
+            setTheme(value)
+            const themeDialog = document.getElementById(
+                'theme-dialog',
+            ) as HTMLDialogElement | null
+            themeDialog?.close()
+        })
     })
-}
+
+    const themeDialog = document.getElementById(
+        'theme-dialog',
+    ) as HTMLDialogElement | null
+    document
+        .getElementById('theme-button-sidebar')
+        ?.addEventListener('click', () => {
+            themeDialog?.showModal()
+            requestAnimationFrame(() => {
+                const active = themeDialog?.querySelector(
+                    '.theme-option[aria-selected="true"]',
+                ) as HTMLElement | null
+                ;(
+                    active ?? themeDialog?.querySelector('.theme-option')
+                )?.focus()
+            })
+        })
+
+    document
+        .getElementById('search-button-sidebar')
+        ?.addEventListener('click', () => {
+            const searchDialog = document.getElementById(
+                'search-dialog',
+            ) as HTMLDialogElement | null
+            searchDialog?.showModal()
+        })
+</script>
