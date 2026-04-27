@@ -686,13 +686,16 @@ h6::before {
 
 #sidebar-container.collapsed #sidebar-actions {
     flex-direction: column;
-    margin: 0 auto;
-    width: fit-content;
+    margin: 0;
+    width: 1lh;
+    box-shadow: none;
+    background-color: var(--background1);
 
     .sidebar-action {
         border-right: none !important;
-        border-bottom: 1px solid var(--background1);
-        padding: 0.25ch 0.5ch !important;
+        border-bottom: 1px solid var(--background2);
+        padding: 0.25ch 0 !important;
+        justify-content: center;
 
         &:last-child {
             border-bottom: none;
