@@ -102,6 +102,7 @@ const total = variants.length
 ---
 
 <header id="intro" {...variant === 7 ? { 'data-webtui-theme': 'nord' } : {}}>
+    {variant >= 8 && <Navbar />}
     <Widgets {variant} {home} />
     {
         variant < 8 && (
@@ -378,6 +379,16 @@ const total = variants.length
             align-items: center;
             justify-content: center;
             min-height: 100vh;
+
+            > :global(nav#top-navbar) {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 100;
+                width: 100%;
+                align-self: stretch;
+            }
 
             h1::before {
                 content: '';

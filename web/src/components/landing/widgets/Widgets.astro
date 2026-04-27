@@ -58,13 +58,7 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
         layoutClass,
     ]}
     style={`grid-template-columns: ${gridCols}; opacity: ${opacity};`}>
-    {
-        isIntroWidget && (
-            <div id="grid-navbar">
-                <Navbar {variant} />
-            </div>
-        )
-    }
+    {/* Navbar moved to Intro.astro top-level */}
     {
         home && variant >= 15 ? (
             <>
