@@ -684,6 +684,26 @@ h6::before {
     display: none;
 }
 
+#sidebar-container.collapsed #sidebar-actions {
+    flex-direction: column;
+    margin: 0;
+    box-shadow: none;
+    background: none;
+    width: 1lh;
+    align-items: center;
+    padding: 0;
+
+    .sidebar-action {
+        padding: 0.5ch 0 !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--background2);
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+}
+
 #scroll-container {
     position: relative;
     flex-grow: 1;
