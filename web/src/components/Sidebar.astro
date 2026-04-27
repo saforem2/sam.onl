@@ -983,8 +983,12 @@ const { pathname: urlPath } = Astro.url
                     border-right: none;
                 }
 
-                &:hover {
+                &:hover,
+                &:focus-visible,
+                &[data-vim-focused='true']:focus {
                     color: var(--foreground0);
+                    background-color: var(--background2) !important;
+                    box-shadow: none !important;
                 }
             }
         }
@@ -1322,4 +1326,68 @@ const { pathname: urlPath } = Astro.url
             },
         )
     }
+
+    // Theme management (moved from NavbarMinimal)
+    const root = document.documentElement
+    const themeStorageKey = 'webtui-theme'
+    const themeButtons = Array.from(
+        document.querySelectorAll('[data-theme-option]'),
+    ) as HTMLButtonElement[]
+
+    const setTheme = (theme: string) => {
+        if (root.getAttribute('data-webtui-theme') !== theme) {
+            root.setAttribute('data-webtui-theme', theme)
+        }
+        themeButtons.forEach((button) => {
+            const value = button.getAttribute('data-theme-option')
+            const isActive = value === theme
+            button.setAttribute('aria-selected', String(isActive))
+            button.setAttribute('variant-', 'background1')
+            button.setAttribute('data-active', String(isActive))
+        })
+        localStorage.setItem(themeStorageKey, theme)
+    }
+
+    const storedTheme = localStorage.getItem(themeStorageKey)
+    if (storedTheme) {
+        setTheme(storedTheme)
+    }
+
+    themeButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const value = button.getAttribute('data-theme-option')
+            if (!value) return
+            setTheme(value)
+            const themeDialog = document.getElementById(
+                'theme-dialog',
+            ) as HTMLDialogElement | null
+            themeDialog?.close()
+        })
+    })
+
+    const themeDialog = document.getElementById(
+        'theme-dialog',
+    ) as HTMLDialogElement | null
+    document
+        .getElementById('theme-button-sidebar')
+        ?.addEventListener('click', () => {
+            themeDialog?.showModal()
+            requestAnimationFrame(() => {
+                const active = themeDialog?.querySelector(
+                    '.theme-option[aria-selected="true"]',
+                ) as HTMLElement | null
+                ;(
+                    active ?? themeDialog?.querySelector('.theme-option')
+                )?.focus()
+            })
+        })
+
+    document
+        .getElementById('search-button-sidebar')
+        ?.addEventListener('click', () => {
+            const searchDialog = document.getElementById(
+                'search-dialog',
+            ) as HTMLDialogElement | null
+            searchDialog?.showModal()
+        })
 </script>
