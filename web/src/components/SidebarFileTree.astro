@@ -904,20 +904,18 @@ const ICON_CHEVRON_DOWN = '\u25be'
 
     .tree-file > .tree-line::before,
     .tree-folder > summary > .tree-line::before {
-        content: '├';
+        content: '├─';
     }
 
     .tree-file[data-last] > .tree-line::before,
     .tree-folder[data-last] > summary > .tree-line::before {
-        content: '└';
+        content: '└─';
     }
 
     /* Vertical continuation lines in nested children */
     .tree-children {
         position: relative;
-        margin-inline-start: 0.5ch;
-        padding-inline-start: 1ch;
-        border-inline-start: 1px solid var(--foreground3);
+        padding-inline-start: 2ch;
     }
 
     /* ── Chevron (expand/collapse indicator) ── */
