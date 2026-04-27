@@ -954,40 +954,30 @@ const { pathname: urlPath } = Astro.url
         #sidebar-actions {
             display: flex;
             gap: 0;
-            background-color: var(--box-border-color, var(--background2));
-            left: 1ch;
-            box-shadow: 2px 2px 0 0 var(--foreground0);
+            background-color: var(--background0);
             position: relative;
             z-index: 10;
-            margin: 0.5ch 0;
             width: fit-content;
-            height: 1lh;
-            line-height: 1lh;
+            margin-inline-start: 1ch;
 
             .sidebar-action {
                 all: unset;
                 display: inline-flex;
                 align-items: center;
-                padding: 0 1ch;
-                color: var(--foreground1);
+                padding: 0 0.5ch;
+                color: var(--foreground3);
                 cursor: pointer;
                 font-family: var(--font-family);
                 font-size: inherit;
                 line-height: inherit;
                 text-decoration: none;
-                transition: color 0.1s;
-                border-right: 2px solid var(--background2);
-                height: 1lh;
-
-                &:last-child {
-                    border-right: none;
-                }
+                transition: color 0.15s;
 
                 &:hover,
                 &:focus-visible,
                 &[data-vim-focused='true']:focus {
                     color: var(--foreground0);
-                    background-color: var(--background2) !important;
+                    background-color: transparent !important;
                     box-shadow: none !important;
                 }
             }
