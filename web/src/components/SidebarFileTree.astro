@@ -920,6 +920,21 @@ const ICON_CHEVRON_DOWN = '\u25be'
         border-inline-start: 1.5px solid var(--foreground3);
     }
 
+    /* Hide the vertical line extension below the last child */
+    .tree-children > :last-child {
+        position: relative;
+
+        &::after {
+            content: '';
+            position: absolute;
+            left: -1.55ch;
+            top: 50%;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--background0);
+        }
+    }
+
     /* ── Chevron (expand/collapse indicator) ── */
 
     .tree-chevron {
