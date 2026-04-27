@@ -1,7 +1,6 @@
 ---
 import Navbar from '../../NavbarMinimal.astro'
 import Widgets from '../widgets/Widgets.astro'
-import VimNavigation from '../VimNavigation.astro'
 import Filter from '../../Filter.astro'
 
 interface Props {
@@ -248,14 +247,11 @@ const total = variants.length
         variant >= 8 && (
             <>
                 <Filter />
-                <div id="vim-navigation-container">
-                    <VimNavigation />
-                </div>
                 <div id="vim-statusline">
-                    <span class="vsl-vim-icon">&#xe62b; </span>
                     <span class="vsl-mode">NORMAL</span>
                     <span class="vsl-branch">&#xe725; main</span>
-                    <span class="vsl-file">sam.onl</span>
+                    <span class="vsl-author">Sam Foreman</span>
+                    <span class="vsl-site">sam.onl</span>
                     <span class="vsl-spacer"></span>
                     <span class="vsl-keys">
                         <span id="vsl-last-key"></span>
@@ -263,7 +259,7 @@ const total = variants.length
                         <button id="vsl-btn-k" tabindex="-1">k</button>
                         <button id="vsl-btn-q" tabindex="-1">?</button>
                     </span>
-                    <span class="vsl-clock">&#xe382; <span id="vsl-clock-text"></span></span>
+                    <span class="vsl-clock"><span id="vsl-clock-text"></span></span>
                     <span class="vsl-pos">Top</span>
                     <span class="vsl-loc">1:1</span>
                 </div>
@@ -567,14 +563,7 @@ const total = variants.length
         }
 
         /* Vim navigation container — fixed top-right */
-        #vim-navigation-container {
-            position: fixed;
-            bottom: 2lh;
-            right: 2ch;
-            z-index: 100;
-        }
-
-        /* Statusline — fixed bottom */
+        /* Statusline — fixed bottom, matching Doc.css */
         #vim-statusline {
             position: fixed;
             bottom: 0;
@@ -598,18 +587,22 @@ const total = variants.length
         }
 
         .vsl-mode {
-            color: var(--background1);
-            background-color: var(--blue, var(--foreground1));
+            background-color: oklch(from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.5);
+            color: var(--foreground0);
             font-weight: bold;
         }
 
         .vsl-branch {
-            color: var(--background2);
-            background-color: var(--green, oklch(from #51CF66 l c h));
+            background-color: oklch(from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.2);
+            color: var(--foreground2);
         }
 
-        .vsl-file {
+        .vsl-author {
             color: var(--foreground1);
+        }
+
+        .vsl-site {
+            color: var(--foreground2);
         }
 
         .vsl-spacer {
@@ -619,36 +612,32 @@ const total = variants.length
 
         .vsl-clock {
             color: var(--foreground2);
+            background-color: oklch(from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.33);
         }
 
         .vsl-pos {
-            background-color: var(--background2);
-            color: var(--foreground1);
+            background-color: oklch(from var(--foreground1) calc(l * var(--oklch-scale, 1.15)) c h / 0.5);
+            color: var(--background1);
         }
 
         .vsl-loc {
-            background-color: var(--background2);
-            color: var(--foreground1);
-        }
-
-        .vsl-vim-icon {
-            background-color: var(--red, var(--accent));
-            color: var(--background0);
-            padding: 0 0.5ch !important;
+            background-color: var(--foreground2);
+            color: var(--background2);
         }
 
         .vsl-keys {
             display: flex;
             gap: 0;
             padding: 0 !important;
-            background-color: var(--background2);
+            color: var(--foreground3);
+            background-color: oklch(from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.2);
 
             #vsl-last-key {
                 padding: 0 1ch;
-                color: var(--foreground0);
+                color: var(--background0);
+                background-color: var(--accent);
                 min-width: 1ch;
                 text-align: center;
-                border-right: 1px solid var(--background1);
 
                 &:empty {
                     display: none;
