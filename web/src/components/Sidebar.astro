@@ -954,7 +954,8 @@ const { pathname: urlPath } = Astro.url
         #sidebar-actions {
             display: flex;
             gap: 0;
-            background-color: var(--background3, var(--background2));
+            background-color: var(--box-border-color, var(--background2));
+            left: 1ch;
             box-shadow: 2px 2px 0 0 var(--foreground0);
             position: relative;
             z-index: 10;
@@ -967,15 +968,16 @@ const { pathname: urlPath } = Astro.url
                 all: unset;
                 display: inline-flex;
                 align-items: center;
-                padding: 0 0.5ch;
-                color: var(--foreground2);
+                padding: 0 1ch;
+                color: var(--foreground1);
                 cursor: pointer;
                 font-family: var(--font-family);
                 font-size: inherit;
                 line-height: inherit;
                 text-decoration: none;
                 transition: color 0.1s;
-                border-right: 1px solid var(--background1);
+                border-right: 2px solid var(--background2);
+                height: 1lh;
 
                 &:last-child {
                     border-right: none;
@@ -1000,7 +1002,7 @@ const { pathname: urlPath } = Astro.url
             flex-direction: column;
             gap: 0lh;
             overflow-y: auto;
-            padding-block-start: 1ch;
+            /* padding-block-start: 1ch; */
             /* padding-inline-start: 1ch; */
             /* margin-inline-start: 1ch; */
             /* margin-inline: 1ch; */
