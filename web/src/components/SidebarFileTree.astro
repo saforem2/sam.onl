@@ -791,7 +791,7 @@ const ICON_CHEVRON_DOWN = '\u25be'
             all: unset;
             display: inline-flex;
             align-items: center;
-            padding: 0 0.5ch;
+            padding: 0 1ch;
             color: var(--foreground3);
             cursor: pointer;
             font-family: var(--font-family);
@@ -881,19 +881,19 @@ const ICON_CHEVRON_DOWN = '\u25be'
 
     /* ── Depth-based indentation ── */
 
-    .depth-1 { padding-inline-start: 1ch; }
-    .depth-2 { padding-inline-start: 3ch; }
-    .depth-3 { padding-inline-start: 5ch; }
+    .depth-1 { padding-inline-start: 0; }
+    .depth-2 { padding-inline-start: 2ch; }
+    .depth-3 { padding-inline-start: 4ch; }
 
-    .tree-folder.depth-1 > summary { padding-inline-start: 1ch; }
-    .tree-folder.depth-2 > summary { padding-inline-start: 3ch; }
-    .tree-folder.depth-3 > summary { padding-inline-start: 5ch; }
+    .tree-folder.depth-1 > summary { padding-inline-start: 0; }
+    .tree-folder.depth-2 > summary { padding-inline-start: 2ch; }
+    .tree-folder.depth-3 > summary { padding-inline-start: 4ch; }
 
     /* ── Tree line characters (vertical bars + connectors) ── */
 
     .tree-line {
         display: inline-block;
-        width: 2ch;
+        width: 1.5ch;
         flex-shrink: 0;
         color: var(--foreground3);
         user-select: none;
@@ -946,7 +946,7 @@ const ICON_CHEVRON_DOWN = '\u25be'
 
     .tree-icon {
         display: inline-block;
-        width: 2ch;
+        width: 1.5ch;
         flex-shrink: 0;
         text-align: center;
         user-select: none;
