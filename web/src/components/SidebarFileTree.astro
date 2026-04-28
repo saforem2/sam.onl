@@ -806,8 +806,38 @@ const ICON_CHEVRON_DOWN = '\u25be'
             &:focus-visible,
             &[data-vim-focused='true']:focus {
                 color: var(--foreground0);
-                background-color: transparent !important;
+                background-color: var(--background1) !important;
                 box-shadow: none !important;
+            }
+
+            &[href="/"]:hover,
+            &[href="/"]:focus-visible {
+                color: var(--accent, var(--blue));
+                background-color: oklch(from var(--blue) l c h / 0.1) !important;
+            }
+
+            &#theme-button-sidebar:hover,
+            &#theme-button-sidebar:focus-visible {
+                color: var(--blue);
+                background-color: oklch(from var(--blue) l c h / 0.1) !important;
+            }
+
+            &[href*="github"]:hover,
+            &[href*="github"]:focus-visible {
+                color: var(--purple);
+                background-color: oklch(from var(--purple) l c h / 0.1) !important;
+            }
+
+            &[href*="rss"]:hover,
+            &[href*="rss"]:focus-visible {
+                color: var(--orange);
+                background-color: oklch(from var(--orange) l c h / 0.1) !important;
+            }
+
+            &#search-button-sidebar:hover,
+            &#search-button-sidebar:focus-visible {
+                color: var(--green);
+                background-color: oklch(from var(--green) l c h / 0.1) !important;
             }
         }
     }
