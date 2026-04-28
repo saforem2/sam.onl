@@ -280,6 +280,10 @@ const labelWithKey = (slug: string) => {
 
 const { pathname: urlPath } = Astro.url
 
+/** Strip leading emoji characters from a title string */
+const stripEmoji = (text: string) =>
+    text.replace(/^[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F\u200D]+\s*/gu, '')
+
 /* Nerd Font codepoints */
 const ICON_FOLDER_CLOSED = '\uf07b'
 const ICON_FOLDER_OPEN = '\uf07c'
@@ -400,7 +404,7 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                                                         data-last={fileIdx === subChildPages.length - 1 ? '' : undefined}>
                                                                         <span class="tree-line" />
                                                                         <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                                                        <span class="tree-label">{title}</span>
+                                                                        <span class="tree-label">{stripEmoji(title)}</span>
                                                                     </a>
                                                                 ),
                                                             )}
@@ -542,7 +546,7 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                                             rel={entry.type === 'external' ? 'noreferrer' : undefined}>
                                                             <span class="tree-line" />
                                                             <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                                            <span class="tree-label">{entry.title}</span>
+                                                            <span class="tree-label">{stripEmoji(entry.title)}</span>
                                                         </a>
                                                     ))}
                                                 </div>
@@ -574,7 +578,7 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                                         data-last={miscIdx === misc.length - 1 ? '' : undefined}>
                                                         <span class="tree-line" />
                                                         <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                                        <span class="tree-label">{title}</span>
+                                                        <span class="tree-label">{stripEmoji(title)}</span>
                                                     </a>
                                                 ))}
                                             </div>
@@ -685,7 +689,7 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                                                 data-last={fileIdx === subdirPages.length - 1 ? '' : undefined}>
                                                                 <span class="tree-line" />
                                                                 <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                                                <span class="tree-label">{title}</span>
+                                                                <span class="tree-label">{stripEmoji(title)}</span>
                                                             </a>
                                                         ))}
                                                     </div>
@@ -705,7 +709,7 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                                 data-last={miscIdx === subdirMisc.length - 1 ? '' : undefined}>
                                                 <span class="tree-line" />
                                                 <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                                <span class="tree-label">{title}</span>
+                                                <span class="tree-label">{stripEmoji(title)}</span>
                                             </a>
                                         ))}
                                     </>
@@ -723,7 +727,7 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                             data-last={fileIdx === categoryPages.length - 1 ? '' : undefined}>
                                             <span class="tree-line" />
                                             <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                            <span class="tree-label">{title}</span>
+                                            <span class="tree-label">{stripEmoji(title)}</span>
                                         </a>
                                     ))
                                 )}
@@ -863,7 +867,7 @@ const ICON_CHEVRON_DOWN = '\u25be'
 
     .tree-root {
         color: var(--foreground1);
-        padding-inline-start: 1ch;
+        padding-inline-start: 0ch;
         white-space: nowrap;
         user-select: none;
     }
@@ -945,16 +949,16 @@ const ICON_CHEVRON_DOWN = '\u25be'
     /* Vertical continuation lines in nested children */
     .tree-children {
         position: relative;
-        margin-inline-start: 0.85ch;
-        padding-inline-start: 1.15ch;
-        border-inline-start: 1px solid var(--foreground3);
+        margin-inline-start: 0.4ch;
+        padding-inline-start: 2ch;
+        border-inline-start: 1.9999px solid var(--foreground3);
     }
 
     /* ── Chevron (expand/collapse indicator) ── */
 
     .tree-chevron {
         display: inline-block;
-        width: 1ch;
+        /* width: 0.5ch; */
         flex-shrink: 0;
         color: var(--foreground3);
         user-select: none;
@@ -962,11 +966,13 @@ const ICON_CHEVRON_DOWN = '\u25be'
     }
 
     .tree-chevron::before {
-        content: '\25b8';  /* right-pointing triangle */
+        /* content: '\25b8';  /* right-pointing triangle */ */
+        content: '';  /* right-pointing triangle */
     }
 
     details[open] > summary > .tree-chevron::before {
-        content: '\25be';  /* down-pointing triangle */
+        /* content: '\25be';  /* down-pointing triangle */ */
+        content: '';  /* down-pointing triangle */
     }
 
     /* ── Folder / file icons ── */
