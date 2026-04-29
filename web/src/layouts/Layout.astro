@@ -126,7 +126,6 @@ const ogImage = ogSlug
                 width: 100%;
                 max-width: 100%;
                 height: auto !important;
-                max-height: 50vh;
                 min-height: 0;
             }
             svg[id^='mermaid-'] foreignObject * {
@@ -164,11 +163,10 @@ const ogImage = ogSlug
                         node.getBoundingClientRect().width ||
                         node.parentElement?.getBoundingClientRect().width ||
                         width
-                    const maxHeight = window.innerHeight * 0.5
                     const naturalHeight = (renderedWidth * height) / width
                     const resolvedHeight =
                         Number.isFinite(naturalHeight) && naturalHeight > 0
-                            ? Math.min(naturalHeight, maxHeight)
+                            ? naturalHeight
                             : height
 
                     node.style.setProperty(
@@ -176,7 +174,6 @@ const ogImage = ogSlug
                         `${resolvedHeight}px`,
                         'important',
                     )
-                    node.style.setProperty('max-height', '50vh', 'important')
                     node.style.setProperty('width', '100%', 'important')
                     node.style.setProperty('max-width', '100%', 'important')
                     node.style.setProperty('display', 'block', 'important')
