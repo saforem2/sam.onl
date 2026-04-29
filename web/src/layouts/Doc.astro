@@ -916,7 +916,7 @@ const articleSchema =
             !e.altKey
         ) {
             e.preventDefault()
-            const scroller = document.getElementById('scroll-container')
+            const scroller = mainContent
             if (!scroller) return
             const halfPage = scroller.clientHeight / 2
             scroller.scrollBy({
@@ -928,6 +928,26 @@ const articleSchema =
                 vimFocusElement(visible[0])
             }
             return
+        }
+
+        // Esc — unfocus the currently focused element
+        if (
+            e.key === 'Escape' &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            !e.shiftKey
+        ) {
+            const active = document.activeElement
+            if (
+                active instanceof HTMLElement &&
+                active !== document.body &&
+                active !== document.documentElement
+            ) {
+                e.preventDefault()
+                active.blur()
+                return
+            }
         }
 
         // Skip all plain keys when z-chord is pending — the sidebar-toggle script handles it
