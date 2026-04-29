@@ -156,26 +156,15 @@ const ogImage = ogSlug
                         return
                     if (width <= 0 || height <= 0) return
 
-                    node.setAttribute('width', String(width))
-                    node.setAttribute('height', String(height))
-                    node.style.width = '100%'
-                    const renderedWidth =
-                        node.getBoundingClientRect().width ||
-                        node.parentElement?.getBoundingClientRect().width ||
-                        width
-                    const naturalHeight = (renderedWidth * height) / width
-                    const resolvedHeight =
-                        Number.isFinite(naturalHeight) && naturalHeight > 0
-                            ? naturalHeight
-                            : height
-
+                    // Set explicit aspect ratio and let CSS handle sizing
                     node.style.setProperty(
-                        'height',
-                        `${resolvedHeight}px`,
+                        'aspect-ratio',
+                        `${width} / ${height}`,
                         'important',
                     )
                     node.style.setProperty('width', '100%', 'important')
                     node.style.setProperty('max-width', '100%', 'important')
+                    node.style.setProperty('height', 'auto', 'important')
                     node.style.setProperty('display', 'block', 'important')
                 })
             }
@@ -198,7 +187,6 @@ const ogImage = ogSlug
             setTimeout(normalizeMermaidSvgSize, 0)
             setTimeout(normalizeMermaidSvgSize, 50)
             setTimeout(normalizeMermaidSvgSize, 250)
-            window.addEventListener('resize', normalizeMermaidSvgSize)
         </script>
         <!-- <link rel="preconnect" href="https://fonts.googleapis.com" /> -->
         <!-- <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /> -->
