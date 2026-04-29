@@ -753,7 +753,7 @@ h6::before {
             text-decoration: none;
         }
 
-        :is([tabindex='0'], summary)::after {
+        :is([tabindex='0']:not(a[href]), summary)::after {
             content: '';
             position: absolute;
             inset-inline-start: -1ch;
@@ -773,9 +773,9 @@ h6::before {
             }
         }
 
-        :is([tabindex='0'], summary):focus-visible::after,
+        :is([tabindex='0']:not(a[href]), summary):focus-visible::after,
         :is(
-                [tabindex='0'],
+                [tabindex='0']:not(a[href]),
                 summary
             )[data-vim-focused='true']:focus::after {
             color: var(--focus-marker);
