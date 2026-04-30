@@ -969,3 +969,10 @@ img {
     padding: 1ch;
     height: auto;
 }
+
+/* Hide the duplicate right border on the last cell of each row
+   (webtui's table component draws border-left on every cell, which
+   overlaps with the table's outer right border on the last column) */
+table tr :is(td, th):last-of-type::before {
+    display: none;
+}
