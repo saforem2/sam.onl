@@ -134,8 +134,10 @@
         --font-family-sans-serif: var(--font-family);
         --font-family-monospace: var(--font-family);
         font-family: var(--font-family);
-        --table-border-width: 0px;
-        --box-border-color: var(--background1);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: auto;
+        --table-border-width: 1pt;
+        --box-border-color: var(--background3);
         --focus-bg: oklch(
             from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
                 h / 0.5
@@ -504,7 +506,7 @@
             /*opacity: 45%;*/
         }
         p {
-            margin-block-end: 0pt!important;
+            margin-block-end: 0pt !important;
         }
     }
     details[is-~='accordion'] {
@@ -802,7 +804,9 @@ pre.astro-code:focus-within .code-copy-btn,
     font-weight: 500;
 
     &::before {
-        background: oklch(from var(--pink, var(--red)) calc(l * 1.15) c h / 0.2);
+        background: oklch(
+            from var(--pink, var(--red)) calc(l * 1.15) c h / 0.2
+        );
         content: '';
         position: absolute;
         width: calc(100% + 4px);
@@ -1062,4 +1066,29 @@ html[data-webtui-theme='catppuccin-latte'] {
     --h4: var(--green);
     --h5: var(--blue);
     --h6: var(--lavender);
+}
+
+@layer components {
+    /* Disable webtui table cell borders on CodePreview line-code rows */
+    .line-code::before,
+    .line-code::after,
+    .line-number::before,
+    .line-number::after {
+        border: none !important;
+        content: none !important;
+    }
+
+    /* Disable outer border on tables containing line-code rows */
+    table:has(.line-code)::before {
+        border: none !important;
+        content: none !important;
+    }
+
+    /* Tighten cell padding */
+    table:has(.line-code) tr :is(td, th) {
+        padding-bottom: 0 !important;
+    }
+    table:has(.line-code) :first-child > tr:first-child > :is(td, th) {
+        padding-top: 0 !important;
+    }
 }
