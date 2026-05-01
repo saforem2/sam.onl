@@ -98,7 +98,8 @@ const fileIconColor = Array.isArray(file?.icon) ? file.icon[1] : undefined
 
         /* Disable webtui table component borders and padding */
         &::before {
-            display: none;
+            display: none !important;
+            content: none !important;
         }
 
         tr :is(td, th) {
@@ -106,12 +107,24 @@ const fileIconColor = Array.isArray(file?.icon) ? file.icon[1] : undefined
 
             &::before,
             &::after {
-                display: none;
+                display: none !important;
+                content: none !important;
+                border: none !important;
             }
         }
 
         :first-child > tr:first-child > :is(td, th) {
             padding-top: 0 !important;
+
+            &::before {
+                height: 0 !important;
+            }
+        }
+
+        :last-child > tr:last-child > :is(td, th) {
+            &::before {
+                height: 0 !important;
+            }
         }
     }
 
