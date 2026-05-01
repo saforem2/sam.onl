@@ -971,18 +971,18 @@ img {
     height: auto;
 }
 
-/* Hide the duplicate right border on the last cell of each row
-   (webtui's table component draws border-left on every cell, which
-   overlaps with the table's outer right border on the last column) */
-table tr :is(td, th):last-of-type::before {
-    display: none;
-}
 
-/* Tighten table row spacing (webtui defaults to padding-bottom: 1lh) */
-#main-content table tr :is(td, th) {
-    padding-bottom: 0.25lh;
-}
 
-#main-content table :first-child > tr:first-child > :is(td, th) {
-    padding-top: 0.5lh;
+/* Disable webtui table component borders on .recent-posts-table
+   (it uses simple custom borders instead) */
+.recent-posts-table::before,
+.recent-posts-table tr :is(td, th)::before,
+.recent-posts-table tr :is(td, th)::after {
+    display: none !important;
+}
+.recent-posts-table tr :is(td, th) {
+    padding-bottom: 0 !important;
+}
+.recent-posts-table :first-child > tr:first-child > :is(td, th) {
+    padding-top: 0 !important;
 }
