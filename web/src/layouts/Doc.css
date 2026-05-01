@@ -977,3 +977,12 @@ img {
 table tr :is(td, th):last-of-type::before {
     display: none;
 }
+
+/* Tighten table row spacing (webtui defaults to padding-bottom: 1lh) */
+#main-content table tr :is(td, th) {
+    padding-bottom: 0.25lh;
+}
+
+#main-content table :first-child > tr:first-child > :is(td, th) {
+    padding-top: 0.5lh;
+}
