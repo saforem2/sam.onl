@@ -95,6 +95,24 @@ const fileIconColor = Array.isArray(file?.icon) ? file.icon[1] : undefined
         &.shadow {
             box-shadow: 1ch 0.5lh 0 0 var(--mantle);
         }
+
+        /* Disable webtui table component borders and padding */
+        &::before {
+            display: none;
+        }
+
+        tr :is(td, th) {
+            padding-bottom: 0 !important;
+
+            &::before,
+            &::after {
+                display: none;
+            }
+        }
+
+        :first-child > tr:first-child > :is(td, th) {
+            padding-top: 0 !important;
+        }
     }
 
     #line-number {
