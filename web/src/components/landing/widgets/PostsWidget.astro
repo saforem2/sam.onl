@@ -14,10 +14,15 @@ const posts = docs
     .slice(0, 20)
 
 function formatDate(date: Date): string {
-    const y = date.getFullYear()
+    const y = String(date.getFullYear()).slice(-2)
     const m = String(date.getMonth() + 1).padStart(2, '0')
     const d = String(date.getDate()).padStart(2, '0')
     return `${y}/${m}/${d}`
+}
+
+function stripEmoji(text: string): string {
+    return text
+        .replace(/^[\p{Emoji_Presentation}\p{Extended_Pictographic}️‍]+\s*/gu, '')
 }
 ---
 
@@ -34,7 +39,7 @@ function formatDate(date: Date): string {
                             ? formatDate(new Date(post.data.date))
                             : ''}
                     </span>
-                    <span class="pw-name">{post.data.title}</span>
+                    <span class="pw-name">{stripEmoji(post.data.title)}</span>
                 </a>
             ))
         }
