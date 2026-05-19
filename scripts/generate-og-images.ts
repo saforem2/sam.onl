@@ -21,6 +21,13 @@ const FONT_PATH = join(import.meta.dir, 'fonts', 'Iosevka-Regular.ttf')
 // Load font once
 const fontData = await Bun.file(FONT_PATH).arrayBuffer()
 
+// For the incremental check: if the generator itself or the font is
+// newer than a cached PNG, regenerate (the template may have changed
+// even when the source page didn't).
+const SCRIPT_MTIME = (await stat(new URL(import.meta.url).pathname)).mtimeMs
+const FONT_MTIME = (await stat(FONT_PATH)).mtimeMs
+const GENERATOR_MTIME = Math.max(SCRIPT_MTIME, FONT_MTIME)
+
 // Strip emoji and other non-renderable characters from titles
 function stripEmoji(text: string): string {
     return text
@@ -167,11 +174,16 @@ async function main() {
 
         const outPath = join(OUT_DIR, `${slug}.png`)
 
-        // Incremental: skip if PNG exists and is newer than source
+        // Incremental: skip if PNG is newer than source AND newer than
+        // both this script and the font (so template changes invalidate
+        // cached PNGs).
         if (existsSync(outPath)) {
             const srcStat = await stat(page)
             const outStat = await stat(outPath)
-            if (outStat.mtimeMs >= srcStat.mtimeMs) {
+            if (
+                outStat.mtimeMs >= srcStat.mtimeMs &&
+                outStat.mtimeMs >= GENERATOR_MTIME
+            ) {
                 skipped++
                 continue
             }
