@@ -128,13 +128,13 @@
         --font-family:
             'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace,
             'Symbols Nerd Font';
-        --font-size: clamp(0.875rem, 0.5rem + 1vw, 1rem);
+        --font-size: clamp(0.95rem, 0.6rem + 1vw, 1.0625rem);
         /* --line-height: 1.5; */
         --line-height: initial;
         --font-family-sans-serif: var(--font-family);
         --font-family-monospace: var(--font-family);
         font-family: var(--font-family);
-        -webkit-font-smoothing: antialiased;
+        -webkit-font-smoothing: auto;
         -moz-osx-font-smoothing: auto;
         --table-border-width: 1pt;
         --box-border-color: var(--background3);
@@ -338,6 +338,7 @@
     p {
         color: var(--text);
     }
+
     details[is-~='accordion'] > summary {
         list-style: none;
     }
@@ -496,14 +497,12 @@
         > summary::before {
             color: unset;
             content: '+';
-            /*opacity: 45%;*/
             vertical-align: top;
         }
         &[open] > summary::before {
             color: unset;
             content: 'x';
             vertical-align: top;
-            /*opacity: 45%;*/
         }
         p {
             margin-block-end: 0pt !important;
@@ -649,10 +648,22 @@ html[data-webtui-theme='catppuccin-latte'] .dark-content {
     display: none !important;
 }
 
-html[data-webtui-theme='custom-light'] .astro-code,
-html[data-webtui-theme='custom-light'] .astro-code span {
+html[data-webtui-theme='custom-light'] .astro-code {
     --pre-background: oklch(from var(--code-bg, #f8f8f8) l c h);
     background-color: var(--pre-background) !important;
+}
+/* Don't paint span-level backgrounds — let the pre's background show
+   through uniformly, including the top/bottom padding band. */
+html[data-webtui-theme='custom-light'] .astro-code span {
+    --pre-background: oklch(from var(--code-bg, #f8f8f8) l c h);
+    background-color: transparent !important;
+}
+
+/* Darken min-light's near-white comment color (#C2C3C5) so it reads on the
+   pale code background. Targeting the inline shiki style is the safest hook
+   that survives token-class changes. */
+html[data-webtui-theme='custom-light'] .astro-code span[style*='#C2C3C5'] {
+    color: #6a6e76 !important;
 }
 
 html[data-webtui-theme='custom-dark'] .astro-code span {
@@ -683,12 +694,26 @@ html[data-webtui-theme='catppuccin-latte'] .astro-code span {
     background-color: var(--pre-background) !important;
 }
 
+/* Code-block container: hugs content, no internal padding band.
+   Half-line gap above so code blocks don't crowd preceding text. */
 pre.astro-code {
-    padding: 0ch 0ch;
-    margin-block: 1ch;
-    flex-shrink: 0;
+    padding: 0;
+    margin-block: 0.5lh 1lh;
+    align-self: start;
     background-color: var(--pre-background, var(--background1)) !important;
     max-height: round(calc(0.4 * 100vh), 1lh);
+    /* Vertical scroll when a block exceeds max-height; otherwise the bar
+       is hidden by the browser since content fits. */
+    overflow-y: auto;
+    /* Cap at column width and let the `pre`'s own overflow-x: auto (set in
+       @layer components above) handle long lines with a horizontal
+       scrollbar. `min-width: 0` is the magic incantation for flex children:
+       without it, the `pre` would expand to its content's max-content width
+       and get clipped by #main-content's overflow-x: hidden. */
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    padding-inline-end: 0;
 }
 
 /* Align code blocks with text after the list marker. */
@@ -702,8 +727,8 @@ ol > li > pre.astro-code {
 
 pre.astro-code > code {
     display: block;
-    width: max-content;
-    min-width: 100%;
+    min-width: max-content;
+    max-width: min-content;
     white-space: pre;
     counter-reset: line;
     line-height: initial;
@@ -711,7 +736,8 @@ pre.astro-code > code {
 }
 
 pre.astro-code span.line[tabindex='0'] {
-    display: block;
+    /* Keep `inline-block` from the base rule so the inter-line whitespace
+       in the source HTML doesn't render as extra blank rows. */
     outline: none;
 }
 
@@ -746,7 +772,7 @@ pre.astro-code span.line::before {
 
 .code-copy-btn {
     position: absolute;
-    top: 0.5lh;
+    top: 0;
     right: 1ch;
     padding: 0 1ch;
     font-size: 0.75em;
@@ -758,7 +784,16 @@ pre.astro-code span.line::before {
     opacity: 0;
     transition: opacity 0.15s;
     z-index: 5;
+    /* Pin to top-right of the pre. Inline-flex center handles vertical
+       text alignment; box-sizing: border-box so the 1px border counts
+       toward the 1lh height (otherwise total height = 1lh + 2px which
+       gets clipped by overflow-y: hidden on single-line code blocks). */
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     height: 1lh;
+    line-height: 1;
 
     &:hover {
         color: var(--foreground0);
@@ -1069,6 +1104,31 @@ html[data-webtui-theme='catppuccin-latte'] {
 }
 
 @layer components {
+    table {
+        margin-block: 0 1lh;
+    }
+
+    /* The JS in Doc.astro wraps every <table> with this scroll container so
+       wide tables overflow horizontally inside it instead of breaking the
+       column.
+
+       Two things are needed for this to actually scroll inside the
+       #main-content flex column:
+       - `min-width: 0` so the flex child can shrink below its content's
+         natural width (without this, the wrapper expands to fit max-content
+         and the parent's `overflow-x: hidden` clips it, no scrollbar shows).
+       - explicit `width: calc(100% - 2ch)` to lock the wrapper to the column
+         width minus the 2ch left indent. */
+    .table-scroll-wrapper {
+        margin-block: 0 1lh;
+        width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+    }
+    .table-scroll-wrapper > table {
+        margin: 0;
+    }
+
     /* Disable webtui table cell borders on CodePreview line-code rows */
     .line-code::before,
     .line-code::after,
@@ -1090,5 +1150,130 @@ html[data-webtui-theme='catppuccin-latte'] {
     }
     table:has(.line-code) :first-child > tr:first-child > :is(td, th) {
         padding-top: 0 !important;
+    }
+
+    /* Default table style: simple 1px borders on every cell, no webtui pseudo
+       borders. Opt out per-table by adding `data-table-style="terminal"` to use
+       the original webtui ascii-box style. */
+    table:not([data-table-style='terminal']) {
+        width: max-content;
+        border-collapse: collapse;
+        border-spacing: 0;
+    }
+    /* Prevent body cells from wrapping — keeps each row on a single line so
+       the .table-scroll-wrapper triggers a horizontal scrollbar instead of
+       the cell content folding awkwardly across multiple lines. Header cells
+       can still wrap (long column titles look fine on multiple lines). */
+    .table-scroll-wrapper > table:not([data-table-style='terminal']) tbody td {
+        white-space: nowrap;
+    }
+    table:not([data-table-style='terminal'])::before {
+        border: none !important;
+        content: none !important;
+    }
+    table:not([data-table-style='terminal']) tr :is(td, th)::before,
+    table:not([data-table-style='terminal']) tr :is(td, th)::after {
+        border: none !important;
+        content: none !important;
+    }
+    table:not([data-table-style='terminal']) tr :is(td, th) {
+        border: 1px solid var(--foreground3);
+        padding: 0 1ch;
+    }
+    table:not([data-table-style='terminal']) tr :is(td, th):first-of-type {
+        padding-left: 1ch;
+    }
+    table:not([data-table-style='terminal']) thead :is(td, th),
+    table:not([data-table-style='terminal']) tr:first-child :is(th) {
+        background-color: var(--background1);
+    }
+    /* Zebra striping for body rows. Tint = --background1 (header tone) at
+       a noticeable alpha. The :is(tbody, :scope) makes it work whether or
+       not there's an explicit <tbody>. */
+    table:not([data-table-style='terminal'])
+        :is(tbody, :scope)
+        > tr:nth-child(even):not(:has(th))
+        > :is(td, th) {
+        background-color: var(--background1);
+    }
+    /* Row hover — subtle tint so the user can track their reading row
+       across wide tables. Wins over the zebra-stripe rule via specificity
+       (extra :hover) AND source order. */
+    table:not([data-table-style='terminal'])
+        :is(tbody, :scope)
+        > tr:not(:has(th)):hover
+        > :is(td, th) {
+        background-color: oklch(from var(--accent, var(--blue)) l c h / 0.12);
+        transition: background-color 100ms linear;
+    }
+    /* Drop the webtui first-row top-padding (it makes room for the ascii box
+       border, which we don't render in the default style). */
+    table:not([data-table-style='terminal'])
+        :first-child
+        > tr:first-child
+        > :is(td, th) {
+        padding-top: 0 !important;
+    }
+
+    /* Link styling — applies to all themes (was previously scoped to
+       [data-webtui-theme|='custom'] in theme-custom). */
+    :is(p, blockquote, li, [is-~='typography-block']) a {
+        color: var(--url);
+        text-decoration: none;
+    }
+
+    /* Body link hover effect: vim-style reverse-video flash. fg/bg invert
+       on the accent color. `box-decoration-break: clone` makes the
+       background paint cleanly on each line fragment when a link wraps. */
+    #main-content
+        :is(p, blockquote, li, [is-~='typography-block'])
+        a:not(.heading-anchor) {
+        background-color: transparent;
+        padding-inline: 0.25ch;
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
+        transition:
+            background-color 0.15s ease-out,
+            color 0.15s ease-out;
+
+        &:hover,
+        &:focus-visible {
+            background-color: var(--accent, var(--blue));
+            color: var(--background0);
+            text-decoration: none;
+        }
+    }
+
+    /* Local overrides of upstream WebTUI typography defaults.
+       Kept here instead of editing packages/css/* directly so the
+       monorepo packages stay clean and upstream-syncable. */
+
+    /* Don't force body font-weight — let parent context decide. */
+    body {
+        font-weight: revert;
+    }
+
+    /* In body typography blocks, keep <strong> the inherited color
+       (don't reset to foreground0) and let nested <a> use --url with
+       a faint tinted background. */
+    :is(p, blockquote, li, [is-~='typography-block']) strong {
+        color: inherit;
+    }
+    :is(p, blockquote, li, [is-~='typography-block']) strong a {
+        color: var(--url);
+        background-color: oklch(
+            from var(--url) calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+        );
+    }
+    /* Body links: no underline, use --url color (not --foreground2). */
+    :is(p, blockquote, li, [is-~='typography-block']) a {
+        text-decoration: none;
+        color: var(--url);
+    }
+
+    /* Inline `code` color in body text — also previously theme-scoped. */
+    #main-content :is(p, blockquote, li, [is-~='typography-block']) code {
+        color: var(--code-fg, var(--foreground2));
+        background-color: var(--code-bg, var(--background1));
     }
 }

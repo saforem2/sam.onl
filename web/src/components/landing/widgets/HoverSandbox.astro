@@ -1,0 +1,951 @@
+---
+const variants = [
+    {
+        cls: 'spring',
+        label: 'Spring overshoot',
+        desc: 'Hover the link — brackets snap into place from further out with a slight bounce.',
+    },
+    {
+        cls: 'cursor',
+        label: 'Vim block-cursor',
+        desc: 'Hover the link — a colored block fills the link area, brackets follow.',
+    },
+    {
+        cls: 'drop',
+        label: 'Vertical drop',
+        desc: 'Hover the link — brackets fall into place from above.',
+    },
+    {
+        cls: 'glitch',
+        label: 'Glitch flicker',
+        desc: 'Hover the link — brackets stutter through opacity before settling.',
+    },
+    {
+        cls: 'prompt',
+        label: 'Shell prompt',
+        desc: 'Hover the link — a "$ " prompt appears before it, like the link is a command being typed.',
+    },
+    {
+        cls: 'select',
+        label: 'Visual selection',
+        desc: 'Hover the link — block-character borders ░▒▓ sweep in like a vim visual-mode selection.',
+    },
+    {
+        cls: 'underscan',
+        label: 'Underscore scan',
+        desc: 'Hover the link — a blinking underscore _ scans left-to-right under the text.',
+    },
+    {
+        cls: 'rainbow',
+        label: 'ANSI rainbow',
+        desc: 'Hover the link — characters flicker through ANSI colors then settle on the accent.',
+    },
+    {
+        cls: 'angle',
+        label: 'Angle brackets',
+        desc: 'Hover the link — angle brackets < > slide in from outside instead of square ones.',
+    },
+    {
+        cls: 'arrow',
+        label: 'Pointer arrow',
+        desc: 'Hover the link — a "→" arrow appears pointing at it from the right margin.',
+    },
+    {
+        cls: 'spring-rainbow',
+        label: 'Spring + rainbow',
+        desc: 'Hover the link — brackets spring in from wider out while the text cycles through ANSI colors and settles on accent.',
+    },
+    {
+        cls: 'cursor-rainbow',
+        label: 'Cursor + rainbow',
+        desc: 'Hover the link — a rainbow block sweeps across vim-cursor style, blinks, then brackets spring in.',
+    },
+    {
+        cls: 'cursor-rainbow-fg',
+        label: 'Cursor + rainbow (text)',
+        desc: 'Hover the link — text takes on the rainbow gradient as a vim cursor sweeps across, then brackets spring in.',
+    },
+    {
+        cls: 'cursor-rainbow-cycle',
+        label: 'Cursor + rainbow (cycling)',
+        desc: 'Hover the link — rainbow block sweeps in, then keeps cycling colors while filled.',
+    },
+    {
+        cls: 'cursor-spring',
+        label: 'Cursor + spring',
+        desc: 'Hover the link — accent block sweeps across, blinks, then brackets spring in.',
+    },
+    {
+        cls: 'cursor-spring-quiet',
+        label: 'Cursor + spring (no blink)',
+        desc: 'Hover the link — accent block sweeps across, then brackets spring in. No blink.',
+    },
+    {
+        cls: 'visual-sweep',
+        label: 'Visual-mode sweep (wrap-safe)',
+        desc: 'Hover this long link that wraps across multiple lines of text intentionally so you can see the effect — vim visual-mode highlight wipes across cleanly even on wrap.',
+        linkText:
+            'this long link that wraps across multiple lines of text intentionally so you can see the effect',
+    },
+    {
+        cls: 'block-cursor-end',
+        label: 'Block cursor at end (wrap-safe)',
+        desc: 'Hover this long link that wraps across multiple lines of text intentionally so you can see the effect — a single blinking █ block cursor appears at the true end.',
+        linkText:
+            'this long link that wraps across multiple lines of text intentionally so you can see the effect',
+    },
+    {
+        cls: 'ascii-underline',
+        label: 'ASCII underline type-in (wrap-safe)',
+        desc: 'Hover this long link that wraps across multiple lines of text intentionally so you can see the effect — an ASCII underline types in under every wrapped line.',
+        linkText:
+            'this long link that wraps across multiple lines of text intentionally so you can see the effect',
+    },
+    {
+        cls: 'reverse-flash',
+        label: 'Reverse-video flash (wrap-safe)',
+        desc: 'Hover this long link that wraps across multiple lines of text intentionally so you can see the effect — fg/bg invert in vim-selection style.',
+        linkText:
+            'this long link that wraps across multiple lines of text intentionally so you can see the effect',
+    },
+]
+---
+
+<column box-="square" pad-="1 2" gap-="1" class="hover-sandbox-widget">
+    <span class="hsb-title">hover sandbox</span>
+    {
+        variants.map((v) => {
+            const linkText = (v as any).linkText ?? 'the link'
+            return (
+                <div class={`hsb-row hsb-${v.cls}`}>
+                    <span class="hsb-label">{v.label}:</span>
+                    <span class="hsb-desc">
+                        {v.desc.split(linkText).map((part, i, arr) =>
+                            i === arr.length - 1 ? (
+                                part
+                            ) : (
+                                <>
+                                    {part}
+                                    <a href="#sandbox">{linkText}</a>
+                                </>
+                            ),
+                        )}
+                    </span>
+                </div>
+            )
+        })
+    }
+</column>
+
+<style>
+    .hover-sandbox-widget {
+        margin-block: 1lh;
+    }
+    .hsb-title {
+        color: var(--foreground2);
+        font-weight: bold;
+        margin-block-end: 0.5lh;
+    }
+    .hsb-row {
+        display: block;
+        margin-block-end: 0.5lh;
+    }
+    .hsb-label {
+        color: var(--foreground2);
+        margin-inline-end: 1ch;
+    }
+    .hsb-desc {
+        color: var(--foreground1);
+    }
+
+    /* Common bracket setup for every sandbox link. Absolute-positioned
+       so they don't shift layout. */
+    .hsb-row a {
+        position: relative;
+        color: var(--url);
+        text-decoration: none;
+    }
+    .hsb-row a::before,
+    .hsb-row a::after {
+        position: absolute;
+        top: 0;
+        opacity: 0;
+        pointer-events: none;
+    }
+    .hsb-row a::before {
+        content: '[';
+        right: 100%;
+    }
+    .hsb-row a::after {
+        content: ']';
+        left: 100%;
+    }
+
+    /* (1) Spring — overshoot bounce. */
+    .hsb-spring a::before {
+        transform: translateX(2ch);
+        transition:
+            opacity 0.3s ease,
+            transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .hsb-spring a::after {
+        transform: translateX(-2ch);
+        transition:
+            opacity 0.3s ease,
+            transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .hsb-spring a:hover::before,
+    .hsb-spring a:focus-visible::before,
+    .hsb-spring a:hover::after,
+    .hsb-spring a:focus-visible::after {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* (2) Cursor — vim block-cursor sweeps left-to-right across the link
+       like an insert-mode caret, with a trailing edge that lingers and
+       blinks once before settling. Brackets snap in after the sweep. */
+    .hsb-cursor a {
+        /* Two layered backgrounds:
+           - The "fill" gradient: covers the link area as it sweeps right.
+           - The "caret" gradient: a 1ch-wide solid bar that rides the
+             leading edge, simulating the vim block cursor. */
+        background-image:
+            linear-gradient(
+                to right,
+                var(--accent, var(--blue)),
+                var(--accent, var(--blue))
+            ),
+            linear-gradient(
+                to right,
+                var(--accent, var(--blue)),
+                var(--accent, var(--blue))
+            );
+        background-repeat: no-repeat, no-repeat;
+        background-size:
+            0 100%,
+            0 100%;
+        background-position:
+            0 0,
+            0 0;
+        transition:
+            background-size 0.35s steps(20, end),
+            color 0.35s steps(2, end);
+        /* Subtle horizontal jitter via letter-spacing during sweep. */
+        transition-property: background-size, color, letter-spacing;
+        transition-duration: 0.35s, 0.35s, 0.35s;
+        transition-timing-function: steps(20, end), steps(2, end), ease;
+    }
+    .hsb-cursor a:hover,
+    .hsb-cursor a:focus-visible {
+        /* Fill the entire link, caret rides the trailing edge. */
+        background-size:
+            100% 100%,
+            1ch 100%;
+        background-position:
+            0 0,
+            calc(100% + 0.5ch) 0;
+        color: var(--background0);
+        animation: hsb-cursor-blink 0.4s steps(1, end) 0.4s 2;
+    }
+    /* Single blink after the sweep completes. */
+    @keyframes hsb-cursor-blink {
+        0%,
+        100% {
+            color: var(--background0);
+        }
+        50% {
+            color: var(--accent, var(--blue));
+        }
+    }
+    /* Brackets snap in after the cursor finishes its sweep + blink. */
+    .hsb-cursor a::before,
+    .hsb-cursor a::after {
+        transition:
+            opacity 0.15s ease 0.5s,
+            transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s;
+    }
+    .hsb-cursor a::before {
+        transform: translateX(1.5ch);
+    }
+    .hsb-cursor a::after {
+        transform: translateX(-1.5ch);
+    }
+    .hsb-cursor a:hover::before,
+    .hsb-cursor a:focus-visible::before,
+    .hsb-cursor a:hover::after,
+    .hsb-cursor a:focus-visible::after {
+        opacity: 1;
+        transform: translateX(0);
+        color: var(--accent, var(--blue));
+    }
+
+    /* (3) Drop — fall from above. */
+    .hsb-drop a::before,
+    .hsb-drop a::after {
+        top: -1lh;
+        transition:
+            opacity 0.25s ease,
+            top 0.25s ease;
+    }
+    .hsb-drop a:hover::before,
+    .hsb-drop a:focus-visible::before,
+    .hsb-drop a:hover::after,
+    .hsb-drop a:focus-visible::after {
+        top: 0;
+        opacity: 1;
+    }
+
+    /* (4) Glitch — stuttered opacity reveal. */
+    @keyframes hsb-bracket-glitch {
+        0%,
+        30%,
+        55% {
+            opacity: 0;
+        }
+        20%,
+        45%,
+        70%,
+        100% {
+            opacity: 1;
+        }
+    }
+    .hsb-glitch a:hover::before,
+    .hsb-glitch a:focus-visible::before,
+    .hsb-glitch a:hover::after,
+    .hsb-glitch a:focus-visible::after {
+        animation: hsb-bracket-glitch 0.5s steps(1, end) forwards;
+    }
+
+    /* (5) Prompt — "$ " shell prompt slides in before the link. */
+    .hsb-prompt a::before {
+        content: '$';
+        right: 100%;
+        margin-right: 0.5ch;
+        color: var(--green, var(--accent));
+        transform: translateX(0.5ch);
+        transition:
+            opacity 0.2s ease,
+            transform 0.2s ease;
+    }
+    .hsb-prompt a::after {
+        content: '';
+    }
+    .hsb-prompt a:hover::before,
+    .hsb-prompt a:focus-visible::before {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* (6) Visual selection — vim-style :%s highlight with shaded edge
+       block characters (░▒▓) sweeping in from both sides. */
+    .hsb-select a::before {
+        content: '▓▒░';
+        right: 100%;
+        color: var(--accent, var(--blue));
+        letter-spacing: -0.1ch;
+        transform: translateX(2ch);
+        transition:
+            opacity 0.25s ease,
+            transform 0.25s ease;
+    }
+    .hsb-select a::after {
+        content: '░▒▓';
+        left: 100%;
+        color: var(--accent, var(--blue));
+        letter-spacing: -0.1ch;
+        transform: translateX(-2ch);
+        transition:
+            opacity 0.25s ease,
+            transform 0.25s ease;
+    }
+    .hsb-select a:hover,
+    .hsb-select a:focus-visible {
+        background-color: oklch(from var(--accent, var(--blue)) l c h / 0.2);
+    }
+    .hsb-select a:hover::before,
+    .hsb-select a:focus-visible::before,
+    .hsb-select a:hover::after,
+    .hsb-select a:focus-visible::after {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* (7) Underscan — blinking cursor underscore scans across the text. */
+    .hsb-underscan a {
+        background-image: linear-gradient(to right, transparent, transparent);
+        background-repeat: no-repeat;
+        background-size: 1ch 2px;
+        background-position: 0 100%;
+        transition:
+            background-image 0.1s,
+            background-position 0.5s steps(20, end);
+    }
+    .hsb-underscan a:hover,
+    .hsb-underscan a:focus-visible {
+        background-image: linear-gradient(
+            to right,
+            var(--accent, var(--blue)),
+            var(--accent, var(--blue))
+        );
+        background-position: 100% 100%;
+        animation: hsb-underscan-blink 0.4s steps(2, end) infinite;
+    }
+    @keyframes hsb-underscan-blink {
+        0%,
+        100% {
+            background-color: transparent;
+        }
+        50% {
+            background-color: oklch(
+                from var(--accent, var(--blue)) l c h / 0.05
+            );
+        }
+    }
+    /* Reuse default brackets; they slide in normally. */
+
+    /* (8) ANSI rainbow — characters cycle through ANSI 16-color palette
+       before settling on the accent color. Uses background-clip: text
+       on a layered conic-gradient that animates its rotation. */
+    .hsb-rainbow a {
+        background-image: linear-gradient(
+            90deg,
+            var(--red, #e06c75),
+            var(--yellow, #e5c07b),
+            var(--green, #98c379),
+            var(--cyan, #56b6c2),
+            var(--blue, #61afef),
+            var(--purple, #c678dd),
+            var(--red, #e06c75)
+        );
+        background-size: 200% 100%;
+        background-clip: text;
+        -webkit-background-clip: text;
+        transition: background-position 1.5s ease;
+    }
+    .hsb-rainbow a:hover,
+    .hsb-rainbow a:focus-visible {
+        background-position: 100% 0;
+        color: transparent;
+        animation: hsb-rainbow-settle 1.5s ease forwards;
+    }
+    @keyframes hsb-rainbow-settle {
+        0% {
+            color: transparent;
+        }
+        100% {
+            color: var(--accent, var(--blue));
+            background-image: none;
+        }
+    }
+
+    /* (9) Angle brackets — < > instead of [ ]. Slide in horizontally,
+       a nod to JSX/HTML/email-client conventions. */
+    .hsb-angle a::before {
+        content: '<';
+        right: 100%;
+        color: var(--purple, var(--accent));
+        transform: translateX(0.5ch);
+        transition:
+            opacity 0.25s ease,
+            transform 0.25s ease;
+    }
+    .hsb-angle a::after {
+        content: '>';
+        left: 100%;
+        color: var(--purple, var(--accent));
+        transform: translateX(-0.5ch);
+        transition:
+            opacity 0.25s ease,
+            transform 0.25s ease;
+    }
+    .hsb-angle a:hover::before,
+    .hsb-angle a:focus-visible::before,
+    .hsb-angle a:hover::after,
+    .hsb-angle a:focus-visible::after {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* (10) Pointer arrow — a "→" arrow appears to the right of the link,
+       like a UI hint pointing at the action. Slides in from further right
+       with a slight bounce. */
+    .hsb-arrow a::before {
+        content: '';
+    }
+    .hsb-arrow a::after {
+        content: '→';
+        left: 100%;
+        margin-left: 1ch;
+        color: var(--accent, var(--blue));
+        transform: translateX(2ch);
+        transition:
+            opacity 0.3s ease,
+            transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .hsb-arrow a:hover::after,
+    .hsb-arrow a:focus-visible::after {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* (11) Spring + rainbow — text cycles through ANSI colors via an
+       animated gradient while the brackets spring in from further out
+       with overshoot. Two animations on the same element, no JS. */
+    .hsb-spring-rainbow a {
+        background-image: linear-gradient(
+            90deg,
+            var(--red, #e06c75),
+            var(--yellow, #e5c07b),
+            var(--green, #98c379),
+            var(--cyan, #56b6c2),
+            var(--blue, #61afef),
+            var(--purple, #c678dd),
+            var(--red, #e06c75)
+        );
+        background-size: 200% 100%;
+        background-clip: text;
+        -webkit-background-clip: text;
+        background-position: 0 0;
+        transition: background-position 1.5s ease;
+    }
+    .hsb-spring-rainbow a:hover,
+    .hsb-spring-rainbow a:focus-visible {
+        background-position: 100% 0;
+        color: transparent;
+        animation: hsb-spring-rainbow-settle 1.5s ease forwards;
+    }
+    @keyframes hsb-spring-rainbow-settle {
+        0% {
+            color: transparent;
+        }
+        100% {
+            color: var(--accent, var(--blue));
+            background-image: none;
+        }
+    }
+    /* Brackets spring in from 2ch out with overshoot. */
+    .hsb-spring-rainbow a::before {
+        transform: translateX(2ch);
+        transition:
+            opacity 0.3s ease,
+            transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .hsb-spring-rainbow a::after {
+        transform: translateX(-2ch);
+        transition:
+            opacity 0.3s ease,
+            transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .hsb-spring-rainbow a:hover::before,
+    .hsb-spring-rainbow a:focus-visible::before,
+    .hsb-spring-rainbow a:hover::after,
+    .hsb-spring-rainbow a:focus-visible::after {
+        opacity: 1;
+        transform: translateX(0);
+        /* Brackets settle on accent color along with the text. */
+        color: var(--accent, var(--blue));
+    }
+
+    /* (12) Cursor + rainbow — vim cursor sweep mechanics, but the fill
+       gradient cycles through ANSI colors. Brackets spring in after the
+       sweep + blink. Two layered backgrounds:
+         layer 1 = rainbow gradient (the cursor body, sweeps right)
+         layer 2 = solid accent caret (the trailing edge marker) */
+    .hsb-cursor-rainbow a {
+        background-image:
+            linear-gradient(
+                90deg,
+                var(--red, #e06c75),
+                var(--yellow, #e5c07b),
+                var(--green, #98c379),
+                var(--cyan, #56b6c2),
+                var(--blue, #61afef),
+                var(--purple, #c678dd)
+            ),
+            linear-gradient(
+                to right,
+                var(--accent, var(--blue)),
+                var(--accent, var(--blue))
+            );
+        background-repeat: no-repeat, no-repeat;
+        background-size:
+            0 100%,
+            0 100%;
+        background-position:
+            0 0,
+            0 0;
+        transition-property: background-size, color, letter-spacing;
+        transition-duration: 0.5s, 0.5s, 0.5s;
+        transition-timing-function: steps(20, end), steps(2, end), ease;
+    }
+    .hsb-cursor-rainbow a:hover,
+    .hsb-cursor-rainbow a:focus-visible {
+        background-size:
+            100% 100%,
+            1ch 100%;
+        background-position:
+            0 0,
+            calc(100% + 0.5ch) 0;
+        color: var(--background0);
+        animation: hsb-cursor-blink 0.4s steps(1, end) 0.55s 2;
+    }
+    /* Brackets spring in after the cursor finishes its sweep + blink. */
+    .hsb-cursor-rainbow a::before,
+    .hsb-cursor-rainbow a::after {
+        transition:
+            opacity 0.2s ease 0.7s,
+            transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.7s;
+    }
+    .hsb-cursor-rainbow a::before {
+        transform: translateX(2ch);
+    }
+    .hsb-cursor-rainbow a::after {
+        transform: translateX(-2ch);
+    }
+    .hsb-cursor-rainbow a:hover::before,
+    .hsb-cursor-rainbow a:focus-visible::before,
+    .hsb-cursor-rainbow a:hover::after,
+    .hsb-cursor-rainbow a:focus-visible::after {
+        opacity: 1;
+        transform: translateX(0);
+        color: var(--accent, var(--blue));
+    }
+
+    /* (13) Cursor + rainbow (text) — vim cursor sweep mechanics, but
+       instead of inverting the text, the text itself takes on the
+       rainbow gradient as the cursor sweeps. Caret stays accent.
+       Trick: an accent-colored caret rides the leading edge AND a
+       transparent fill reveals the gradient underneath via background-clip:
+       text. */
+    .hsb-cursor-rainbow-fg a {
+        background-image:
+            /* The rainbow text fill (revealed by background-clip: text). */ linear-gradient(
+            90deg,
+            var(--red, #e06c75),
+            var(--yellow, #e5c07b),
+            var(--green, #98c379),
+            var(--cyan, #56b6c2),
+            var(--blue, #61afef),
+            var(--purple, #c678dd)
+        );
+        background-size: 200% 100%;
+        background-position: 0 0;
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: var(--url);
+        transition:
+            color 0.5s steps(2, end),
+            background-position 0.5s steps(20, end);
+    }
+    .hsb-cursor-rainbow-fg a:hover,
+    .hsb-cursor-rainbow-fg a:focus-visible {
+        color: transparent;
+        background-position: 100% 0;
+        animation: hsb-cursor-fg-blink 0.4s steps(1, end) 0.55s 2;
+    }
+    @keyframes hsb-cursor-fg-blink {
+        0%,
+        100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.4;
+        }
+    }
+    /* Brackets spring in after the sweep + blink. */
+    .hsb-cursor-rainbow-fg a::before,
+    .hsb-cursor-rainbow-fg a::after {
+        transition:
+            opacity 0.2s ease 0.7s,
+            transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.7s;
+        color: var(--accent, var(--blue));
+    }
+    .hsb-cursor-rainbow-fg a::before {
+        transform: translateX(2ch);
+    }
+    .hsb-cursor-rainbow-fg a::after {
+        transform: translateX(-2ch);
+    }
+    .hsb-cursor-rainbow-fg a:hover::before,
+    .hsb-cursor-rainbow-fg a:focus-visible::before,
+    .hsb-cursor-rainbow-fg a:hover::after,
+    .hsb-cursor-rainbow-fg a:focus-visible::after {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* (14) Cursor + rainbow (cycling) — same sweep as variant 12 but
+       once the cursor is fully extended, the rainbow gradient keeps
+       sliding indefinitely. Two separate animations: the sweep on hover
+       (controlled via background-size step transition), then a looped
+       background-position cycle that runs on top. */
+    .hsb-cursor-rainbow-cycle a {
+        background-image:
+            linear-gradient(
+                90deg,
+                var(--red, #e06c75),
+                var(--yellow, #e5c07b),
+                var(--green, #98c379),
+                var(--cyan, #56b6c2),
+                var(--blue, #61afef),
+                var(--purple, #c678dd),
+                var(--red, #e06c75)
+            ),
+            linear-gradient(
+                to right,
+                var(--accent, var(--blue)),
+                var(--accent, var(--blue))
+            );
+        background-repeat: no-repeat, no-repeat;
+        background-size:
+            0 100%,
+            0 100%;
+        background-position:
+            0 0,
+            0 0;
+        transition:
+            background-size 0.5s steps(20, end),
+            color 0.5s steps(2, end);
+    }
+    .hsb-cursor-rainbow-cycle a:hover,
+    .hsb-cursor-rainbow-cycle a:focus-visible {
+        background-size:
+            200% 100%,
+            1ch 100%;
+        color: var(--background0);
+        /* After the sweep finishes (~0.5s), start cycling the gradient
+           position so the colors keep rolling. */
+        animation: hsb-cursor-cycle 3s linear 0.5s infinite;
+    }
+    @keyframes hsb-cursor-cycle {
+        0% {
+            background-position:
+                0 0,
+                calc(100% + 0.5ch) 0;
+        }
+        100% {
+            background-position:
+                -100% 0,
+                calc(100% + 0.5ch) 0;
+        }
+    }
+    /* Brackets spring in after the initial sweep, stay put while the
+       gradient cycles underneath. */
+    .hsb-cursor-rainbow-cycle a::before,
+    .hsb-cursor-rainbow-cycle a::after {
+        transition:
+            opacity 0.2s ease 0.55s,
+            transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.55s;
+        color: var(--accent, var(--blue));
+    }
+    .hsb-cursor-rainbow-cycle a::before {
+        transform: translateX(2ch);
+    }
+    .hsb-cursor-rainbow-cycle a::after {
+        transform: translateX(-2ch);
+    }
+    .hsb-cursor-rainbow-cycle a:hover::before,
+    .hsb-cursor-rainbow-cycle a:focus-visible::before,
+    .hsb-cursor-rainbow-cycle a:hover::after,
+    .hsb-cursor-rainbow-cycle a:focus-visible::after {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* (15) Cursor + spring — minimal. Solid accent block sweeps in
+       (stepped), text inverts, single blink, spring brackets. No
+       trailing caret, no rainbow. */
+    .hsb-cursor-spring a {
+        background-image: linear-gradient(
+            to right,
+            var(--accent, var(--blue)),
+            var(--accent, var(--blue))
+        );
+        background-repeat: no-repeat;
+        background-size: 0 100%;
+        transition:
+            background-size 0.35s steps(20, end),
+            color 0.35s steps(2, end);
+    }
+    .hsb-cursor-spring a:hover,
+    .hsb-cursor-spring a:focus-visible {
+        background-size: 100% 100%;
+        color: var(--background0);
+        animation: hsb-cursor-blink 0.4s steps(1, end) 0.4s 1;
+    }
+    .hsb-cursor-spring a::before,
+    .hsb-cursor-spring a::after {
+        transition:
+            opacity 0.2s ease 0.55s,
+            transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.55s;
+        color: var(--accent, var(--blue));
+    }
+    .hsb-cursor-spring a::before {
+        transform: translateX(2ch);
+    }
+    .hsb-cursor-spring a::after {
+        transform: translateX(-2ch);
+    }
+    .hsb-cursor-spring a:hover::before,
+    .hsb-cursor-spring a:focus-visible::before,
+    .hsb-cursor-spring a:hover::after,
+    .hsb-cursor-spring a:focus-visible::after {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* (16) Cursor + spring (no blink) — same as variant 15 minus the
+       single post-sweep blink. Quieter, no animation after the sweep
+       completes. */
+    .hsb-cursor-spring-quiet a {
+        background-image: linear-gradient(
+            to right,
+            var(--accent, var(--blue)),
+            var(--accent, var(--blue))
+        );
+        background-repeat: no-repeat;
+        background-size: 0 100%;
+        transition:
+            background-size 0.35s steps(20, end),
+            color 0.35s steps(2, end);
+    }
+    .hsb-cursor-spring-quiet a:hover,
+    .hsb-cursor-spring-quiet a:focus-visible {
+        background-size: 100% 100%;
+        color: var(--background0);
+    }
+    .hsb-cursor-spring-quiet a::before,
+    .hsb-cursor-spring-quiet a::after {
+        transition:
+            opacity 0.2s ease 0.4s,
+            transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s;
+        color: var(--accent, var(--blue));
+    }
+    .hsb-cursor-spring-quiet a::before {
+        transform: translateX(2ch);
+    }
+    .hsb-cursor-spring-quiet a::after {
+        transform: translateX(-2ch);
+    }
+    .hsb-cursor-spring-quiet a:hover::before,
+    .hsb-cursor-spring-quiet a:focus-visible::before,
+    .hsb-cursor-spring-quiet a:hover::after,
+    .hsb-cursor-spring-quiet a:focus-visible::after {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* ────── WRAP-SAFE VARIANTS ──────
+       These use background-image + box-decoration-break instead of
+       absolute-positioned pseudos. Each line fragment gets its own copy
+       of the decoration, so wrapped links don't break. */
+
+    /* Visual-mode sweep: a colored band wipes left-to-right across the
+       link, mimicking pressing `v` then `$` in vim visual mode. The fill
+       repeats per line fragment when wrapped. */
+    .hsb-visual-sweep a {
+        background-image: linear-gradient(
+            to right,
+            oklch(from var(--accent, var(--blue)) l c h / 0.3),
+            oklch(from var(--accent, var(--blue)) l c h / 0.3)
+        );
+        background-repeat: no-repeat;
+        background-size: 0 100%;
+        background-position: 0 0;
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
+        transition: background-size 0.4s ease-out;
+    }
+    .hsb-visual-sweep a:hover,
+    .hsb-visual-sweep a:focus-visible {
+        background-size: 100% 100%;
+    }
+    /* Suppress the inherited bracket pseudos for this variant. */
+    .hsb-visual-sweep a::before,
+    .hsb-visual-sweep a::after {
+        content: none;
+    }
+
+    /* Block cursor at end: a single blinking █ pseudo positioned with
+       inline flow (not absolute), so even on wrap it sits at the true
+       end of the link, after the last fragment. */
+    .hsb-block-cursor-end a::before,
+    .hsb-block-cursor-end a::after {
+        content: none;
+    }
+    .hsb-block-cursor-end a {
+        position: relative;
+    }
+    .hsb-block-cursor-end a::after {
+        content: '█';
+        position: static;
+        display: inline-block;
+        margin-inline-start: 0.25ch;
+        color: var(--accent, var(--blue));
+        opacity: 0;
+        transition: opacity 0.15s ease-out;
+    }
+    .hsb-block-cursor-end a:hover::after,
+    .hsb-block-cursor-end a:focus-visible::after {
+        opacity: 1;
+        animation: hsb-cursor-blink 1s step-end infinite;
+    }
+    @keyframes hsb-cursor-blink {
+        0%,
+        50% {
+            opacity: 1;
+        }
+        51%,
+        100% {
+            opacity: 0;
+        }
+    }
+
+    /* ASCII underline that "types in" left to right. Uses an inline
+       background-image of a 0.15lh-tall accent band, sized 0% wide → 100%
+       wide on hover. With box-decoration-break: clone, each wrapped
+       fragment gets its own underline. */
+    .hsb-ascii-underline a {
+        background-image: linear-gradient(
+            to right,
+            var(--accent, var(--blue)),
+            var(--accent, var(--blue))
+        );
+        background-repeat: no-repeat;
+        background-size: 0 0.15lh;
+        background-position: 0 100%;
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
+        transition: background-size 0.4s steps(20, end);
+    }
+    .hsb-ascii-underline a:hover,
+    .hsb-ascii-underline a:focus-visible {
+        background-size: 100% 0.15lh;
+    }
+    .hsb-ascii-underline a::before,
+    .hsb-ascii-underline a::after {
+        content: none;
+    }
+
+    /* Reverse-video flash: foreground/background invert. Solid fill
+       (no sweep), with box-decoration-break for clean wrap. */
+    .hsb-reverse-flash a {
+        background-color: transparent;
+        transition:
+            background-color 0.15s ease-out,
+            color 0.15s ease-out;
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
+        padding-inline: 0.25ch;
+    }
+    .hsb-reverse-flash a:hover,
+    .hsb-reverse-flash a:focus-visible {
+        background-color: var(--accent, var(--blue));
+        color: var(--background0);
+    }
+    .hsb-reverse-flash a::before,
+    .hsb-reverse-flash a::after {
+        content: none;
+    }
+</style>
