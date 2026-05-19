@@ -161,35 +161,93 @@ export function makeSortedCategoryEntries() {
     return categories
 }
 
+/** Year-grouped categories order their sidebar entries by year (desc),
+ * then by date (desc) within a year. Subdir-grouped categories order by
+ * subdir (asc), then by title (asc). Everything else by title (asc). */
+const yearGroupedCategoryOrder = new Set(['posts', 'talks'])
+const yearPattern = /^\d{4}$/
+
 /**
- * Flat page list in the same order the sidebar renders them: by category,
- * then by subdir (alphabetical within a category), then alphabetical by
- * title within each subdir, with subdir-less "misc" pages last in the
- * category. Used by Doc.astro's prev/next nav so the buttons walk the
- * tree the same way the sidebar shows it.
+ * Flat page list in the same order the sidebar renders them. Used by
+ * Doc.astro's prev/next nav so the buttons walk the tree the same way
+ * the sidebar shows it.
+ *
+ * - posts/talks: year (desc) → date (desc within year) → id (asc tiebreak)
+ * - everything else: subdir (asc) → title (asc), then subdir-less last
  */
 export function makeSidebarOrderedPages() {
     const ordered: typeof docPages = []
-    for (const [, pages] of makeSortedCategoryEntries()) {
-        const grouped = new Map<string, typeof docPages>()
-        const misc: typeof docPages = []
-        for (const page of pages) {
-            const parts = page.id.split('/')
-            if (parts.length > 2 && parts[1]) {
-                const subdir = parts[1]
-                const group = grouped.get(subdir) ?? []
-                group.push(page)
-                grouped.set(subdir, group)
-            } else {
-                misc.push(page)
-            }
+    for (const [slug, pages] of makeSortedCategoryEntries()) {
+        if (yearGroupedCategoryOrder.has(slug)) {
+            ordered.push(...orderByYear(pages))
+        } else {
+            ordered.push(...orderBySubdir(pages))
         }
-        for (const [, gpages] of grouped) {
-            gpages.sort((a, b) => a.data.title.localeCompare(b.data.title))
-        }
-        const subdirs = Array.from(grouped.keys()).sort()
-        for (const sd of subdirs) ordered.push(...(grouped.get(sd) ?? []))
-        ordered.push(...misc)
     }
     return ordered
+}
+
+function orderByYear(pages: typeof docPages) {
+    const grouped = new Map<string, typeof docPages>()
+    const misc: typeof docPages = []
+    for (const page of pages) {
+        const year = getPageYearString(page)
+        if (year) {
+            const g = grouped.get(year) ?? []
+            g.push(page)
+            grouped.set(year, g)
+        } else {
+            misc.push(page)
+        }
+    }
+    for (const [, gpages] of grouped) {
+        gpages.sort((a, b) => {
+            const da = getPageDate(a)
+            const db = getPageDate(b)
+            if (da !== db) return db - da
+            return a.id.localeCompare(b.id)
+        })
+    }
+    const years = Array.from(grouped.keys()).sort((a, b) => b.localeCompare(a))
+    const out: typeof docPages = []
+    for (const y of years) out.push(...(grouped.get(y) ?? []))
+    out.push(...misc)
+    return out
+}
+
+function orderBySubdir(pages: typeof docPages) {
+    const grouped = new Map<string, typeof docPages>()
+    const misc: typeof docPages = []
+    for (const page of pages) {
+        const parts = page.id.split('/')
+        if (parts.length > 2 && parts[1]) {
+            const subdir = parts[1]
+            const g = grouped.get(subdir) ?? []
+            g.push(page)
+            grouped.set(subdir, g)
+        } else {
+            misc.push(page)
+        }
+    }
+    for (const [, gpages] of grouped) {
+        gpages.sort((a, b) => a.data.title.localeCompare(b.data.title))
+    }
+    const subdirs = Array.from(grouped.keys()).sort()
+    const out: typeof docPages = []
+    for (const sd of subdirs) out.push(...(grouped.get(sd) ?? []))
+    out.push(...misc)
+    return out
+}
+
+function getPageYearString(page: (typeof docPages)[number]): string | null {
+    // Prefer the page's date frontmatter (matches sidebar's getPageYear)
+    const d = (page.data as { date?: string | Date }).date
+    if (d instanceof Date) return String(d.getFullYear())
+    if (typeof d === 'string') {
+        const parsed = new Date(d)
+        if (!Number.isNaN(parsed.getTime())) return String(parsed.getFullYear())
+    }
+    // Fall back to a year segment in the URL path: posts/2025/05/03
+    const [, year] = page.id.split('/')
+    return year && yearPattern.test(year) ? year : null
 }
