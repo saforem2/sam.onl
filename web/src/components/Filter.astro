@@ -110,7 +110,7 @@ const themeOptions = {
                             <span>Focus left/right sidebar</span>
                             <code role="listitem">&#x2303;J / &#x2303;K</code>
                             <span>Focus main/navbar</span>
-                            <code role="listitem">&lt;zM&gt; / &lt;zR&gt;</code>
+                            <code role="listitem">&#x21E7;C / &#x21E7;E</code>
                             <span>Collapse / expand all sections</span>
                         </div>
                     </div>
@@ -313,6 +313,25 @@ const themeOptions = {
         column-gap: 1ch;
         row-gap: 0.25lh;
         align-items: baseline;
+    }
+
+    /* Use the same styled-key look as the Keybindings widget on /showcase/8 */
+    .keybind-grid > code {
+        display: inline-block;
+        color: var(--foreground0);
+        background-color: var(--background2);
+        border: 1px solid var(--foreground2);
+        border-radius: 3px;
+        padding: 0 0.5ch;
+        font-family: var(--font-family);
+        font-size: 0.9em;
+        text-align: center;
+        white-space: nowrap;
+        justify-self: end;
+    }
+
+    .keybind-grid > span {
+        color: var(--foreground2);
     }
 
     .keybind-columns {
