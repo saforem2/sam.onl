@@ -1,19 +1,5 @@
 ---
 import Filter from '@/components/Filter.astro'
-
-interface Props {
-    variant?: number
-}
-
-const { variant } = Astro.props
-const path = Astro.url.pathname
-const isOn = path.startsWith('/posts')
-    ? 'posts'
-    : path.startsWith('/talks')
-      ? 'talks'
-      : path.startsWith('/about') || path.startsWith('/more')
-        ? 'more'
-        : null
 ---
 
 <nav id="top-navbar">

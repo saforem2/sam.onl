@@ -1,5 +1,11 @@
 ---
-const variants = [
+interface HoverVariant {
+    cls: string
+    label: string
+    desc: string
+    linkText?: string
+}
+const variants: HoverVariant[] = [
     {
         cls: 'spring',
         label: 'Spring overshoot',
@@ -115,7 +121,7 @@ const variants = [
     <span class="hsb-title">hover sandbox</span>
     {
         variants.map((v) => {
-            const linkText = (v as any).linkText ?? 'the link'
+            const linkText = v.linkText ?? 'the link'
             return (
                 <div class={`hsb-row hsb-${v.cls}`}>
                     <span class="hsb-label">{v.label}:</span>
