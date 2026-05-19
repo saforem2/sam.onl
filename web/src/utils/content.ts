@@ -4,15 +4,14 @@ import { getCollection } from 'astro:content'
 
 // if a category is not included in the array, it will be moved to the end
 export const categoryOrder = [
-    'landing',
+    'about',
     'posts',
     'talks',
     'more',
-    'about',
+    'webtui',
     'projects',
     'ideas',
     'now',
-    'webtui',
     // 'start',
     // 'installation',
     // 'components',
@@ -21,7 +20,11 @@ export const categoryOrder = [
 ]
 
 /** Categories that should be nested under the "more" group in the sidebar */
-export const moreSidebarGroup = new Set(['projects', 'about', 'ideas', 'now'])
+export const moreSidebarGroup = new Set(['projects', 'ideas', 'now'])
+
+/** Categories that should not appear in the sidebar at all
+   (still reachable via direct URL). */
+export const sidebarHiddenCategories = new Set(['docs'])
 
 //                   
 //                   
@@ -51,13 +54,12 @@ export const moreSidebarGroup = new Set(['projects', 'about', 'ideas', 'now'])
 // more: 󰐱    More
 // projects:   Projects
 export const categoryLabels: Record<(typeof categoryOrder)[number], string> = {
-    landing: 'start',
     posts: 'posts',
     talks: 'talks',
-    about: 'about me',
+    about: 'about',
+    more: 'more',
     projects: 'projects',
     ideas: 'ideas',
-    more: 'about',
     webtui: 'style',
     now: 'now',
     // ---------------------------
@@ -157,4 +159,37 @@ export function makeSortedCategoryEntries() {
     )
 
     return categories
+}
+
+/**
+ * Flat page list in the same order the sidebar renders them: by category,
+ * then by subdir (alphabetical within a category), then alphabetical by
+ * title within each subdir, with subdir-less "misc" pages last in the
+ * category. Used by Doc.astro's prev/next nav so the buttons walk the
+ * tree the same way the sidebar shows it.
+ */
+export function makeSidebarOrderedPages() {
+    const ordered: typeof docPages = []
+    for (const [, pages] of makeSortedCategoryEntries()) {
+        const grouped = new Map<string, typeof docPages>()
+        const misc: typeof docPages = []
+        for (const page of pages) {
+            const parts = page.id.split('/')
+            if (parts.length > 2 && parts[1]) {
+                const subdir = parts[1]
+                const group = grouped.get(subdir) ?? []
+                group.push(page)
+                grouped.set(subdir, group)
+            } else {
+                misc.push(page)
+            }
+        }
+        for (const [, gpages] of grouped) {
+            gpages.sort((a, b) => a.data.title.localeCompare(b.data.title))
+        }
+        const subdirs = Array.from(grouped.keys()).sort()
+        for (const sd of subdirs) ordered.push(...(grouped.get(sd) ?? []))
+        ordered.push(...misc)
+    }
+    return ordered
 }
