@@ -1029,14 +1029,22 @@ h6::before {
             margin-left: 0;
             padding-inline-start: 2ch;
         }
+
+        /* Nested lists: nudge each list right by the parent's marker width so
+           the nested marker (e.g. `-`) sits roughly under the parent text.
+           Also clear the inherited `text-indent: ...ch hanging` so the
+           nested text doesn't get over-indented. */
+        li > :is(ul, ol) > li {
+            text-indent: 1.5ch hanging;
+        }
         ul > li > :is(ul, ol) {
-            margin-left: 2ch;
+            margin-left: 0;
         }
         ol > li > :is(ul, ol) {
-            margin-left: 3ch;
+            margin-left: 1ch;
         }
         ol > li:nth-child(n + 10) > :is(ul, ol) {
-            margin-left: 4ch;
+            margin-left: 2ch;
         }
 
         #doc-pagination {
