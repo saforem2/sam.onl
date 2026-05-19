@@ -133,6 +133,181 @@ const ogImage = ogSlug
                 padding: 0 !important;
                 line-height: normal !important;
             }
+            .mermaid.mermaid-interactive {
+                background-color: var(--background0);
+                border: 1px solid var(--background2);
+                /* Breathing room above and below the figure so it doesn't
+                   crowd the surrounding text. */
+                margin-block: 1lh;
+            }
+            .mermaid.mermaid-interactive:focus-visible {
+                outline: 1px solid var(--blue);
+                outline-offset: -1px;
+            }
+            .mermaid-viewport {
+                position: relative;
+                overflow: hidden;
+                width: 100%;
+            }
+            .mermaid-controls {
+                position: absolute;
+                bottom: 1ch;
+                right: 1ch;
+                display: flex;
+                flex-direction: column;
+                gap: 1ch;
+                padding: 1ch;
+                background-color: var(--background1);
+                border: 1px solid var(--background2);
+                z-index: 1;
+                user-select: none;
+                opacity: 0;
+                transition: opacity 0.15s ease-out;
+            }
+            .mermaid-viewport:hover .mermaid-controls,
+            .mermaid-viewport:focus-within .mermaid-controls {
+                opacity: 1;
+            }
+            .mermaid-pad {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-rows: repeat(3, 1fr);
+                gap: 0;
+            }
+            .mermaid-pad .mc-up {
+                grid-column: 2;
+                grid-row: 1;
+            }
+            .mermaid-pad .mc-left {
+                grid-column: 1;
+                grid-row: 2;
+            }
+            .mermaid-pad .mc-reset {
+                grid-column: 2;
+                grid-row: 2;
+            }
+            .mermaid-pad .mc-right {
+                grid-column: 3;
+                grid-row: 2;
+            }
+            .mermaid-pad .mc-down {
+                grid-column: 2;
+                grid-row: 3;
+            }
+            .mermaid-zoom {
+                display: flex;
+                gap: 0;
+                justify-content: center;
+            }
+            .mermaid-ctrl {
+                appearance: none;
+                background: var(--background2);
+                color: var(--foreground1);
+                border: none;
+                width: 2ch;
+                height: 1lh;
+                font-family: inherit;
+                font-size: 0.85em;
+                line-height: 1;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+            }
+            .mermaid-ctrl:hover {
+                background: var(--blue);
+                color: var(--background0);
+            }
+            .mermaid-ctrl:focus-visible {
+                outline: 1px solid var(--blue);
+                outline-offset: -1px;
+            }
+            .mermaid-ctrl.mc-reset:hover {
+                background: var(--orange);
+            }
+            .mermaid-ctrl.mc-success {
+                background: var(--green);
+                color: var(--background0);
+            }
+            .mermaid-actions {
+                position: absolute;
+                top: 1ch;
+                right: 1ch;
+                display: flex;
+                gap: 0;
+                z-index: 1;
+                user-select: none;
+                opacity: 0;
+                transition: opacity 0.15s ease-out;
+            }
+            .mermaid-viewport:hover .mermaid-actions,
+            .mermaid-viewport:focus-within .mermaid-actions {
+                opacity: 1;
+            }
+            .mermaid-actions .mermaid-ctrl {
+                width: 3ch;
+                background: var(--background1);
+                border: 1px solid var(--background2);
+            }
+            .mermaid-actions .mermaid-ctrl + .mermaid-ctrl {
+                border-left: none;
+            }
+            .mermaid-modal {
+                position: fixed;
+                inset: 0;
+                background-color: oklch(from var(--background0) l c h / 0.85);
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2lh 2ch;
+            }
+            .mermaid-modal-inner {
+                position: relative;
+                width: 100%;
+                height: 100%;
+                background-color: var(--background0);
+                border: 1px solid var(--background2);
+                padding: 2lh 2ch 1lh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: auto;
+            }
+            .mermaid-modal-inner svg {
+                display: block !important;
+                max-width: 100% !important;
+                max-height: 100% !important;
+                width: auto !important;
+                height: auto !important;
+            }
+            .mermaid-modal-close {
+                position: absolute;
+                top: 1ch;
+                right: 1ch;
+                appearance: none;
+                background: var(--background1);
+                color: var(--foreground1);
+                border: 1px solid var(--background2);
+                width: 3ch;
+                height: 1lh;
+                font-family: inherit;
+                font-size: 0.95em;
+                line-height: 1;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+            }
+            .mermaid-modal-close::before {
+                content: '\f00d';
+            }
+            .mermaid-modal-close:hover {
+                background: var(--red);
+                color: var(--background0);
+            }
         </style>
         <script is:inline>
             const normalizeMermaidSvgSize = () => {
