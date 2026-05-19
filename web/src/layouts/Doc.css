@@ -25,6 +25,25 @@
     margin-block-start: 0.5lh;
 }
 
+/* Mobile: turn off the desktop "internal scroll inside the article"
+   pattern. Without this, a flex-column #main-content with overflow:auto
+   constrains tall children (e.g. a 41-row posts table) into a tiny
+   scroll box. Use natural document flow + page scroll instead. */
+@media (max-width: 768px) {
+    #doc-article,
+    #main-content {
+        display: block !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+    #scroll-container {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+}
+
 .figure-row {
     display: flex;
     flex-wrap: wrap;

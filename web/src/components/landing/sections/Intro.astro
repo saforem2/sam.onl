@@ -319,8 +319,10 @@ const total = variants.length
                 grid,
                 '[tabindex="0"], a[href], button:not([disabled])',
             )
+            // Focus the intro widget on load. The widget sits at the top
+            // of the page so this won't scroll past anything on mobile.
             const intro = document.getElementById('intro-widget')
-            if (intro && window.innerWidth > 768) {
+            if (intro) {
                 vimFocusElement(intro)
             }
 
