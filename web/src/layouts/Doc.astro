@@ -2,7 +2,7 @@
 import Sidebar from '@/components/SidebarFileTree.astro'
 import Filter from '@/components/Filter.astro'
 import Layout from '@/layouts/Layout.astro'
-import { makeSortedCategoryEntries } from '@/utils/content'
+import { makeSidebarOrderedPages } from '@/utils/content'
 import { compareUrlPaths } from '@/utils/url'
 import { getReadingTime } from '@/utils/readingTime'
 import ShareButtons from '@/components/ShareButtons.astro'
@@ -23,9 +23,7 @@ const { frontmatter, headings } = Astro.props as {
     headings: DocHeading[]
 }
 
-const sortedPages = makeSortedCategoryEntries().flatMap(
-    (category) => category[1],
-)
+const sortedPages = makeSidebarOrderedPages()
 const pageIndex = sortedPages.findIndex((page) =>
     compareUrlPaths(page.id, Astro.url.pathname),
 )
@@ -195,7 +193,7 @@ const articleSchema =
     }
     <column self-="grow">
         <Filter />
-        <row self-="grow" gap-="1">
+        <row self-="grow" gap-="0" id="doc-columns">
             <div id="sidebar-container" class="mobile-hidden">
                 <Sidebar />
             </div>
@@ -214,108 +212,129 @@ const articleSchema =
                                 id="toc-page-title"
                                 aria-hidden="true"
                                 tabindex="-1"></span>
-                    {
-                        (frontmatter.date || isPost || isTalk) && (
-                            <div class="post-meta">
-                                <div class="post-meta-row">
-                                    <span
-                                        is-="badge"
-                                        variant-="background1"
-                                        class="post-meta-item"
-                                        tabindex="0">
-                                        Sam Foreman
-                                    </span>
-                                    {frontmatter.date && (
-                                        <span
-                                            is-="badge"
-                                            variant-="background1"
-                                            class="post-meta-item"
-                                            tabindex="0">
-                                            <span class="date-long">
-                                                {formatDate(frontmatter.date)}
-                                            </span>
-                                            <span class="date-short">
-                                                {formatDateShort(
-                                                    frontmatter.date,
-                                                )}
-                                            </span>
-                                        </span>
-                                    )}
-                                    {fileModifiedDate &&
-                                        frontmatter.date &&
-                                        formatDate(fileModifiedDate) !==
-                                            formatDate(frontmatter.date) && (
+                            {
+                                (frontmatter.date || isPost || isTalk) && (
+                                    <div class="post-meta">
+                                        <div class="post-meta-row">
                                             <span
                                                 is-="badge"
                                                 variant-="background1"
-                                                class="post-meta-item"
+                                                class="post-meta-item post-meta-author"
                                                 tabindex="0">
-                                                updated:{' '}
-                                                <span class="date-long">
-                                                    {formatDate(
-                                                        fileModifiedDate,
-                                                    )}
-                                                </span>
-                                                <span class="date-short">
-                                                    {formatDateShort(
-                                                        fileModifiedDate,
-                                                    )}
-                                                </span>
+                                                Sam Foreman
                                             </span>
+                                            {frontmatter.date && (
+                                                <span
+                                                    is-="badge"
+                                                    variant-="background1"
+                                                    class="post-meta-item post-meta-date"
+                                                    tabindex="0">
+                                                    <span class="date-long">
+                                                        {formatDate(
+                                                            frontmatter.date,
+                                                        )}
+                                                    </span>
+                                                    <span class="date-short">
+                                                        {formatDateShort(
+                                                            frontmatter.date,
+                                                        )}
+                                                    </span>
+                                                </span>
+                                            )}
+                                            {fileModifiedDate &&
+                                                frontmatter.date &&
+                                                formatDate(fileModifiedDate) !==
+                                                    formatDate(
+                                                        frontmatter.date,
+                                                    ) && (
+                                                    <span
+                                                        is-="badge"
+                                                        variant-="background1"
+                                                        class="post-meta-item post-meta-updated"
+                                                        tabindex="0">
+                                                        updated:{' '}
+                                                        <span class="date-long">
+                                                            {formatDate(
+                                                                fileModifiedDate,
+                                                            )}
+                                                        </span>
+                                                        <span class="date-short">
+                                                            {formatDateShort(
+                                                                fileModifiedDate,
+                                                            )}
+                                                        </span>
+                                                    </span>
+                                                )}
+                                            {frontmatter.date && (
+                                                <span
+                                                    is-="badge"
+                                                    variant-="background1"
+                                                    class="post-meta-item post-meta-reading"
+                                                    tabindex="0">
+                                                    {readingTime}
+                                                </span>
+                                            )}
+                                            {category && (
+                                                <a
+                                                    href={`/posts/${category}/`}
+                                                    is-="badge"
+                                                    variant-="background1"
+                                                    class="post-meta-tag"
+                                                    tabindex="0">
+                                                    {category}
+                                                </a>
+                                            )}
+                                        </div>
+                                        <div class="post-meta-row">
+                                            {sourceFilePath && (
+                                                <span class="post-meta-links">
+                                                    <a
+                                                        href={`${githubBase}/blob/main/${sourceFilePath}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        is-="badge"
+                                                        variant-="background2"
+                                                        class="post-meta-source"
+                                                        title="View source on GitHub"
+                                                        aria-label="View source on GitHub"
+                                                        tabindex="0">
+                                                        &#xf09b;
+                                                    </a>
+                                                    <a
+                                                        href={`${githubRawBase}/main/${sourceFilePath}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        is-="badge"
+                                                        variant-="background2"
+                                                        class="post-meta-raw"
+                                                        title="View raw source"
+                                                        aria-label="View raw source"
+                                                        tabindex="0">
+                                                        &#xf15b;
+                                                    </a>
+                                                </span>
+                                            )}
+                                            {(isPost || isTalk) && (
+                                                <ShareButtons
+                                                    title={frontmatter.title}
+                                                    url={`https://sam.onl${Astro.url.pathname}`}
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+                                )
+                            }
+                            {
+                                frontmatter.description && (
+                                    <blockquote
+                                        class="post-description"
+                                        set:html={frontmatter.description.replace(
+                                            /`([^`]+)`/g,
+                                            '<code>$1</code>',
                                         )}
-                                    {frontmatter.date && (
-                                        <span
-                                            is-="badge"
-                                            variant-="background1"
-                                            class="post-meta-item"
-                                            tabindex="0">
-                                            {readingTime}
-                                        </span>
-                                    )}
-                                    {category && (
-                                        <a
-                                            href={`/posts/${category}/`}
-                                            is-="badge"
-                                            variant-="background1"
-                                            class="post-meta-tag"
-                                            tabindex="0">
-                                            {category}
-                                        </a>
-                                    )}
-                                </div>
-                                <div class="post-meta-row">
-                                    {sourceFilePath && (
-                                        <span class="post-meta-links">
-                                            <a
-                                                href={`${githubBase}/blob/main/${sourceFilePath}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                is-="badge"
-                                                variant-="background2"
-                                                tabindex="0">
-                                                source
-                                            </a>
-                                            <a
-                                                href={`${githubRawBase}/main/${sourceFilePath}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                is-="badge"
-                                                variant-="background2"
-                                                tabindex="0">
-                                                raw
-                                            </a>
-                                        </span>
-                                    )}
-                                    {(isPost || isTalk) && (
-                                        <ShareButtons
-                                            title={frontmatter.title}
-                                            url={`https://sam.onl${Astro.url.pathname}`}
-                                        />
-                                    )}
-                                </div>
-                            </div>
-                        )
-                    }
+                                    />
+                                )
+                            }
                             <slot />
                             {
                                 relatedPosts.length > 0 && (
@@ -473,10 +492,8 @@ const articleSchema =
             <span class="vsl-site">sam.onl/</span>
             <span class="vsl-file"
                 >{
-                    sourceFilePath?.replace(
-                        'web/src/pages/',
-                        '',
-                    ) ?? Astro.url.pathname
+                    sourceFilePath?.replace('web/src/pages/', '') ??
+                        Astro.url.pathname
                 }</span
             >
             <span class="vsl-spacer"></span>
@@ -540,10 +557,16 @@ const articleSchema =
     const tocSidebar = document.getElementById(
         'toc-sidebar',
     ) as HTMLElement | null
-    const getNavbarTarget = () =>
-        navbar?.querySelector(
-            'a[data-active="true"], a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    // Navbar was removed; the equivalent action surface is the row of
+    // sidebar action buttons (Home / Theme / GitHub / RSS / Search) at the
+    // top of the left sidebar. Keep the helper name so existing call sites
+    // and keybind labels still work.
+    const getNavbarTarget = () => {
+        const actions = document.getElementById('sidebar-actions')
+        return actions?.querySelector(
+            'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
         )
+    }
     const getSidebarTarget = () =>
         sidebar?.querySelector('a.active') ||
         sidebar?.querySelector('details summary') ||
@@ -630,7 +653,8 @@ const articleSchema =
         // focusable, but recurse into its children (skip the <summary>
         // since it's already focusable).
         const isHeadingCollapse = (el: Element) =>
-            el.tagName === 'DETAILS' && el.classList.contains('heading-collapse')
+            el.tagName === 'DETAILS' &&
+            el.classList.contains('heading-collapse')
 
         const processChildren = (container: Element) => {
             Array.from(container.children).forEach((child) => {
@@ -1078,6 +1102,31 @@ const articleSchema =
         }
     })
 
+    // Make each line inside a code block individually navigable so
+    // j/k step through lines instead of skipping the whole block. The
+    // pre itself stops being a vim target (its tabindex is removed)
+    // because focusing the pre would otherwise compete with focusing
+    // its first line.
+    mainContent
+        .querySelectorAll<HTMLPreElement>('pre[tabindex="0"]')
+        .forEach((pre) => {
+            const lines = pre.querySelectorAll<HTMLElement>('.line')
+            if (lines.length === 0) return
+            pre.removeAttribute('tabindex')
+            lines.forEach((line) => line.setAttribute('tabindex', '0'))
+        })
+
+    // Same idea for tables: hand the tabindex from the table down to each
+    // row so j/k steps through rows individually.
+    mainContent
+        .querySelectorAll<HTMLTableElement>('table[tabindex="0"]')
+        .forEach((table) => {
+            const rows = table.querySelectorAll<HTMLElement>('tr')
+            if (rows.length === 0) return
+            table.removeAttribute('tabindex')
+            rows.forEach((row) => row.setAttribute('tabindex', '0'))
+        })
+
     applyVimNavigation(mainContent, queryString, (element) => {
         currentElement = element
     })
@@ -1222,9 +1271,8 @@ const articleSchema =
                     if (/^H[1-6]$/.test(activeHeading.tagName)) {
                         target = activeHeading
                     } else {
-                        const collapse = activeHeading.closest?.(
-                            '.heading-collapse',
-                        )
+                        const collapse =
+                            activeHeading.closest?.('.heading-collapse')
                         target = collapse?.querySelector(
                             'summary :is(h1,h2,h3,h4,h5,h6)',
                         ) as HTMLElement | null
@@ -1361,10 +1409,12 @@ const articleSchema =
         return element.getClientRects().length > 0
     }
 
-    const getNavbarFocusTarget = () =>
-        navbar?.querySelector(
-            'a[data-active="true"], a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    const getNavbarFocusTarget = () => {
+        const actions = document.getElementById('sidebar-actions')
+        return actions?.querySelector(
+            'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
         )
+    }
 
     const getMainFocusTarget = () => {
         if (!mainContent) return null
@@ -1417,6 +1467,31 @@ const articleSchema =
                 document.querySelector('dialog[open]') instanceof
                 HTMLDialogElement
             if (hasOpenDialog) return
+
+            // Shift+C / Shift+E: collapse / expand all <details> in main.
+            // Handled here (before the chord branches) so it works regardless
+            // of any pending z-chord state.
+            if (
+                e.shiftKey &&
+                !e.ctrlKey &&
+                !e.metaKey &&
+                !e.altKey &&
+                (e.key === 'C' || e.key === 'E')
+            ) {
+                const main = document.getElementById('main-content')
+                if (!main) return
+                e.preventDefault()
+                const all = main.querySelectorAll('details')
+                if (e.key === 'C') {
+                    all.forEach((d) => ((d as HTMLDetailsElement).open = false))
+                } else {
+                    all.forEach((d) => ((d as HTMLDetailsElement).open = true))
+                }
+                console.log(
+                    `[keybind] Shift+${e.key}: toggled ${all.length} <details>`,
+                )
+                return
+            }
 
             const isPlainKey =
                 !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey
@@ -1501,9 +1576,7 @@ const articleSchema =
                     if (e.key === 'M') {
                         e.preventDefault()
                         document
-                            .querySelectorAll(
-                                '#main-content details[open]',
-                            )
+                            .querySelectorAll('#main-content details[open]')
                             .forEach((d) => {
                                 ;(d as HTMLDetailsElement).open = false
                             })
@@ -1754,18 +1827,18 @@ const articleSchema =
         article.classList.toggle('mobile-hidden', panel !== 'docs')
         tocContainer?.classList.toggle('mobile-hidden', panel !== 'toc')
         tocContainer?.classList.toggle('collapsed', panel !== 'toc')
-        menuButton.setAttribute(
-            'variant-',
-            panel === 'menu' ? '' : 'background1',
-        )
-        docsButton.setAttribute(
-            'variant-',
-            panel === 'docs' ? '' : 'background1',
-        )
-        tocButton?.setAttribute(
-            'variant-',
-            panel === 'toc' ? '' : 'background1',
-        )
+        // Active button: remove the variant- attribute entirely (don't set
+        // it to empty string — webtui treats those differently and the
+        // active button ends up with extra width). Inactive buttons get
+        // variant-="background1" for the dimmed look.
+        const setVariant = (btn: HTMLButtonElement | null, active: boolean) => {
+            if (!btn) return
+            if (active) btn.removeAttribute('variant-')
+            else btn.setAttribute('variant-', 'background1')
+        }
+        setVariant(menuButton, panel === 'menu')
+        setVariant(docsButton, panel === 'docs')
+        setVariant(tocButton, panel === 'toc')
     }
 
     menuButton.addEventListener('click', () => setMobileActive('menu'))
@@ -1911,9 +1984,16 @@ const articleSchema =
                 const details = document.createElement('details')
                 details.setAttribute('is-', 'accordion')
                 details.classList.add('heading-collapse')
-                // Collapse year-section headings (e.g. "📆 2025") by default
+                // Collapse year-section headings (e.g. "📆 2025"), the
+                // Music section, the Projects section, and the More
+                // section by default; everything else opens.
                 const headingText = heading.textContent?.trim() ?? ''
-                details.open = !/\b(19|20)\d{2}\s*$/.test(headingText)
+                const collapseByDefault =
+                    /\b(19|20)\d{2}\s*$/.test(headingText) ||
+                    /\bmusic\b/i.test(headingText) ||
+                    /\bprojects\b/i.test(headingText) ||
+                    /\bmore\b/i.test(headingText)
+                details.open = !collapseByDefault
                 details.dataset.headingLevel = String(level)
                 const summary = document.createElement('summary')
                 summary.appendChild(heading.cloneNode(true))
@@ -1966,6 +2046,10 @@ const articleSchema =
             list-style: none;
             cursor: pointer;
             padding: 0 !important;
+            line-height: 1lh !important;
+            min-height: 1lh;
+            display: flex;
+            align-items: center;
 
             &::before {
                 content: none !important;
@@ -1976,16 +2060,26 @@ const articleSchema =
             }
 
             > :is(h2, h3, h4, h5, h6) {
-                display: block;
-                border-block: 2pt solid var(--background0);
+                display: inline;
+                border: none;
+                line-height: 1lh;
+                margin: 0 !important;
+                padding: 0 !important;
             }
         }
 
-        /* When collapsed, dim + tinted bg + ellipsis */
+        /* When collapsed, dim + tinted bg + ellipsis (only on hover/focus) */
         &:not([open]) > summary {
             &::after {
                 content: ' ...';
                 color: var(--foreground2);
+                opacity: 0;
+                transition: opacity 100ms linear;
+            }
+            &:hover::after,
+            &:focus-visible::after,
+            &[data-vim-focused='true']::after {
+                opacity: 1;
             }
         }
 
@@ -2014,6 +2108,21 @@ const articleSchema =
                 from var(--h6, var(--aqua)) l c h / 0.1
             ) !important;
         }
+
+        /* Vim-style blank line under an open heading. The summary's
+           own margin/padding is forced to 0 above, so the gap lives on
+           the first content child of the open <details>. */
+        &[open] > summary + * {
+            margin-block-start: 1lh !important;
+        }
+    }
+
+    /* The remark-generated <h2 class="sr-only">Footnotes</h2> heading
+       gets a normal h2's 2lh bottom margin from the global heading rule,
+       which produces an awkward gap before the footnotes list. Render it
+       like other headings but with the standard 1lh bottom margin. */
+    #main-content section.footnotes > h2.sr-only {
+        margin-block: 1lh !important;
     }
 </style>
 
@@ -2057,17 +2166,44 @@ const articleSchema =
         parent.insertBefore(details, sup)
         sup.remove()
 
+        // Reposition the popover content when it opens. The content is
+        // position: fixed so we compute viewport coordinates here — the
+        // anchor point is just below the trigger, clamped horizontally.
+        const reposition = () => {
+            const triggerRect = details.getBoundingClientRect()
+            // Default: align left edge of popover with trigger
+            let left = triggerRect.left
+            // Measure the natural width of the content
+            const contentWidth = content.offsetWidth
+            const maxLeft = window.innerWidth - contentWidth - 8
+            if (left > maxLeft) left = Math.max(8, maxLeft)
+            details.style.setProperty('--popover-left', `${left}px`)
+            details.style.setProperty(
+                '--popover-top',
+                `${triggerRect.bottom}px`,
+            )
+        }
+
         // Open/close on hover
         details.addEventListener('mouseenter', () => {
             details.open = true
+            requestAnimationFrame(reposition)
         })
         details.addEventListener('mouseleave', () => {
             details.open = false
         })
 
+        // Reposition while open if the page scrolls or resizes.
+        const onScrollOrResize = () => {
+            if (details.open) reposition()
+        }
+        window.addEventListener('scroll', onScrollOrResize, true)
+        window.addEventListener('resize', onScrollOrResize)
+
         // Keyboard/focus accessibility
         details.addEventListener('focusin', () => {
             details.open = true
+            requestAnimationFrame(reposition)
         })
         details.addEventListener('focusout', (e) => {
             const next = (e as FocusEvent).relatedTarget as Node | null
@@ -2115,19 +2251,38 @@ const articleSchema =
         background-color: var(--background1);
         border: 1px solid var(--foreground2);
         padding: 0.5lh 1ch;
-        max-width: 40ch;
+        max-width: min(40ch, calc(100vw - 4ch));
         width: max-content;
         font-size: 0.9em;
         line-height: 1.4;
-        z-index: 10;
+        z-index: 1000;
+        /* Reset white-space — footnotes inside table cells inherit
+           `white-space: nowrap` from the table-scroll-wrapper rule, which
+           breaks line wrapping inside the popover. */
+        white-space: normal;
 
         p {
             margin: 0;
+            white-space: normal;
         }
 
         p + p {
             margin-top: 0.5lh;
         }
+
+        a {
+            white-space: normal;
+        }
+    }
+
+    /* The popover sits inside #main-content which has overflow-x: hidden.
+       To escape ancestor clipping, re-anchor the open content with
+       position: fixed; coordinates are computed in the open handler. */
+    .footnote-popover[open] > .footnote-popover-content {
+        position: fixed !important;
+        top: var(--popover-top, auto);
+        left: var(--popover-left, auto);
+        margin: 0 !important;
     }
 </style>
 
@@ -2329,5 +2484,204 @@ const articleSchema =
             }
         }
         customElements.define('select-dropdown', Dropdown)
+    }
+</script>
+
+<style is:global>
+    /* Click-to-zoom for inline post images. Excludes images inside known
+       interactive widgets and tiny brand/UI assets. */
+    #main-content
+        :is(img, picture > img, p > img, figure > img):not(
+            .no-zoom,
+            [data-no-zoom],
+            .icon img,
+            [is-~='icon'] img,
+            .mermaid img,
+            .keybind img
+        ) {
+        cursor: zoom-in;
+    }
+
+    .image-modal {
+        position: fixed;
+        inset: 0;
+        background-color: oklch(from var(--background0) l c h / 0.85);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2lh 2ch;
+    }
+    .image-modal-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background-color: var(--background0);
+        border: 1px solid var(--background2);
+        padding: 2lh 2ch 1lh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+    }
+    .image-modal-inner > img {
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+    }
+    .image-modal-close {
+        position: absolute;
+        top: 1ch;
+        right: 1ch;
+        appearance: none;
+        background: var(--background1);
+        color: var(--foreground1);
+        border: 1px solid var(--background2);
+        width: 3ch;
+        height: 1lh;
+        font-family: inherit;
+        font-size: 0.95em;
+        line-height: 1;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+    .image-modal-close::before {
+        content: '\f00d';
+    }
+    .image-modal-close:hover {
+        background: var(--red);
+        color: var(--background0);
+    }
+    .image-modal-caption {
+        position: absolute;
+        bottom: 0.5lh;
+        left: 2ch;
+        right: 2ch;
+        text-align: center;
+        font-size: 0.85em;
+        color: var(--foreground2);
+        pointer-events: none;
+    }
+</style>
+
+<script>
+    /* Wire click-to-zoom on every <img> inside #main-content (except the
+       opt-out list mirrored from the CSS above). */
+    function setupImageZoom() {
+        const main = document.getElementById('main-content')
+        if (!main) return
+
+        const isExcluded = (img: HTMLImageElement) =>
+            img.closest(
+                '.no-zoom, [data-no-zoom], .icon, [is~="icon"], .mermaid, .keybind, .mermaid-modal, .image-modal',
+            ) !== null
+
+        const open = (img: HTMLImageElement) => {
+            document.querySelector('.image-modal')?.remove()
+
+            const modal = document.createElement('div')
+            modal.className = 'image-modal'
+            modal.setAttribute('role', 'dialog')
+            modal.setAttribute('aria-modal', 'true')
+            modal.setAttribute('aria-label', img.alt || 'Expanded image')
+            modal.tabIndex = -1
+
+            const inner = document.createElement('div')
+            inner.className = 'image-modal-inner'
+
+            const closeBtn = document.createElement('button')
+            closeBtn.type = 'button'
+            closeBtn.className = 'image-modal-close'
+            closeBtn.setAttribute('aria-label', 'Close')
+            closeBtn.title = 'Close (Esc)'
+
+            const big = document.createElement('img')
+            big.src = img.currentSrc || img.src
+            big.alt = img.alt
+            // Preserve srcset/sizes if Astro generated them
+            if (img.srcset) big.srcset = img.srcset
+            if (img.sizes) big.sizes = img.sizes
+
+            inner.append(closeBtn, big)
+            if (img.alt) {
+                const caption = document.createElement('div')
+                caption.className = 'image-modal-caption'
+                caption.textContent = img.alt
+                inner.appendChild(caption)
+            }
+            modal.appendChild(inner)
+            document.body.appendChild(modal)
+
+            const previousFocus = document.activeElement as HTMLElement | null
+            const prevOverflow = document.body.style.overflow
+            document.body.style.overflow = 'hidden'
+
+            const close = () => {
+                modal.remove()
+                document.body.style.overflow = prevOverflow
+                document.removeEventListener('keydown', onKey)
+                previousFocus?.focus?.()
+            }
+
+            const onKey = (event: KeyboardEvent) => {
+                if (event.key === 'Escape') {
+                    event.preventDefault()
+                    close()
+                }
+            }
+
+            closeBtn.addEventListener('click', close)
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) close()
+            })
+            document.addEventListener('keydown', onKey)
+            modal.focus()
+        }
+
+        // Single delegated listener — survives MDX updates and avoids per-img bookkeeping.
+        main.addEventListener('click', (e) => {
+            const target = e.target
+            if (!(target instanceof HTMLImageElement)) return
+            if (isExcluded(target)) return
+            // Don't hijack image-link clicks (let the link navigate).
+            if (target.closest('a[href]')) return
+            e.preventDefault()
+            open(target)
+        })
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupImageZoom)
+    } else {
+        setupImageZoom()
+    }
+
+    /* Wrap every <table> in #main-content with a horizontal-scroll container
+       so wide tables (e.g. ones with monospaced code in cells) get a
+       scrollbar instead of overflowing the column. */
+    function setupTableScroll() {
+        const main = document.getElementById('main-content')
+        if (!main) return
+        const tables = main.querySelectorAll('table')
+        for (const table of tables) {
+            if (table.parentElement?.classList.contains('table-scroll-wrapper'))
+                continue
+            const wrap = document.createElement('div')
+            wrap.className = 'table-scroll-wrapper'
+            table.parentNode?.insertBefore(wrap, table)
+            wrap.appendChild(table)
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupTableScroll)
+    } else {
+        setupTableScroll()
     }
 </script>

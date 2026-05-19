@@ -11,12 +11,39 @@
     border-top: 1px solid var(--foreground2, #ccc);
 
     button {
-        flex-grow: 1;
+        /* Equal width regardless of content / variant- attribute. */
+        flex: 1 1 0;
+        min-width: 0;
     }
 }
 
 #doc-article > header {
     overflow-x: auto;
+}
+
+#doc-columns {
+    margin-block-start: 0.5lh;
+}
+
+.figure-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1ch;
+    margin-block: 1lh;
+    align-items: flex-start;
+
+    > p {
+        flex: 1 1 0;
+        min-width: 0;
+        margin: 0;
+    }
+
+    img,
+    svg {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
 }
 
 .post-meta {
@@ -27,9 +54,23 @@
     gap: 1ch;
     color: var(--foreground2);
     padding: 0;
-    height: 1lh;
     line-height: 1lh;
-    overflow: hidden;
+    flex-shrink: 0;
+    margin-block-start: 2ch;
+    margin-block-end: 0;
+}
+
+.post-description {
+    color: var(--foreground2);
+    font-style: italic;
+    margin-block: 1lh 1lh;
+    flex-shrink: 0;
+}
+.post-description code {
+    font-style: normal;
+    color: var(--foreground1);
+    background-color: var(--background1);
+    padding: 0 0.5ch;
 }
 
 .post-meta-row {
@@ -66,6 +107,53 @@
     text-decoration: none;
 }
 
+/* Tinted badge variants for the meta row.
+   The default webtui badge composes its background from a gradient (middle)
+   plus ::before/::after fills (sides), with a 1px overlap between them so
+   opaque colors don't show anti-aliasing gaps. With a translucent tint that
+   1px overlap doubles the alpha and shows as a darker vertical line — so we
+   kill the gradient/pseudo backgrounds and paint the whole rectangle with a
+   single solid background-color instead. */
+.post-meta-item,
+.post-meta-source,
+.post-meta-raw {
+    &.post-meta-author,
+    &.post-meta-date,
+    &.post-meta-updated,
+    &.post-meta-reading,
+    &.post-meta-source,
+    &.post-meta-raw {
+        background-image: none;
+        background-color: var(--badge-color);
+        color: var(--badge-text);
+        &::before,
+        &::after {
+            background-color: transparent;
+        }
+    }
+}
+
+/* Neutral gray badges — same neutral palette as the mermaid theme */
+.post-meta-author,
+.post-meta-date,
+.post-meta-updated,
+.post-meta-reading,
+.post-meta-source,
+.post-meta-raw {
+    --badge-color: var(--background2);
+    --badge-text: var(--foreground1);
+}
+
+/* Icon-only action badges (source/raw) sized to match the share buttons. */
+.post-meta-source,
+.post-meta-raw {
+    box-sizing: border-box;
+    width: 3ch;
+    padding: 0;
+    justify-content: center;
+    text-align: center;
+}
+
 .post-meta-links {
     display: inline-flex;
     gap: 0.5ch;
@@ -99,7 +187,9 @@
 }
 
 .vsl-mode {
-    background-color: oklch( from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.5 );
+    background-color: oklch(
+        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.5
+    );
     color: var(--foreground0);
     /* background-color: oklch(from #D3F9D8 l c h); */
     /* background-color: oklch(from #51CF66 l c h); */
@@ -107,7 +197,9 @@
 }
 
 .vsl-branch {
-    background-color: oklch( from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.2 );
+    background-color: oklch(
+        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
+    );
     color: var(--foreground2);
     /* color: var(--green, oklch(from #51CF66 l c h)); */
     /* background-color: var(--green, oklch(from #51CF66 l c h)); */
@@ -124,11 +216,15 @@
 
 .vsl-clock {
     color: var(--foreground2);
-    background-color: oklch( from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.33 );
+    background-color: oklch(
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.33
+    );
 }
 
 .vsl-pos {
-    background-color: oklch( from var(--foreground1) calc(l * var(--oklch-scale, 1.15)) c h / 0.5 );
+    background-color: oklch(
+        from var(--foreground1) calc(l * var(--oklch-scale, 1.15)) c h / 0.5
+    );
     color: var(--background1);
 }
 
@@ -139,11 +235,11 @@
 
 .vsl-vim-icon {
     /* background-color: var(--green, var(--accent)); */
-    background-color: var(--blue, oklch(from #339AF0 l c h));
+    background-color: var(--blue, oklch(from #339af0 l c h));
     color: var(--background0);
     padding: 0 0.5ch !important;
     padding-inline-start: 1ch !important;
-    padding-inline-end: 0.5ch!important;
+    padding-inline-end: 0.5ch !important;
 }
 
 .vsl-keys {
@@ -152,8 +248,9 @@
     padding: 0 !important;
     /* background-color: var(--background1); */
     color: var(--foreground3);
-    background-color: oklch( from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.2 );
-
+    background-color: oklch(
+        from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
+    );
 
     #vsl-last-key {
         padding: 0 1ch;
@@ -472,11 +569,35 @@ h6::before {
 }
 
 #main-content details[is-~='accordion'] + details[is-~='accordion'] {
-    margin-top: 0.25lh;
+    margin-top: 0.5lh;
+}
+
+/* Sibling spacing override: when a heading-section accordion follows a
+   callout-note (or any details), enforce the heading-section's own top
+   margin instead of the generic adjacent-sibling 0.5lh. */
+#main-content
+    details[is-~='accordion']
+    + .heading-collapse[data-heading-level='2'] {
+    margin-top: 1lh !important;
+}
+#main-content
+    details[is-~='accordion']
+    + .heading-collapse[data-heading-level='3'] {
+    margin-top: 1lh !important;
+}
+#main-content
+    details[is-~='accordion']
+    + .heading-collapse:is(
+        [data-heading-level='4'],
+        [data-heading-level='5'],
+        [data-heading-level='6']
+    ) {
+    margin-top: 0 !important;
 }
 
 #main-content :is(h1, h2, h3, h4, h5, h6) {
-  margin-block: 0;
+    /* Vim-style: top margin + a blank line below the heading. */
+    margin-block: 1lh 2lh;
     &::before {
         content: none;
     }
@@ -486,11 +607,65 @@ h6::before {
     }
 }
 
-#main-content :is(h2) {
+#main-content > :first-child:is(h1, h2, h3, h4, h5, h6) {
+    margin-block-start: 0;
 }
 
-#main-content :is(h3) {
-  margin-block: 0.1lh;
+/* Headings nested inside an accordion summary already get spacing from the
+   summary's own background band — kill the heading's own block margin so it
+   doesn't double up. The section spacing instead lives on the
+   .heading-collapse <details> wrapper below. */
+#main-content .heading-collapse > summary > :is(h2, h3, h4, h5, h6) {
+    margin-block: 0 !important;
+}
+
+/* Move the heading top/bottom margin onto the accordion wrapper so adjacent
+   sections breathe even when the inner heading itself has zero margin. The
+   `!important` rule at line 2007 in Doc.astro sets `margin: 0 !important;`
+   on .heading-collapse, so we override with !important here. */
+#main-content
+    .heading-collapse:is([data-heading-level='2'], [data-heading-level='3']) {
+    margin-block: 1lh 0 !important;
+}
+#main-content
+    .heading-collapse:is(
+        [data-heading-level='4'],
+        [data-heading-level='5'],
+        [data-heading-level='6']
+    ) {
+    margin-block: 1lh 0 !important;
+}
+
+/* Two adjacent CLOSED heading-collapse accordions (e.g. the year stack
+   2025/2024/2023/...) should sit tight — the colored bands are already a
+   strong visual rhythm, no extra spacing needed.
+
+   `:has()` was being silently dropped from the bundled CSS, so instead
+   we kill margin-bottom on EVERY closed band and let any subsequent
+   sibling (closed or open) restore its own top margin via the existing
+   adjacent-sibling rules. */
+#main-content .heading-collapse:not([open]) {
+    margin-bottom: 0 !important;
+}
+#main-content .heading-collapse:not([open]) + .heading-collapse:not([open]) {
+    margin-top: 0 !important;
+}
+/* When a closed band is followed by an OPEN band (or any other content),
+   restore the section break. Targets the OPEN sibling so it owns its own
+   top margin. */
+#main-content .heading-collapse:not([open]) + .heading-collapse[open] {
+    margin-top: 1lh !important;
+}
+#main-content .heading-collapse:not([open]) + :not(.heading-collapse) {
+    margin-top: 1lh !important;
+}
+
+/* First section heading on a page shouldn't push the page down. */
+#main-content > .heading-collapse:first-child {
+    margin-block-start: 0 !important;
+}
+
+#main-content :is(h2) {
 }
 
 #main-content h1 .heading-anchor {
@@ -742,8 +917,12 @@ h6::before {
         /*     background-color: var(--focus-hover-bg); */
         /* } */
 
-        :is([tabindex='0'], a[href], summary):not(.icon-flex a):focus-visible,
-        :is([tabindex='0'], a[href], summary):not(.icon-flex a)[data-vim-focused='true']:focus {
+        :is([tabindex='0'], a[href], summary):not(.icon-flex a):not(
+                .footnote-popover > summary
+            ):not(.footnote-popover summary *):focus-visible,
+        :is([tabindex='0'], a[href], summary):not(.icon-flex a):not(
+                .footnote-popover > summary
+            ):not(.footnote-popover summary *)[data-vim-focused='true']:focus {
             background-color: var(--focus-bg-strong);
             color: var(--focus-fg);
             box-shadow:
@@ -753,7 +932,7 @@ h6::before {
             text-decoration: none;
         }
 
-        :is([tabindex='0']:not(a[href]), summary)::after {
+        :is([tabindex='0']:not(a[href]):not([is-~='badge']), summary)::after {
             content: '';
             position: absolute;
             inset-inline-start: -1ch;
@@ -812,8 +991,9 @@ h6::before {
         ol > li::marker {
             content: counter(list-item) '. ';
         }
+
         p {
-            margin-block: 0 0.5lh;
+            margin-block: 0 1lh;
         }
 
         :is(li, details, blockquote, .callout) p {
@@ -821,13 +1001,14 @@ h6::before {
         }
 
         :is(ul, ol) {
-            margin-block: 0;
-            padding-inline-start: 0;
+            margin-block: 0 1lh;
+            padding-inline-start: 2ch;
         }
 
         li > :is(ul, ol) {
+            margin-block: 0;
             margin-left: 0;
-            padding-inline-start: 0;
+            padding-inline-start: 2ch;
         }
         ul > li > :is(ul, ol) {
             margin-left: 2ch;
@@ -842,6 +1023,7 @@ h6::before {
         #doc-pagination {
             display: flex;
             flex-wrap: wrap;
+            margin-block-start: 1lh;
 
             &:has(> .prev) {
                 justify-content: flex-start;
@@ -970,8 +1152,6 @@ img {
     padding: 1ch;
     height: auto;
 }
-
-
 
 /* Disable webtui table component borders on .recent-posts-table
    (it uses simple custom borders instead) */
