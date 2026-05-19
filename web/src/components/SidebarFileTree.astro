@@ -5,9 +5,12 @@ import {
     makeSortedCategoryEntries,
     categoryLabels,
     moreSidebarGroup,
+    sidebarHiddenCategories,
 } from '@/utils/content'
 
-const allCategories = makeSortedCategoryEntries()
+const allCategories = makeSortedCategoryEntries().filter(
+    ([slug]) => !sidebarHiddenCategories.has(slug),
+)
 const categories = allCategories.filter(([slug]) => !moreSidebarGroup.has(slug))
 const moreSubCategories = allCategories.filter(([slug]) =>
     moreSidebarGroup.has(slug),
@@ -258,11 +261,11 @@ const subdirLabels: Record<string, string> = {
 }
 
 const categoryKeybinds: Record<string, string> = {
-    landing: 's',
+    about: 'a',
     posts: 'p',
     talks: 't',
-    more: 'a',
-    webtui: 'y',
+    more: 'm',
+    webtui: 's',
 }
 
 const labelWithKey = (slug: string) => {
@@ -282,7 +285,10 @@ const { pathname: urlPath } = Astro.url
 
 /** Strip leading emoji characters from a title string */
 const stripEmoji = (text: string) =>
-    text.replace(/^[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F\u200D]+\s*/gu, '')
+    text.replace(
+        /^[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F\u200D]+\s*/gu,
+        '',
+    )
 
 /* Nerd Font codepoints */
 const ICON_FOLDER_CLOSED = '\uf07b'
@@ -295,14 +301,27 @@ const ICON_CHEVRON_DOWN = '\u25be'
 <nav box-="square" shear-="top" id="sidebar">
     <div id="sidebar-actions">
         <a href="/" class="sidebar-action" title="Home">&#xef85;</a>
-        <button id="theme-button-sidebar" class="sidebar-action" title="Theme">&#xe22b;</button>
-        <a href="https://github.com/saforem2/sam.onl" target="_blank" class="sidebar-action" title="GitHub">&#xe65b;</a>
-        <a href="/rss.xml" target="_blank" class="sidebar-action" title="RSS">&#xf09e;</a>
-        <button id="search-button-sidebar" class="sidebar-action" title="Search">&#xf002;</button>
+        <button id="theme-button-sidebar" class="sidebar-action" title="Theme"
+            >&#xe22b;</button
+        >
+        <a
+            href="https://github.com/saforem2/sam.onl"
+            target="_blank"
+            class="sidebar-action"
+            title="GitHub">&#xe65b;</a
+        >
+        <a href="/rss.xml" target="_blank" class="sidebar-action" title="RSS"
+            >&#xf09e;</a
+        >
+        <button id="search-button-sidebar" class="sidebar-action" title="Search"
+            >&#xf002;</button
+        >
     </div>
     <div id="category-container">
         <div id="category-list" class="file-tree">
-            <div class="tree-root"><span class="tree-icon root-icon">{ICON_FOLDER_OPEN}</span> sam.onl</div>
+            <a href="/" class="tree-root" data-slug="root"
+                ><span class="tree-icon root-icon">{ICON_FOLDER_OPEN}</span> sam.onl</a
+            >
             {
                 categories.map(([slug, pages], catIdx) => {
                     const isLastCategory = catIdx === categories.length - 1
@@ -321,23 +340,63 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                     'tree-file',
                                     'tree-entry',
                                     'depth-1',
-                                    { active: compareUrlPaths(urlPath, landingPage.id) },
+                                    {
+                                        active: compareUrlPaths(
+                                            urlPath,
+                                            landingPage.id,
+                                        ),
+                                    },
                                 ]}
                                 data-slug={landingPage.id}
                                 data-last={isLastCategory ? '' : undefined}>
                                 <span class="tree-line" />
-                                <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                <span class="tree-label"><Fragment set:html={labelWithKey(slug)} /></span>
+                                <span class="tree-icon file-icon">
+                                    {ICON_FILE}
+                                </span>
+                                <span class="tree-label">
+                                    <Fragment set:html={labelWithKey(slug)} />
+                                </span>
                             </a>
                         )
                     }
 
-                    /* ── "more" (about) group with sub-categories ── */
+                    /* ── "about" standalone: render as a single flat link
+                       (don't expand sub-pages of /about/ in the sidebar). */
+                    if (slug === 'about') {
+                        return (
+                            <a
+                                href="/about"
+                                class:list={[
+                                    'tree-file',
+                                    'tree-entry',
+                                    'depth-1',
+                                    {
+                                        active: compareUrlPaths(
+                                            urlPath,
+                                            'about',
+                                        ),
+                                    },
+                                ]}
+                                data-slug="about"
+                                data-last={isLastCategory ? '' : undefined}>
+                                <span class="tree-line" />
+                                <span class="tree-icon file-icon">
+                                    {ICON_FILE}
+                                </span>
+                                <span class="tree-label">
+                                    <Fragment
+                                        set:html={labelWithKey('about')}
+                                    />
+                                </span>
+                            </a>
+                        )
+                    }
+
+                    /* ── "more" group: expander with "index" (about/more) +
+                       projects, ideas, now sub-categories ── */
                     if (slug === 'more') {
                         const isMoreActive =
-                            pages.some(({ id }) =>
-                                compareUrlPaths(urlPath, id),
-                            ) ||
+                            compareUrlPaths(urlPath, 'about/more') ||
                             moreSubCategories.some(([, subPages]) =>
                                 subPages.some(({ id }) =>
                                     compareUrlPaths(urlPath, id),
@@ -345,20 +404,53 @@ const ICON_CHEVRON_DOWN = '\u25be'
                             )
 
                         return (
-                            <details open={isMoreActive} class="tree-folder depth-1" data-last={isLastCategory ? '' : undefined}>
-                                <summary class:list={['tree-entry', { active: compareUrlPaths(urlPath, 'more') }]}>
+                            <details
+                                open={isMoreActive}
+                                class="tree-folder depth-1"
+                                data-last={isLastCategory ? '' : undefined}>
+                                <summary
+                                    class:list={[
+                                        'tree-entry',
+                                        {
+                                            active: compareUrlPaths(
+                                                urlPath,
+                                                'about/more',
+                                            ),
+                                        },
+                                    ]}>
                                     <span class="tree-line" />
                                     <span class="tree-chevron" />
                                     <span class="tree-icon folder-icon" />
-                                    <a
-                                        href="/more"
+                                    <span
                                         class="tree-label sidebar-category-link"
-                                        onclick="event.stopPropagation()"
                                         data-slug="more">
-                                        <Fragment set:html={labelWithKey('more')} />
-                                    </a>
+                                        <Fragment
+                                            set:html={labelWithKey('more')}
+                                        />
+                                    </span>
                                 </summary>
                                 <div class="tree-children">
+                                    {/* "index" sub-entry: maps to about/more (the original about page content) */}
+                                    <a
+                                        href="/about/more"
+                                        class:list={[
+                                            'tree-file',
+                                            'tree-entry',
+                                            'depth-2',
+                                            {
+                                                active: compareUrlPaths(
+                                                    urlPath,
+                                                    'about/more',
+                                                ),
+                                            },
+                                        ]}
+                                        data-slug="about/more">
+                                        <span class="tree-line" />
+                                        <span class="tree-icon file-icon">
+                                            {ICON_FILE}
+                                        </span>
+                                        <span class="tree-label">index</span>
+                                    </a>
                                     {moreSubCategories.map(
                                         ([subSlug, subPages], subIdx) => {
                                             const subIndexPage = subPages.find(
@@ -366,18 +458,41 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                             )
                                             const isSubActive = subPages.some(
                                                 ({ id }) =>
-                                                    compareUrlPaths(urlPath, id),
+                                                    compareUrlPaths(
+                                                        urlPath,
+                                                        id,
+                                                    ),
                                             )
-                                            const subChildPages = subPages.filter(
-                                                ({ id }) => id !== subSlug,
-                                            )
-                                            const hasChildren = subChildPages.length > 0
-                                            const isLastSub = subIdx === moreSubCategories.length - 1
+                                            const subChildPages =
+                                                subPages.filter(
+                                                    ({ id }) => id !== subSlug,
+                                                )
+                                            const hasChildren =
+                                                subChildPages.length > 0
+                                            const isLastSub =
+                                                subIdx ===
+                                                moreSubCategories.length - 1
 
                                             if (hasChildren) {
                                                 return (
-                                                    <details open={isSubActive} class="tree-folder depth-2" data-last={isLastSub ? '' : undefined}>
-                                                        <summary class:list={['tree-entry', { active: compareUrlPaths(urlPath, subSlug) }]}>
+                                                    <details
+                                                        open={isSubActive}
+                                                        class="tree-folder depth-2"
+                                                        data-last={
+                                                            isLastSub
+                                                                ? ''
+                                                                : undefined
+                                                        }>
+                                                        <summary
+                                                            class:list={[
+                                                                'tree-entry',
+                                                                {
+                                                                    active: compareUrlPaths(
+                                                                        urlPath,
+                                                                        subSlug,
+                                                                    ),
+                                                                },
+                                                            ]}>
                                                             <span class="tree-line" />
                                                             <span class="tree-chevron" />
                                                             <span class="tree-icon folder-icon" />
@@ -385,26 +500,59 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                                                 href={`/${subIndexPage?.id ?? subSlug}`}
                                                                 class="tree-label sidebar-category-link"
                                                                 onclick="event.stopPropagation()"
-                                                                data-slug={subSlug}>
-                                                                {categoryLabels[subSlug] ?? subSlug}
+                                                                data-slug={
+                                                                    subSlug
+                                                                }>
+                                                                {categoryLabels[
+                                                                    subSlug
+                                                                ] ?? subSlug}
                                                             </a>
                                                         </summary>
                                                         <div class="tree-children">
                                                             {subChildPages.map(
-                                                                ({ id, data: { title } }, fileIdx) => (
+                                                                (
+                                                                    {
+                                                                        id,
+                                                                        data: {
+                                                                            title,
+                                                                        },
+                                                                    },
+                                                                    fileIdx,
+                                                                ) => (
                                                                     <a
                                                                         href={`/${id}`}
                                                                         class:list={[
                                                                             'tree-file',
                                                                             'tree-entry',
                                                                             'depth-3',
-                                                                            { active: compareUrlPaths(urlPath, id) },
+                                                                            {
+                                                                                active: compareUrlPaths(
+                                                                                    urlPath,
+                                                                                    id,
+                                                                                ),
+                                                                            },
                                                                         ]}
-                                                                        data-slug={id}
-                                                                        data-last={fileIdx === subChildPages.length - 1 ? '' : undefined}>
+                                                                        data-slug={
+                                                                            id
+                                                                        }
+                                                                        data-last={
+                                                                            fileIdx ===
+                                                                            subChildPages.length -
+                                                                                1
+                                                                                ? ''
+                                                                                : undefined
+                                                                        }>
                                                                         <span class="tree-line" />
-                                                                        <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                                                        <span class="tree-label">{stripEmoji(title)}</span>
+                                                                        <span class="tree-icon file-icon">
+                                                                            {
+                                                                                ICON_FILE
+                                                                            }
+                                                                        </span>
+                                                                        <span class="tree-label">
+                                                                            {stripEmoji(
+                                                                                title,
+                                                                            )}
+                                                                        </span>
                                                                     </a>
                                                                 ),
                                                             )}
@@ -423,10 +571,20 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                                         { active: isSubActive },
                                                     ]}
                                                     data-slug={subSlug}
-                                                    data-last={isLastSub ? '' : undefined}>
+                                                    data-last={
+                                                        isLastSub
+                                                            ? ''
+                                                            : undefined
+                                                    }>
                                                     <span class="tree-line" />
-                                                    <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                                    <span class="tree-label">{categoryLabels[subSlug] ?? subSlug}</span>
+                                                    <span class="tree-icon file-icon">
+                                                        {ICON_FILE}
+                                                    </span>
+                                                    <span class="tree-label">
+                                                        {categoryLabels[
+                                                            subSlug
+                                                        ] ?? subSlug}
+                                                    </span>
                                                 </a>
                                             )
                                         },
@@ -437,9 +595,12 @@ const ICON_CHEVRON_DOWN = '\u25be'
                     }
 
                     /* ── Year-grouped categories (posts, talks) ── */
-                    const categoryIndexPage = pages.find(({ id }) => id === slug)
+                    const categoryIndexPage = pages.find(
+                        ({ id }) => id === slug,
+                    )
                     const shouldLinkCategory =
-                        linkedCategorySlugs.has(slug) && Boolean(categoryIndexPage)
+                        linkedCategorySlugs.has(slug) &&
+                        Boolean(categoryIndexPage)
                     const categoryPages = shouldLinkCategory
                         ? pages.filter(({ id }) => id !== slug)
                         : pages
@@ -463,8 +624,19 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                 : years
 
                         return (
-                            <details open={isCategoryActive} class="tree-folder depth-1" data-last={isLastCategory ? '' : undefined}>
-                                <summary class:list={['tree-entry', { active: shouldLinkCategory && compareUrlPaths(urlPath, slug) }]}>
+                            <details
+                                open={isCategoryActive}
+                                class="tree-folder depth-1"
+                                data-last={isLastCategory ? '' : undefined}>
+                                <summary
+                                    class:list={[
+                                        'tree-entry',
+                                        {
+                                            active:
+                                                shouldLinkCategory &&
+                                                compareUrlPaths(urlPath, slug),
+                                        },
+                                    ]}>
                                     <span class="tree-line" />
                                     <span class="tree-chevron" />
                                     <span class="tree-icon folder-icon" />
@@ -474,113 +646,215 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                             class="tree-label sidebar-category-link"
                                             onclick="event.stopPropagation()"
                                             data-slug={slug}>
-                                            <Fragment set:html={labelWithKey(slug)} />
+                                            <Fragment
+                                                set:html={labelWithKey(slug)}
+                                            />
                                         </a>
                                     ) : (
                                         <span class="tree-label">
-                                            <Fragment set:html={labelWithKey(slug)} />
+                                            <Fragment
+                                                set:html={labelWithKey(slug)}
+                                            />
                                         </span>
                                     )}
                                 </summary>
                                 <div class="tree-children">
                                     {mergedYears.map((year, yearIdx) => {
-                                        const yearPages = grouped.get(year) ?? []
+                                        const yearPages =
+                                            grouped.get(year) ?? []
                                         const yearExternals =
                                             slug === 'talks'
-                                                ? (talkExternalByYear.get(year) ?? [])
+                                                ? (talkExternalByYear.get(
+                                                      year,
+                                                  ) ?? [])
                                                 : []
                                         const isYearActive = yearPages.some(
-                                            ({ id }) => compareUrlPaths(urlPath, id),
+                                            ({ id }) =>
+                                                compareUrlPaths(urlPath, id),
                                         )
 
                                         const entries = [
                                             ...yearPages
-                                                .filter((page) => page.data.title && !page.id.match(/\/(index|readme)\.(mdx?|md)$/i))
+                                                .filter(
+                                                    (page) =>
+                                                        page.data.title &&
+                                                        !page.id.match(
+                                                            /\/(index|readme)\.(mdx?|md)$/i,
+                                                        ),
+                                                )
                                                 .map((page) => ({
-                                                type: 'page',
-                                                title: page.data.title,
-                                                href: `/${page.id}`,
-                                                date: getPageDate(page),
-                                                isActive: compareUrlPaths(urlPath, page.id),
-                                                slug: page.id,
-                                            })),
-                                            ...yearExternals.map((external) => ({
-                                                type: 'external',
-                                                title: `${external.title}`,
-                                                href: external.href,
-                                                date: new Date(`${external.year}-${external.month}-01`),
-                                                isActive: false,
-                                                slug: undefined,
-                                            })),
+                                                    type: 'page',
+                                                    title: page.data.title,
+                                                    href: `/${page.id}`,
+                                                    date: getPageDate(page),
+                                                    isActive: compareUrlPaths(
+                                                        urlPath,
+                                                        page.id,
+                                                    ),
+                                                    slug: page.id,
+                                                })),
+                                            ...yearExternals.map(
+                                                (external) => ({
+                                                    type: 'external',
+                                                    title: `${external.title}`,
+                                                    href: external.href,
+                                                    date: new Date(
+                                                        `${external.year}-${external.month}-01`,
+                                                    ),
+                                                    isActive: false,
+                                                    slug: undefined,
+                                                }),
+                                            ),
                                         ].sort((a, b) => {
-                                            const dateA = a.date instanceof Date ? a.date.getTime() : 0
-                                            const dateB = b.date instanceof Date ? b.date.getTime() : 0
-                                            if (dateA !== dateB) return dateB - dateA
-                                            return a.title.localeCompare(b.title)
+                                            const dateA =
+                                                a.date instanceof Date
+                                                    ? a.date.getTime()
+                                                    : 0
+                                            const dateB =
+                                                b.date instanceof Date
+                                                    ? b.date.getTime()
+                                                    : 0
+                                            if (dateA !== dateB)
+                                                return dateB - dateA
+                                            return a.title.localeCompare(
+                                                b.title,
+                                            )
                                         })
 
-                                        const isLastYear = yearIdx === mergedYears.length - 1 && misc.length === 0
+                                        const isLastYear =
+                                            yearIdx ===
+                                                mergedYears.length - 1 &&
+                                            misc.length === 0
 
                                         return (
-                                            <details open={isYearActive} class="tree-folder depth-2" data-last={isLastYear ? '' : undefined}>
+                                            <details
+                                                open={isYearActive}
+                                                class="tree-folder depth-2"
+                                                data-last={
+                                                    isLastYear ? '' : undefined
+                                                }>
                                                 <summary class="tree-entry">
                                                     <span class="tree-line" />
                                                     <span class="tree-chevron" />
                                                     <span class="tree-icon folder-icon" />
-                                                    <span class="tree-label">{year}</span>
+                                                    <span class="tree-label">
+                                                        {year}
+                                                    </span>
                                                 </summary>
                                                 <div class="tree-children">
-                                                    {entries.map((entry, entryIdx) => (
-                                                        <a
-                                                            href={entry.href}
-                                                            class:list={[
-                                                                'tree-file',
-                                                                'tree-entry',
-                                                                'depth-3',
-                                                                { active: entry.isActive },
-                                                                { external: entry.type === 'external' },
-                                                            ]}
-                                                            data-slug={entry.type === 'page' ? entry.slug : undefined}
-                                                            data-last={entryIdx === entries.length - 1 ? '' : undefined}
-                                                            target={entry.type === 'external' ? '_blank' : undefined}
-                                                            rel={entry.type === 'external' ? 'noreferrer' : undefined}>
-                                                            <span class="tree-line" />
-                                                            <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                                            <span class="tree-label">{stripEmoji(entry.title)}</span>
-                                                        </a>
-                                                    ))}
+                                                    {entries.map(
+                                                        (entry, entryIdx) => (
+                                                            <a
+                                                                href={
+                                                                    entry.href
+                                                                }
+                                                                class:list={[
+                                                                    'tree-file',
+                                                                    'tree-entry',
+                                                                    'depth-3',
+                                                                    {
+                                                                        active: entry.isActive,
+                                                                    },
+                                                                    {
+                                                                        external:
+                                                                            entry.type ===
+                                                                            'external',
+                                                                    },
+                                                                ]}
+                                                                data-slug={
+                                                                    entry.type ===
+                                                                    'page'
+                                                                        ? entry.slug
+                                                                        : undefined
+                                                                }
+                                                                data-last={
+                                                                    entryIdx ===
+                                                                    entries.length -
+                                                                        1
+                                                                        ? ''
+                                                                        : undefined
+                                                                }
+                                                                target={
+                                                                    entry.type ===
+                                                                    'external'
+                                                                        ? '_blank'
+                                                                        : undefined
+                                                                }
+                                                                rel={
+                                                                    entry.type ===
+                                                                    'external'
+                                                                        ? 'noreferrer'
+                                                                        : undefined
+                                                                }>
+                                                                <span class="tree-line" />
+                                                                <span class="tree-icon file-icon">
+                                                                    {ICON_FILE}
+                                                                </span>
+                                                                <span class="tree-label">
+                                                                    {stripEmoji(
+                                                                        entry.title,
+                                                                    )}
+                                                                </span>
+                                                            </a>
+                                                        ),
+                                                    )}
                                                 </div>
                                             </details>
                                         )
                                     })}
                                     {misc.length > 0 && (
                                         <details
-                                            open={misc.some(({ id }) => compareUrlPaths(urlPath, id))}
+                                            open={misc.some(({ id }) =>
+                                                compareUrlPaths(urlPath, id),
+                                            )}
                                             class="tree-folder depth-2"
                                             data-last>
                                             <summary class="tree-entry">
                                                 <span class="tree-line" />
                                                 <span class="tree-chevron" />
                                                 <span class="tree-icon folder-icon" />
-                                                <span class="tree-label">other</span>
+                                                <span class="tree-label">
+                                                    other
+                                                </span>
                                             </summary>
                                             <div class="tree-children">
-                                                {misc.map(({ id, data: { title } }, miscIdx) => (
-                                                    <a
-                                                        href={`/${id}`}
-                                                        class:list={[
-                                                            'tree-file',
-                                                            'tree-entry',
-                                                            'depth-3',
-                                                            { active: compareUrlPaths(urlPath, id) },
-                                                        ]}
-                                                        data-slug={id}
-                                                        data-last={miscIdx === misc.length - 1 ? '' : undefined}>
-                                                        <span class="tree-line" />
-                                                        <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                                        <span class="tree-label">{stripEmoji(title)}</span>
-                                                    </a>
-                                                ))}
+                                                {misc.map(
+                                                    (
+                                                        { id, data: { title } },
+                                                        miscIdx,
+                                                    ) => (
+                                                        <a
+                                                            href={`/${id}`}
+                                                            class:list={[
+                                                                'tree-file',
+                                                                'tree-entry',
+                                                                'depth-3',
+                                                                {
+                                                                    active: compareUrlPaths(
+                                                                        urlPath,
+                                                                        id,
+                                                                    ),
+                                                                },
+                                                            ]}
+                                                            data-slug={id}
+                                                            data-last={
+                                                                miscIdx ===
+                                                                misc.length - 1
+                                                                    ? ''
+                                                                    : undefined
+                                                            }>
+                                                            <span class="tree-line" />
+                                                            <span class="tree-icon file-icon">
+                                                                {ICON_FILE}
+                                                            </span>
+                                                            <span class="tree-label">
+                                                                {stripEmoji(
+                                                                    title,
+                                                                )}
+                                                            </span>
+                                                        </a>
+                                                    ),
+                                                )}
                                             </div>
                                         </details>
                                     )}
@@ -603,8 +877,12 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                 data-slug={slug}
                                 data-last={isLastCategory ? '' : undefined}>
                                 <span class="tree-line" />
-                                <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                <span class="tree-label"><Fragment set:html={labelWithKey(slug)} /></span>
+                                <span class="tree-icon file-icon">
+                                    {ICON_FILE}
+                                </span>
+                                <span class="tree-label">
+                                    <Fragment set:html={labelWithKey(slug)} />
+                                </span>
                             </a>
                         )
                     }
@@ -623,8 +901,12 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                 data-slug={page.id}
                                 data-last={isLastCategory ? '' : undefined}>
                                 <span class="tree-line" />
-                                <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                <span class="tree-label"><Fragment set:html={labelWithKey(slug)} /></span>
+                                <span class="tree-icon file-icon">
+                                    {ICON_FILE}
+                                </span>
+                                <span class="tree-label">
+                                    <Fragment set:html={labelWithKey(slug)} />
+                                </span>
                             </a>
                         )
                     }
@@ -638,8 +920,19 @@ const ICON_CHEVRON_DOWN = '\u25be'
                     const hasSubdirs = subdirs.length > 0
 
                     return (
-                        <details open={isCategoryActive} class="tree-folder depth-1" data-last={isLastCategory ? '' : undefined}>
-                            <summary class:list={['tree-entry', { active: shouldLinkCategory && compareUrlPaths(urlPath, slug) }]}>
+                        <details
+                            open={isCategoryActive}
+                            class="tree-folder depth-1"
+                            data-last={isLastCategory ? '' : undefined}>
+                            <summary
+                                class:list={[
+                                    'tree-entry',
+                                    {
+                                        active:
+                                            shouldLinkCategory &&
+                                            compareUrlPaths(urlPath, slug),
+                                    },
+                                ]}>
                                 <span class="tree-line" />
                                 <span class="tree-chevron" />
                                 <span class="tree-icon folder-icon" />
@@ -649,11 +942,15 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                         class="tree-label sidebar-category-link"
                                         onclick="event.stopPropagation()"
                                         data-slug={slug}>
-                                        <Fragment set:html={labelWithKey(slug)} />
+                                        <Fragment
+                                            set:html={labelWithKey(slug)}
+                                        />
                                     </a>
                                 ) : (
                                     <span class="tree-label">
-                                        <Fragment set:html={labelWithKey(slug)} />
+                                        <Fragment
+                                            set:html={labelWithKey(slug)}
+                                        />
                                     </span>
                                 )}
                             </summary>
@@ -661,75 +958,159 @@ const ICON_CHEVRON_DOWN = '\u25be'
                                 {hasSubdirs ? (
                                     <>
                                         {subdirs.map((subdir, sdIdx) => {
-                                            const subdirPages = subdirGrouped.get(subdir) ?? []
-                                            const isSubdirActive = subdirPages.some(
-                                                ({ id }) => compareUrlPaths(urlPath, id),
-                                            )
-                                            const isLastSubdir = sdIdx === subdirs.length - 1 && subdirMisc.length === 0
+                                            const subdirPages =
+                                                subdirGrouped.get(subdir) ?? []
+                                            const isSubdirActive =
+                                                subdirPages.some(({ id }) =>
+                                                    compareUrlPaths(
+                                                        urlPath,
+                                                        id,
+                                                    ),
+                                                )
+                                            const isLastSubdir =
+                                                sdIdx === subdirs.length - 1 &&
+                                                subdirMisc.length === 0
 
                                             return (
-                                                <details open={isSubdirActive} class="tree-folder depth-2" data-last={isLastSubdir ? '' : undefined}>
+                                                <details
+                                                    open={isSubdirActive}
+                                                    class="tree-folder depth-2"
+                                                    data-last={
+                                                        isLastSubdir
+                                                            ? ''
+                                                            : undefined
+                                                    }>
                                                     <summary class="tree-entry">
                                                         <span class="tree-line" />
                                                         <span class="tree-chevron" />
                                                         <span class="tree-icon folder-icon" />
-                                                        <span class="tree-label">{subdirLabels[subdir] ?? subdir}</span>
+                                                        <span class="tree-label">
+                                                            {subdirLabels[
+                                                                subdir
+                                                            ] ?? subdir}
+                                                        </span>
                                                     </summary>
                                                     <div class="tree-children">
-                                                        {subdirPages.map(({ id, data: { title } }, fileIdx) => (
-                                                            <a
-                                                                href={`/${id}`}
-                                                                class:list={[
-                                                                    'tree-file',
-                                                                    'tree-entry',
-                                                                    'depth-3',
-                                                                    { active: compareUrlPaths(urlPath, id) },
-                                                                ]}
-                                                                data-slug={id}
-                                                                data-last={fileIdx === subdirPages.length - 1 ? '' : undefined}>
-                                                                <span class="tree-line" />
-                                                                <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                                                <span class="tree-label">{stripEmoji(title)}</span>
-                                                            </a>
-                                                        ))}
+                                                        {subdirPages.map(
+                                                            (
+                                                                {
+                                                                    id,
+                                                                    data: {
+                                                                        title,
+                                                                    },
+                                                                },
+                                                                fileIdx,
+                                                            ) => (
+                                                                <a
+                                                                    href={`/${id}`}
+                                                                    class:list={[
+                                                                        'tree-file',
+                                                                        'tree-entry',
+                                                                        'depth-3',
+                                                                        {
+                                                                            active: compareUrlPaths(
+                                                                                urlPath,
+                                                                                id,
+                                                                            ),
+                                                                        },
+                                                                    ]}
+                                                                    data-slug={
+                                                                        id
+                                                                    }
+                                                                    data-last={
+                                                                        fileIdx ===
+                                                                        subdirPages.length -
+                                                                            1
+                                                                            ? ''
+                                                                            : undefined
+                                                                    }>
+                                                                    <span class="tree-line" />
+                                                                    <span class="tree-icon file-icon">
+                                                                        {
+                                                                            ICON_FILE
+                                                                        }
+                                                                    </span>
+                                                                    <span class="tree-label">
+                                                                        {stripEmoji(
+                                                                            title,
+                                                                        )}
+                                                                    </span>
+                                                                </a>
+                                                            ),
+                                                        )}
                                                     </div>
                                                 </details>
                                             )
                                         })}
-                                        {subdirMisc.map(({ id, data: { title } }, miscIdx) => (
+                                        {subdirMisc.map(
+                                            (
+                                                { id, data: { title } },
+                                                miscIdx,
+                                            ) => (
+                                                <a
+                                                    href={`/${id}`}
+                                                    class:list={[
+                                                        'tree-file',
+                                                        'tree-entry',
+                                                        'depth-2',
+                                                        {
+                                                            active: compareUrlPaths(
+                                                                urlPath,
+                                                                id,
+                                                            ),
+                                                        },
+                                                    ]}
+                                                    data-slug={id}
+                                                    data-last={
+                                                        miscIdx ===
+                                                        subdirMisc.length - 1
+                                                            ? ''
+                                                            : undefined
+                                                    }>
+                                                    <span class="tree-line" />
+                                                    <span class="tree-icon file-icon">
+                                                        {ICON_FILE}
+                                                    </span>
+                                                    <span class="tree-label">
+                                                        {stripEmoji(title)}
+                                                    </span>
+                                                </a>
+                                            ),
+                                        )}
+                                    </>
+                                ) : (
+                                    categoryPages.map(
+                                        ({ id, data: { title } }, fileIdx) => (
                                             <a
                                                 href={`/${id}`}
                                                 class:list={[
                                                     'tree-file',
                                                     'tree-entry',
                                                     'depth-2',
-                                                    { active: compareUrlPaths(urlPath, id) },
+                                                    {
+                                                        active: compareUrlPaths(
+                                                            urlPath,
+                                                            id,
+                                                        ),
+                                                    },
                                                 ]}
                                                 data-slug={id}
-                                                data-last={miscIdx === subdirMisc.length - 1 ? '' : undefined}>
+                                                data-last={
+                                                    fileIdx ===
+                                                    categoryPages.length - 1
+                                                        ? ''
+                                                        : undefined
+                                                }>
                                                 <span class="tree-line" />
-                                                <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                                <span class="tree-label">{stripEmoji(title)}</span>
+                                                <span class="tree-icon file-icon">
+                                                    {ICON_FILE}
+                                                </span>
+                                                <span class="tree-label">
+                                                    {stripEmoji(title)}
+                                                </span>
                                             </a>
-                                        ))}
-                                    </>
-                                ) : (
-                                    categoryPages.map(({ id, data: { title } }, fileIdx) => (
-                                        <a
-                                            href={`/${id}`}
-                                            class:list={[
-                                                'tree-file',
-                                                'tree-entry',
-                                                'depth-2',
-                                                { active: compareUrlPaths(urlPath, id) },
-                                            ]}
-                                            data-slug={id}
-                                            data-last={fileIdx === categoryPages.length - 1 ? '' : undefined}>
-                                            <span class="tree-line" />
-                                            <span class="tree-icon file-icon">{ICON_FILE}</span>
-                                            <span class="tree-label">{stripEmoji(title)}</span>
-                                        </a>
-                                    ))
+                                        ),
+                                    )
                                 )}
                             </div>
                         </details>
@@ -766,6 +1147,7 @@ const ICON_CHEVRON_DOWN = '\u25be'
         padding-inline: 1ch;
         color: var(--foreground2);
         font-family: var(--font-family);
+        line-height: 1.25;
 
         #sidebar-toggle {
             position: absolute;
@@ -813,34 +1195,44 @@ const ICON_CHEVRON_DOWN = '\u25be'
                 box-shadow: none !important;
             }
 
-            &[href="/"]:hover,
-            &[href="/"]:focus-visible {
+            &[href='/']:hover,
+            &[href='/']:focus-visible {
                 color: var(--accent, var(--blue));
-                background-color: oklch(from var(--blue) l c h / 0.1) !important;
+                background-color: oklch(
+                    from var(--blue) l c h / 0.1
+                ) !important;
             }
 
             &#theme-button-sidebar:hover,
             &#theme-button-sidebar:focus-visible {
                 color: var(--blue);
-                background-color: oklch(from var(--blue) l c h / 0.1) !important;
+                background-color: oklch(
+                    from var(--blue) l c h / 0.1
+                ) !important;
             }
 
-            &[href*="github"]:hover,
-            &[href*="github"]:focus-visible {
+            &[href*='github']:hover,
+            &[href*='github']:focus-visible {
                 color: var(--purple);
-                background-color: oklch(from var(--purple) l c h / 0.1) !important;
+                background-color: oklch(
+                    from var(--purple) l c h / 0.1
+                ) !important;
             }
 
-            &[href*="rss"]:hover,
-            &[href*="rss"]:focus-visible {
+            &[href*='rss']:hover,
+            &[href*='rss']:focus-visible {
                 color: var(--orange);
-                background-color: oklch(from var(--orange) l c h / 0.1) !important;
+                background-color: oklch(
+                    from var(--orange) l c h / 0.1
+                ) !important;
             }
 
             &#search-button-sidebar:hover,
             &#search-button-sidebar:focus-visible {
                 color: var(--green);
-                background-color: oklch(from var(--green) l c h / 0.1) !important;
+                background-color: oklch(
+                    from var(--green) l c h / 0.1
+                ) !important;
             }
         }
     }
@@ -869,6 +1261,11 @@ const ICON_CHEVRON_DOWN = '\u25be'
         padding-inline-start: 0ch;
         white-space: nowrap;
         user-select: none;
+        text-decoration: none;
+        display: block;
+    }
+    .tree-root:hover {
+        color: var(--foreground0);
     }
 
     .root-icon {
@@ -905,7 +1302,11 @@ const ICON_CHEVRON_DOWN = '\u25be'
     .tree-entry.active {
         color: var(--accent);
         background-color: oklch(
-            from var(--accent, var(--background-active, var(--background2, #838383)))
+            from
+                var(
+                    --accent,
+                    var(--background-active, var(--background2, #838383))
+                )
                 calc(l * var(--oklch-scale, 0.85)) c h / 0.1
         );
     }
@@ -916,13 +1317,25 @@ const ICON_CHEVRON_DOWN = '\u25be'
 
     /* ── Depth-based indentation ── */
 
-    .depth-1 { padding-inline-start: 0; }
-    .depth-2 { padding-inline-start: 0; }
-    .depth-3 { padding-inline-start: 0; }
+    .depth-1 {
+        padding-inline-start: 0;
+    }
+    .depth-2 {
+        padding-inline-start: 0;
+    }
+    .depth-3 {
+        padding-inline-start: 0;
+    }
 
-    .tree-folder.depth-1 > summary { padding-inline-start: 0; }
-    .tree-folder.depth-2 > summary { padding-inline-start: 0; }
-    .tree-folder.depth-3 > summary { padding-inline-start: 0; }
+    .tree-folder.depth-1 > summary {
+        padding-inline-start: 0;
+    }
+    .tree-folder.depth-2 > summary {
+        padding-inline-start: 0;
+    }
+    .tree-folder.depth-3 > summary {
+        padding-inline-start: 0;
+    }
 
     /* ── Tree line characters (vertical bars + connectors) ── */
 
@@ -945,12 +1358,12 @@ const ICON_CHEVRON_DOWN = '\u25be'
         content: '└─';
     }
 
-    /* Vertical continuation lines in nested children */
+    /* The ├─ / └─ glyphs in each row already draw the connectors;
+       no CSS border needed on the children wrap. */
     .tree-children {
         position: relative;
         margin-inline-start: 0.4ch;
         padding-inline-start: 2ch;
-        border-inline-start: 1.9999px solid var(--foreground3);
     }
 
     /* ── Chevron (expand/collapse indicator) ── */
@@ -965,13 +1378,13 @@ const ICON_CHEVRON_DOWN = '\u25be'
     }
 
     .tree-chevron::before {
-        /* content: '\25b8';  /* right-pointing triangle */ */
-        content: '';  /* right-pointing triangle */
+        /* right-pointing triangle: '\25b8' */
+        content: '';
     }
 
     details[open] > summary > .tree-chevron::before {
-        /* content: '\25be';  /* down-pointing triangle */ */
-        content: '';  /* down-pointing triangle */
+        /* down-pointing triangle: '\25be' */
+        content: '';
     }
 
     /* ── Folder / file icons ── */
@@ -986,12 +1399,13 @@ const ICON_CHEVRON_DOWN = '\u25be'
     }
 
     .folder-icon::before {
-        content: '';  /* closed folder */
+        content: ''; /* closed folder */
         color: var(--foreground2);
     }
 
     details[open] > summary > .folder-icon::before {
-        content: '';  /* open folder */
+        content: ''; /* open folder */
+        color: var(--accent, var(--foreground2));
     }
 
     .file-icon {
