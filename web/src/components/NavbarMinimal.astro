@@ -11,7 +11,7 @@ const isOn = path.startsWith('/posts')
     ? 'posts'
     : path.startsWith('/talks')
       ? 'talks'
-      : path.startsWith('/landing') || path.startsWith('/more')
+      : path.startsWith('/about') || path.startsWith('/more')
         ? 'more'
         : null
 ---
@@ -21,7 +21,11 @@ const isOn = path.startsWith('/posts')
     <span id="nav-spacer"></span>
     <span id="nav-right">
         <button id="theme-button"></button>
-        <a id="github-button" href="https://github.com/saforem2/sam.onl" target="_blank"></a>
+        <a
+            id="github-button"
+            href="https://github.com/saforem2/sam.onl"
+            target="_blank"></a
+        >
         <a id="rss-button" href="/rss.xml" target="_blank"></a>
         <button id="search-button"></button>
     </span>
@@ -32,7 +36,9 @@ const isOn = path.startsWith('/posts')
             <a href="/posts"> posts</a>
             <a href="/talks">8 talks</a>
             <a href="/landing"> more</a>
-            <a href="https://github.com/saforem2/sam.onl" target="_blank"> github</a>
+            <a href="https://github.com/saforem2/sam.onl" target="_blank"
+                > github</a
+            >
             <a href="/rss.xml" target="_blank"> rss</a>
             <button id="theme-button-mobile"> theme</button>
         </div>
@@ -50,10 +56,27 @@ const isOn = path.startsWith('/posts')
         white-space: nowrap;
         max-width: 100%;
         overflow: hidden;
-        position: relative;
+        /* Float in the top-right corner of the page, like the old vim
+           island. Anchored to the #intro container (which is
+           position: relative) so it stays inside the page bounds. */
+        position: absolute;
+        /* JS sets --navbar-left and --navbar-top to align with the
+           #widgets-grid's left edge and roughly halfway between the
+           top of the page and the grid's top. */
+        top: var(--navbar-top, 2lh);
+        left: var(--navbar-left, 1ch);
         z-index: 20;
         min-width: 0;
+        width: max-content;
         background-color: var(--background1);
+        border: 1px solid var(--foreground2);
+        /* TUI hard-offset shadow only when the navbar is being interacted
+           with — keeps the resting state minimal but signals focus. */
+        transition: box-shadow 100ms linear;
+        &:hover,
+        &:focus-within {
+            box-shadow: 2px 2px 0 0 var(--foreground0, #000);
+        }
 
         :is(a[href], button:not([disabled])) {
             position: relative;
@@ -315,4 +338,32 @@ const isOn = path.startsWith('/posts')
             window.location.href = href
         }
     })
+</script>
+
+<script>
+    /* Pin the floating navbar's left edge to #widgets-grid's left edge.
+       The grid uses translate-based centering; matching that exactly in
+       pure CSS is fragile across viewports, so we measure on load + on
+       resize and write the value to --navbar-left. */
+    function alignNavbar() {
+        const navbar = document.getElementById('top-navbar')
+        const grid = document.getElementById('widgets-grid')
+        if (!navbar || !grid) return
+        const gridRect = grid.getBoundingClientRect()
+        const navHeight = navbar.getBoundingClientRect().height || 20
+        const intro = document.getElementById('intro')
+        const introTop = intro ? intro.getBoundingClientRect().top : 0
+        // Sit 1lh above the grid top. nav's own height is 1lh, so the
+        // navbar's bottom edge ends up exactly at gridTop - 1lh, and its
+        // top edge at gridTop - 2lh. (1lh ≈ navHeight on this page.)
+        const top = gridRect.top - introTop - navHeight * 2
+        navbar.style.setProperty('--navbar-left', `${gridRect.left}px`)
+        navbar.style.setProperty('--navbar-top', `${top}px`)
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', alignNavbar)
+    } else {
+        alignNavbar()
+    }
+    window.addEventListener('resize', alignNavbar)
 </script>

@@ -143,6 +143,16 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
         min-height: 0;
     }
 
+    /* TUI hard-offset shadow on the active/focused/hovered widget —
+       matches the navbar's interactive shadow treatment. */
+    #widgets-grid > :global([tabindex='0']) {
+        transition: box-shadow 100ms linear;
+    }
+    #widgets-grid > :global([tabindex='0']:hover),
+    #widgets-grid > :global([tabindex='0']:focus-within) {
+        box-shadow: 2px 2px 0 0 var(--foreground0, #000);
+    }
+
     #grid-navbar {
         grid-column: 1 / -1;
     }

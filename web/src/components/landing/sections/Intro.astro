@@ -253,14 +253,22 @@ const total = variants.length
                     <span class="vsl-branch">&#xe725; main</span>
                     <span class="vsl-author">Sam Foreman</span>
                     <span class="vsl-site">sam.onl</span>
-                    <span class="vsl-spacer"></span>
+                    <span class="vsl-spacer" />
                     <span class="vsl-keys">
-                        <span id="vsl-last-key"></span>
-                        <button id="vsl-btn-j" tabindex="-1">j</button>
-                        <button id="vsl-btn-k" tabindex="-1">k</button>
-                        <button id="vsl-btn-q" tabindex="-1">?</button>
+                        <span id="vsl-last-key" />
+                        <button id="vsl-btn-j" tabindex="-1">
+                            j
+                        </button>
+                        <button id="vsl-btn-k" tabindex="-1">
+                            k
+                        </button>
+                        <button id="vsl-btn-q" tabindex="-1">
+                            ?
+                        </button>
                     </span>
-                    <span class="vsl-clock"><span id="vsl-clock-text"></span></span>
+                    <span class="vsl-clock">
+                        <span id="vsl-clock-text" />
+                    </span>
                     <span class="vsl-pos">Top</span>
                     <span class="vsl-loc">1:1</span>
                 </div>
@@ -382,16 +390,6 @@ const total = variants.length
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-
-            > :global(nav#top-navbar) {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                z-index: 100;
-                width: 100%;
-                align-self: stretch;
-            }
 
             h1::before {
                 content: '';
