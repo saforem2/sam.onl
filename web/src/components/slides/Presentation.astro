@@ -1,0 +1,276 @@
+---
+/**
+ * Presentation wrapper. Owns navigation state (current slide,
+ * fragments), keyboard handling, URL-fragment sync, speaker-window
+ * popup, overview mode, and the bottom status bar.
+ */
+import SlideHelpDialog from '@/components/slides/SlideHelpDialog.astro'
+
+interface Props {
+    title?: string
+}
+const url = Astro.url.pathname
+const canonical = `https://sam.onl${url}`
+---
+
+<main is-="presentation" data-mode="deck">
+    <div is-="slides">
+        <slot />
+    </div>
+    <div is-="slide-status">
+        <a class="ss-link" href={url}>{canonical}</a>
+        <span class="ss-right">
+            <span class="ss-pos">
+                <span id="ss-current">1</span>/<span id="ss-total">1</span>
+            </span>
+            <button
+                type="button"
+                id="ss-help-btn"
+                class="ss-help"
+                aria-label="Show keybinds and navigation">?</button
+            >
+        </span>
+    </div>
+    <SlideHelpDialog />
+</main>
+
+<style is:global>
+    @import '@/styles/slides.css';
+</style>
+
+<script>
+    // Tiny presentation runtime. Tracks the current slide index, mirrors
+    // it to the URL hash (#3 = 4th slide), responds to keyboard nav,
+    // and broadcasts the index to a speaker-window popup over a
+    // BroadcastChannel so the popup stays in sync with the main deck.
+    const deck = document.querySelector(
+        '[is-~="presentation"]',
+    ) as HTMLElement | null
+    if (deck) {
+        const slides = Array.from(
+            deck.querySelectorAll<HTMLElement>('[is-~="slide"]'),
+        )
+        const total = slides.length
+        const totalEl = document.getElementById('ss-total')
+        const currentEl = document.getElementById('ss-current')
+        if (totalEl) totalEl.textContent = String(total)
+
+        const channel = new BroadcastChannel('slides-sync')
+        const isSpeaker =
+            document.body.dataset.speakerWindow === 'true' ||
+            new URLSearchParams(location.search).has('speaker')
+        if (isSpeaker) document.body.dataset.speakerWindow = 'true'
+
+        const indexFromHash = () => {
+            const m = location.hash.match(/^#(\d+)$/)
+            const i = m ? Number(m[1]) - 1 : 0
+            return Math.max(0, Math.min(total - 1, i))
+        }
+
+        let current = indexFromHash()
+        let fragmentIndex = 0
+
+        const fragmentsFor = (i: number) =>
+            Array.from(slides[i].querySelectorAll<HTMLElement>('.fragment'))
+
+        const render = (i: number, opts?: { broadcast?: boolean }) => {
+            current = Math.max(0, Math.min(total - 1, i))
+            fragmentIndex = 0
+            slides.forEach((s, idx) => {
+                if (idx === current) s.setAttribute('data-current', '')
+                else s.removeAttribute('data-current')
+                s.querySelectorAll('.fragment').forEach((f) =>
+                    f.removeAttribute('data-visible'),
+                )
+            })
+            if (currentEl) currentEl.textContent = String(current + 1)
+            const expected = `#${current + 1}`
+            if (location.hash !== expected) {
+                history.replaceState(null, '', expected)
+            }
+            if (opts?.broadcast !== false) {
+                channel.postMessage({ type: 'goto', index: current })
+            }
+        }
+
+        const advance = (delta: number) => {
+            const frags = fragmentsFor(current)
+            if (delta > 0 && fragmentIndex < frags.length) {
+                frags[fragmentIndex].setAttribute('data-visible', '')
+                fragmentIndex++
+                return
+            }
+            if (delta < 0 && fragmentIndex > 0) {
+                fragmentIndex--
+                frags[fragmentIndex].removeAttribute('data-visible')
+                return
+            }
+            render(current + delta)
+        }
+
+        const isTyping = () => {
+            const a = document.activeElement
+            if (!a) return false
+            const tag = a.tagName
+            return (
+                tag === 'INPUT' ||
+                tag === 'TEXTAREA' ||
+                (a as HTMLElement).isContentEditable
+            )
+        }
+
+        const setMode = (mode: 'deck' | 'overview') => {
+            deck.dataset.mode = mode
+            if (mode === 'overview') updateOverviewScale()
+        }
+
+        // In overview mode the .slide-inner is rendered at 1280x720 and
+        // transform-scaled to fit the tile width. Compute the scale once
+        // per resize so each tile fits its current grid cell.
+        const updateOverviewScale = () => {
+            slides.forEach((s) => {
+                const tileWidth = s.getBoundingClientRect().width
+                const scale = tileWidth / 1280
+                s.style.setProperty('--ov-scale', String(scale))
+            })
+        }
+        window.addEventListener('resize', () => {
+            if (deck.dataset.mode === 'overview') updateOverviewScale()
+        })
+
+        const openSpeakerWindow = () => {
+            const url = new URL(location.href)
+            url.searchParams.set('speaker', '1')
+            window.open(
+                url.toString(),
+                'slides-speaker',
+                'width=600,height=800',
+            )
+        }
+
+        const anyDialogOpen = () => !!document.querySelector('dialog[open]')
+
+        window.addEventListener('keydown', (e) => {
+            if (isTyping()) return
+            // Defer to any open <dialog> — Esc closes it natively; other
+            // keys may be used inside it (TOC navigation, theme select).
+            if (anyDialogOpen()) return
+            switch (e.key) {
+                case 'j':
+                case 'ArrowRight':
+                case ' ':
+                    e.preventDefault()
+                    advance(1)
+                    break
+                case 'k':
+                case 'ArrowLeft':
+                    e.preventDefault()
+                    advance(-1)
+                    break
+                case 'g':
+                    e.preventDefault()
+                    render(0)
+                    break
+                case 'G':
+                    e.preventDefault()
+                    render(total - 1)
+                    break
+                case 's':
+                    e.preventDefault()
+                    if (!isSpeaker) openSpeakerWindow()
+                    break
+                case 'Escape':
+                    e.preventDefault()
+                    setMode(
+                        deck.dataset.mode === 'overview' ? 'deck' : 'overview',
+                    )
+                    break
+                case 'f':
+                    e.preventDefault()
+                    if (!document.fullscreenElement) deck.requestFullscreen()
+                    else document.exitFullscreen()
+                    break
+                case '?':
+                    e.preventDefault()
+                    openHelp()
+                    break
+                case 'p':
+                    if (e.ctrlKey || e.metaKey) return
+                    e.preventDefault()
+                    enterPrintMode()
+                    break
+            }
+        })
+
+        // Print-PDF mode: lay every slide out flat (one per page) and
+        // pop the browser's print dialog. ?print-pdf or `p` triggers it.
+        const enterPrintMode = () => {
+            document.body.classList.add('slides-print-mode')
+            // Wait one frame so layout applies before opening the dialog
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    window.print()
+                    // Clean up after the print dialog closes
+                    const cleanup = () => {
+                        document.body.classList.remove('slides-print-mode')
+                        window.removeEventListener('afterprint', cleanup)
+                    }
+                    window.addEventListener('afterprint', cleanup)
+                })
+            })
+        }
+        if (new URLSearchParams(location.search).has('print-pdf')) {
+            window.addEventListener('load', () => enterPrintMode())
+        }
+
+        const openHelp = () => {
+            const dlg = document.getElementById(
+                'slide-help-dialog',
+            ) as HTMLDialogElement | null
+            if (dlg && !dlg.open) dlg.showModal()
+        }
+
+        document
+            .getElementById('ss-help-btn')
+            ?.addEventListener('click', openHelp)
+
+        // Click-to-zoom on any image inside a slide.
+        const zoomDlg = document.createElement('dialog')
+        zoomDlg.className = 'slide-zoom-dialog'
+        zoomDlg.innerHTML = '<img />'
+        document.body.appendChild(zoomDlg)
+        zoomDlg.addEventListener('click', () => zoomDlg.close())
+        deck.addEventListener('click', (e) => {
+            const t = e.target as HTMLElement
+            if (t.tagName === 'IMG' && t.closest('[is-~="slide"]')) {
+                const img = zoomDlg.querySelector('img') as HTMLImageElement
+                img.src = (t as HTMLImageElement).src
+                img.alt = (t as HTMLImageElement).alt
+                zoomDlg.showModal()
+            }
+        })
+
+        // Click a slide in overview to jump to it
+        slides.forEach((s, idx) => {
+            s.addEventListener('click', () => {
+                if (deck.dataset.mode === 'overview') {
+                    render(idx)
+                    setMode('deck')
+                }
+            })
+        })
+
+        // Hash changes from external nav (e.g. clicking a deep link)
+        window.addEventListener('hashchange', () => render(indexFromHash()))
+
+        // Speaker popup receives index changes from the main window
+        if (isSpeaker) {
+            channel.addEventListener('message', (e) => {
+                if (e.data?.type === 'goto')
+                    render(e.data.index, { broadcast: false })
+            })
+        }
+
+        render(current, { broadcast: false })
+    }
+</script>

@@ -1,0 +1,568 @@
+/* Slides — minimal homemade presentation framework, no reveal.js.
+   Scoped via [is-~='presentation'] so it never affects the rest of the
+   site. Layout is one full-viewport slide at a time, with the current
+   slide selected by CSS attr [data-current]. */
+
+[is-~='presentation'] {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: var(--background0);
+    color: var(--foreground1);
+    z-index: 1;
+}
+
+[is-~='slides'] {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+[is-~='slide'] {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        opacity 200ms ease-out,
+        transform 200ms ease-out;
+    transform: translateX(2ch);
+
+    &[data-current] {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(0);
+    }
+
+    /* The slide-inner is the actual content box. It fills the slide in
+       deck mode; in overview it becomes a scaled fixed-size canvas. */
+    .slide-inner {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        /* Anchor content to the top — `safe center` falls back to
+           flex-start when content would overflow, preventing the top
+           half from being clipped off-screen at large zooms. */
+        justify-content: safe center;
+        padding: 2lh 6ch;
+        overflow: auto;
+        /* Responsive type scale: hard min so it stays readable on phones,
+           viewport-relative middle so it grows with the canvas, hard max
+           so it doesn't get cartoonish on 4K displays. */
+        font-size: clamp(0.95rem, 1.6vw + 0.5rem, 1.75rem);
+        line-height: 1.4;
+    }
+    /* On narrow viewports give the slide more breathing room — the type
+       has to fit, the padding can give. */
+    @media (max-width: 768px) {
+        .slide-inner {
+            padding: 1lh 3ch;
+        }
+    }
+    @media (max-width: 480px) {
+        .slide-inner {
+            padding: 0.5lh 2ch;
+        }
+    }
+
+    h1,
+    h2,
+    h3 {
+        margin-block: 0 0.5lh;
+    }
+    /* If the heading is the first thing in the slide, kill its top
+       margin so the content doesn't get pushed off the top in
+       safe-center layout. */
+    .slide-inner > :is(h1, h2, h3):first-child {
+        margin-block-start: 0;
+    }
+    /* Heads are only slightly bigger than body — keeps proportions
+       balanced and avoids "billboard title, mouse-print body" effect. */
+    h1 {
+        font-size: 1.4em;
+    }
+    h2 {
+        font-size: 1.25em;
+    }
+    h3 {
+        font-size: 1.1em;
+    }
+    p,
+    li,
+    blockquote,
+    ul,
+    ol,
+    dl,
+    dd,
+    dt {
+        line-height: 1.4;
+        /* Force inheritance — WebTUI's base list styles set their own
+           font-size which would otherwise drop bullets to root size. */
+        font-size: inherit;
+    }
+    li {
+        margin-block: 0.25lh;
+    }
+    table,
+    th,
+    td {
+        font-size: inherit;
+    }
+    pre,
+    code {
+        font-size: 0.85em;
+    }
+
+    /* Images default to fitting their slide; inline `style` can override. */
+    img,
+    svg {
+        max-width: 100%;
+        height: auto;
+        display: block;
+    }
+    /* Click-to-zoom signal */
+    img {
+        cursor: zoom-in;
+        transition: filter 100ms linear;
+    }
+    img:hover {
+        filter: brightness(1.05);
+    }
+
+    /* Title-slide logo: pinned to the bottom-right corner of the slide
+       just above the status bar (1lh tall). Use class on an inline
+       <img class="title-slide-logo"> inside the title slide. */
+    .title-slide-logo {
+        position: absolute;
+        bottom: 2lh;
+        right: 4ch;
+        height: 2.5lh;
+        width: auto;
+    }
+    /* On dark themes the black wordmark would be invisible — invert it
+       to white. Only flip when the resolved foreground is light. */
+    :root[data-webtui-theme='custom-dark'] .title-slide-logo,
+    :root[data-webtui-theme='catppuccin'] .title-slide-logo {
+        filter: invert(1);
+    }
+
+    /* Team-member chips for the 👥 Team Leads slide. */
+    .team-row {
+        display: flex;
+        gap: 2ch;
+        flex-wrap: wrap;
+        margin-block: 0.5lh 1lh;
+    }
+    .team-col {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5lh;
+        margin-block-start: 0.25lh;
+    }
+    .team-member {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25lh;
+        font-size: 0.65em;
+        line-height: 1.1;
+        text-align: center;
+        min-width: 6ch;
+    }
+    .team-member img {
+        width: 3lh;
+        height: 3lh;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 1px solid var(--background2);
+        cursor: zoom-in;
+    }
+    .team-member-me img {
+        border-color: #ff1a8f;
+        box-shadow: 0 0 0 2px oklch(from #ff1a8f l c h / 0.2);
+    }
+    .team-member-me span {
+        color: #ff1a8f;
+        font-weight: 700;
+    }
+
+    /* Body-link hover effect (same as docs): reverse-video flash.
+       Doc.css's rule is scoped to #main-content, so we re-add it here
+       for slide links. */
+    a:not(.heading-anchor) {
+        background-color: transparent;
+        padding-inline: 0.25ch;
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
+        transition:
+            background-color 0.15s ease-out,
+            color 0.15s ease-out;
+    }
+    a:not(.heading-anchor):hover,
+    a:not(.heading-anchor):focus-visible {
+        background-color: var(--accent, var(--blue));
+        color: var(--background0);
+        text-decoration: none;
+    }
+
+    /* Lists: vim/markdown-style "- " for ul, "N. " for ol. The Doc.css
+       cascade was painting both a "•" marker AND the literal "- " from
+       the source text. Fix by drawing our own "- " via ::marker and
+       killing list-style. */
+    ul {
+        margin-block: 0.5lh;
+        list-style: none;
+    }
+    ol {
+        margin-block: 0.5lh;
+        padding-inline-start: 0;
+        list-style: decimal inside;
+    }
+    /* Hanging indent for ordered-list items: wrapped lines align to the
+       text start (after "N. "), not to the marker. The first line pulls
+       its leading "1. " back into the gutter via negative text-indent. */
+    ol > li {
+        padding-inline-start: 3ch;
+        text-indent: -3ch;
+    }
+    li {
+        position: relative;
+    }
+    /* Hanging indent for ul items so wrapped lines align after the "- "
+       marker (2 chars: dash + space). Pad 2ch, pull first line back 2ch. */
+    ul > li {
+        padding-inline-start: 2ch;
+        text-indent: -2ch;
+    }
+    /* Nested lists: the child list should sit at "parent text start"
+       — i.e. one marker-width (2ch) right of the parent <li>'s start.
+       The parent <li>'s `padding-inline-start: 2ch` already puts text
+       there, so the nested list needs zero extra indent of its own. */
+    ul ul,
+    ul ol,
+    ol ul,
+    ol ol {
+        padding-inline-start: 0 !important;
+        margin-inline-start: 0 !important;
+    }
+    /* WebTUI's typography.css applies `content: '- '` to every `li` that
+       descends from any `ul` (descendant selector, not child) — so an
+       `<ol>` nested inside a `<ul>` shows `1. -` because each ol-li
+       inherits the ul marker. Suppress the pseudo ONLY on items inside
+       an `<ol>` so top-level ul items keep their `-` bullet. */
+    ol > li::before {
+        content: none !important;
+    }
+    /* Continuation paragraphs inside an <li> should hang under the
+       first-line text, not under the marker. */
+    li > p {
+        margin-block: 0;
+    }
+
+    /* Bold text: darker + heavier than ambient body so emphasis carries
+       from across a room. Iosevka has weights 100–900; 800 reads clearly
+       against the 400 body without going full Iosevka Heavy. */
+    strong,
+    b {
+        font-weight: 800;
+        color: var(--foreground0);
+    }
+
+    /* Repo-card chips — mimic Quarto callout-tip/note/important/warning
+       styling. Use these in <Cols>/<Col> where blockquote callouts can't
+       be authored due to MDX indentation rules. */
+    .repo-card {
+        --accent: var(--blue);
+        border-left: 3px solid var(--accent);
+        background-color: oklch(from var(--accent) calc(l * 1.15) c h / 0.08);
+        padding: 0.5lh 1.5ch;
+    }
+    .repo-card-tip {
+        --accent: var(--green);
+    }
+    .repo-card-note {
+        --accent: var(--blue);
+    }
+    .repo-card-important {
+        --accent: var(--red);
+    }
+    .repo-card-warning {
+        --accent: var(--orange);
+    }
+    .repo-card-title {
+        color: var(--accent);
+        font-weight: 700;
+        margin-block-end: 0.25lh;
+    }
+
+    /* Fragments — opacity-step reveal */
+    .fragment {
+        opacity: 0.15;
+        transition: opacity 200ms ease-out;
+    }
+    .fragment[data-visible] {
+        opacity: 1;
+    }
+}
+
+/* Speaker notes — hidden in the main deck, visible in the popup */
+[is-~='notes'] {
+    display: none;
+}
+body[data-speaker-window] [is-~='notes'] {
+    display: block;
+}
+
+/* Bottom status bar — left: title + help button, center: deep link,
+   right: current/total. Responsive: at narrow widths the title/link
+   truncate or hide so the bar stays at one line. */
+[is-~='slide-status'] {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1lh;
+    line-height: 1lh;
+    padding-inline: 2ch;
+    background-color: var(--background1);
+    color: var(--foreground3);
+    font-size: 0.85em;
+    display: grid;
+    /* URL (left, ellipsis-truncated) + position+help (right) */
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1ch;
+    align-items: center;
+    z-index: 10;
+    white-space: nowrap;
+    overflow: hidden;
+
+    .ss-link {
+        color: var(--foreground2);
+        text-decoration: none;
+        justify-self: start;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+        &:hover,
+        &:focus-visible {
+            color: var(--accent, var(--blue));
+        }
+    }
+    .ss-right {
+        display: flex;
+        align-items: center;
+        gap: 1ch;
+        justify-self: end;
+    }
+
+    /* Phone (< 480px): drop the link, just N/total + ? */
+    @media (max-width: 480px) {
+        grid-template-columns: auto;
+        justify-content: end;
+        .ss-link {
+            display: none;
+        }
+    }
+    .ss-pos {
+        color: var(--foreground2);
+    }
+    .ss-help {
+        all: unset;
+        cursor: pointer;
+        padding: 0 0.75ch;
+        color: var(--foreground2);
+        background-color: var(--background2);
+        border: 1px solid var(--foreground3);
+        border-radius: 3px;
+        line-height: 1;
+        transition:
+            color 100ms linear,
+            background-color 100ms linear;
+        &:hover,
+        &:focus-visible {
+            color: var(--foreground0);
+            background-color: oklch(
+                from var(--accent, var(--blue))
+                    calc(l * var(--oklch-scale, 0.85)) c h / 0.2
+            );
+        }
+    }
+}
+
+/* Overview mode — Esc shows all slides as a landscape grid.
+   Each tile is a 16:9 box rendered at the natural slide size, then
+   scaled down via CSS transform so the type cascade is preserved. The
+   tile itself uses aspect-ratio so it always reads as a landscape
+   "preview" regardless of viewport width. */
+[is-~='presentation'][data-mode='overview'] {
+    [is-~='slides'] {
+        display: grid;
+        /* Each tile is at least 36ch wide, 16:9 ratio. Auto-rows match
+           the column height to keep tiles square-ish without aspect-ratio
+           drama (which collapses when children are position:absolute). */
+        grid-template-columns: repeat(auto-fit, minmax(36ch, 1fr));
+        grid-auto-rows: calc((36ch * 9) / 16);
+        gap: 2ch;
+        padding: 2lh 3ch calc(2lh + 1lh) 3ch;
+        overflow-y: auto;
+        height: 100%;
+        align-content: start;
+    }
+    [is-~='slide'] {
+        position: relative !important;
+        inset: auto !important;
+        width: 100%;
+        height: 100%;
+        opacity: 0.75 !important;
+        pointer-events: auto !important;
+        cursor: pointer;
+        border: 1px solid var(--background2);
+        background-color: var(--background0);
+        overflow: hidden;
+        padding: 0 !important;
+        transform: none !important;
+        transition: none;
+        display: block !important;
+    }
+    /* .slide-inner: render the slide at 1280x720 design canvas, then
+       scale-down via transform so it fits the tile. JS sets --ov-scale
+       per tile based on the actual rendered width. */
+    [is-~='slide'] .slide-inner {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1280px;
+        height: 720px;
+        transform-origin: top left;
+        transform: scale(var(--ov-scale, 0.32));
+        padding: 2lh 6ch;
+        font-size: 2em;
+        line-height: 1.4;
+        display: flex;
+        flex-direction: column;
+        justify-content: safe center;
+    }
+    [is-~='slide'] {
+        transition:
+            box-shadow 100ms linear,
+            border-color 100ms linear,
+            opacity 100ms linear;
+    }
+    [is-~='slide']:hover {
+        opacity: 1 !important;
+        border-color: var(--accent, var(--blue));
+        box-shadow: 3px 3px 0 0 var(--foreground0);
+    }
+    [is-~='slide'][data-current] {
+        opacity: 1 !important;
+        border-color: var(--accent, var(--blue));
+        box-shadow: 2px 2px 0 0 var(--foreground0);
+    }
+}
+
+/* Click-to-zoom modal (lives at body root, scoped to slides only) */
+.slide-zoom-dialog {
+    border: none;
+    padding: 0;
+    background: transparent;
+    margin: auto;
+    max-width: 95vw;
+    max-height: 95vh;
+}
+.slide-zoom-dialog::backdrop {
+    background-color: oklch(from var(--background0) l c h / 0.85);
+    backdrop-filter: blur(4px);
+}
+.slide-zoom-dialog img {
+    max-width: 95vw;
+    max-height: 95vh;
+    width: auto;
+    height: auto;
+    cursor: zoom-out;
+    background-color: var(--background0);
+    border: 1px solid var(--background2);
+}
+
+/* PDF print: one slide per page. Triggered by either the browser's
+   native print (⌘P) or the in-page `p` key (which adds .slides-print-mode
+   to <body> and then calls window.print()). Both selectors share the
+   same ruleset via the :is() group below. */
+:is(body.slides-print-mode, body) [is-~='presentation'] {
+    /* default deck mode unchanged */
+}
+
+@media print {
+    body.slides-print-mode\? body {
+        background-color: white;
+    }
+}
+
+/* The actual print-layout rules. We can't combine an at-rule with a
+   selector, so duplicate the ruleset under @media print and under the
+   body.slides-print-mode class. */
+@media print {
+    [is-~='presentation'] {
+        position: static !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+    [is-~='slides'] {
+        display: block !important;
+        height: auto !important;
+    }
+    [is-~='slide'] {
+        position: relative !important;
+        inset: auto !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        transform: none !important;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        page-break-after: always;
+        break-after: page;
+    }
+    [is-~='slide-status'] {
+        display: none !important;
+    }
+    [is-~='slide'] .slide-inner {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        transform: none !important;
+    }
+}
+body.slides-print-mode [is-~='presentation'] {
+    position: static !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+body.slides-print-mode [is-~='slides'] {
+    display: block !important;
+    height: auto !important;
+}
+body.slides-print-mode [is-~='slide'] {
+    position: relative !important;
+    inset: auto !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    page-break-after: always;
+    break-after: page;
+}
+body.slides-print-mode [is-~='slide-status'] {
+    display: none !important;
+}
+body.slides-print-mode [is-~='slide'] .slide-inner {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    transform: none !important;
+}

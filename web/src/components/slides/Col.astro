@@ -1,0 +1,17 @@
+---
+/**
+ * One column inside <Cols>.
+ *
+ * Props:
+ * - width: optional flex grow value (default 1)
+ */
+interface Props {
+    width?: number | string
+}
+const { width = 1 } = Astro.props
+const style = `flex: ${width} 1 0;`
+---
+
+<div class="slide-col" {style}>
+    <slot />
+</div>
