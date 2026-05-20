@@ -58,6 +58,10 @@ const ogImage = ogSlug
             if (migratedTheme && migratedTheme !== storedTheme) {
                 localStorage.setItem('webtui-theme', migratedTheme)
             }
+
+            // Mono-font preference (default: iosevka)
+            const storedMono = localStorage.getItem('mono-font') ?? 'iosevka'
+            document.documentElement.setAttribute('data-mono-font', storedMono)
         </script>
         <meta name="generator" content={Astro.generator} />
         <title>{pageTitle}</title>

@@ -125,9 +125,17 @@
         -webkit-font-smoothing: antialiased;
     }
     :root {
-        --font-family:
-            'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace,
-            'Symbols Nerd Font';
+        /* Font family is composed: --font-stack (the user-chosen mono
+           family or system stack) + 'Symbols Nerd Font' as a final
+           fallback so icon glyphs render regardless of the chosen mono.
+           Switch the user-visible body font via [data-mono-font]. */
+        --font-stack-iosevka:
+            'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace;
+        --font-stack-system:
+            ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas,
+            'Liberation Mono', 'Courier New', monospace;
+        --font-stack: var(--font-stack-iosevka);
+        --font-family: var(--font-stack), 'Symbols Nerd Font';
         --font-size: clamp(0.95rem, 0.6rem + 1vw, 1.0625rem);
         /* --line-height: 1.5; */
         --line-height: initial;
@@ -158,6 +166,15 @@
         --focus-marker: var(--accent, var(--red));
         --focus-rail-size: 0pt;
         --focus-region-border: var(--foreground0);
+    }
+    /* Mono-font picker — sets --font-stack (the user-visible part);
+       'Symbols Nerd Font' is always appended via --font-family so icons
+       keep rendering regardless of which mono font is chosen. */
+    :root[data-mono-font='iosevka'] {
+        --font-stack: var(--font-stack-iosevka);
+    }
+    :root[data-mono-font='system'] {
+        --font-stack: var(--font-stack-system);
     }
     ::highlight(vim) {
         background-color: var(--foreground0);

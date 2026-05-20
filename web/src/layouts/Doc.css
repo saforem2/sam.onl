@@ -295,6 +295,28 @@
             border-right: none;
         }
     }
+    /* Help button: chip styling like the slide-deck status-bar `?` */
+    #vsl-btn-q {
+        cursor: pointer;
+        padding: 0 0.75ch;
+        color: var(--foreground2);
+        background-color: var(--background2);
+        border: 1px solid var(--foreground3);
+        border-radius: 3px;
+        border-right: 1px solid var(--foreground3);
+        line-height: 1;
+        transition:
+            color 100ms linear,
+            background-color 100ms linear;
+        &:hover,
+        &:focus-visible {
+            color: var(--foreground0);
+            background-color: oklch(
+                from var(--accent, var(--blue))
+                    calc(l * var(--oklch-scale, 0.85)) c h / 0.2
+            );
+        }
+    }
 }
 
 h1::before {
@@ -1131,6 +1153,11 @@ article {
 
     #doc-article {
         margin-bottom: 2lh;
+        /* WebTUI's box-= utility sets `isolation: isolate` which traps
+           position:fixed children (like the footnote tooltip) inside this
+           stacking context — preventing them from rendering above the
+           sidebar. Override so the tooltip can escape. */
+        isolation: auto;
     }
 
     .mobile-hidden {

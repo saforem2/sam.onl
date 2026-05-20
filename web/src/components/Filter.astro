@@ -32,6 +32,11 @@ const themeOptions = {
     catppuccin: 'Catppuccin Mocha',
     'catppuccin-latte': 'Catppuccin Latte',
 }
+
+const fontOptions = {
+    iosevka: 'Iosevka',
+    system: 'System',
+}
 ---
 
 <dialog id="command-dialog" size-="small" position-="center" container-="fill">
@@ -59,6 +64,23 @@ const themeOptions = {
                                 data-theme-option={key}
                                 aria-selected="false"
                                 class="command-theme-chip">
+                                {value}
+                            </button>
+                        ))
+                    }
+                </row>
+            </section>
+            <section class="command-section command-section-font">
+                <span is-="badge" class="command-section-title cmd-title-blue"
+                    >&#xf031; Font</span
+                >
+                <row class="command-theme-buttons" gap-="0">
+                    {
+                        Object.entries(fontOptions).map(([key, value]) => (
+                            <button
+                                data-font-option={key}
+                                aria-selected="false"
+                                class="command-theme-chip command-font-chip">
                                 {value}
                             </button>
                         ))
@@ -337,6 +359,9 @@ const themeOptions = {
     }
     .cmd-title-orange {
         --color: var(--orange);
+    }
+    .cmd-title-blue {
+        --color: var(--blue);
     }
 
     .keybind-grid {
@@ -832,5 +857,31 @@ const themeOptions = {
         button.addEventListener('click', () => {
             themeDialog.close()
         })
+    })
+
+    // ── Mono font picker ──────────────────────────────────────────────
+    // Delegated click so we catch font chips from any container (this
+    // dialog, SlideHelpDialog, etc.). Lives here in Filter.astro so it
+    // ships on every page that uses the command dialog (Doc layout etc.).
+    const fontStorageKey = 'mono-font'
+    const setMonoFont = (font: string) => {
+        document.documentElement.setAttribute('data-mono-font', font)
+        document
+            .querySelectorAll<HTMLElement>('[data-font-option]')
+            .forEach((btn) => {
+                const v = btn.getAttribute('data-font-option')
+                btn.setAttribute('aria-selected', String(v === font))
+                btn.setAttribute('data-active', String(v === font))
+            })
+        localStorage.setItem(fontStorageKey, font)
+    }
+    setMonoFont(localStorage.getItem(fontStorageKey) ?? 'iosevka')
+    document.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement)?.closest?.(
+            '[data-font-option]',
+        ) as HTMLElement | null
+        if (!btn) return
+        const v = btn.getAttribute('data-font-option')
+        if (v) setMonoFont(v)
     })
 </script>
