@@ -1,7 +1,6 @@
 ---
 import Navbar from '../../NavbarMinimal.astro'
 import Widgets from '../widgets/Widgets.astro'
-import VimNavigation from '../VimNavigation.astro'
 import Filter from '../../Filter.astro'
 
 interface Props {
@@ -103,6 +102,7 @@ const total = variants.length
 ---
 
 <header id="intro" {...variant === 7 ? { 'data-webtui-theme': 'nord' } : {}}>
+    {variant >= 8 && <Navbar />}
     <Widgets {variant} {home} />
     {
         variant < 8 && (
@@ -248,47 +248,64 @@ const total = variants.length
         variant >= 8 && (
             <>
                 <Filter />
-                <div id="vim-navigation-container">
-                    <VimNavigation />
+                <div id="vim-statusline">
+                    <span class="vsl-mode">NORMAL</span>
+                    <span class="vsl-branch">&#xe725; main</span>
+                    <span class="vsl-author">Sam Foreman</span>
+                    <span class="vsl-site">sam.onl</span>
+                    <span class="vsl-spacer" />
+                    <span class="vsl-keys">
+                        <span id="vsl-last-key" />
+                        <button id="vsl-btn-j" tabindex="-1">
+                            j
+                        </button>
+                        <button id="vsl-btn-k" tabindex="-1">
+                            k
+                        </button>
+                        <button id="vsl-btn-q" tabindex="-1">
+                            ?
+                        </button>
+                    </span>
+                    <span class="vsl-clock">
+                        <span id="vsl-clock-text" />
+                    </span>
+                    <span class="vsl-pos">Top</span>
+                    <span class="vsl-loc">1:1</span>
                 </div>
-                <column id="statusline">
-                    <row>
-                        <span
-                            is-="badge"
-                            variant-="green"
-                            style="--badge-text: var(--background0)">
-                            NORMAL
-                        </span>
-                        <span
-                            is-="badge"
-                            variant-="background1"
-                            style="--badge-text: var(--green)">
-                            &#xe725; main
-                        </span>
-                        <row self-="grow">
-                            <span is-="badge" variant-="code-bg">
-                                sam.onl
-                            </span>
-                        </row>
-                        <row id="statusline-right">
-                            <span is-="badge" variant-="code-bg">
-                                utf-8
-                            </span>
-                            <span is-="badge" variant-="background1">
-                                Top
-                            </span>
-                            <span
-                                is-="badge"
-                                variant-="green"
-                                style="--badge-text: var(--background0)">
-                                1:1
-                            </span>
-                        </row>
-                    </row>
-                </column>
             </>
         )
     }
+
+    <script>
+        import { isUserTyping } from '@/utils/vim'
+
+        const clockEl = document.getElementById('vsl-clock-text')
+        const lastKeyEl = document.getElementById('vsl-last-key')
+
+        if (clockEl) {
+            const pad = (n: number) => String(n).padStart(2, '0')
+            const tick = () => {
+                const d = new Date()
+                clockEl.textContent = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+            }
+            tick()
+            setInterval(tick, 10_000)
+        }
+
+        if (lastKeyEl) {
+            let timer: ReturnType<typeof setTimeout> | null = null
+            window.addEventListener('keydown', (e) => {
+                if (isUserTyping()) return
+                if (e.key.length === 1) {
+                    lastKeyEl.textContent = e.key
+                    if (timer) clearTimeout(timer)
+                    timer = setTimeout(() => {
+                        lastKeyEl.textContent = ''
+                    }, 2000)
+                }
+            })
+        }
+    </script>
 
     <script>
         import {
@@ -302,16 +319,18 @@ const total = variants.length
                 grid,
                 '[tabindex="0"], a[href], button:not([disabled])',
             )
+            // Focus the intro widget on load. The widget sits at the top
+            // of the page so this won't scroll past anything on mobile.
             const intro = document.getElementById('intro-widget')
-            if (intro && window.innerWidth > 768) {
+            if (intro) {
                 vimFocusElement(intro)
             }
 
             const shortcuts: Record<string, string> = {
                 a: '#intro-widget',
                 w: '.work-widget',
-                o: '.posts-widget',
-                s: '.talks-widget',
+                p: '.posts-widget',
+                t: '.talks-widget',
                 l: '#stats-widget',
                 m: '.iw-nav-home',
             }
@@ -360,6 +379,9 @@ const total = variants.length
         }
     </script>
 
+    <style is:global>
+        @import '@/layouts/Doc.css' layer(doc);
+    </style>
     <style>
         #intro {
             position: relative;
@@ -555,29 +577,13 @@ const total = variants.length
         }
 
         /* Vim navigation container — fixed top-right */
-        #vim-navigation-container {
-            position: fixed;
-            bottom: 2lh;
-            right: 2ch;
-            z-index: 100;
-        }
-
-        /* Statusline — fixed bottom */
-        #statusline {
+        /* Statusline — position only, colors from Doc.css */
+        #vim-statusline {
             position: fixed;
             bottom: 0;
             left: 0;
-            width: 100%;
-            height: 1lh;
-            background-color: var(--background1);
+            right: 0;
             z-index: 100;
-            padding-inline: 1ch;
-        }
-
-        @media (max-width: 50ch) {
-            #statusline-right {
-                display: none;
-            }
         }
 
         /* Responsive widget grid — min-width override */

@@ -13,7 +13,9 @@ import catppuccinStyle from '@webtui/theme-catppuccin?raw'
 
 A custom theme for WebTUI with light and dark variants
 
-### Typography
+## Theme
+
+Theme example
 
 <Example
     stylesheets={[typographyStyle, customStyle, catppuccinStyle]}
@@ -35,7 +37,7 @@ A custom theme for WebTUI with light and dark variants
 `}
 />
 
-### Badges
+## Badges
 
 <Example
     stylesheets={[badgeStyle, customStyle, catppuccinStyle]}
@@ -67,7 +69,7 @@ A custom theme for WebTUI with light and dark variants
 `}
 />
 
-### Buttons
+## Buttons
 
 <Example
     stylesheets={[buttonStyle, customStyle, catppuccinStyle]}
@@ -94,7 +96,7 @@ A custom theme for WebTUI with light and dark variants
 `}
 />
 
-### Callouts
+## Callouts
 
 <Example
     stylesheets={[accordionStyle, customStyle, catppuccinStyle]}
@@ -121,8 +123,8 @@ A custom theme for WebTUI with light and dark variants
   color: var(--callout-color);
   font-weight: bold;
 }
-.callout > summary::before { content: '[+] '; }
-.callout[open] > summary::before { content: '[-] '; }
+.callout > summary::before { content: '+'; }
+.callout[open] > summary::before { content: 'x'; }
 .callout p { margin: 0; color: var(--foreground1); }
 .callout-note { --callout-color: var(--blue, #118cc2); }
 .callout-tip { --callout-color: var(--foreground3, #838383); }
@@ -155,66 +157,6 @@ A custom theme for WebTUI with light and dark variants
   <summary>Success</summary>
   <p>This is a success callout confirming things worked.</p>
 </details>
-`}
-/>
-
-## Theme Colors
-
-<Example
-    stylesheets={[customStyle, catppuccinStyle]}
-    themes={{
-        'custom-light': 'Custom Light',
-        'custom-dark': 'Custom Dark',
-        'catppuccin-latte': 'Catppuccin Latte',
-        'catppuccin': 'Catppuccin Mocha',
-    }}
-    data-initial-theme="custom-dark"
-    html={`
-<style>
-.color-grid { display: flex; flex-direction: column; gap: 0.5rem; font-family: monospace; font-size: 0.8rem; }
-.color-row { display: flex; gap: 0.25rem; align-items: center; }
-.color-row-label { width: 7rem; opacity: 0.6; flex-shrink: 0; }
-.swatch { width: 2.5rem; height: 1.5rem; border-radius: 3px; border: 1px solid var(--foreground2); display: inline-flex; align-items: center; justify-content: center; font-size: 0.6rem; color: var(--foreground2); }
-</style>
-<div class="color-grid">
-  <div class="color-row">
-    <span class="color-row-label">foreground</span>
-    <span class="swatch" style="background:var(--foreground0)">0</span>
-    <span class="swatch" style="background:var(--foreground1)">1</span>
-    <span class="swatch" style="background:var(--foreground2)">2</span>
-    <span class="swatch" style="background:var(--foreground3)">3</span>
-  </div>
-  <div class="color-row">
-    <span class="color-row-label">background</span>
-    <span class="swatch" style="background:var(--background0)">0</span>
-    <span class="swatch" style="background:var(--background1)">1</span>
-    <span class="swatch" style="background:var(--background2)">2</span>
-    <span class="swatch" style="background:var(--background3)">3</span>
-  </div>
-  <div class="color-row">
-    <span class="color-row-label">accents</span>
-    <span class="swatch" style="background:var(--red)" title="red"></span>
-    <span class="swatch" style="background:var(--orange)" title="orange"></span>
-    <span class="swatch" style="background:var(--yellow)" title="yellow"></span>
-    <span class="swatch" style="background:var(--green)" title="green"></span>
-    <span class="swatch" style="background:var(--teal)" title="teal"></span>
-    <span class="swatch" style="background:var(--blue)" title="blue"></span>
-    <span class="swatch" style="background:var(--purple)" title="purple"></span>
-    <span class="swatch" style="background:var(--pink)" title="pink"></span>
-    <span class="swatch" style="background:var(--aqua)" title="aqua"></span>
-    <span class="swatch" style="background:var(--accent)" title="accent"></span>
-  </div>
-  <div class="color-row">
-    <span class="color-row-label">semantic</span>
-    <span class="swatch" style="background:var(--text)" title="text"></span>
-    <span class="swatch" style="background:var(--url)" title="url"></span>
-    <span class="swatch" style="background:var(--base)" title="base"></span>
-    <span class="swatch" style="background:var(--mantle)" title="mantle"></span>
-    <span class="swatch" style="background:var(--crust)" title="crust"></span>
-    <span class="swatch" style="background:var(--code-bg)" title="code-bg"></span>
-    <span class="swatch" style="background:var(--code-fg)" title="code-fg"></span>
-  </div>
-</div>
 `}
 />
 
@@ -276,7 +218,7 @@ Components affected/modified by the theme
 - [Badge](#badge)
 - [Button](#button)
 
-### Typography
+## Text
 
 - Colors headings from `h1` to `h6`
 - inline `<a>` tags are underlined and colored to be `var(--url)`
@@ -290,7 +232,7 @@ Components affected/modified by the theme
 <p><a href="https://example.com">Link</a> <code>Inline Code</code></p>
 ```
 
-### Badge
+## Badge
 
 Adds variants to badges matching all custom accent colors
 
@@ -317,7 +259,7 @@ Adds variants to badges matching all custom accent colors
 <span is-="badge" variant-="lavender">lavender</span>
 ```
 
-### Button
+## Button
 
 Adds variants to buttons matching all custom accent colors, plus `dim` and `bright`
 
@@ -407,3 +349,64 @@ Adds variants to buttons matching all custom accent colors, plus `dim` and `brig
     --purple: #ef7fff;
 }
 ```
+
+## Theme Colors
+
+<Example
+    stylesheets={[customStyle, catppuccinStyle]}
+    themes={{
+        'custom-light': 'Custom Light',
+        'custom-dark': 'Custom Dark',
+        'catppuccin-latte': 'Catppuccin Latte',
+        'catppuccin': 'Catppuccin Mocha',
+    }}
+    data-initial-theme="custom-dark"
+    html={`
+<style>
+.color-grid { display: flex; flex-direction: column; gap: 0.5rem; font-family: monospace; font-size: 0.8rem; }
+.color-row { display: flex; gap: 0.25rem; align-items: center; }
+.color-row-label { width: 7rem; opacity: 0.6; flex-shrink: 0; }
+.swatch { width: 2.5rem; height: 1.5rem; border-radius: 3px; border: 1px solid var(--foreground2); display: inline-flex; align-items: center; justify-content: center; font-size: 0.6rem; color: var(--foreground2); }
+</style>
+<div class="color-grid">
+  <div class="color-row">
+    <span class="color-row-label">foreground</span>
+    <span class="swatch" style="background:var(--foreground0)">0</span>
+    <span class="swatch" style="background:var(--foreground1)">1</span>
+    <span class="swatch" style="background:var(--foreground2)">2</span>
+    <span class="swatch" style="background:var(--foreground3)">3</span>
+  </div>
+  <div class="color-row">
+    <span class="color-row-label">background</span>
+    <span class="swatch" style="background:var(--background0)">0</span>
+    <span class="swatch" style="background:var(--background1)">1</span>
+    <span class="swatch" style="background:var(--background2)">2</span>
+    <span class="swatch" style="background:var(--background3)">3</span>
+  </div>
+  <div class="color-row">
+    <span class="color-row-label">accents</span>
+    <span class="swatch" style="background:var(--red)" title="red"></span>
+    <span class="swatch" style="background:var(--orange)" title="orange"></span>
+    <span class="swatch" style="background:var(--yellow)" title="yellow"></span>
+    <span class="swatch" style="background:var(--green)" title="green"></span>
+    <span class="swatch" style="background:var(--teal)" title="teal"></span>
+    <span class="swatch" style="background:var(--blue)" title="blue"></span>
+    <span class="swatch" style="background:var(--purple)" title="purple"></span>
+    <span class="swatch" style="background:var(--pink)" title="pink"></span>
+    <span class="swatch" style="background:var(--aqua)" title="aqua"></span>
+    <span class="swatch" style="background:var(--accent)" title="accent"></span>
+  </div>
+  <div class="color-row">
+    <span class="color-row-label">semantic</span>
+    <span class="swatch" style="background:var(--text)" title="text"></span>
+    <span class="swatch" style="background:var(--url)" title="url"></span>
+    <span class="swatch" style="background:var(--base)" title="base"></span>
+    <span class="swatch" style="background:var(--mantle)" title="mantle"></span>
+    <span class="swatch" style="background:var(--crust)" title="crust"></span>
+    <span class="swatch" style="background:var(--code-bg)" title="code-bg"></span>
+    <span class="swatch" style="background:var(--code-fg)" title="code-fg"></span>
+  </div>
+</div>
+`}
+/>
+

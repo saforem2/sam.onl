@@ -1,0 +1,432 @@
+---
+/**
+ * Slide-deck help dialog. Triggered by `?` or the status-bar `?` button.
+ * Contains:
+ *  - mini-navbar (home/theme/github/rss/search) matching the root page
+ *  - Theme picker (mirrors Filter.astro themeOptions)
+ *  - Table of Contents — populated at runtime from each <Slide>'s first
+ *    heading; clicking a TOC entry jumps to that slide
+ *  - Keybinds reference
+ */
+const themeOptions = {
+    'custom-light': 'Light',
+    'custom-dark': 'Dark',
+    catppuccin: 'Catppuccin Mocha',
+    'catppuccin-latte': 'Catppuccin Latte',
+}
+const fontOptions = {
+    iosevka: 'Iosevka',
+    system: 'System',
+}
+---
+
+<dialog id="slide-help-dialog" class="slide-help-dialog">
+    <div box-="square" shear-="top" class="slide-help-content">
+        <row align-="between">
+            <span is-="badge" variant-="green">&#xf120; Slides</span>
+            <button id="slide-help-close" variant-="foreground0" size-="small"
+                >x</button
+            >
+        </row>
+
+        <!-- Mini navbar (matches root page) -->
+        <nav class="slide-help-navbar">
+            <a href="/" class="shn-link" title="Home">&#xef85;</a>
+            <button id="slide-help-theme-btn" class="shn-link" title="Theme">
+                &#xf1fc;
+            </button>
+            <a
+                href="https://github.com/saforem2/sam.onl"
+                target="_blank"
+                class="shn-link"
+                title="GitHub">&#xea84;</a
+            >
+            <a href="/rss.xml" target="_blank" class="shn-link" title="RSS"
+                >&#xf09e;</a
+            >
+            <a href="/" class="shn-link" title="Search">&#xea6d;</a>
+        </nav>
+
+        <section class="slide-help-section">
+            <span is-="badge" class="shs-title shs-title-green"
+                >&#xf1fc; <u>T</u>heme</span
+            >
+            <row class="shn-theme-buttons" gap-="0">
+                {
+                    Object.entries(themeOptions).map(([key, value]) => (
+                        <button
+                            data-theme-dropdown="true"
+                            data-theme-option={key}
+                            aria-selected="false"
+                            class="shn-theme-chip">
+                            {value}
+                        </button>
+                    ))
+                }
+            </row>
+        </section>
+
+        <section class="slide-help-section">
+            <span is-="badge" class="shs-title shs-title-blue"
+                >&#xf031; Font</span
+            >
+            <row class="shn-theme-buttons" gap-="0">
+                {
+                    Object.entries(fontOptions).map(([key, value]) => (
+                        <button
+                            data-font-option={key}
+                            aria-selected="false"
+                            class="shn-theme-chip shn-font-chip">
+                            {value}
+                        </button>
+                    ))
+                }
+            </row>
+        </section>
+
+        <section class="slide-help-section">
+            <span is-="badge" class="shs-title shs-title-blue"
+                >&#xf03a; Table of Contents</span
+            >
+            <ol id="slide-help-toc" class="slide-help-toc"></ol>
+        </section>
+
+        <section class="slide-help-section">
+            <span is-="badge" class="shs-title shs-title-orange"
+                >&#xf11c; <u>K</u>eybinds</span
+            >
+            <div class="slide-help-keybinds">
+                <code>j / →</code><span>Next slide / fragment</span>
+                <code>k / ←</code><span>Previous slide / fragment</span>
+                <code>Space</code><span>Advance (fragments first)</span>
+                <code>g / G</code><span>First / last slide</span>
+                <code>s</code><span>Open speaker window</span>
+                <code>Esc</code><span>Toggle overview / close dialog</span>
+                <code>f</code><span>Fullscreen</span>
+                <code>p</code><span>Print / export to PDF</span>
+                <code>?</code><span>This dialog</span>
+            </div>
+        </section>
+    </div>
+</dialog>
+
+<style>
+    .slide-help-dialog {
+        margin: auto;
+        padding: 0;
+        background: transparent;
+        border: none;
+        color: var(--foreground1);
+        max-width: min(86vw, 80ch);
+        max-height: 86vh;
+
+        &::backdrop {
+            background-color: oklch(from var(--background0) l c h / 0.7);
+            backdrop-filter: blur(4px);
+        }
+    }
+
+    .slide-help-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5lh;
+        padding: 1ch;
+        background-color: var(--background0);
+        max-height: 86vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+
+    .slide-help-navbar {
+        display: flex;
+        gap: 0;
+        background-color: var(--background1);
+        border: 1px solid var(--background2);
+        align-self: flex-start;
+    }
+    .shn-link {
+        all: unset;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 1ch;
+        height: 1lh;
+        color: var(--foreground3);
+        cursor: pointer;
+        font-family: var(--font-family);
+        text-decoration: none;
+        border-right: 1px solid var(--background2);
+        transition:
+            background-color 100ms linear,
+            color 100ms linear;
+        &:last-child {
+            border-right: none;
+        }
+        &:hover,
+        &:focus-visible {
+            color: var(--foreground0);
+            background-color: oklch(
+                from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h / 0.15
+            );
+        }
+    }
+
+    .slide-help-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5lh;
+        margin-block-start: 0.5lh;
+    }
+    .shs-title {
+        background-image: none;
+        --badge-text: none;
+        --badge-color: none;
+        --color: var(--accent, var(--blue));
+        color: var(--color);
+        background-color: oklch(
+            from var(--color) calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+        );
+        font-weight: bold;
+        align-self: flex-start;
+        u {
+            text-decoration: underline;
+        }
+    }
+    .shs-title-green {
+        --color: var(--green);
+    }
+    .shs-title-blue {
+        --color: var(--blue);
+    }
+    .shs-title-orange {
+        --color: var(--orange);
+    }
+
+    .shn-theme-buttons {
+        gap: 0;
+        flex-wrap: wrap;
+    }
+    .shn-theme-chip {
+        all: unset;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        height: 1lh;
+        padding: 0 1ch;
+        color: var(--foreground2);
+        border: 1px solid var(--background2);
+        border-right-width: 0;
+        background-color: var(--background0);
+        transition:
+            background-color 100ms linear,
+            color 100ms linear;
+        &:last-of-type {
+            border-right-width: 1px;
+        }
+        &:hover,
+        &:focus-visible {
+            color: var(--foreground0);
+            background-color: oklch(
+                from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+            );
+        }
+        &[aria-selected='true'] {
+            color: var(--foreground0);
+            background-color: oklch(
+                from var(--green) calc(l * var(--oklch-scale, 0.85)) c h / 0.15
+            );
+            font-weight: bold;
+        }
+    }
+    /* Font picker: match the blue accent used by the section title above. */
+    .shn-font-chip[aria-selected='true'] {
+        background-color: oklch(
+            from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h / 0.15
+        ) !important;
+    }
+
+    .slide-help-toc {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        /* Cap TOC at a fraction of the viewport so it never pushes the
+           keybinds section off the bottom of the dialog. */
+        max-height: min(40vh, 14lh);
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+    .slide-help-toc li {
+        margin: 0;
+    }
+    .slide-help-toc a {
+        display: flex;
+        gap: 1ch;
+        align-items: baseline;
+        padding: 0 1ch;
+        color: var(--foreground1);
+        text-decoration: none;
+        line-height: 1.25;
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(
+                from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+            );
+        }
+        &[data-current] {
+            color: var(--accent, var(--blue));
+            font-weight: bold;
+        }
+    }
+    .slide-help-toc .toc-num {
+        color: var(--foreground3);
+        flex-shrink: 0;
+        width: 4ch;
+        text-align: right;
+    }
+
+    .slide-help-keybinds {
+        display: grid;
+        /* Two pairs of (key, description). Use 1fr for both description
+           columns so they share remaining width equally — and `minmax(0, 1fr)`
+           so they can shrink+wrap instead of forcing the grid wider than
+           the dialog. */
+        grid-template-columns: max-content minmax(0, 1fr) max-content minmax(
+                0,
+                1fr
+            );
+        column-gap: 1ch;
+        row-gap: 0.25lh;
+        align-items: baseline;
+        width: 100%;
+        code {
+            justify-self: end;
+            color: var(--foreground0);
+            background-color: var(--background2);
+            border: 1px solid var(--foreground2);
+            border-radius: 3px;
+            padding: 0 0.5ch;
+            font-family: var(--font-family);
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+        span {
+            color: var(--foreground2);
+            min-width: 0;
+            /* Allow the description text to wrap if needed instead of
+               pushing the column wider than its grid track. */
+            white-space: normal;
+            overflow-wrap: break-word;
+        }
+    }
+    @media (max-width: 600px) {
+        .slide-help-keybinds {
+            grid-template-columns: max-content minmax(0, 1fr);
+        }
+    }
+</style>
+
+<script>
+    const dlg = document.getElementById(
+        'slide-help-dialog',
+    ) as HTMLDialogElement | null
+    if (dlg) {
+        document
+            .getElementById('slide-help-close')
+            ?.addEventListener('click', () => dlg.close())
+        // Click outside content to close
+        dlg.addEventListener('click', (e) => {
+            if (e.target === dlg) dlg.close()
+        })
+
+        // Build the TOC from slide titles
+        const buildToc = () => {
+            const tocEl = document.getElementById('slide-help-toc')
+            if (!tocEl) return
+            const slides = Array.from(
+                document.querySelectorAll<HTMLElement>('[is-~="slide"]'),
+            )
+            tocEl.innerHTML = ''
+            slides.forEach((s, i) => {
+                const h = s.querySelector('h1, h2, h3')
+                const title = h?.textContent?.trim() ?? `Slide ${i + 1}`
+                const li = document.createElement('li')
+                const a = document.createElement('a')
+                a.href = `#${i + 1}`
+                a.innerHTML = `<span class="toc-num">${i + 1}.</span> <span class="toc-title">${title}</span>`
+                if (s.hasAttribute('data-current')) {
+                    a.setAttribute('data-current', '')
+                }
+                a.addEventListener('click', () => dlg.close())
+                li.appendChild(a)
+                tocEl.appendChild(li)
+            })
+        }
+        // Build TOC every time the dialog opens. <dialog>'s native
+        // toggle event isn't reliable for modal mode, so we observe the
+        // `open` attribute instead.
+        const onOpen = () => {
+            if (dlg.open) {
+                buildToc()
+                syncActive()
+            }
+        }
+        new MutationObserver(onOpen).observe(dlg, {
+            attributes: true,
+            attributeFilter: ['open'],
+        })
+
+        // Theme picker: chip click → update --webtui-theme + persist.
+        const themeChips = dlg.querySelectorAll<HTMLElement>(
+            '.shn-theme-chip[data-theme-option]',
+        )
+        const setTheme = (theme: string) => {
+            document.documentElement.setAttribute('data-webtui-theme', theme)
+            localStorage.setItem('webtui-theme', theme)
+            themeChips.forEach((btn) => {
+                const v = btn.getAttribute('data-theme-option')
+                btn.setAttribute('aria-selected', String(v === theme))
+            })
+        }
+        themeChips.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const v = btn.getAttribute('data-theme-option')
+                if (v) setTheme(v)
+            })
+        })
+
+        // Font picker: chip click → update --mono-font + persist.
+        const fontChips = dlg.querySelectorAll<HTMLElement>(
+            '.shn-font-chip[data-font-option]',
+        )
+        const setFont = (font: string) => {
+            document.documentElement.setAttribute('data-mono-font', font)
+            localStorage.setItem('mono-font', font)
+            fontChips.forEach((btn) => {
+                const v = btn.getAttribute('data-font-option')
+                btn.setAttribute('aria-selected', String(v === font))
+            })
+        }
+        fontChips.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const v = btn.getAttribute('data-font-option')
+                if (v) setFont(v)
+            })
+        })
+
+        // Mark the currently-active chip on open
+        const syncActive = () => {
+            const curTheme =
+                document.documentElement.getAttribute('data-webtui-theme') ?? ''
+            themeChips.forEach((btn) => {
+                const v = btn.getAttribute('data-theme-option')
+                btn.setAttribute('aria-selected', String(v === curTheme))
+            })
+            const curFont =
+                document.documentElement.getAttribute('data-mono-font') ??
+                'iosevka'
+            fontChips.forEach((btn) => {
+                const v = btn.getAttribute('data-font-option')
+                btn.setAttribute('aria-selected', String(v === curFont))
+            })
+        }
+    }
+</script>

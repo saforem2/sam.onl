@@ -9,14 +9,18 @@ const { title, url } = Astro.props as Props
 
 <span class="share-buttons">
     <button
-        class="share-btn"
+        class="share-btn share-btn-copy"
+        is-="badge"
+        size-="small"
         data-action="copy"
         data-url={url}
         title="Copy link"
-        aria-label="Copy link">&#xf0c5; copy</button
+        aria-label="Copy link">&#xf0c5;</button
     >
     <a
-        class="share-btn"
+        class="share-btn share-btn-twitter"
+        is-="badge"
+        size-="small"
         href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`}
         target="_blank"
         rel="noopener noreferrer"
@@ -24,7 +28,9 @@ const { title, url } = Astro.props as Props
         aria-label="Share on Twitter/X">&#xf099;</a
     >
     <a
-        class="share-btn"
+        class="share-btn share-btn-bluesky"
+        is-="badge"
+        size-="small"
         href={`https://bsky.app/intent/compose?text=${encodeURIComponent(`${title} ${url}`)}`}
         target="_blank"
         rel="noopener noreferrer"
@@ -43,17 +49,69 @@ const { title, url } = Astro.props as Props
     .share-btn {
         font-family: var(--font-family);
         font-size: 1em;
-        padding: 0 0.5ch;
+        box-sizing: border-box;
+        width: 3ch;
+        padding: 0;
         color: var(--foreground2);
         background: none;
         border: none;
         cursor: pointer;
         text-decoration: none;
+        text-align: center;
+        justify-content: center;
         opacity: 0.6;
 
         &:hover {
             opacity: 1;
             color: var(--foreground0);
+        }
+    }
+
+    /* Tinted-badge style (kill the gradient + pseudo fills so the
+       background-color paints uniformly). */
+    .share-btn-copy,
+    .share-btn-twitter,
+    .share-btn-bluesky {
+        background-image: none;
+        background-color: var(--badge-color);
+        color: var(--badge-text);
+        opacity: 1;
+
+        &::before,
+        &::after {
+            background-color: transparent;
+        }
+    }
+
+    .share-btn-copy {
+        --badge-color: oklch(from var(--pink) l c h / 0.18);
+        --badge-text: var(--pink);
+
+        &:hover {
+            --badge-color: oklch(from var(--pink) l c h / 0.3);
+            color: var(--pink);
+        }
+    }
+
+    .share-btn-twitter {
+        --twitter: oklch(from #1da1f2 l c h);
+        --badge-color: oklch(from var(--twitter) l c h / 0.18);
+        --badge-text: var(--twitter);
+
+        &:hover {
+            --badge-color: oklch(from var(--twitter) l c h / 0.3);
+            color: var(--twitter);
+        }
+    }
+
+    .share-btn-bluesky {
+        --bluesky: oklch(from #0085ff l c h);
+        --badge-color: oklch(from var(--bluesky) l c h / 0.18);
+        --badge-text: var(--bluesky);
+
+        &:hover {
+            --badge-color: oklch(from var(--bluesky) l c h / 0.3);
+            color: var(--bluesky);
         }
     }
 </style>
@@ -67,14 +125,19 @@ const { title, url } = Astro.props as Props
             const url = (btn as HTMLElement).dataset.url
             if (!url) return
             const original = btn.textContent
+            const originalTitle = btn.getAttribute('title')
             try {
                 await navigator.clipboard.writeText(url)
-                btn.textContent = '\uf00c copied!'
+                btn.textContent = '\uf00c'
+                btn.setAttribute('title', 'Copied!')
             } catch {
-                btn.textContent = '\uf00d failed'
+                btn.textContent = '\uf00d'
+                btn.setAttribute('title', 'Copy failed')
             }
             setTimeout(() => {
                 btn.textContent = original
+                if (originalTitle !== null)
+                    btn.setAttribute('title', originalTitle)
             }, 2000)
         })
     }

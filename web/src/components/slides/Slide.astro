@@ -1,0 +1,21 @@
+---
+/**
+ * A single slide. Use inside <Presentation>.
+ *
+ * Props:
+ * - bg: optional background color (CSS color or var ref)
+ * - id: optional explicit fragment id for deep-linking
+ */
+interface Props {
+    bg?: string
+    id?: string
+}
+const { bg, id } = Astro.props
+const style = bg ? `background-color: ${bg};` : undefined
+---
+
+<section is-="slide" {id} {style}>
+    <div class="slide-inner">
+        <slot />
+    </div>
+</section>

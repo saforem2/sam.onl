@@ -1,57 +1,32 @@
 ---
 import Filter from '@/components/Filter.astro'
-
-interface Props {
-    variant?: number
-}
-
-const { variant } = Astro.props
 ---
 
-<nav id="top-navbar" box-="square">
-    <span id="home-link-wrapper"><a href="/" id="home-link">[&#xef85;]</a></span
-    >
-    {
-        variant === 21 && (
-            <a
-                href="/"
-                is-="badge"
-                variant-="blue"
-                class="navbar-name"
-                style="--badge-text: var(--background0); text-decoration: none;">
-                Sam Foreman
-            </a>
-        )
-    }
-    <row id="links">
-        <span id="nav-links">
-            <a href="/posts" class="nav-link"><u>p</u>osts</a>
-            <a href="/talks" class="nav-link"><u>t</u>alks</a>
-            <a href="/landing" class="nav-link"><u>m</u>ore</a>
-        </span>
-        <button id="theme-button" size-="small">  </button>
+<nav id="top-navbar">
+    <a href="/" id="home-link"></a>
+    <span id="nav-spacer"></span>
+    <span id="nav-right">
+        <button id="theme-button"></button>
         <a
             id="github-button"
             href="https://github.com/saforem2/sam.onl"
-            target="_blank"
-            size-="small">
-            
-        </a>
-        <a id="rss-button" href="/rss.xml" target="_blank" size-="small">  </a>
-        <button id="search-button" size-="small"> &#xea6d;</button>
-    </row>
+            target="_blank"></a
+        >
+        <a id="rss-button" href="/rss.xml" target="_blank"></a>
+        <button id="search-button"></button>
+    </span>
     <details id="nav-dropdown">
-        <summary>&#xf0c9;</summary>
+        <summary></summary>
         <div class="nav-dropdown-content">
-            <a href="/">&#xef85; home</a>
-            <a href="/posts">&#xf044; posts</a>
-            <a href="/talks">&#xf0428; talks</a>
-            <a href="/landing">&#xefa8; more</a>
+            <a href="/"> home</a>
+            <a href="/posts"> posts</a>
+            <a href="/talks">8 talks</a>
+            <a href="/landing"> more</a>
             <a href="https://github.com/saforem2/sam.onl" target="_blank"
-                >&#xe65b; github</a
+                > github</a
             >
-            <a href="/rss.xml" target="_blank">&#xf09e; rss</a>
-            <button id="theme-button-mobile">&#xe22b; theme</button>
+            <a href="/rss.xml" target="_blank"> rss</a>
+            <button id="theme-button-mobile"> theme</button>
         </div>
     </details>
 </nav>
@@ -60,255 +35,113 @@ const { variant } = Astro.props
 <style>
     nav {
         display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1ch;
-        padding: 1lh 2ch;
+        align-items: stretch;
+        gap: 0;
+        height: 1lh;
+        line-height: 1lh;
         white-space: nowrap;
         max-width: 100%;
-        position: relative;
+        overflow: hidden;
+        /* Float in the top-right corner of the page, like the old vim
+           island. Anchored to the #intro container (which is
+           position: relative) so it stays inside the page bounds. */
+        position: absolute;
+        /* JS sets --navbar-left and --navbar-top to align with the
+           #widgets-grid's left edge and roughly halfway between the
+           top of the page and the grid's top. */
+        top: var(--navbar-top, 2lh);
+        left: var(--navbar-left, 1ch);
         z-index: 20;
         min-width: 0;
-
+        width: max-content;
+        background-color: var(--background1);
+        border: 1px solid var(--foreground2);
+        /* TUI hard-offset shadow only when the navbar is being interacted
+           with — keeps the resting state minimal but signals focus. */
+        transition: box-shadow 100ms linear;
+        &:hover,
         &:focus-within {
-            --box-border-color: var(--focus-region-border);
+            box-shadow: 2px 2px 0 0 var(--foreground0, #000);
         }
 
         :is(a[href], button:not([disabled])) {
             position: relative;
             outline: none;
-        }
-
-        :is(a[href], button:not([disabled]))::after {
-            content: '';
-            position: absolute;
-            inset-inline-start: -1ch;
-            inset-block-start: 0;
-            color: transparent;
-            width: 1ch;
-            pointer-events: none;
-        }
-
-        :is(a[href], button:not([disabled])) {
             transition:
                 background-color 100ms linear,
-                color 100ms linear,
-                box-shadow 100ms linear;
+                color 100ms linear;
         }
 
         :is(a[href], button:not([disabled])):focus-visible,
         :is(a[href], button:not([disabled]))[data-vim-focused='true']:focus {
             background-color: var(--focus-bg-strong);
             color: var(--focus-fg);
-            /* border-left: 2px solid var(--accent); */
             text-decoration: none;
         }
-
-        :is(a[href], button:not([disabled])):focus-visible::after,
-        :is(
-                a[href],
-                button:not([disabled])
-            )[data-vim-focused='true']:focus::after {
-            color: var(--focus-marker);
-        }
-
-        :is(a[href], button:not([disabled])):hover {
-            background-color: var(--focus-hover-bg);
-        }
-
-        #home-link {
-            display: inline-flex;
-            align-items: center;
-            text-decoration: none;
-            -moz-osx-font-smoothing: grayscale;
-            -webkit-font-smoothing: subpixel-antialiased;
-            font-weight: var(--font-weight-bold);
-            color: var(--foreground1);
-            gap: 1ch;
-
-            img {
-                display: block;
-            }
-
-            &:hover {
-                text-decoration: underline;
-            }
-        }
     }
 
-    nav > span {
-        flex: 0 0 auto;
-    }
-
-    .navbar-name {
-        text-decoration: none;
-        flex: 0 0 auto;
-        overflow: visible;
-        padding: 0 2ch;
-
-        &::before,
-        &::after {
-            display: none;
-        }
-
-        &:focus-visible,
-        &:focus,
-        &[data-vim-focused='true']:focus {
-            background-color: var(--blue) !important;
-            color: var(--background0) !important;
-        }
-    }
-
-    #nav-links {
-        display: flex;
-        gap: 2ch;
-    }
-
-    #nav-links > a.nav-link {
-        display: inline;
-        text-decoration: none;
-        color: var(--foreground2);
-
-        &:visited {
-            color: var(--foreground2);
-        }
-
-        u {
-            /* font-weight: bold; */
-            text-decoration: none !important;
-            /* text-decoration: underline; */
-            /* text-decoration-color: var(--foreground0); */
-        }
-    }
-
-    #nav-links > a.nav-link u::before {
-        content: '[';
-        font-weight: normal;
-    }
-
-    #nav-links > a.nav-link u::after {
-        font-weight: normal;
-        content: ']';
-    }
-
-    #links {
-        display: flex;
-        flex-wrap: nowrap;
+    #home-link {
+        all: unset;
+        display: inline-flex;
         align-items: center;
-        flex: 1 1 auto;
-        row-gap: 2ch;
-        column-gap: 1lh;
-        margin-inline-start: 1ch;
-        min-width: 0;
-        max-width: 100%;
-        width: auto;
+        padding: 0 1ch;
+        color: var(--foreground1);
+        font-weight: bold;
+        cursor: pointer;
+        font-family: var(--font-family);
+        text-decoration: none;
+        border-right: 1px solid var(--background2);
 
-        a {
-            display: inline-block;
-            text-decoration: none;
-            color: var(--foreground2);
+        &:hover {
+            background-color: var(--background2);
         }
-        overflow-x: auto;
-        overflow-y: hidden;
-        scrollbar-width: thin;
-        justify-content: flex-end;
-        align-content: center;
+    }
+
+    #nav-spacer {
+        flex: 1;
+    }
+
+    #nav-right {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
 
         :is(a, button) {
-            flex: 0 0 auto;
-        }
-
-        a {
+            all: unset;
             display: inline-flex;
-            gap: 1ch;
+            align-items: center;
+            padding: 0 1ch;
+            color: var(--foreground3);
+            cursor: pointer;
+            font-family: var(--font-family);
+            font-size: inherit;
+            line-height: inherit;
             text-decoration: none;
-            color: var(--foreground2);
-
-            &:focus,
-            &:hover {
-                text-decoration: underline;
-            }
+            border-left: 1px solid var(--background2);
         }
 
-        #github-button {
-            display: inline-flex;
-            gap: 1ch;
-            padding-inline: 1ch;
-            color: var(--foreground1);
-            text-decoration: none;
-            background-color: oklch(
-                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
-                    0.1
-            );
-
-            &:focus,
-            &:hover {
-                background-color: oklch(
-                    from var(--purple) calc(l * var(--oklch-scale, 0.85)) c h /
-                        0.1
-                );
-                color: var(--purple);
-                text-decoration: none;
-            }
+        #theme-button:hover,
+        #theme-button:focus-visible {
+            background-color: oklch(from var(--blue) l c h / 0.15);
+            color: var(--blue);
         }
 
-        #rss-button {
-            display: inline-flex;
-            gap: 1ch;
-            padding-inline: 1ch;
-            color: var(--foreground1);
-            text-decoration: none;
-            background-color: oklch(
-                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
-                    0.1
-            );
-
-            &:focus,
-            &:hover {
-                background-color: oklch(
-                    from var(--orange) calc(l * var(--oklch-scale, 0.85)) c h /
-                        0.1
-                );
-                color: var(--orange);
-                text-decoration: none;
-            }
+        #github-button:hover,
+        #github-button:focus-visible {
+            background-color: oklch(from var(--purple) l c h / 0.15);
+            color: var(--purple);
         }
 
-        #theme-button {
-            display: inline-flex;
-            gap: 1ch;
-            padding-inline: 1ch;
-            color: var(--foreground1);
-            background-color: oklch(
-                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
-                    0.1
-            );
-
-            &:focus,
-            &:hover {
-                background-color: oklch(
-                    from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h /
-                        0.1
-                );
-                color: var(--blue);
-            }
+        #rss-button:hover,
+        #rss-button:focus-visible {
+            background-color: oklch(from var(--orange) l c h / 0.15);
+            color: var(--orange);
         }
 
-        #search-button {
-            display: inline-flex;
-            padding-inline: 1ch;
-            gap: 1ch;
-            background-color: var(--foreground0);
-
-            &:focus,
-            &:hover {
-                background-color: oklch(
-                    from var(--green) calc(l * var(--oklch-scale, 0.85)) c h /
-                        0.1
-                );
-                color: var(--green);
-            }
+        #search-button:hover,
+        #search-button:focus-visible {
+            background-color: oklch(from var(--green) l c h / 0.15);
+            color: var(--green);
         }
     }
 
@@ -317,31 +150,21 @@ const { variant } = Astro.props
     }
 
     @media (max-width: 768px) {
-        nav {
-            padding: 1lh 2ch;
-            align-items: center;
-            margin-bottom: 0;
-        }
-
-        #home-link-wrapper {
-            display: none;
-        }
-
-        .navbar-name {
-            margin-right: auto;
-        }
-
-        #links {
+        #nav-right {
             display: none;
         }
 
         #nav-dropdown {
             display: block;
 
-            > summary {
-                list-style: none;
-                cursor: pointer;
+            summary {
+                display: flex;
+                align-items: center;
                 padding: 0 1ch;
+                cursor: pointer;
+                list-style: none;
+                color: var(--foreground2);
+                border-left: 1px solid var(--background2);
 
                 &::-webkit-details-marker {
                     display: none;
@@ -350,35 +173,31 @@ const { variant } = Astro.props
 
             .nav-dropdown-content {
                 position: absolute;
-                right: 1ch;
+                right: 0;
                 top: 100%;
-                z-index: 200;
                 display: flex;
                 flex-direction: column;
                 background: var(--background0);
                 border: 1px solid var(--foreground2);
                 box-shadow: 2px 2px 0 0 var(--foreground2);
-                min-width: 20ch;
+                z-index: 30;
+                min-width: 16ch;
 
-                a,
-                button {
-                    all: unset;
-                    display: block;
-                    padding: 0.5lh 2ch;
+                :is(a, button) {
+                    padding: 0.25lh 2ch;
+                    text-decoration: none;
                     color: var(--foreground1);
+                    border: none;
+                    background: none;
                     cursor: pointer;
-                    box-sizing: border-box;
-                    width: 100%;
+                    font: inherit;
+                    text-align: left;
 
                     &:hover {
                         background: var(--background1);
                     }
                 }
             }
-        }
-
-        nav {
-            position: relative;
         }
     }
 </style>
@@ -505,4 +324,32 @@ const { variant } = Astro.props
             window.location.href = href
         }
     })
+</script>
+
+<script>
+    /* Pin the floating navbar's left edge to #widgets-grid's left edge.
+       The grid uses translate-based centering; matching that exactly in
+       pure CSS is fragile across viewports, so we measure on load + on
+       resize and write the value to --navbar-left. */
+    function alignNavbar() {
+        const navbar = document.getElementById('top-navbar')
+        const grid = document.getElementById('widgets-grid')
+        if (!navbar || !grid) return
+        const gridRect = grid.getBoundingClientRect()
+        const navHeight = navbar.getBoundingClientRect().height || 20
+        const intro = document.getElementById('intro')
+        const introTop = intro ? intro.getBoundingClientRect().top : 0
+        // Sit 1lh above the grid top. nav's own height is 1lh, so the
+        // navbar's bottom edge ends up exactly at gridTop - 1lh, and its
+        // top edge at gridTop - 2lh. (1lh ≈ navHeight on this page.)
+        const top = gridRect.top - introTop - navHeight * 2
+        navbar.style.setProperty('--navbar-left', `${gridRect.left}px`)
+        navbar.style.setProperty('--navbar-top', `${top}px`)
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', alignNavbar)
+    } else {
+        alignNavbar()
+    }
+    window.addEventListener('resize', alignNavbar)
 </script>

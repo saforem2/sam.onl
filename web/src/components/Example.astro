@@ -27,6 +27,8 @@ const { html, css, stylesheets, themes, ...rest } = Astro.props as Props
                 id="preview"
                 srcdoc={`<html data-webtui-theme="${rest['data-initial-theme']}">
 <head>
+<link rel="preconnect" href="https://iosevka-webfonts.github.io" crossorigin />
+<link href="https://iosevka-webfonts.github.io/iosevka/Iosevka.css" rel="stylesheet" />
 <style>@layer base, utils, components;</style>
 <style>${webtuiBase}</style>
 <style>${customTheme}</style>
@@ -34,11 +36,12 @@ ${stylesheets ? stylesheets.map((stylesheet) => `<style>${stylesheet}</style>`).
 <style>
 @layer base {
   :root {
-    --font-family: Menlo, Monaco, monospace;
+    --font-family: 'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace, 'Symbols Nerd Font';
   }
 
   body {
     padding: 1lh 1ch;
+    font-family: var(--font-family);
   }
 }
 </style>

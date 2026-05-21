@@ -14,7 +14,7 @@ const talks = docs
     .slice(0, 20)
 
 function formatDate(date: Date): string {
-    const y = date.getFullYear()
+    const y = String(date.getFullYear()).slice(-2)
     const m = String(date.getMonth() + 1).padStart(2, '0')
     const d = String(date.getDate()).padStart(2, '0')
     return `${y}/${m}/${d}`
@@ -23,7 +23,7 @@ function formatDate(date: Date): string {
 
 <column box-="square" pad-="2 1" gap-="0" class="talks-widget" tabindex="0">
     <span is-="badge" variant-="orange" class="tw-title"
-        >&#xf19d; <a href="/talks" class="widget-link"><u>s</u>lides</a></span
+        >&#xf19d; <a href="/talks" class="widget-link"><u>t</u>alks</a></span
     >
     <column gap-="0" class="tw-list">
         {

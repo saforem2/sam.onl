@@ -1,0 +1,52 @@
+---
+/**
+ * Two- (or N-) column layout inside a slide.
+ *
+ * Usage:
+ *   <Cols>
+ *     <Col>Left content</Col>
+ *     <Col>Right content</Col>
+ *   </Cols>
+ *
+ * Both columns get equal width by default. Pass `widths` (e.g. "1 2")
+ * to set explicit flex weights.
+ */
+interface Props {
+    widths?: string
+    gap?: string
+}
+const { widths, gap = '2ch' } = Astro.props
+const style = `gap: ${gap};${widths ? ` --col-widths: ${widths};` : ''}`
+---
+
+<div class="slide-cols" {style}>
+    <slot />
+</div>
+
+<style is:global>
+    .slide-cols {
+        display: flex;
+        align-items: flex-start;
+        width: 100%;
+    }
+    .slide-col {
+        flex: 1 1 0;
+        /* Don't shrink narrower than the column's natural intrinsic
+           content width — otherwise wide headings (e.g. "Distribution")
+           overflow into neighboring columns. */
+        min-width: min-content;
+    }
+    /* Narrow viewports (≤ 768px): stack columns as rows so two-column
+       slides become a single readable column instead of squeezing each
+       half down to a few characters wide. */
+    @media (max-width: 768px) {
+        .slide-cols {
+            flex-direction: column;
+            gap: 1lh !important;
+        }
+        .slide-col {
+            flex: 0 0 auto;
+            width: 100%;
+        }
+    }
+</style>

@@ -6,7 +6,6 @@ import {
     categoryLabels,
     moreSidebarGroup,
 } from '@/utils/content'
-import VimNavigation from './landing/VimNavigation.astro'
 
 const allCategories = makeSortedCategoryEntries()
 const categories = allCategories.filter(([slug]) => !moreSidebarGroup.has(slug))
@@ -259,37 +258,50 @@ const subdirLabels: Record<string, string> = {
 }
 
 const categoryKeybinds: Record<string, string> = {
-    landing: '0',
-    posts: '1',
-    talks: '2',
-    more: '3',
-    webtui: '4',
+    landing: 's',
+    posts: 'p',
+    talks: 't',
+    more: 'a',
+    webtui: 'y',
 }
 
 const labelWithKey = (slug: string) => {
     const key = categoryKeybinds[slug]
     const label = categoryLabels[slug]
-    return key !== undefined
-        ? `<sup class="cat-key">${key}</sup>${label}`
-        : label
+    if (key === undefined) return label
+    // Insert [k] bracket around the keybind letter in the label text
+    // Label format: "icon  Text" — find the key char in the text portion
+    const keyIndex = label.toLowerCase().indexOf(key.toLowerCase())
+    if (keyIndex === -1) return `[${key}] ${label}`
+    return (
+        label.slice(0, keyIndex) +
+        `<span class="cat-key">[</span>${label[keyIndex]}<span class="cat-key">]</span>` +
+        label.slice(keyIndex + 1)
+    )
 }
 
 const { pathname: urlPath } = Astro.url
 ---
 
 <nav box-="square" shear-="top" id="sidebar">
-    <button
-        id="sidebar-toggle"
-        type="button"
-        size-="small"
-        aria-expanded="true"
-        aria-controls="sidebar-container"
-        aria-label="Collapse left sidebar (zh)">
-        <span class="key-bracket"></span>&lsaquo;<span class="key-z">z</span
-        ><span class="key-bracket">[</span><span class="key-h">h</span><span
-            class="key-bracket">]</span
+    <div id="sidebar-actions">
+        <a href="/" class="sidebar-action" title="Home">&#xef85;</a>
+        <button id="theme-button-sidebar" class="sidebar-action" title="Theme"
+            >&#xe22b;</button
         >
-    </button>
+        <a
+            href="https://github.com/saforem2/sam.onl"
+            target="_blank"
+            class="sidebar-action"
+            title="GitHub">&#xe65b;</a
+        >
+        <a href="/rss.xml" target="_blank" class="sidebar-action" title="RSS"
+            >&#xf09e;</a
+        >
+        <button id="search-button-sidebar" class="sidebar-action" title="Search"
+            >&#xea6d;</button
+        >
+    </div>
     <div id="category-container">
         <div id="category-list">
             {
@@ -833,20 +845,21 @@ const { pathname: urlPath } = Astro.url
             }
         </div>
     </div>
-    <div id="sidebar-vim-nav-container">
-        <VimNavigation showHL />
-    </div>
+    <button
+        id="sidebar-toggle"
+        type="button"
+        size-="small"
+        aria-expanded="true"
+        aria-controls="sidebar-container"
+        aria-label="Collapse left sidebar (zh)">
+        <span class="key-bracket"></span>&lsaquo;<span class="key-z">z</span
+        ><span class="key-bracket">[</span><span class="key-h">h</span><span
+            class="key-bracket">]</span
+        >
+    </button>
 </nav>
 
 <style>
-    #sidebar-vim-nav-container {
-        padding-left: 1ch;
-        padding-right: 2ch;
-        padding-top: 1lh;
-        padding-bottom: 1lh;
-        display: flex;
-        flex-direction: row;
-    }
     #sidebar {
         position: relative;
         display: flex;
@@ -858,6 +871,9 @@ const { pathname: urlPath } = Astro.url
 
         #sidebar-toggle {
             position: absolute;
+            bottom: 0;
+            left: 2ch;
+            right: auto;
             z-index: 3;
             color: var(--foreground3);
             background-color: var(--background0);
@@ -879,8 +895,6 @@ const { pathname: urlPath } = Astro.url
 
         .cat-key {
             opacity: 0.35;
-            vertical-align: super;
-            line-height: 0;
         }
         /* .key-z { */
         /*     opacity: 0.35; */
@@ -948,10 +962,42 @@ const { pathname: urlPath } = Astro.url
             background-color: var(--focus-hover-bg);
         }
 
+        #sidebar-actions {
+            display: flex;
+            gap: 0;
+            background-color: var(--background0);
+            position: relative;
+            z-index: 10;
+            width: fit-content;
+            margin-inline-start: 1ch;
+
+            .sidebar-action {
+                all: unset;
+                display: inline-flex;
+                align-items: center;
+                padding: 0 0.5ch;
+                color: var(--foreground3);
+                cursor: pointer;
+                font-family: var(--font-family);
+                font-size: inherit;
+                line-height: inherit;
+                text-decoration: none;
+                transition: color 0.15s;
+
+                &:hover,
+                &:focus-visible,
+                &[data-vim-focused='true']:focus {
+                    color: var(--foreground0);
+                    background-color: transparent !important;
+                    box-shadow: none !important;
+                }
+            }
+        }
+
         #category-container {
             position: relative;
             flex-grow: 1;
-            margin-top: 1lh;
+            margin-top: 0.5ch;
         }
 
         #category-list {
@@ -961,7 +1007,7 @@ const { pathname: urlPath } = Astro.url
             flex-direction: column;
             gap: 0lh;
             overflow-y: auto;
-            padding-block-start: 1ch;
+            /* padding-block-start: 1ch; */
             /* padding-inline-start: 1ch; */
             /* margin-inline-start: 1ch; */
             /* margin-inline: 1ch; */
@@ -985,11 +1031,6 @@ const { pathname: urlPath } = Astro.url
         padding-inline-start: 0ch;
     }
 
-    ul > li > a[href] {
-        color: var(--foreground2);
-        border: 0.33ch solid rgba(0, 0, 0, 0) !important;
-        text-decoration: none;
-    }
     /* #sidebar ul > li > a { */
     /*     border-left: 1pt solid var(--background2); */
     /*     padding-inline-start: 1ch; */
@@ -1186,16 +1227,35 @@ const { pathname: urlPath } = Astro.url
 <script>
     import { applyVimNavigation, isUserTyping } from '@/utils/vim'
 
+    // Sidebar action buttons
+    document
+        .getElementById('theme-button-sidebar')
+        ?.addEventListener('click', () => {
+            const dialog = document.getElementById(
+                'theme-dialog',
+            ) as HTMLDialogElement | null
+            dialog?.showModal()
+        })
+
+    document
+        .getElementById('search-button-sidebar')
+        ?.addEventListener('click', () => {
+            const dialog = document.getElementById(
+                'search-dialog',
+            ) as HTMLDialogElement | null
+            dialog?.showModal()
+        })
+
     const sidebar = document.getElementById('sidebar')
 
     // Number-key shortcuts for sidebar categories
     // Maps key → child index in #category-list
     const categoryKeys: Record<string, number> = {
-        '0': 0, // Start
-        '1': 1, // Posts
-        '2': 2, // Talks
-        '3': 3, // More
-        '4': 4, // Style (WebTUI)
+        s: 0, // start
+        p: 1, // posts
+        t: 2, // talks
+        a: 3, // about (More)
+        y: 4, // style (WebTUI)
     }
 
     const categoryList = document.getElementById('category-list')
@@ -1267,4 +1327,68 @@ const { pathname: urlPath } = Astro.url
             },
         )
     }
+
+    // Theme management (moved from NavbarMinimal)
+    const root = document.documentElement
+    const themeStorageKey = 'webtui-theme'
+    const themeButtons = Array.from(
+        document.querySelectorAll('[data-theme-option]'),
+    ) as HTMLButtonElement[]
+
+    const setTheme = (theme: string) => {
+        if (root.getAttribute('data-webtui-theme') !== theme) {
+            root.setAttribute('data-webtui-theme', theme)
+        }
+        themeButtons.forEach((button) => {
+            const value = button.getAttribute('data-theme-option')
+            const isActive = value === theme
+            button.setAttribute('aria-selected', String(isActive))
+            button.setAttribute('variant-', 'background1')
+            button.setAttribute('data-active', String(isActive))
+        })
+        localStorage.setItem(themeStorageKey, theme)
+    }
+
+    const storedTheme = localStorage.getItem(themeStorageKey)
+    if (storedTheme) {
+        setTheme(storedTheme)
+    }
+
+    themeButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const value = button.getAttribute('data-theme-option')
+            if (!value) return
+            setTheme(value)
+            const themeDialog = document.getElementById(
+                'theme-dialog',
+            ) as HTMLDialogElement | null
+            themeDialog?.close()
+        })
+    })
+
+    const themeDialog = document.getElementById(
+        'theme-dialog',
+    ) as HTMLDialogElement | null
+    document
+        .getElementById('theme-button-sidebar')
+        ?.addEventListener('click', () => {
+            themeDialog?.showModal()
+            requestAnimationFrame(() => {
+                const active = themeDialog?.querySelector(
+                    '.theme-option[aria-selected="true"]',
+                ) as HTMLElement | null
+                ;(
+                    active ?? themeDialog?.querySelector('.theme-option')
+                )?.focus()
+            })
+        })
+
+    document
+        .getElementById('search-button-sidebar')
+        ?.addEventListener('click', () => {
+            const searchDialog = document.getElementById(
+                'search-dialog',
+            ) as HTMLDialogElement | null
+            searchDialog?.showModal()
+        })
 </script>

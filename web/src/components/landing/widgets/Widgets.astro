@@ -11,7 +11,6 @@ import PostsWidget from './PostsWidget.astro'
 import TalksWidget from './TalksWidget.astro'
 import IntroWidget from './IntroWidget.astro'
 import WorkWidget from './WorkWidget.astro'
-import Navbar from '../../NavbarMinimal.astro'
 import '@webtui/css/components/radio.css'
 
 interface Props {
@@ -58,13 +57,7 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
         layoutClass,
     ]}
     style={`grid-template-columns: ${gridCols}; opacity: ${opacity};`}>
-    {
-        isIntroWidget && (
-            <div id="grid-navbar">
-                <Navbar {variant} />
-            </div>
-        )
-    }
+    {/* Navbar moved to Intro.astro top-level */}
     {
         home && variant >= 15 ? (
             <>
@@ -147,6 +140,16 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
     #widgets-grid.home-grid > :global(*) {
         overflow: hidden;
         min-height: 0;
+    }
+
+    /* TUI hard-offset shadow on the active/focused/hovered widget —
+       matches the navbar's interactive shadow treatment. */
+    #widgets-grid > :global([tabindex='0']) {
+        transition: box-shadow 100ms linear;
+    }
+    #widgets-grid > :global([tabindex='0']:hover),
+    #widgets-grid > :global([tabindex='0']:focus-within) {
+        box-shadow: 2px 2px 0 0 var(--foreground0, #000);
     }
 
     #grid-navbar {

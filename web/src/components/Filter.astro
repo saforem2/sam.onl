@@ -32,6 +32,11 @@ const themeOptions = {
     catppuccin: 'Catppuccin Mocha',
     'catppuccin-latte': 'Catppuccin Latte',
 }
+
+const fontOptions = {
+    iosevka: 'Iosevka',
+    system: 'System',
+}
 ---
 
 <dialog id="command-dialog" size-="small" position-="center" container-="fill">
@@ -42,37 +47,53 @@ const themeOptions = {
                 >x</button
             >
         </row>
+        <p class="command-tagline">
+            Terminal-style knowledge base. Use the keybinds below to move
+            around, then customize the look with the theme picker.
+        </p>
         <div id="command-sections">
-            <section class="command-section" box-="square" shear-="top">
-                <span is-="badge" variant-="foreground1">Site Info</span>
-                <p>
-                    sam.onl is a terminal-style knowledge base and notes hub,
-                    built with Astro + WebTUI. Use the keybinds below to move
-                    between navbar, content, and sidebars, then customize the
-                    look with the theme picker.
-                </p>
-            </section>
-            <section class="command-section" box-="square" shear-="top">
-                <span is-="badge" variant-="foreground1">Theme</span>
-                <row class="command-theme-buttons" gap-="1">
+            <section class="command-section command-section-theme">
+                <span is-="badge" class="command-section-title cmd-title-green"
+                    >&#xf1fc; <u>T</u>heme</span
+                >
+                <row class="command-theme-buttons" gap-="0">
                     {
                         Object.entries(themeOptions).map(([key, value]) => (
                             <button
                                 data-theme-dropdown="true"
                                 data-theme-option={key}
-                                variant-="background1"
-                                aria-selected="false">
+                                aria-selected="false"
+                                class="command-theme-chip">
                                 {value}
                             </button>
                         ))
                     }
                 </row>
             </section>
-            <section class="command-section" box-="square" shear-="top">
-                <span is-="badge" variant-="foreground1">Keybinds</span>
+            <section class="command-section command-section-font">
+                <span is-="badge" class="command-section-title cmd-title-blue"
+                    >&#xf031; Font</span
+                >
+                <row class="command-theme-buttons" gap-="0">
+                    {
+                        Object.entries(fontOptions).map(([key, value]) => (
+                            <button
+                                data-font-option={key}
+                                aria-selected="false"
+                                class="command-theme-chip command-font-chip">
+                                {value}
+                            </button>
+                        ))
+                    }
+                </row>
+            </section>
+            <section class="command-section command-section-keys">
+                <span is-="badge" class="command-section-title cmd-title-orange"
+                    >&#xf11c; <u>K</u>eybinds</span
+                >
                 <div class="keybind-columns">
-                    <div class="keybind-group" box-="square">
-                        <span is-="badge" variant-="background1"
+                    <div class="keybind-group">
+                        <span is-="badge" class="keybind-group-title"
                             >Navigation</span
                         >
                         <div class="keybind-grid" role="list">
@@ -97,8 +118,10 @@ const themeOptions = {
                         </div>
                     </div>
 
-                    <div class="keybind-group" box-="square">
-                        <span is-="badge" variant-="background1">Layout</span>
+                    <div class="keybind-group">
+                        <span is-="badge" class="keybind-group-title"
+                            >Layout</span
+                        >
                         <div class="keybind-grid" role="list">
                             <code role="listitem">&lt;zh&gt; / &lt;zl&gt;</code>
                             <span>Toggle left/right sidebar</span>
@@ -110,11 +133,15 @@ const themeOptions = {
                             <span>Focus left/right sidebar</span>
                             <code role="listitem">&#x2303;J / &#x2303;K</code>
                             <span>Focus main/navbar</span>
+                            <code role="listitem">&#x21E7;C / &#x21E7;E</code>
+                            <span>Collapse / expand all sections</span>
                         </div>
                     </div>
 
-                    <div class="keybind-group" box-="square">
-                        <span is-="badge" variant-="background1">Dialogs</span>
+                    <div class="keybind-group">
+                        <span is-="badge" class="keybind-group-title"
+                            >Dialogs</span
+                        >
                         <div class="keybind-grid" role="list">
                             <code role="listitem">&#x2303;P / :</code>
                             <span>Command palette</span>
@@ -129,8 +156,10 @@ const themeOptions = {
                         </div>
                     </div>
 
-                    <div class="keybind-group" box-="square">
-                        <span is-="badge" variant-="background1">History</span>
+                    <div class="keybind-group">
+                        <span is-="badge" class="keybind-group-title"
+                            >History</span
+                        >
                         <div class="keybind-grid" role="list">
                             <code role="listitem">&#x2303;N</code>
                             <span>Next document</span>
@@ -288,12 +317,19 @@ const themeOptions = {
         flex-direction: column;
     }
 
+    .command-tagline {
+        margin: 0;
+        padding: 0 1ch;
+        color: var(--foreground2);
+        font-size: 0.9em;
+    }
+
     #command-sections {
         display: flex;
         flex-direction: column;
         gap: 1lh;
         overflow-y: auto;
-        padding: 1ch;
+        padding: 0 1ch 1ch;
     }
 
     .command-section {
@@ -301,8 +337,32 @@ const themeOptions = {
         flex-direction: column;
         flex: 0 0 auto;
         gap: 0.5lh;
-        padding: 1ch;
-        background-color: var(--background0);
+        margin-block: 0.5lh;
+    }
+
+    /* Accent-tinted section titles matching the home-widget aesthetic. */
+    .command-section-title {
+        background-image: none;
+        --badge-text: none;
+        --badge-color: none;
+        --color: var(--accent, var(--blue));
+        color: var(--color);
+        background-color: oklch(
+            from var(--color) calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+        );
+        font-weight: bold;
+        u {
+            text-decoration: underline;
+        }
+    }
+    .cmd-title-green {
+        --color: var(--green);
+    }
+    .cmd-title-orange {
+        --color: var(--orange);
+    }
+    .cmd-title-blue {
+        --color: var(--blue);
     }
 
     .keybind-grid {
@@ -313,17 +373,46 @@ const themeOptions = {
         align-items: baseline;
     }
 
+    /* Styled-key look. */
+    .keybind-grid > code {
+        display: inline-block;
+        color: var(--foreground0);
+        background-color: var(--background2);
+        border: 1px solid var(--foreground2);
+        border-radius: 3px;
+        padding: 0 0.5ch;
+        font-family: var(--font-family);
+        font-size: 0.9em;
+        text-align: center;
+        white-space: nowrap;
+        justify-self: end;
+    }
+
+    .keybind-grid > span {
+        color: var(--foreground2);
+    }
+
     .keybind-columns {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 1ch;
+        gap: 1ch 2ch;
     }
 
     .keybind-group {
         display: flex;
         flex-direction: column;
-        gap: 0.5lh;
-        padding: 1ch;
+        gap: 0.25lh;
+    }
+
+    .keybind-group-title {
+        background-image: none;
+        --badge-text: none;
+        --badge-color: none;
+        background-color: transparent;
+        color: var(--foreground1);
+        font-weight: bold;
+        padding-inline: 0;
+        border-bottom: 1px solid var(--background2);
     }
 
     @media (min-width: 768px) {
@@ -332,17 +421,52 @@ const themeOptions = {
         }
     }
 
-    .command-theme-buttons button {
-        gap: 2ch;
-        margin-inline: 2ch;
-        flex: 1;
+    /* 1lh chips instead of fat buttons. */
+    .command-theme-buttons {
+        flex-wrap: wrap;
+        gap: 0;
     }
 
-    .command-theme-buttons button[aria-selected='true'] {
+    .command-theme-chip {
+        all: unset;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        height: 1lh;
+        padding: 0 1ch;
+        color: var(--foreground2);
+        border: 1px solid var(--background2);
+        border-right-width: 0;
+        background-color: var(--background0);
+        transition:
+            background-color 100ms linear,
+            color 100ms linear;
+    }
+
+    .command-theme-chip:last-of-type {
+        border-right-width: 1px;
+    }
+
+    .command-theme-chip:hover,
+    .command-theme-chip:focus-visible {
         color: var(--foreground0);
-        text-decoration: underline;
-        text-underline-offset: 0.25lh;
+        background-color: oklch(
+            from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+        );
+    }
+
+    .command-theme-chip[aria-selected='true'] {
+        color: var(--foreground0);
+        background-color: oklch(
+            from var(--green) calc(l * var(--oklch-scale, 0.85)) c h / 0.15
+        );
         font-weight: bold;
+    }
+    /* Font picker: match the blue accent used by the section title above. */
+    .command-font-chip[aria-selected='true'] {
+        background-color: oklch(
+            from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h / 0.15
+        );
     }
 
     #search-results {
@@ -740,5 +864,31 @@ const themeOptions = {
         button.addEventListener('click', () => {
             themeDialog.close()
         })
+    })
+
+    // ── Mono font picker ──────────────────────────────────────────────
+    // Delegated click so we catch font chips from any container (this
+    // dialog, SlideHelpDialog, etc.). Lives here in Filter.astro so it
+    // ships on every page that uses the command dialog (Doc layout etc.).
+    const fontStorageKey = 'mono-font'
+    const setMonoFont = (font: string) => {
+        document.documentElement.setAttribute('data-mono-font', font)
+        document
+            .querySelectorAll<HTMLElement>('[data-font-option]')
+            .forEach((btn) => {
+                const v = btn.getAttribute('data-font-option')
+                btn.setAttribute('aria-selected', String(v === font))
+                btn.setAttribute('data-active', String(v === font))
+            })
+        localStorage.setItem(fontStorageKey, font)
+    }
+    setMonoFont(localStorage.getItem(fontStorageKey) ?? 'iosevka')
+    document.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement)?.closest?.(
+            '[data-font-option]',
+        ) as HTMLElement | null
+        if (!btn) return
+        const v = btn.getAttribute('data-font-option')
+        if (v) setMonoFont(v)
     })
 </script>

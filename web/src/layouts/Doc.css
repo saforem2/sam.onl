@@ -11,7 +11,9 @@
     border-top: 1px solid var(--foreground2, #ccc);
 
     button {
-        flex-grow: 1;
+        /* Equal width regardless of content / variant- attribute. */
+        flex: 1 1 0;
+        min-width: 0;
     }
 }
 
@@ -19,12 +21,81 @@
     overflow-x: auto;
 }
 
+#doc-columns {
+    margin-block-start: 0.5lh;
+}
+
+/* Mobile: turn off the desktop "internal scroll inside the article"
+   pattern. Without this, a flex-column #main-content with overflow:auto
+   constrains tall children (e.g. a 41-row posts table) into a tiny
+   scroll box. Use natural document flow + page scroll instead. */
+@media (max-width: 768px) {
+    #doc-article,
+    #main-content {
+        display: block !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+    #scroll-container {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+}
+
+.figure-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1ch;
+    margin-block: 1lh;
+    align-items: flex-start;
+
+    > p {
+        flex: 1 1 0;
+        min-width: 0;
+        margin: 0;
+    }
+
+    img,
+    svg {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+}
+
 .post-meta {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1ch;
+    color: var(--foreground2);
+    padding: 0;
+    line-height: 1lh;
+    flex-shrink: 0;
+    margin-block-start: 2ch;
+    margin-block-end: 0;
+}
+
+.post-description {
+    color: var(--foreground2);
+    font-style: italic;
+    margin-block: 1lh 1lh;
+    flex-shrink: 0;
+}
+.post-description code {
+    font-style: normal;
+    color: var(--foreground1);
+    background-color: var(--background1);
+    padding: 0 0.5ch;
+}
+
+.post-meta-row {
     display: flex;
     align-items: center;
     gap: 1ch;
-    color: var(--foreground2);
-    padding: 0.25lh 0;
     flex-wrap: wrap;
 
     .date-short {
@@ -55,13 +126,202 @@
     text-decoration: none;
 }
 
+/* Tinted badge variants for the meta row.
+   The default webtui badge composes its background from a gradient (middle)
+   plus ::before/::after fills (sides), with a 1px overlap between them so
+   opaque colors don't show anti-aliasing gaps. With a translucent tint that
+   1px overlap doubles the alpha and shows as a darker vertical line — so we
+   kill the gradient/pseudo backgrounds and paint the whole rectangle with a
+   single solid background-color instead. */
+.post-meta-item,
+.post-meta-source,
+.post-meta-raw {
+    &.post-meta-author,
+    &.post-meta-date,
+    &.post-meta-updated,
+    &.post-meta-reading,
+    &.post-meta-source,
+    &.post-meta-raw {
+        background-image: none;
+        background-color: var(--badge-color);
+        color: var(--badge-text);
+        &::before,
+        &::after {
+            background-color: transparent;
+        }
+    }
+}
+
+/* Neutral gray badges — same neutral palette as the mermaid theme */
+.post-meta-author,
+.post-meta-date,
+.post-meta-updated,
+.post-meta-reading,
+.post-meta-source,
+.post-meta-raw {
+    --badge-color: var(--background2);
+    --badge-text: var(--foreground1);
+}
+
+/* Icon-only action badges (source/raw) sized to match the share buttons. */
+.post-meta-source,
+.post-meta-raw {
+    box-sizing: border-box;
+    width: 3ch;
+    padding: 0;
+    justify-content: center;
+    text-align: center;
+}
+
 .post-meta-links {
     display: inline-flex;
     gap: 0.5ch;
 }
 
+#vim-statusline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    /* height: calc(1lh + 4px); */
+    height: 1lh;
+    /* box-shadow: inset 0 1px 0 var(--background2), inset 0 -1px 0 var(--background2); */
+    line-height: 1lh;
+    background-color: var(--background0);
+    color: var(--foreground3);
+    white-space: nowrap;
+    overflow: hidden;
+    z-index: 10;
+    flex-shrink: 0;
+    /* margin-block-end: 1ch; */
+    /* width: round(calc(100vw), 1ch); */
+    /* margin-inline: -1ch; */
+    /* border-left: 2px solid var(--background0); */
+    /* border-right: 2px solid var(--background0); */
+    /* border: 1px solid var(--background2); */
+    /* padding-bottom: 1ch; */
+}
+
+#vim-statusline > span {
+    padding: 0 1ch;
+}
+
+.vsl-mode {
+    background-color: oklch(
+        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.5
+    );
+    color: var(--foreground0);
+    /* background-color: oklch(from #D3F9D8 l c h); */
+    /* background-color: oklch(from #51CF66 l c h); */
+    font-weight: bold;
+}
+
+.vsl-branch {
+    background-color: oklch(
+        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
+    );
+    color: var(--foreground2);
+    /* color: var(--green, oklch(from #51CF66 l c h)); */
+    /* background-color: var(--green, oklch(from #51CF66 l c h)); */
+}
+
+.vsl-file {
+    color: var(--foreground1);
+}
+
+.vsl-spacer {
+    flex: 1;
+    padding: 0 !important;
+}
+
+.vsl-clock {
+    color: var(--foreground2);
+    background-color: oklch(
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.33
+    );
+}
+
+.vsl-pos {
+    background-color: oklch(
+        from var(--foreground1) calc(l * var(--oklch-scale, 1.15)) c h / 0.5
+    );
+    color: var(--background1);
+}
+
+.vsl-loc {
+    background-color: var(--foreground2);
+    color: var(--background2);
+}
+
+.vsl-vim-icon {
+    /* background-color: var(--green, var(--accent)); */
+    background-color: var(--blue, oklch(from #339af0 l c h));
+    color: var(--background0);
+    padding: 0 0.5ch !important;
+    padding-inline-start: 1ch !important;
+    padding-inline-end: 0.5ch !important;
+}
+
+.vsl-keys {
+    display: flex;
+    gap: 1;
+    padding: 0 !important;
+    /* background-color: var(--background1); */
+    color: var(--foreground3);
+    background-color: oklch(
+        from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
+    );
+
+    #vsl-last-key {
+        padding: 0 1ch;
+        color: var(--background0);
+        background-color: var(--accent);
+        min-width: 1ch;
+        text-align: center;
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    button {
+        all: unset;
+        padding: 0 1ch;
+        color: var(--foreground2);
+        cursor: default;
+        border-right: 1px solid var(--background1);
+        transition: color 0.1s;
+
+        &:last-child {
+            border-right: none;
+        }
+    }
+    /* Help button: chip styling like the slide-deck status-bar `?` */
+    #vsl-btn-q {
+        cursor: pointer;
+        padding: 0 0.75ch;
+        color: var(--foreground2);
+        background-color: var(--background2);
+        border: 1px solid var(--foreground3);
+        border-radius: 3px;
+        border-right: 1px solid var(--foreground3);
+        line-height: 1;
+        transition:
+            color 100ms linear,
+            background-color 100ms linear;
+        &:hover,
+        &:focus-visible {
+            color: var(--foreground0);
+            background-color: oklch(
+                from var(--accent, var(--blue))
+                    calc(l * var(--oklch-scale, 0.85)) c h / 0.2
+            );
+        }
+    }
+}
+
 h1::before {
     content: '#';
+    display: var(--h1-prefix, inline);
     color: var(--h1);
     margin-inline-end: 1ch;
 }
@@ -98,7 +358,7 @@ h6::before {
     justify-content: flex-start;
     white-space: nowrap;
     box-sizing: border-box;
-    top: 0;
+    bottom: 0;
     left: 0;
     right: 0;
     z-index: 3;
@@ -150,15 +410,16 @@ h6::before {
     display: flex;
     width: var(--sidebar-width, 32ch);
     max-width: 100vw;
-    min-width: 16ch;
+    min-width: 21ch;
     flex: 0 0 var(--sidebar-width, 32ch);
+    margin-left: 1ch;
 }
 
 #sidebar-container.collapsed {
-    max-width: 1lh;
-    width: 1lh;
-    min-width: 1lh;
-    flex-basis: 1lh;
+    max-width: 1.25lh;
+    width: 1.25lh;
+    min-width: 1.25lh;
+    flex-basis: 1.25lh;
 }
 
 #sidebar-container.collapsed + #sidebar-resizer {
@@ -172,7 +433,7 @@ h6::before {
 #sidebar-container.collapsed #sidebar-toggle {
     left: 0;
     right: 0;
-    top: 0;
+    bottom: 0;
     min-width: 0;
     max-inline-size: none;
     width: 1lh;
@@ -247,6 +508,7 @@ h6::before {
     width: var(--toc-width, 34ch);
     max-width: 100vw;
     min-width: 16ch;
+    margin-right: 1ch;
     flex: 0 0 var(--toc-width, 34ch);
 }
 
@@ -269,7 +531,7 @@ h6::before {
 #toc-container.collapsed #toc-sidebar #toc-toggle {
     left: 0;
     right: 0;
-    top: 0;
+    bottom: 0;
     min-width: 0;
     max-inline-size: none;
     width: 1lh;
@@ -282,7 +544,6 @@ h6::before {
     background-color: var(--background2);
     color: var(--button-primary);
     margin-inline-start: 1.4ch;
-    opacity: 0.5;
 }
 
 /* #toc-container.collapsed #toc-toggle code { */
@@ -314,10 +575,11 @@ h6::before {
 
     #toc-toggle {
         position: absolute;
+        bottom: 0;
         z-index: 3;
         background-color: var(--background0);
         width: min-content;
-        right: 1ch;
+        right: 2ch;
         left: auto;
     }
 
@@ -328,10 +590,12 @@ h6::before {
 
 #toc-list-container {
     position: absolute;
-    inset: 0;
-    padding: 1lh 1ch;
+    inset: 0ch;
+    padding: 0 1ch;
     overflow-y: auto;
-    /* margin-inline: 1ch; */
+    margin-inline: 0;
+    top: 1.5ch;
+    margin-block-end: 3ch;
 }
 
 #toc-list {
@@ -340,7 +604,42 @@ h6::before {
     list-style: none;
 }
 
+#main-content li > details:not(.footnote-popover),
+#main-content li > p > details:not(.footnote-popover) {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#main-content details[is-~='accordion'] + details[is-~='accordion'] {
+    margin-top: 0.5lh;
+}
+
+/* Sibling spacing override: when a heading-section accordion follows a
+   callout-note (or any details), enforce the heading-section's own top
+   margin instead of the generic adjacent-sibling 0.5lh. */
+#main-content
+    details[is-~='accordion']
+    + .heading-collapse[data-heading-level='2'] {
+    margin-top: 1lh !important;
+}
+#main-content
+    details[is-~='accordion']
+    + .heading-collapse[data-heading-level='3'] {
+    margin-top: 1lh !important;
+}
+#main-content
+    details[is-~='accordion']
+    + .heading-collapse:is(
+        [data-heading-level='4'],
+        [data-heading-level='5'],
+        [data-heading-level='6']
+    ) {
+    margin-top: 0 !important;
+}
+
 #main-content :is(h1, h2, h3, h4, h5, h6) {
+    /* Vim-style: top margin + a blank line below the heading. */
+    margin-block: 1lh 2lh;
     &::before {
         content: none;
     }
@@ -348,6 +647,67 @@ h6::before {
     .heading-anchor {
         text-decoration: none;
     }
+}
+
+#main-content > :first-child:is(h1, h2, h3, h4, h5, h6) {
+    margin-block-start: 0;
+}
+
+/* Headings nested inside an accordion summary already get spacing from the
+   summary's own background band — kill the heading's own block margin so it
+   doesn't double up. The section spacing instead lives on the
+   .heading-collapse <details> wrapper below. */
+#main-content .heading-collapse > summary > :is(h2, h3, h4, h5, h6) {
+    margin-block: 0 !important;
+}
+
+/* Move the heading top/bottom margin onto the accordion wrapper so adjacent
+   sections breathe even when the inner heading itself has zero margin. The
+   `!important` rule at line 2007 in Doc.astro sets `margin: 0 !important;`
+   on .heading-collapse, so we override with !important here. */
+#main-content
+    .heading-collapse:is([data-heading-level='2'], [data-heading-level='3']) {
+    margin-block: 1lh 0 !important;
+}
+#main-content
+    .heading-collapse:is(
+        [data-heading-level='4'],
+        [data-heading-level='5'],
+        [data-heading-level='6']
+    ) {
+    margin-block: 1lh 0 !important;
+}
+
+/* Two adjacent CLOSED heading-collapse accordions (e.g. the year stack
+   2025/2024/2023/...) should sit tight — the colored bands are already a
+   strong visual rhythm, no extra spacing needed.
+
+   `:has()` was being silently dropped from the bundled CSS, so instead
+   we kill margin-bottom on EVERY closed band and let any subsequent
+   sibling (closed or open) restore its own top margin via the existing
+   adjacent-sibling rules. */
+#main-content .heading-collapse:not([open]) {
+    margin-bottom: 0 !important;
+}
+#main-content .heading-collapse:not([open]) + .heading-collapse:not([open]) {
+    margin-top: 0 !important;
+}
+/* When a closed band is followed by an OPEN band (or any other content),
+   restore the section break. Targets the OPEN sibling so it owns its own
+   top margin. */
+#main-content .heading-collapse:not([open]) + .heading-collapse[open] {
+    margin-top: 1lh !important;
+}
+#main-content .heading-collapse:not([open]) + :not(.heading-collapse) {
+    margin-top: 1lh !important;
+}
+
+/* First section heading on a page shouldn't push the page down. */
+#main-content > .heading-collapse:first-child {
+    margin-block-start: 0 !important;
+}
+
+#main-content :is(h2) {
 }
 
 #main-content h1 .heading-anchor {
@@ -410,6 +770,10 @@ h6::before {
     content: '';
 }
 
+#toc-list a.depth-1.active::before {
+    content: '#';
+    color: var(--h1);
+}
 #toc-list a.depth-2.active::before {
     content: '##';
     color: var(--h2);
@@ -429,6 +793,10 @@ h6::before {
 #toc-list a.depth-6.active::before {
     content: '#######';
     color: var(--h6);
+}
+
+#toc-list .depth-1 {
+    padding-inline-start: 0;
 }
 
 #toc-list .depth-2 {
@@ -461,6 +829,10 @@ h6::before {
         from var(--background1, var(--foreground, #838383))
             calc(l * var(--oklch-scale, 0.85)) c h / 0.1
     );
+}
+
+#toc-list a.depth-1.active {
+    color: var(--h1);
 }
 
 #toc-list a.depth-2.active {
@@ -498,6 +870,11 @@ h6::before {
     text-decoration: none;
 }
 
+#toc-list a.depth-1.active:focus-visible,
+#toc-list a.depth-1.active[data-vim-focused='true']:focus {
+    color: var(--h1);
+}
+
 #toc-list a.depth-2.active:focus-visible,
 #toc-list a.depth-2.active[data-vim-focused='true']:focus {
     color: var(--h2);
@@ -523,9 +900,29 @@ h6::before {
     color: var(--h6);
 }
 
-#sidebar-container.collapsed #category-container,
-#sidebar-container.collapsed #sidebar-vim-nav-container {
+#sidebar-container.collapsed #category-container {
     display: none;
+}
+
+#sidebar-container.collapsed #sidebar-actions {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 20;
+    flex-direction: column;
+    margin: 0;
+    height: auto;
+
+    .sidebar-action {
+        border-right: none !important;
+        border-bottom: 1px solid var(--background1);
+        padding: 0.25ch 0.5ch !important;
+        justify-content: center;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
 }
 
 #scroll-container {
@@ -539,12 +936,12 @@ h6::before {
         inset: 0lh 1ch;
         display: flex;
         flex-direction: column;
-        gap: 1ch;
+        gap: 0ch;
         overflow-x: hidden;
         color: var(--foreground1);
 
         strong {
-            color: var(--foreground0);
+            /* color: var(--foreground0); */
             -moz-osx-font-smoothing: grayscale;
             -webkit-font-smoothing: subpixel-antialiased;
         }
@@ -562,8 +959,12 @@ h6::before {
         /*     background-color: var(--focus-hover-bg); */
         /* } */
 
-        :is([tabindex='0'], a[href], summary):focus-visible,
-        :is([tabindex='0'], a[href], summary)[data-vim-focused='true']:focus {
+        :is([tabindex='0'], a[href], summary):not(.icon-flex a):not(
+                .footnote-popover > summary
+            ):not(.footnote-popover summary *):focus-visible,
+        :is([tabindex='0'], a[href], summary):not(.icon-flex a):not(
+                .footnote-popover > summary
+            ):not(.footnote-popover summary *)[data-vim-focused='true']:focus {
             background-color: var(--focus-bg-strong);
             color: var(--focus-fg);
             box-shadow:
@@ -573,7 +974,7 @@ h6::before {
             text-decoration: none;
         }
 
-        :is([tabindex='0'], a[href], summary)::after {
+        :is([tabindex='0']:not(a[href]):not([is-~='badge']), summary)::after {
             content: '';
             position: absolute;
             inset-inline-start: -1ch;
@@ -593,10 +994,9 @@ h6::before {
             }
         }
 
-        :is([tabindex='0'], a[href], summary):focus-visible::after,
+        :is([tabindex='0']:not(a[href]), summary):focus-visible::after,
         :is(
-                [tabindex='0'],
-                a[href],
+                [tabindex='0']:not(a[href]),
                 summary
             )[data-vim-focused='true']:focus::after {
             color: var(--focus-marker);
@@ -631,39 +1031,49 @@ h6::before {
             text-indent: 4ch hanging;
         }
         ol > li::marker {
-            content: counter(list-item) '.';
+            content: counter(list-item) '. ';
         }
 
-        /* p { */
-        /*     margin-block: 0.5lh; */
-        /* } */
+        p {
+            margin-block: 0 1lh;
+        }
 
         :is(li, details, blockquote, .callout) p {
             margin-block-end: 0;
         }
 
         :is(ul, ol) {
-            margin-block: 0;
-            padding-inline-start: 0;
+            margin-block: 0 1lh;
+            padding-inline-start: 2ch;
         }
 
         li > :is(ul, ol) {
+            margin-block: 0;
             margin-left: 0;
-            padding-inline-start: 0;
+            padding-inline-start: 2ch;
+        }
+
+        /* Nested lists: nudge each list right by the parent's marker width so
+           the nested marker (e.g. `-`) sits roughly under the parent text.
+           Also clear the inherited `text-indent: ...ch hanging` so the
+           nested text doesn't get over-indented. */
+        li > :is(ul, ol) > li {
+            text-indent: 1.5ch hanging;
         }
         ul > li > :is(ul, ol) {
-            margin-left: 2ch;
+            margin-left: 0;
         }
         ol > li > :is(ul, ol) {
-            margin-left: 3ch;
+            margin-left: 1ch;
         }
         ol > li:nth-child(n + 10) > :is(ul, ol) {
-            margin-left: 4ch;
+            margin-left: 2ch;
         }
 
         #doc-pagination {
             display: flex;
             flex-wrap: wrap;
+            margin-block-start: 1lh;
 
             &:has(> .prev) {
                 justify-content: flex-start;
@@ -691,36 +1101,8 @@ article {
     }
 }
 
-@media (min-width: 80ch) and (max-width: 120ch) {
-    #sidebar-container:not(.collapsed) {
-        max-width: 1lh;
-        width: 1lh;
-        overflow: hidden;
-    }
-
-    #sidebar-container:not(.collapsed) #category-container,
-    #sidebar-container:not(.collapsed) #sidebar-vim-nav-container {
-        display: none;
-    }
-
-    #sidebar-container:not(.collapsed) #sidebar-toggle::after {
-        display: none;
-    }
-
-    #toc-container:not(.collapsed) {
-        max-width: 1lh;
-        width: 1lh;
-        overflow: hidden;
-    }
-
-    #toc-container:not(.collapsed) #toc-list-container {
-        display: none;
-    }
-
-    #toc-container:not(.collapsed) #toc-sidebar #toc-toggle::after {
-        display: none;
-    }
-}
+/* Removed auto-collapse at medium widths (80-120ch) — sidebars now show
+   their content unless explicitly collapsed via the toggle button */
 
 @media (max-width: 80ch) {
     #sidebar-container {
@@ -750,8 +1132,7 @@ article {
         width: 100%;
     }
 
-    #sidebar-container.collapsed #category-container,
-    #sidebar-container.collapsed #sidebar-vim-nav-container {
+    #sidebar-container.collapsed #category-container {
         display: block;
     }
 
@@ -767,9 +1148,17 @@ article {
         display: flex;
     }
 
+    #vim-statusline {
+        display: none;
+    }
+
     #doc-article {
-        /* Account for fixed bottom nav height */
-        margin-bottom: 3lh;
+        margin-bottom: 2lh;
+        /* WebTUI's box-= utility sets `isolation: isolate` which traps
+           position:fixed children (like the footnote tooltip) inside this
+           stacking context — preventing them from rendering above the
+           sidebar. Override so the tooltip can escape. */
+        isolation: auto;
     }
 
     .mobile-hidden {
@@ -817,4 +1206,18 @@ img {
     max-width: round(calc(100% - 2ch), 1ch);
     padding: 1ch;
     height: auto;
+}
+
+/* Disable webtui table component borders on .recent-posts-table
+   (it uses simple custom borders instead) */
+.recent-posts-table::before,
+.recent-posts-table tr :is(td, th)::before,
+.recent-posts-table tr :is(td, th)::after {
+    display: none !important;
+}
+.recent-posts-table tr :is(td, th) {
+    padding-bottom: 0 !important;
+}
+.recent-posts-table :first-child > tr:first-child > :is(td, th) {
+    padding-top: 0 !important;
 }

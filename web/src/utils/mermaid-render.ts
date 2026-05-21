@@ -1,5 +1,348 @@
 import mermaid from 'mermaid'
 
+const PAN_STEP = 40
+const ZOOM_STEP = 1.2
+const MIN_SCALE = 0.5
+const MAX_SCALE = 8
+
+interface ViewportState {
+    scale: number
+    tx: number
+    ty: number
+}
+
+function applyTransform(svg: SVGElement, state: ViewportState) {
+    svg.style.setProperty(
+        'transform',
+        `translate(${state.tx}px, ${state.ty}px) scale(${state.scale})`,
+        'important',
+    )
+}
+
+function clampScale(scale: number) {
+    return Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale))
+}
+
+async function copyMermaidSource(btn: HTMLButtonElement, source: string) {
+    if (!source) return
+    try {
+        await navigator.clipboard.writeText(source)
+        btn.classList.add('mc-success')
+        const originalTitle = btn.title
+        btn.title = 'Copied!'
+        setTimeout(() => {
+            btn.classList.remove('mc-success')
+            btn.title = originalTitle
+        }, 1200)
+    } catch (error) {
+        console.error('Copy failed:', error)
+    }
+}
+
+function openExpandedView(svg: SVGElement, source: string) {
+    document.querySelector('.mermaid-modal')?.remove()
+
+    const modal = document.createElement('div')
+    modal.className = 'mermaid-modal'
+    modal.setAttribute('role', 'dialog')
+    modal.setAttribute('aria-modal', 'true')
+    modal.setAttribute('aria-label', 'Expanded diagram')
+    modal.tabIndex = -1
+
+    const inner = document.createElement('div')
+    inner.className = 'mermaid-modal-inner'
+
+    const closeBtn = document.createElement('button')
+    closeBtn.type = 'button'
+    closeBtn.className = 'mermaid-modal-close'
+    closeBtn.setAttribute('aria-label', 'Close')
+    closeBtn.title = 'Close (Esc)'
+
+    const svgClone = svg.cloneNode(true) as SVGElement
+    svgClone.removeAttribute('style')
+    svgClone.style.setProperty('width', '100%', 'important')
+    svgClone.style.setProperty('height', '100%', 'important')
+    svgClone.style.setProperty('max-width', 'none', 'important')
+    svgClone.style.setProperty('max-height', 'none', 'important')
+
+    inner.append(closeBtn, svgClone)
+    modal.appendChild(inner)
+    document.body.appendChild(modal)
+
+    const previousFocus = document.activeElement as HTMLElement | null
+    document.body.style.overflow = 'hidden'
+
+    const close = () => {
+        modal.remove()
+        document.body.style.overflow = ''
+        document.removeEventListener('keydown', onKey)
+        previousFocus?.focus?.()
+    }
+
+    const onKey = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+            event.preventDefault()
+            close()
+        }
+    }
+
+    closeBtn.addEventListener('click', close)
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) close()
+    })
+    document.addEventListener('keydown', onKey)
+
+    modal.focus()
+
+    // Source is intentionally unused in the expanded view but kept for future use
+    void source
+}
+
+function setupInteractiveViewport(block: HTMLElement) {
+    if (block.dataset.interactive === 'true') return
+
+    const svg = block.querySelector('svg[id^="mermaid-"]')
+    if (!(svg instanceof SVGElement)) return
+
+    block.dataset.interactive = 'true'
+    block.classList.add('mermaid-interactive')
+
+    // Wrap SVG in a viewport so overflow:hidden does not collapse the block
+    // when it sits inside a flex container.
+    const viewport = document.createElement('div')
+    viewport.className = 'mermaid-viewport'
+    svg.parentNode?.insertBefore(viewport, svg)
+    viewport.appendChild(svg)
+
+    const state: ViewportState = { scale: 1, tx: 0, ty: 0 }
+
+    svg.style.setProperty('transform-origin', '0 0', 'important')
+    svg.style.setProperty('cursor', 'grab', 'important')
+    svg.style.setProperty('transition', 'transform 0.15s ease-out', 'important')
+
+    const reset = () => {
+        state.scale = 1
+        state.tx = 0
+        state.ty = 0
+        applyTransform(svg, state)
+    }
+
+    const pan = (dx: number, dy: number) => {
+        state.tx += dx
+        state.ty += dy
+        applyTransform(svg, state)
+    }
+
+    const zoomAt = (factor: number, originX?: number, originY?: number) => {
+        const newScale = clampScale(state.scale * factor)
+        if (newScale === state.scale) return
+
+        if (originX !== undefined && originY !== undefined) {
+            const rect = viewport.getBoundingClientRect()
+            const cx = originX - rect.left
+            const cy = originY - rect.top
+            const ratio = newScale / state.scale
+            state.tx = cx - (cx - state.tx) * ratio
+            state.ty = cy - (cy - state.ty) * ratio
+        }
+
+        state.scale = newScale
+        applyTransform(svg, state)
+    }
+
+    // Drag-to-pan
+    let dragging = false
+    let dragStartX = 0
+    let dragStartY = 0
+    let dragStartTx = 0
+    let dragStartTy = 0
+
+    const onPointerDown = (event: PointerEvent) => {
+        if (event.button !== 0) return
+        const target = event.target
+        if (target instanceof Element && target.closest('.mermaid-controls')) {
+            return
+        }
+        dragging = true
+        dragStartX = event.clientX
+        dragStartY = event.clientY
+        dragStartTx = state.tx
+        dragStartTy = state.ty
+        svg.style.setProperty('cursor', 'grabbing', 'important')
+        svg.style.setProperty('transition', 'none', 'important')
+        try {
+            svg.setPointerCapture(event.pointerId)
+        } catch {
+            /* ignore */
+        }
+        event.preventDefault()
+    }
+
+    const onPointerMove = (event: PointerEvent) => {
+        if (!dragging) return
+        state.tx = dragStartTx + (event.clientX - dragStartX)
+        state.ty = dragStartTy + (event.clientY - dragStartY)
+        applyTransform(svg, state)
+    }
+
+    const endDrag = (event: PointerEvent) => {
+        if (!dragging) return
+        dragging = false
+        svg.style.setProperty('cursor', 'grab', 'important')
+        svg.style.setProperty(
+            'transition',
+            'transform 0.15s ease-out',
+            'important',
+        )
+        try {
+            svg.releasePointerCapture(event.pointerId)
+        } catch {
+            /* ignore */
+        }
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', endDrag)
+    svg.addEventListener('pointercancel', endDrag)
+
+    // Wheel-to-zoom (only when pointer is over the block)
+    block.addEventListener(
+        'wheel',
+        (event) => {
+            if (!event.ctrlKey && !event.metaKey) return
+            event.preventDefault()
+            const factor = event.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP
+            zoomAt(factor, event.clientX, event.clientY)
+        },
+        { passive: false },
+    )
+
+    // Build controls
+    const controls = document.createElement('div')
+    controls.className = 'mermaid-controls'
+    controls.setAttribute('aria-label', 'Diagram controls')
+
+    const makeButton = (
+        label: string,
+        title: string,
+        onClick: () => void,
+        extraClass = '',
+    ) => {
+        const btn = document.createElement('button')
+        btn.type = 'button'
+        btn.className = `mermaid-ctrl ${extraClass}`.trim()
+        btn.setAttribute('aria-label', title)
+        btn.title = title
+        btn.textContent = label
+        btn.addEventListener('click', (event) => {
+            event.preventDefault()
+            event.stopPropagation()
+            onClick()
+        })
+        return btn
+    }
+
+    // GitHub-style layout: arrows in a cross, reset in center, zoom buttons separate
+    const padCluster = document.createElement('div')
+    padCluster.className = 'mermaid-pad'
+
+    const upBtn = makeButton('▲', 'Pan up', () => pan(0, PAN_STEP), 'mc-up')
+    const leftBtn = makeButton(
+        '◀',
+        'Pan left',
+        () => pan(PAN_STEP, 0),
+        'mc-left',
+    )
+    const resetBtn = makeButton('↻', 'Reset view', reset, 'mc-reset')
+    const rightBtn = makeButton(
+        '▶',
+        'Pan right',
+        () => pan(-PAN_STEP, 0),
+        'mc-right',
+    )
+    const downBtn = makeButton(
+        '▼',
+        'Pan down',
+        () => pan(0, -PAN_STEP),
+        'mc-down',
+    )
+
+    padCluster.append(upBtn, leftBtn, resetBtn, rightBtn, downBtn)
+
+    const zoomCluster = document.createElement('div')
+    zoomCluster.className = 'mermaid-zoom'
+    const zoomInBtn = makeButton(
+        '+',
+        'Zoom in',
+        () => zoomAt(ZOOM_STEP),
+        'mc-zoom-in',
+    )
+    const zoomOutBtn = makeButton(
+        '−',
+        'Zoom out',
+        () => zoomAt(1 / ZOOM_STEP),
+        'mc-zoom-out',
+    )
+    zoomCluster.append(zoomInBtn, zoomOutBtn)
+
+    controls.append(padCluster, zoomCluster)
+    viewport.appendChild(controls)
+
+    // Top-right cluster: expand + copy
+    const topActions = document.createElement('div')
+    topActions.className = 'mermaid-actions'
+
+    const expandBtn = makeButton(
+        '',
+        'Expand diagram',
+        () => openExpandedView(svg, block.dataset.mermaid ?? ''),
+        'mc-expand',
+    )
+    const copyBtn = makeButton(
+        '',
+        'Copy diagram source',
+        () => copyMermaidSource(copyBtn, block.dataset.mermaid ?? ''),
+        'mc-copy',
+    )
+    topActions.append(expandBtn, copyBtn)
+    viewport.appendChild(topActions)
+
+    // Keyboard support when block is focused
+    block.tabIndex = block.tabIndex < 0 ? 0 : block.tabIndex
+    block.addEventListener('keydown', (event) => {
+        if (event.target !== block) return
+        switch (event.key) {
+            case 'ArrowUp':
+                pan(0, PAN_STEP)
+                break
+            case 'ArrowDown':
+                pan(0, -PAN_STEP)
+                break
+            case 'ArrowLeft':
+                pan(PAN_STEP, 0)
+                break
+            case 'ArrowRight':
+                pan(-PAN_STEP, 0)
+                break
+            case '+':
+            case '=':
+                zoomAt(ZOOM_STEP)
+                break
+            case '-':
+            case '_':
+                zoomAt(1 / ZOOM_STEP)
+                break
+            case '0':
+                reset()
+                break
+            default:
+                return
+        }
+        event.preventDefault()
+    })
+}
+
 function stabilizeMermaidSvgLayout() {
     const mermaidSvgs = document.querySelectorAll('svg[id^="mermaid-"]')
 
@@ -42,6 +385,11 @@ function stabilizeMermaidSvgLayout() {
             'important',
         )
         node.style.setProperty('visibility', 'visible', 'important')
+
+        const block = node.closest('.mermaid')
+        if (block instanceof HTMLElement) {
+            setupInteractiveViewport(block)
+        }
     })
 }
 
@@ -49,32 +397,97 @@ export function initMermaid() {
     const mermaidBlocks = document.querySelectorAll('.mermaid')
     if (mermaidBlocks.length === 0) return
 
-    const resolveMermaidTheme = () => {
-        const theme =
-            document.documentElement.getAttribute('data-webtui-theme') ??
-            'custom-light'
-        const lightThemes = ['custom-light', 'catppuccin-latte']
-        return lightThemes.includes(theme) ? 'default' : 'dark'
+    const cssVar = (name: string, fallback = '') => {
+        const value = getComputedStyle(document.documentElement)
+            .getPropertyValue(name)
+            .trim()
+        return value || fallback
     }
 
-    const resolveMermaidFontFamily = () => {
-        const fontFamily = getComputedStyle(
-            document.documentElement,
-        ).getPropertyValue('--font-family')
-        return fontFamily.trim() || 'monospace'
+    /** Resolve a CSS variable (which may contain oklch(from ...) /
+     *  color-mix() / etc.) into a #rrggbb string the mermaid color parser
+     *  can handle. Uses a canvas to coerce any CSS color into sRGB hex. */
+    const colorProbe = document.createElement('div')
+    colorProbe.style.cssText =
+        'position:absolute;width:0;height:0;visibility:hidden'
+    document.body.appendChild(colorProbe)
+    const colorCanvas = document.createElement('canvas')
+    colorCanvas.width = colorCanvas.height = 1
+    const colorCtx = colorCanvas.getContext('2d', { willReadFrequently: true })
+    const toHex = (cssColor: string, fallback: string) => {
+        if (!colorCtx) return fallback
+        try {
+            colorCtx.clearRect(0, 0, 1, 1)
+            colorCtx.fillStyle = '#000'
+            colorCtx.fillStyle = cssColor
+            colorCtx.fillRect(0, 0, 1, 1)
+            const [r, g, b] = colorCtx.getImageData(0, 0, 1, 1).data
+            return `#${[r, g, b]
+                .map((v) => v.toString(16).padStart(2, '0'))
+                .join('')}`
+        } catch {
+            return fallback
+        }
+    }
+    const resolveColor = (varName: string, fallback: string) => {
+        colorProbe.style.color = ''
+        colorProbe.style.color = `var(${varName})`
+        const resolved = getComputedStyle(colorProbe).color
+        if (!resolved || resolved === 'rgba(0, 0, 0, 0)') return fallback
+        return toHex(resolved, fallback)
     }
 
-    const resolveMermaidFontSize = () => {
-        const fontSize = getComputedStyle(
-            document.documentElement,
-        ).getPropertyValue('--font-size')
-        return fontSize.trim() || '16px'
+    const resolveMermaidFontFamily = () => cssVar('--font-family', 'monospace')
+    const resolveMermaidFontSize = () => cssVar('--font-size', '16px')
+
+    /** Build a mermaid themeVariables object from the site's CSS palette.
+     *  Uses just the neutral background/foreground ramp so diagrams look
+     *  like the surrounding UI; pink stays as the one accent for callouts. */
+    const resolveThemeVariables = () => {
+        const fg2 = resolveColor('--foreground2', '#888888')
+        const fg3 = resolveColor('--foreground3', '#cccccc')
+        const bg1 = resolveColor('--background1', '#f5f5f5')
+        const bg2 = resolveColor('--background2', '#e5e5e5')
+        const bg3 = resolveColor('--background3', '#cccccc')
+        const pink = resolveColor('--pink', '#ea76cb')
+        return {
+            background: bg1,
+            mainBkg: bg2,
+            primaryColor: bg2,
+            primaryBorderColor: fg3,
+            primaryTextColor: fg2,
+            secondaryColor: bg3,
+            secondaryBorderColor: fg3,
+            secondaryTextColor: fg2,
+            tertiaryColor: bg1,
+            tertiaryBorderColor: fg3,
+            tertiaryTextColor: fg2,
+            lineColor: fg3,
+            textColor: fg2,
+            // Cluster (subgraph) styling
+            clusterBkg: bg1,
+            clusterBorder: fg3,
+            // Node text
+            nodeTextColor: fg2,
+            nodeBorder: fg3,
+            // Edges
+            edgeLabelBackground: bg1,
+            // Accent (only one — keep it simple)
+            cScale0: pink,
+            cScale1: bg3,
+            cScale2: bg2,
+            // Notes
+            noteBkgColor: bg2,
+            noteBorderColor: fg3,
+            noteTextColor: fg2,
+        }
     }
 
     const render = async () => {
         mermaid.initialize({
             startOnLoad: false,
-            theme: resolveMermaidTheme(),
+            theme: 'base',
+            themeVariables: resolveThemeVariables(),
             fontFamily: resolveMermaidFontFamily(),
             fontSize: resolveMermaidFontSize(),
             flowchart: {
@@ -87,6 +500,9 @@ export function initMermaid() {
             if (!(node instanceof HTMLElement)) return
             const source = node.dataset.mermaid
             if (!source) return
+            // Re-render: drop interactive flag and existing wrapper/controls
+            node.dataset.interactive = 'false'
+            node.classList.remove('mermaid-interactive')
             node.removeAttribute('data-processed')
             node.textContent = source
         })

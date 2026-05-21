@@ -1,9 +1,9 @@
 ---
-import Sidebar from '@/components/Sidebar.astro'
+import Sidebar from '@/components/SidebarFileTree.astro'
+import Filter from '@/components/Filter.astro'
 import Layout from '@/layouts/Layout.astro'
-import { makeSortedCategoryEntries } from '@/utils/content'
+import { makeSidebarOrderedPages } from '@/utils/content'
 import { compareUrlPaths } from '@/utils/url'
-import Navbar from '@/components/Navbar.astro'
 import { getReadingTime } from '@/utils/readingTime'
 import ShareButtons from '@/components/ShareButtons.astro'
 import { getCollection } from 'astro:content'
@@ -23,9 +23,7 @@ const { frontmatter, headings } = Astro.props as {
     headings: DocHeading[]
 }
 
-const sortedPages = makeSortedCategoryEntries().flatMap(
-    (category) => category[1],
-)
+const sortedPages = makeSidebarOrderedPages()
 const pageIndex = sortedPages.findIndex((page) =>
     compareUrlPaths(page.id, Astro.url.pathname),
 )
@@ -35,9 +33,10 @@ const nextDoc =
         : sortedPages.at(pageIndex + 1)
 const prevDoc = pageIndex === 0 ? undefined : sortedPages.at(pageIndex - 1)
 
-const tocHeadings: DocHeading[] = headings.filter(
-    (heading) => heading.depth >= 2,
-)
+const tocHeadings: DocHeading[] = [
+    { depth: 1, text: frontmatter.title, slug: 'toc-page-title' },
+    ...headings.filter((heading) => heading.depth >= 2),
+]
 
 const hasSiblingAfter = (items: DocHeading[], index: number) => {
     const currentDepth = items[index].depth
@@ -98,6 +97,22 @@ const sourceFilePath = sourceFile
     : null
 const githubBase = 'https://github.com/saforem2/sam.onl'
 const githubRawBase = 'https://raw.githubusercontent.com/saforem2/sam.onl'
+
+// Get file last-modified date
+import { stat } from 'node:fs/promises'
+let fileModifiedDate: Date | null = null
+if (sourceFilePath) {
+    try {
+        const resolvedPath = new URL(
+            `../${sourceFilePath.replace('web/', '')}`,
+            import.meta.url,
+        ).pathname
+        const fileStat = await stat(resolvedPath)
+        fileModifiedDate = fileStat.mtime
+    } catch {
+        // File not found, skip
+    }
+}
 
 // Format date helper
 function formatDate(d: string | Date): string {
@@ -177,8 +192,8 @@ const articleSchema =
         )
     }
     <column self-="grow">
-        <Navbar />
-        <row self-="grow" gap-="1">
+        <Filter />
+        <row self-="grow" gap-="0" id="doc-columns">
             <div id="sidebar-container" class="mobile-hidden">
                 <Sidebar />
             </div>
@@ -188,80 +203,6 @@ const articleSchema =
                     <div is-="badge" variant-="background0">
                         <h1>{frontmatter.title}</h1>
                     </div>
-                    {
-                        (frontmatter.date || isPost || isTalk) && (
-                            <div class="post-meta">
-                                <span
-                                    is-="badge"
-                                    variant-="background1"
-                                    class="post-meta-item"
-                                    tabindex="0">
-                                    Sam Foreman
-                                </span>
-                                {frontmatter.date && (
-                                    <span
-                                        is-="badge"
-                                        variant-="background1"
-                                        class="post-meta-item"
-                                        tabindex="0">
-                                        <span class="date-long">
-                                            {formatDate(frontmatter.date)}
-                                        </span>
-                                        <span class="date-short">
-                                            {formatDateShort(frontmatter.date)}
-                                        </span>
-                                    </span>
-                                )}
-                                {frontmatter.date && (
-                                    <span
-                                        is-="badge"
-                                        variant-="background1"
-                                        class="post-meta-item"
-                                        tabindex="0">
-                                        {readingTime}
-                                    </span>
-                                )}
-                                {category && (
-                                    <a
-                                        href={`/posts/${category}/`}
-                                        is-="badge"
-                                        variant-="background1"
-                                        class="post-meta-tag"
-                                        tabindex="0">
-                                        {category}
-                                    </a>
-                                )}
-                                {sourceFilePath && (
-                                    <span class="post-meta-links">
-                                        <a
-                                            href={`${githubBase}/blob/main/${sourceFilePath}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            is-="badge"
-                                            variant-="background1"
-                                            tabindex="0">
-                                            source
-                                        </a>
-                                        <a
-                                            href={`${githubRawBase}/main/${sourceFilePath}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            is-="badge"
-                                            variant-="background1"
-                                            tabindex="0">
-                                            raw
-                                        </a>
-                                    </span>
-                                )}
-                                {(isPost || isTalk) && (
-                                    <ShareButtons
-                                        title={frontmatter.title}
-                                        url={`https://sam.onl${Astro.url.pathname}`}
-                                    />
-                                )}
-                            </div>
-                        )
-                    }
                 </header>
                 <row gap-="1" self-="grow">
                     <div id="scroll-progress" aria-hidden="true"></div>
@@ -271,6 +212,129 @@ const articleSchema =
                                 id="toc-page-title"
                                 aria-hidden="true"
                                 tabindex="-1"></span>
+                            {
+                                (frontmatter.date || isPost || isTalk) && (
+                                    <div class="post-meta">
+                                        <div class="post-meta-row">
+                                            <span
+                                                is-="badge"
+                                                variant-="background1"
+                                                class="post-meta-item post-meta-author"
+                                                tabindex="0">
+                                                Sam Foreman
+                                            </span>
+                                            {frontmatter.date && (
+                                                <span
+                                                    is-="badge"
+                                                    variant-="background1"
+                                                    class="post-meta-item post-meta-date"
+                                                    tabindex="0">
+                                                    <span class="date-long">
+                                                        {formatDate(
+                                                            frontmatter.date,
+                                                        )}
+                                                    </span>
+                                                    <span class="date-short">
+                                                        {formatDateShort(
+                                                            frontmatter.date,
+                                                        )}
+                                                    </span>
+                                                </span>
+                                            )}
+                                            {fileModifiedDate &&
+                                                frontmatter.date &&
+                                                formatDate(fileModifiedDate) !==
+                                                    formatDate(
+                                                        frontmatter.date,
+                                                    ) && (
+                                                    <span
+                                                        is-="badge"
+                                                        variant-="background1"
+                                                        class="post-meta-item post-meta-updated"
+                                                        tabindex="0">
+                                                        updated:{' '}
+                                                        <span class="date-long">
+                                                            {formatDate(
+                                                                fileModifiedDate,
+                                                            )}
+                                                        </span>
+                                                        <span class="date-short">
+                                                            {formatDateShort(
+                                                                fileModifiedDate,
+                                                            )}
+                                                        </span>
+                                                    </span>
+                                                )}
+                                            {frontmatter.date && (
+                                                <span
+                                                    is-="badge"
+                                                    variant-="background1"
+                                                    class="post-meta-item post-meta-reading"
+                                                    tabindex="0">
+                                                    {readingTime}
+                                                </span>
+                                            )}
+                                            {category && (
+                                                <a
+                                                    href={`/posts/${category}/`}
+                                                    is-="badge"
+                                                    variant-="background1"
+                                                    class="post-meta-tag"
+                                                    tabindex="0">
+                                                    {category}
+                                                </a>
+                                            )}
+                                        </div>
+                                        <div class="post-meta-row">
+                                            {sourceFilePath && (
+                                                <span class="post-meta-links">
+                                                    <a
+                                                        href={`${githubBase}/blob/main/${sourceFilePath}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        is-="badge"
+                                                        variant-="background2"
+                                                        class="post-meta-source"
+                                                        title="View source on GitHub"
+                                                        aria-label="View source on GitHub"
+                                                        tabindex="0">
+                                                        &#xf09b;
+                                                    </a>
+                                                    <a
+                                                        href={`${githubRawBase}/main/${sourceFilePath}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        is-="badge"
+                                                        variant-="background2"
+                                                        class="post-meta-raw"
+                                                        title="View raw source"
+                                                        aria-label="View raw source"
+                                                        tabindex="0">
+                                                        &#xf15b;
+                                                    </a>
+                                                </span>
+                                            )}
+                                            {(isPost || isTalk) && (
+                                                <ShareButtons
+                                                    title={frontmatter.title}
+                                                    url={`https://sam.onl${Astro.url.pathname}`}
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+                                )
+                            }
+                            {
+                                frontmatter.description && (
+                                    <blockquote
+                                        class="post-description"
+                                        set:html={frontmatter.description.replace(
+                                            /`([^`]+)`/g,
+                                            '<code>$1</code>',
+                                        )}
+                                    />
+                                )
+                            }
                             <slot />
                             {
                                 relatedPosts.length > 0 && (
@@ -374,23 +438,6 @@ const articleSchema =
                                 shear-="top"
                                 id="toc-sidebar"
                                 aria-label="Table of contents">
-                                <button
-                                    id="toc-toggle"
-                                    type="button"
-                                    size-="small"
-                                    aria-expanded="false"
-                                    aria-controls="toc-container"
-                                    aria-label="Collapse right sidebar (zl)">
-                                    <>
-                                        <span class="key-z">z</span>
-                                        <span class="key-bracket">[</span>
-                                    </>
-                                    <>
-                                        <span class="key-l">l</span>
-                                        <span class="key-bracket">]</span>
-                                    </>
-                                    &rsaquo;
-                                </button>
                                 <div id="toc-list-container">
                                     <ul id="toc-list">
                                         {tocLines.map((heading) => (
@@ -414,12 +461,52 @@ const articleSchema =
                                         ))}
                                     </ul>
                                 </div>
+                                <button
+                                    id="toc-toggle"
+                                    type="button"
+                                    size-="small"
+                                    aria-expanded="false"
+                                    aria-controls="toc-container"
+                                    aria-label="Collapse right sidebar (zl)">
+                                    <>
+                                        <span class="key-z">z</span>
+                                        <span class="key-bracket">[</span>
+                                    </>
+                                    <>
+                                        <span class="key-l">l</span>
+                                        <span class="key-bracket">]</span>
+                                    </>
+                                    &rsaquo;
+                                </button>
                             </nav>
                         </aside>
                     </>
                 )
             }
         </row>
+        <div id="vim-statusline">
+            <!-- <span class="vsl-vim-icon">&#xe62b; </span> -->
+            <span class="vsl-mode">NORMAL</span>
+            <span class="vsl-branch">&#xe725; main</span>
+            <span class="vsl-author">Sam Foreman</span>
+            <span class="vsl-site">sam.onl/</span>
+            <span class="vsl-file"
+                >{
+                    sourceFilePath?.replace('web/src/pages/', '') ??
+                        Astro.url.pathname
+                }</span
+            >
+            <span class="vsl-spacer"></span>
+            <span class="vsl-keys">
+                <span id="vsl-last-key"></span>
+                <button id="vsl-btn-j" tabindex="-1">j</button>
+                <button id="vsl-btn-k" tabindex="-1">k</button>
+                <button id="vsl-btn-q" tabindex="-1">?</button>
+            </span>
+            <span class="vsl-clock"><span id="vsl-clock-text"></span></span>
+            <span class="vsl-pos">Top</span>
+            <span class="vsl-loc">1:1</span>
+        </div>
         <div id="mobile-nav">
             <button size-="small" variant-="background1" id="menu-button">
                 &#xeb86; Menu
@@ -470,10 +557,16 @@ const articleSchema =
     const tocSidebar = document.getElementById(
         'toc-sidebar',
     ) as HTMLElement | null
-    const getNavbarTarget = () =>
-        navbar?.querySelector(
-            'a[data-active="true"], a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    // Navbar was removed; the equivalent action surface is the row of
+    // sidebar action buttons (Home / Theme / GitHub / RSS / Search) at the
+    // top of the left sidebar. Keep the helper name so existing call sites
+    // and keybind labels still work.
+    const getNavbarTarget = () => {
+        const actions = document.getElementById('sidebar-actions')
+        return actions?.querySelector(
+            'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
         )
+    }
     const getSidebarTarget = () =>
         sidebar?.querySelector('a.active') ||
         sidebar?.querySelector('details summary') ||
@@ -556,26 +649,38 @@ const articleSchema =
         const isCodeBlock = (el: Element) =>
             el.tagName === 'PRE' && el.classList.contains('astro-code')
 
-        const children = Array.from(mainContent.children)
-        children.forEach((child) => {
-            if (!(child instanceof HTMLElement)) return
-            if (isFocusableElement(child)) return
-            if (isListContainer(child)) return
-            if (isCodeBlock(child)) {
-                // Remove tabindex from the <pre> wrapper so it's not a
-                // navigation stop itself (the rehype plugin sets it).
-                child.removeAttribute('tabindex')
-                // Make each line individually focusable
-                child.querySelectorAll('span.line').forEach((line) => {
-                    if (line instanceof HTMLElement) {
-                        line.setAttribute('tabindex', '0')
-                    }
-                })
-                return
-            }
-            if (child.hasAttribute('tabindex')) return
-            child.setAttribute('tabindex', '0')
-        })
+        // Collapsible heading wrappers — don't make the <details> itself
+        // focusable, but recurse into its children (skip the <summary>
+        // since it's already focusable).
+        const isHeadingCollapse = (el: Element) =>
+            el.tagName === 'DETAILS' &&
+            el.classList.contains('heading-collapse')
+
+        const processChildren = (container: Element) => {
+            Array.from(container.children).forEach((child) => {
+                if (!(child instanceof HTMLElement)) return
+                if (child.tagName === 'SUMMARY') return
+                if (isFocusableElement(child)) return
+                if (isListContainer(child)) return
+                if (isHeadingCollapse(child)) {
+                    processChildren(child)
+                    return
+                }
+                if (isCodeBlock(child)) {
+                    child.removeAttribute('tabindex')
+                    child.querySelectorAll('span.line').forEach((line) => {
+                        if (line instanceof HTMLElement) {
+                            line.setAttribute('tabindex', '0')
+                        }
+                    })
+                    return
+                }
+                if (child.hasAttribute('tabindex')) return
+                child.setAttribute('tabindex', '0')
+            })
+        }
+
+        processChildren(mainContent)
 
         const listItems = Array.from(mainContent.querySelectorAll('li'))
         listItems.forEach((item) => {
@@ -587,6 +692,9 @@ const articleSchema =
     }
 
     applyMainContentTabIndex()
+
+    // Re-apply after collapsible headings restructure the DOM
+    window.addEventListener('headings-collapsed', applyMainContentTabIndex)
 
     mainContent.addEventListener(
         'keydown',
@@ -715,7 +823,11 @@ const articleSchema =
                 document.querySelectorAll(
                     '#main-content h1[id], #main-content h2[id], #main-content h3[id], #main-content h4[id], #main-content h5[id], #main-content h6[id]',
                 ),
-            ) as HTMLElement[]
+            ).map((h) => {
+                // If heading is inside a summary (collapsible), target the summary
+                const summary = h.closest('summary')
+                return (summary ?? h) as HTMLElement
+            })
             if (headings.length === 0) return
 
             const scrollerTop = scroller.getBoundingClientRect().top
@@ -828,7 +940,7 @@ const articleSchema =
             !e.altKey
         ) {
             e.preventDefault()
-            const scroller = document.getElementById('scroll-container')
+            const scroller = mainContent
             if (!scroller) return
             const halfPage = scroller.clientHeight / 2
             scroller.scrollBy({
@@ -840,6 +952,26 @@ const articleSchema =
                 vimFocusElement(visible[0])
             }
             return
+        }
+
+        // Esc — unfocus the currently focused element
+        if (
+            e.key === 'Escape' &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            !e.shiftKey
+        ) {
+            const active = document.activeElement
+            if (
+                active instanceof HTMLElement &&
+                active !== document.body &&
+                active !== document.documentElement
+            ) {
+                e.preventDefault()
+                active.blur()
+                return
+            }
         }
 
         // Skip all plain keys when z-chord is pending — the sidebar-toggle script handles it
@@ -970,6 +1102,31 @@ const articleSchema =
         }
     })
 
+    // Make each line inside a code block individually navigable so
+    // j/k step through lines instead of skipping the whole block. The
+    // pre itself stops being a vim target (its tabindex is removed)
+    // because focusing the pre would otherwise compete with focusing
+    // its first line.
+    mainContent
+        .querySelectorAll<HTMLPreElement>('pre[tabindex="0"]')
+        .forEach((pre) => {
+            const lines = pre.querySelectorAll<HTMLElement>('.line')
+            if (lines.length === 0) return
+            pre.removeAttribute('tabindex')
+            lines.forEach((line) => line.setAttribute('tabindex', '0'))
+        })
+
+    // Same idea for tables: hand the tabindex from the table down to each
+    // row so j/k steps through rows individually.
+    mainContent
+        .querySelectorAll<HTMLTableElement>('table[tabindex="0"]')
+        .forEach((table) => {
+            const rows = table.querySelectorAll<HTMLElement>('tr')
+            if (rows.length === 0) return
+            table.removeAttribute('tabindex')
+            rows.forEach((row) => row.setAttribute('tabindex', '0'))
+        })
+
     applyVimNavigation(mainContent, queryString, (element) => {
         currentElement = element
     })
@@ -1097,6 +1254,51 @@ const articleSchema =
                     '#toc-list a.active',
                 ) as HTMLAnchorElement | null
                 activeLink?.scrollIntoView({ block: 'nearest' })
+
+                // Update the article border label with the active heading
+                const titleEl = document.querySelector(
+                    '#doc-article > header h1',
+                ) as HTMLElement | null
+                const mainEl = document.getElementById('main-content')
+                if (titleEl && mainEl) {
+                    if (titleEl.dataset.originalHtml === undefined) {
+                        titleEl.dataset.originalHtml = titleEl.innerHTML
+                    }
+
+                    // Find the nearest heading (walk up through
+                    // collapsible wrappers to find the actual heading)
+                    let target: HTMLElement | null = null
+                    if (/^H[1-6]$/.test(activeHeading.tagName)) {
+                        target = activeHeading
+                    } else {
+                        const collapse =
+                            activeHeading.closest?.('.heading-collapse')
+                        target = collapse?.querySelector(
+                            'summary :is(h1,h2,h3,h4,h5,h6)',
+                        ) as HTMLElement | null
+                    }
+
+                    // Show in border when we've scrolled past the top
+                    const hasScrolled = mainEl.scrollTop > 50
+
+                    if (hasScrolled && target) {
+                        const level = parseInt(target.tagName[1])
+                        const prefix = '#'.repeat(level)
+                        const colorVar = `var(--h${level})`
+                        const clone = target.cloneNode(true) as HTMLElement
+                        clone.querySelector('.heading-anchor')?.remove()
+                        const text = clone.textContent?.trim() ?? ''
+                        if (text) {
+                            titleEl.style.setProperty('--h1-prefix', 'none')
+                            titleEl.style.color = colorVar
+                            titleEl.innerHTML = `<span class="heading-anchor" style="color: ${colorVar}; margin-inline-end: 1ch;">${prefix}</span>${text}`
+                        }
+                    } else {
+                        titleEl.style.removeProperty('--h1-prefix')
+                        titleEl.style.removeProperty('color')
+                        titleEl.innerHTML = titleEl.dataset.originalHtml
+                    }
+                }
             }
         }
 
@@ -1207,10 +1409,12 @@ const articleSchema =
         return element.getClientRects().length > 0
     }
 
-    const getNavbarFocusTarget = () =>
-        navbar?.querySelector(
-            'a[data-active="true"], a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    const getNavbarFocusTarget = () => {
+        const actions = document.getElementById('sidebar-actions')
+        return actions?.querySelector(
+            'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
         )
+    }
 
     const getMainFocusTarget = () => {
         if (!mainContent) return null
@@ -1263,6 +1467,31 @@ const articleSchema =
                 document.querySelector('dialog[open]') instanceof
                 HTMLDialogElement
             if (hasOpenDialog) return
+
+            // Shift+C / Shift+E: collapse / expand all <details> in main.
+            // Handled here (before the chord branches) so it works regardless
+            // of any pending z-chord state.
+            if (
+                e.shiftKey &&
+                !e.ctrlKey &&
+                !e.metaKey &&
+                !e.altKey &&
+                (e.key === 'C' || e.key === 'E')
+            ) {
+                const main = document.getElementById('main-content')
+                if (!main) return
+                e.preventDefault()
+                const all = main.querySelectorAll('details')
+                if (e.key === 'C') {
+                    all.forEach((d) => ((d as HTMLDetailsElement).open = false))
+                } else {
+                    all.forEach((d) => ((d as HTMLDetailsElement).open = true))
+                }
+                console.log(
+                    `[keybind] Shift+${e.key}: toggled ${all.length} <details>`,
+                )
+                return
+            }
 
             const isPlainKey =
                 !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey
@@ -1341,10 +1570,67 @@ const articleSchema =
                         if (navbarTarget instanceof HTMLElement) {
                             vimFocusElement(navbarTarget)
                         }
+                        return
+                    }
+
+                    if (e.key === 'M') {
+                        e.preventDefault()
+                        document
+                            .querySelectorAll('#main-content details[open]')
+                            .forEach((d) => {
+                                ;(d as HTMLDetailsElement).open = false
+                            })
+                        return
+                    }
+
+                    if (e.key === 'R') {
+                        e.preventDefault()
+                        document
+                            .querySelectorAll(
+                                '#main-content details:not([open])',
+                            )
+                            .forEach((d) => {
+                                ;(d as HTMLDetailsElement).open = true
+                            })
+                        return
                     }
                     return
                 }
             } else {
+                // Allow z-chord with Shift for zM/zR (collapse/expand all)
+                if (
+                    e.shiftKey &&
+                    !e.ctrlKey &&
+                    !e.metaKey &&
+                    !e.altKey &&
+                    w.__pendingZAt > 0 &&
+                    Date.now() - w.__pendingZAt <= 700
+                ) {
+                    w.__pendingZAt = 0
+                    w.__keyZSpans?.forEach((s: Element) =>
+                        w.__setKeyActive?.(s, false),
+                    )
+                    if (e.key === 'M') {
+                        e.preventDefault()
+                        document
+                            .querySelectorAll('#main-content details[open]')
+                            .forEach((d) => {
+                                ;(d as HTMLDetailsElement).open = false
+                            })
+                        return
+                    }
+                    if (e.key === 'R') {
+                        e.preventDefault()
+                        document
+                            .querySelectorAll(
+                                '#main-content details:not([open])',
+                            )
+                            .forEach((d) => {
+                                ;(d as HTMLDetailsElement).open = true
+                            })
+                        return
+                    }
+                }
                 w.__pendingZAt = 0
                 w.__keyZSpans?.forEach((s: Element) =>
                     w.__setKeyActive?.(s, false),
@@ -1541,18 +1827,18 @@ const articleSchema =
         article.classList.toggle('mobile-hidden', panel !== 'docs')
         tocContainer?.classList.toggle('mobile-hidden', panel !== 'toc')
         tocContainer?.classList.toggle('collapsed', panel !== 'toc')
-        menuButton.setAttribute(
-            'variant-',
-            panel === 'menu' ? '' : 'background1',
-        )
-        docsButton.setAttribute(
-            'variant-',
-            panel === 'docs' ? '' : 'background1',
-        )
-        tocButton?.setAttribute(
-            'variant-',
-            panel === 'toc' ? '' : 'background1',
-        )
+        // Active button: remove the variant- attribute entirely (don't set
+        // it to empty string — webtui treats those differently and the
+        // active button ends up with extra width). Inactive buttons get
+        // variant-="background1" for the dimmed look.
+        const setVariant = (btn: HTMLButtonElement | null, active: boolean) => {
+            if (!btn) return
+            if (active) btn.removeAttribute('variant-')
+            else btn.setAttribute('variant-', 'background1')
+        }
+        setVariant(menuButton, panel === 'menu')
+        setVariant(docsButton, panel === 'docs')
+        setVariant(tocButton, panel === 'toc')
     }
 
     menuButton.addEventListener('click', () => setMobileActive('menu'))
@@ -1561,16 +1847,14 @@ const articleSchema =
 </script>
 
 <script>
-    const scrollContainer = document.getElementById('scroll-container')
+    const mainContent = document.getElementById('main-content')
     const progressBar = document.getElementById('scroll-progress')
 
-    if (scrollContainer && progressBar) {
-        const mainContent = document.getElementById('main-content')
-        scrollContainer.addEventListener('scroll', () => {
-            if (!mainContent) return
-            const scrollTop = scrollContainer.scrollTop
+    if (mainContent && progressBar) {
+        mainContent.addEventListener('scroll', () => {
+            const scrollTop = mainContent.scrollTop
             const scrollHeight =
-                mainContent.scrollHeight - scrollContainer.clientHeight
+                mainContent.scrollHeight - mainContent.clientHeight
             const progress =
                 scrollHeight > 0 ? Math.min(scrollTop / scrollHeight, 1) : 0
             progressBar.style.transform = `scaleX(${progress})`
@@ -1603,6 +1887,252 @@ const articleSchema =
         block.appendChild(button)
     }
 </script>
+
+<!-- Vim statusline scroll position + clock -->
+<script>
+    const mainContent = document.getElementById('main-content')
+    const posEl = document.querySelector('.vsl-pos')
+    const locEl = document.querySelector('.vsl-loc')
+    const clockEl = document.getElementById('vsl-clock-text')
+
+    if (mainContent && posEl) {
+        const update = () => {
+            const scrollTop = mainContent.scrollTop
+            const scrollHeight =
+                mainContent.scrollHeight - mainContent.clientHeight
+            if (scrollHeight <= 0) {
+                posEl.textContent = 'All'
+            } else {
+                posEl.textContent =
+                    Math.round((scrollTop / scrollHeight) * 100) + '%'
+            }
+            // Approximate line number from scroll position
+            const totalLines = Math.ceil(mainContent.scrollHeight / 24)
+            const currentLine = Math.max(
+                1,
+                Math.ceil((scrollTop / mainContent.scrollHeight) * totalLines),
+            )
+            if (locEl) locEl.textContent = `${currentLine}:1`
+        }
+        mainContent.addEventListener('scroll', update)
+        update()
+    }
+
+    // Live clock
+    if (clockEl) {
+        const pad = (n: number) => String(n).padStart(2, '0')
+        const tick = () => {
+            const d = new Date()
+            clockEl.textContent = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+        }
+        tick()
+        setInterval(tick, 10_000)
+    }
+
+    // Visual feedback for statusline keys + last-key indicator
+    const vslBtnJ = document.getElementById('vsl-btn-j')
+    const vslBtnK = document.getElementById('vsl-btn-k')
+    const vslBtnQ = document.getElementById('vsl-btn-q')
+    const lastKeyEl = document.getElementById('vsl-last-key')
+    let lastKeyTimer: ReturnType<typeof setTimeout> | null = null
+    const keyMap: Record<string, HTMLElement | null> = {
+        j: vslBtnJ,
+        ArrowDown: vslBtnJ,
+        k: vslBtnK,
+        ArrowUp: vslBtnK,
+        '?': vslBtnQ,
+    }
+    window.addEventListener('keydown', (e) => {
+        const btn = keyMap[e.key]
+        if (btn) btn.style.color = 'var(--foreground0)'
+        // Show last pressed key
+        if (lastKeyEl && e.key.length === 1) {
+            lastKeyEl.textContent = e.key
+            if (lastKeyTimer) clearTimeout(lastKeyTimer)
+            lastKeyTimer = setTimeout(() => {
+                lastKeyEl.textContent = ''
+            }, 2000)
+        }
+    })
+    window.addEventListener('keyup', (e) => {
+        const btn = keyMap[e.key]
+        if (btn) btn.style.color = ''
+    })
+</script>
+
+<!-- Collapsible headings: wrap h2-h6 sections in <details> -->
+<script>
+    const mainContent = document.getElementById('main-content')
+    if (mainContent) {
+        // Process each heading level top-down (h2 first, then h3, etc.)
+        // so parent sections are established before children are wrapped
+        for (let level = 2; level <= 6; level++) {
+            const tag = `H${level}`
+            // Find headings at this level — search within mainContent
+            // and within already-created .heading-collapse details
+            const headings = Array.from(
+                mainContent.querySelectorAll(
+                    `:scope > ${tag}, :scope > .heading-collapse ${tag}`,
+                ),
+            ).filter(
+                // Only direct content headings, not ones inside summary
+                (h) => !h.closest('summary'),
+            ) as HTMLElement[]
+
+            for (const heading of headings) {
+                const parent = heading.parentNode!
+                const details = document.createElement('details')
+                details.setAttribute('is-', 'accordion')
+                details.classList.add('heading-collapse')
+                // Collapse year-section headings (e.g. "📆 2025") and a
+                // short allowlist of *exact* section labels on the about
+                // page (Music / Projects / More). Strip any leading
+                // emoji-icon-+-space before comparing so e.g.
+                // "📓 Projects" still matches "projects".
+                const headingText = heading.textContent?.trim() ?? ''
+                const headingBare = headingText
+                    .replace(
+                        /^[\p{Emoji_Presentation}\p{Extended_Pictographic}️‍]+\s*/gu,
+                        '',
+                    )
+                    .trim()
+                    .toLowerCase()
+                const collapseExact = new Set(['music', 'projects', 'more'])
+                const collapseByDefault =
+                    /\b(19|20)\d{2}\s*$/.test(headingText) ||
+                    collapseExact.has(headingBare)
+                details.open = !collapseByDefault
+                details.dataset.headingLevel = String(level)
+                const summary = document.createElement('summary')
+                summary.appendChild(heading.cloneNode(true))
+                details.appendChild(summary)
+                parent.insertBefore(details, heading)
+                heading.remove()
+                // Collect siblings until next heading of same or higher level,
+                // or a container that holds such a heading
+                const headingSelector = Array.from(
+                    { length: level },
+                    (_, i) => `h${i + 1}`,
+                ).join(',')
+                let next = details.nextSibling
+                while (next) {
+                    const sibling = next
+                    next = sibling.nextSibling
+                    if (sibling.nodeType === 1) {
+                        const el = sibling as HTMLElement
+                        if (
+                            /^H[1-6]$/.test(el.tagName) &&
+                            parseInt(el.tagName[1]) <= level
+                        ) {
+                            break
+                        }
+                        if (el.querySelector(headingSelector)) {
+                            break
+                        }
+                    }
+                    details.appendChild(sibling)
+                }
+            }
+        }
+        // Signal vim navigation to re-apply tabindex to restructured content
+        window.dispatchEvent(new Event('headings-collapsed'))
+    }
+</script>
+
+<style is:global>
+    .heading-collapse {
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+
+        &[open]::details-content {
+            padding-left: 0 !important;
+        }
+
+        > summary {
+            background-color: transparent !important;
+            list-style: none;
+            cursor: pointer;
+            padding: 0 !important;
+            line-height: 1lh !important;
+            min-height: 1lh;
+            display: flex;
+            align-items: center;
+
+            &::before {
+                content: none !important;
+            }
+
+            &::-webkit-details-marker {
+                display: none;
+            }
+
+            > :is(h2, h3, h4, h5, h6) {
+                display: inline;
+                border: none;
+                line-height: 1lh;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+        }
+
+        /* When collapsed, dim + tinted bg + ellipsis (only on hover/focus) */
+        &:not([open]) > summary {
+            &::after {
+                content: ' ...';
+                color: var(--foreground2);
+                opacity: 0;
+                transition: opacity 100ms linear;
+            }
+            &:hover::after,
+            &:focus-visible::after,
+            &[data-vim-focused='true']::after {
+                opacity: 1;
+            }
+        }
+
+        &:not([open])[data-heading-level='2'] > summary {
+            background-color: oklch(
+                from var(--h2, var(--orange)) l c h / 0.1
+            ) !important;
+        }
+        &:not([open])[data-heading-level='3'] > summary {
+            background-color: oklch(
+                from var(--h3, var(--green)) l c h / 0.1
+            ) !important;
+        }
+        &:not([open])[data-heading-level='4'] > summary {
+            background-color: oklch(
+                from var(--h4, var(--blue)) l c h / 0.1
+            ) !important;
+        }
+        &:not([open])[data-heading-level='5'] > summary {
+            background-color: oklch(
+                from var(--h5, var(--purple)) l c h / 0.1
+            ) !important;
+        }
+        &:not([open])[data-heading-level='6'] > summary {
+            background-color: oklch(
+                from var(--h6, var(--aqua)) l c h / 0.1
+            ) !important;
+        }
+
+        /* Vim-style blank line under an open heading. The summary's
+           own margin/padding is forced to 0 above, so the gap lives on
+           the first content child of the open <details>. */
+        &[open] > summary + * {
+            margin-block-start: 1lh !important;
+        }
+    }
+
+    /* The remark-generated <h2 class="sr-only">Footnotes</h2> heading
+       gets a normal h2's 2lh bottom margin from the global heading rule,
+       which produces an awkward gap before the footnotes list. Render it
+       like other headings but with the standard 1lh bottom margin. */
+    #main-content section.footnotes > h2.sr-only {
+        margin-block: 1lh !important;
+    }
+</style>
 
 <!-- Footnote hover tooltips -->
 <script>
@@ -1644,17 +2174,44 @@ const articleSchema =
         parent.insertBefore(details, sup)
         sup.remove()
 
+        // Reposition the popover content when it opens. The content is
+        // position: fixed so we compute viewport coordinates here — the
+        // anchor point is just below the trigger, clamped horizontally.
+        const reposition = () => {
+            const triggerRect = details.getBoundingClientRect()
+            // Default: align left edge of popover with trigger
+            let left = triggerRect.left
+            // Measure the natural width of the content
+            const contentWidth = content.offsetWidth
+            const maxLeft = window.innerWidth - contentWidth - 8
+            if (left > maxLeft) left = Math.max(8, maxLeft)
+            details.style.setProperty('--popover-left', `${left}px`)
+            details.style.setProperty(
+                '--popover-top',
+                `${triggerRect.bottom}px`,
+            )
+        }
+
         // Open/close on hover
         details.addEventListener('mouseenter', () => {
             details.open = true
+            requestAnimationFrame(reposition)
         })
         details.addEventListener('mouseleave', () => {
             details.open = false
         })
 
+        // Reposition while open if the page scrolls or resizes.
+        const onScrollOrResize = () => {
+            if (details.open) reposition()
+        }
+        window.addEventListener('scroll', onScrollOrResize, true)
+        window.addEventListener('resize', onScrollOrResize)
+
         // Keyboard/focus accessibility
         details.addEventListener('focusin', () => {
             details.open = true
+            requestAnimationFrame(reposition)
         })
         details.addEventListener('focusout', (e) => {
             const next = (e as FocusEvent).relatedTarget as Node | null
@@ -1674,7 +2231,7 @@ const articleSchema =
 
 <style is:global>
     .footnote-popover {
-        display: inline-block;
+        display: inline-block !important;
         vertical-align: baseline;
 
         > summary {
@@ -1702,19 +2259,38 @@ const articleSchema =
         background-color: var(--background1);
         border: 1px solid var(--foreground2);
         padding: 0.5lh 1ch;
-        max-width: 40ch;
+        max-width: min(40ch, calc(100vw - 4ch));
         width: max-content;
         font-size: 0.9em;
         line-height: 1.4;
-        z-index: 10;
+        z-index: 1000;
+        /* Reset white-space — footnotes inside table cells inherit
+           `white-space: nowrap` from the table-scroll-wrapper rule, which
+           breaks line wrapping inside the popover. */
+        white-space: normal;
 
         p {
             margin: 0;
+            white-space: normal;
         }
 
         p + p {
             margin-top: 0.5lh;
         }
+
+        a {
+            white-space: normal;
+        }
+    }
+
+    /* The popover sits inside #main-content which has overflow-x: hidden.
+       To escape ancestor clipping, re-anchor the open content with
+       position: fixed; coordinates are computed in the open handler. */
+    .footnote-popover[open] > .footnote-popover-content {
+        position: fixed !important;
+        top: var(--popover-top, auto);
+        left: var(--popover-left, auto);
+        margin: 0 !important;
     }
 </style>
 
@@ -1853,5 +2429,267 @@ const articleSchema =
             }
         }
         customElements.define('doc-example', Example)
+    }
+
+    if (!customElements.get('select-dropdown')) {
+        class Dropdown extends HTMLElement {
+            connectedCallback() {
+                // eslint-disable-next-line @typescript-eslint/no-this-alias
+                const self = this
+                const items = Array.from(
+                    self.querySelectorAll(
+                        '#options > button',
+                    ) as NodeListOf<HTMLButtonElement>,
+                )
+
+                const trigger = self.querySelector('summary')!
+                const details = self.querySelector('details')!
+
+                items.forEach((item) => {
+                    item.setAttribute('tabindex', '0')
+
+                    item.addEventListener('click', () => {
+                        items.forEach((i) => {
+                            i.setAttribute('aria-selected', 'false')
+                            i.setAttribute('variant-', 'background1')
+                        })
+                        item.setAttribute('variant-', 'default')
+                        item.setAttribute('aria-selected', 'true')
+                        self.setAttribute(
+                            'data-value',
+                            item.getAttribute('data-value')!,
+                        )
+                        trigger.click()
+                    })
+                })
+
+                details.addEventListener('toggle', () => {
+                    if (!details.open) return
+                    const dataValue = self.getAttribute('data-value')
+                    const activeItem = items.find(
+                        (i) => i.getAttribute('data-value') === dataValue,
+                    )
+                    if (activeItem) activeItem.focus()
+                })
+
+                self.addEventListener('keydown', (e) => {
+                    if (!details.open) return
+                    const { next, prev } = paginateElements(
+                        document.activeElement as HTMLElement,
+                        items,
+                    )
+                    if (e.key === 'ArrowDown' || e.key === 'j') {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        next.focus()
+                    }
+                    if (e.key === 'ArrowUp' || e.key === 'k') {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        prev.focus()
+                    }
+                })
+            }
+        }
+        customElements.define('select-dropdown', Dropdown)
+    }
+</script>
+
+<style is:global>
+    /* Click-to-zoom for inline post images. Excludes images inside known
+       interactive widgets and tiny brand/UI assets. */
+    #main-content
+        :is(img, picture > img, p > img, figure > img):not(
+            .no-zoom,
+            [data-no-zoom],
+            .icon img,
+            [is-~='icon'] img,
+            .mermaid img,
+            .keybind img
+        ) {
+        cursor: zoom-in;
+    }
+
+    .image-modal {
+        position: fixed;
+        inset: 0;
+        background-color: oklch(from var(--background0) l c h / 0.85);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2lh 2ch;
+    }
+    .image-modal-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background-color: var(--background0);
+        border: 1px solid var(--background2);
+        padding: 2lh 2ch 1lh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+    }
+    .image-modal-inner > img {
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+    }
+    .image-modal-close {
+        position: absolute;
+        top: 1ch;
+        right: 1ch;
+        appearance: none;
+        background: var(--background1);
+        color: var(--foreground1);
+        border: 1px solid var(--background2);
+        width: 3ch;
+        height: 1lh;
+        font-family: inherit;
+        font-size: 0.95em;
+        line-height: 1;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+    .image-modal-close::before {
+        content: '\f00d';
+    }
+    .image-modal-close:hover {
+        background: var(--red);
+        color: var(--background0);
+    }
+    .image-modal-caption {
+        position: absolute;
+        bottom: 0.5lh;
+        left: 2ch;
+        right: 2ch;
+        text-align: center;
+        font-size: 0.85em;
+        color: var(--foreground2);
+        pointer-events: none;
+    }
+</style>
+
+<script>
+    /* Wire click-to-zoom on every <img> inside #main-content (except the
+       opt-out list mirrored from the CSS above). */
+    function setupImageZoom() {
+        const main = document.getElementById('main-content')
+        if (!main) return
+
+        const isExcluded = (img: HTMLImageElement) =>
+            img.closest(
+                '.no-zoom, [data-no-zoom], .icon, [is~="icon"], .mermaid, .keybind, .mermaid-modal, .image-modal',
+            ) !== null
+
+        const open = (img: HTMLImageElement) => {
+            document.querySelector('.image-modal')?.remove()
+
+            const modal = document.createElement('div')
+            modal.className = 'image-modal'
+            modal.setAttribute('role', 'dialog')
+            modal.setAttribute('aria-modal', 'true')
+            modal.setAttribute('aria-label', img.alt || 'Expanded image')
+            modal.tabIndex = -1
+
+            const inner = document.createElement('div')
+            inner.className = 'image-modal-inner'
+
+            const closeBtn = document.createElement('button')
+            closeBtn.type = 'button'
+            closeBtn.className = 'image-modal-close'
+            closeBtn.setAttribute('aria-label', 'Close')
+            closeBtn.title = 'Close (Esc)'
+
+            const big = document.createElement('img')
+            big.src = img.currentSrc || img.src
+            big.alt = img.alt
+            // Preserve srcset/sizes if Astro generated them
+            if (img.srcset) big.srcset = img.srcset
+            if (img.sizes) big.sizes = img.sizes
+
+            inner.append(closeBtn, big)
+            if (img.alt) {
+                const caption = document.createElement('div')
+                caption.className = 'image-modal-caption'
+                caption.textContent = img.alt
+                inner.appendChild(caption)
+            }
+            modal.appendChild(inner)
+            document.body.appendChild(modal)
+
+            const previousFocus = document.activeElement as HTMLElement | null
+            const prevOverflow = document.body.style.overflow
+            document.body.style.overflow = 'hidden'
+
+            const close = () => {
+                modal.remove()
+                document.body.style.overflow = prevOverflow
+                document.removeEventListener('keydown', onKey)
+                previousFocus?.focus?.()
+            }
+
+            const onKey = (event: KeyboardEvent) => {
+                if (event.key === 'Escape') {
+                    event.preventDefault()
+                    close()
+                }
+            }
+
+            closeBtn.addEventListener('click', close)
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) close()
+            })
+            document.addEventListener('keydown', onKey)
+            modal.focus()
+        }
+
+        // Single delegated listener — survives MDX updates and avoids per-img bookkeeping.
+        main.addEventListener('click', (e) => {
+            const target = e.target
+            if (!(target instanceof HTMLImageElement)) return
+            if (isExcluded(target)) return
+            // Don't hijack image-link clicks (let the link navigate).
+            if (target.closest('a[href]')) return
+            e.preventDefault()
+            open(target)
+        })
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupImageZoom)
+    } else {
+        setupImageZoom()
+    }
+
+    /* Wrap every <table> in #main-content with a horizontal-scroll container
+       so wide tables (e.g. ones with monospaced code in cells) get a
+       scrollbar instead of overflowing the column. */
+    function setupTableScroll() {
+        const main = document.getElementById('main-content')
+        if (!main) return
+        const tables = main.querySelectorAll('table')
+        for (const table of tables) {
+            if (table.parentElement?.classList.contains('table-scroll-wrapper'))
+                continue
+            const wrap = document.createElement('div')
+            wrap.className = 'table-scroll-wrapper'
+            table.parentNode?.insertBefore(wrap, table)
+            wrap.appendChild(table)
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupTableScroll)
+    } else {
+        setupTableScroll()
     }
 </script>
