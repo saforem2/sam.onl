@@ -337,6 +337,7 @@ const fontOptions = {
         flex-direction: column;
         flex: 0 0 auto;
         gap: 0.5lh;
+        margin-block: 0.5lh;
     }
 
     /* Accent-tinted section titles matching the home-widget aesthetic. */
@@ -460,6 +461,12 @@ const fontOptions = {
             from var(--green) calc(l * var(--oklch-scale, 0.85)) c h / 0.15
         );
         font-weight: bold;
+    }
+    /* Font picker: match the blue accent used by the section title above. */
+    .command-font-chip[aria-selected='true'] {
+        background-color: oklch(
+            from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h / 0.15
+        );
     }
 
     #search-results {

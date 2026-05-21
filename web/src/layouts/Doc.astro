@@ -1984,15 +1984,23 @@ const articleSchema =
                 const details = document.createElement('details')
                 details.setAttribute('is-', 'accordion')
                 details.classList.add('heading-collapse')
-                // Collapse year-section headings (e.g. "📆 2025"), the
-                // Music section, the Projects section, and the More
-                // section by default; everything else opens.
+                // Collapse year-section headings (e.g. "📆 2025") and a
+                // short allowlist of *exact* section labels on the about
+                // page (Music / Projects / More). Strip any leading
+                // emoji-icon-+-space before comparing so e.g.
+                // "📓 Projects" still matches "projects".
                 const headingText = heading.textContent?.trim() ?? ''
+                const headingBare = headingText
+                    .replace(
+                        /^[\p{Emoji_Presentation}\p{Extended_Pictographic}️‍]+\s*/gu,
+                        '',
+                    )
+                    .trim()
+                    .toLowerCase()
+                const collapseExact = new Set(['music', 'projects', 'more'])
                 const collapseByDefault =
                     /\b(19|20)\d{2}\s*$/.test(headingText) ||
-                    /\bmusic\b/i.test(headingText) ||
-                    /\bprojects\b/i.test(headingText) ||
-                    /\bmore\b/i.test(headingText)
+                    collapseExact.has(headingBare)
                 details.open = !collapseByDefault
                 details.dataset.headingLevel = String(level)
                 const summary = document.createElement('summary')

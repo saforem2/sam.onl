@@ -116,6 +116,13 @@
     code {
         font-size: 0.85em;
     }
+    /* Inline <code> chips inside list items render as inline-block by
+       WebTUI base — which interacts badly with the negative `text-indent`
+       hanging-indent trick on <li>, causing the chip to slide past
+       surrounding parens. Force plain inline so it flows with text. */
+    li code {
+        display: inline;
+    }
 
     /* Images default to fitting their slide; inline `style` can override. */
     img,
@@ -142,12 +149,6 @@
         right: 4ch;
         height: 2.5lh;
         width: auto;
-    }
-    /* On dark themes the black wordmark would be invisible — invert it
-       to white. Only flip when the resolved foreground is light. */
-    :root[data-webtui-theme='custom-dark'] .title-slide-logo,
-    :root[data-webtui-theme='catppuccin'] .title-slide-logo {
-        filter: invert(1);
     }
 
     /* Team-member chips for the 👥 Team Leads slide. */
@@ -565,4 +566,52 @@ body.slides-print-mode [is-~='slide'] .slide-inner {
     width: 100% !important;
     height: 100% !important;
     transform: none !important;
+}
+
+/* Theme-aware title slide logo. Two SVG variants ship; show the one
+   that contrasts against the current background. `!important` is
+   required because slides.css's `[is-~='slide'] img { display: block }`
+   has higher specificity than a bare `.title-slide-logo-dark` rule. */
+.title-slide-logo-dark {
+    display: none !important;
+}
+:root[data-webtui-theme='custom-dark'] .title-slide-logo-light,
+:root[data-webtui-theme='catppuccin'] .title-slide-logo-light {
+    display: none !important;
+}
+:root[data-webtui-theme='custom-dark'] .title-slide-logo-dark,
+:root[data-webtui-theme='catppuccin'] .title-slide-logo-dark {
+    display: block !important;
+}
+
+/* Persistent deck-corner logo: small, tight to the bottom-right corner
+   above the status bar, on every slide. Theme-swapped same way as the
+   title slide logo. */
+.deck-corner-logo {
+    position: fixed;
+    bottom: calc(1lh + 0.5lh);
+    right: 1ch;
+    height: 1.25lh;
+    width: auto;
+    opacity: 0.5;
+    z-index: 5;
+    pointer-events: none;
+}
+.deck-corner-logo-dark {
+    display: none !important;
+}
+:root[data-webtui-theme='custom-dark'] .deck-corner-logo-light,
+:root[data-webtui-theme='catppuccin'] .deck-corner-logo-light {
+    display: none !important;
+}
+:root[data-webtui-theme='custom-dark'] .deck-corner-logo-dark,
+:root[data-webtui-theme='catppuccin'] .deck-corner-logo-dark {
+    display: block !important;
+}
+/* Hide the persistent logo on the title slide — that slide has its own
+   bigger .title-slide-logo positioned the same place. The title slide
+   uses id="title-slide"; the [is-~='presentation'] :has(...) check
+   below lights up only when the title slide is the current one. */
+[is-~='presentation']:has(#title-slide[data-current]) .deck-corner-logo {
+    display: none !important;
 }

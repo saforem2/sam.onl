@@ -1485,14 +1485,16 @@ const ICON_FILE = '\uf0f6'
 
     const sidebar = document.getElementById('sidebar')
 
-    // Number-key shortcuts for sidebar categories
-    // Maps key -> child index in #category-list
+    // Single-letter shortcuts for sidebar categories.
+    // Order MUST match the children of #category-list in
+    // SidebarFileTree's rendered DOM (see categoryKeybinds above):
+    //   0 = [a]bout, 1 = [p]osts, 2 = [t]alks, 3 = [m]ore, 4 = [s]tyle
     const categoryKeys: Record<string, number> = {
-        s: 0, // start
-        p: 1, // posts
-        t: 2, // talks
-        a: 3, // about (More)
-        y: 4, // style (WebTUI)
+        a: 0,
+        p: 1,
+        t: 2,
+        m: 3,
+        s: 4,
     }
 
     const categoryList = document.getElementById('category-list')

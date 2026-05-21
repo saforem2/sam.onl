@@ -1244,7 +1244,9 @@ html[data-webtui-theme='catppuccin-latte'] {
        background paint cleanly on each line fragment when a link wraps. */
     #main-content
         :is(p, blockquote, li, [is-~='typography-block'])
-        a:not(.heading-anchor) {
+        a:not(.heading-anchor):not([data-footnote-ref]):not(
+            [data-footnote-backref]
+        ) {
         background-color: transparent;
         padding-inline: 0.25ch;
         -webkit-box-decoration-break: clone;
@@ -1259,6 +1261,12 @@ html[data-webtui-theme='catppuccin-latte'] {
             color: var(--background0);
             text-decoration: none;
         }
+    }
+    /* Footnote refs/backrefs: leave them plain — no padding band. */
+    #main-content a[data-footnote-ref],
+    #main-content a[data-footnote-backref] {
+        background-color: transparent;
+        padding: 0;
     }
 
     /* Local overrides of upstream WebTUI typography defaults.
