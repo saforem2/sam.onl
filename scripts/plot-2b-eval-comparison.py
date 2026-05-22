@@ -141,15 +141,22 @@ def render(out_path: Path):
 
     mds = np.array(MDS_DATA)
     mds_tokens = tokens(mds[:, 0], MDS_GBS)
-    v1 = np.array(TTV1_DATA)
-    v1_tokens = tokens(v1[:, 0], TTV1_GBS)
     v2 = np.array(TTV2_DATA)
     v2_tokens = tokens(v2[:, 0], TTV2_GBS)
+    # (TTV1_DATA / TTV1_GBS still defined at module top in case we ever
+    #  want to bring the broken-baseline series back for a different
+    #  framing — currently unused since this slide focuses on the fix.)
 
-    # Series order (= prop_cycle order):
-    #   C0 = MDS (blue)   — the reference trajectory
-    #   C1 = TT v1 (red)  — the bug, flat at random
-    #   C2 = TT v2 (green) — the fix
+    # Pin colors for cross-slide consistency. The loss-comparison slide
+    # uses the same MDS=blue / TT-v2=red pair, so "blue=MDS, red=TT"
+    # reads identically across both charts.
+    #   C0 = MDS (blue)  — reference trajectory
+    #   C1 = TT v2 (red) — the fix
+    # (TT v1 broken series removed; the bug story lives on the 20B
+    #  smoking-gun slide and the bf16-RMSNorm-freeze deep-dive.)
+    MDS_COLOR = 'C0'
+    TT_V2_COLOR = 'C1'
+
     for i, (task, baseline) in enumerate(zip(TASKS, RANDOM_BASELINE)):
         ax = axes[i // 2][i % 2]
         ax.patch.set_alpha(0)
@@ -157,12 +164,20 @@ def render(out_path: Path):
         ax.axhline(baseline, ls=':', lw=1, color='gray',
                    label=f'random ({baseline:.0%})', zorder=1)
 
-        ax.plot(mds_tokens, mds[:, i + 1], '-o', lw=2, ms=4,
-                label='MDS (SophiaG)', zorder=3)
-        ax.plot(v1_tokens, v1[:, i + 1], '--s', lw=1, ms=3,
-                label='TT v1 (bf16, broken)', alpha=0.7, zorder=2)
-        ax.plot(v2_tokens, v2[:, i + 1], '-D', lw=2, ms=5,
-                label='TT v2 (fp32, fix)', zorder=4)
+        # MDS stage-boundary annotations. The 2B MDS trajectory ran in
+        # 3 stages (per the model card): (1) pretrain on olmo-mix-1124,
+        # 0 → 4673B tokens; (2) continued-pretrain on dolmino-mix-1124,
+        # 4673B → 7064B; (3) math+code on Nvidia CC-Math + Nemotron Code,
+        # 7064B → 7770B. The eval table only covers stages 1 and 2 (last
+        # eval is at step 140K = ~7.04T tokens), so stage 3 isn't on the
+        # chart — but the (1)→(2) boundary at 4.67T is visible.
+        for x in (4673, 7064):
+            ax.axvline(x, ls='--', lw=0.7, color='gray', alpha=0.5, zorder=0)
+
+        ax.plot(mds_tokens, mds[:, i + 1], '-o', color=MDS_COLOR,
+                lw=2, ms=4, label='MDS (SophiaG)', zorder=3)
+        ax.plot(v2_tokens, v2[:, i + 1], '-D', color=TT_V2_COLOR,
+                lw=2, ms=5, label='TT v2 (fp32, fix)', zorder=4)
 
         ax.set_title(task, fontsize=11, pad=8)
         ax.set_xscale('log')
@@ -174,7 +189,13 @@ def render(out_path: Path):
             ax.set_ylabel('Accuracy')
         if i // 2 == 1:
             ax.set_xlabel('Tokens consumed (B)')
+        # Stage callouts only on the top-left panel; trim labels to a
+        # tight italic so they don't compete with the curves.
         if i == 0:
+            ax.text(4673, 0.72, ' (2)', fontsize=8, color='gray',
+                    style='italic', va='top', ha='left')
+            ax.text(7064, 0.72, ' (3)', fontsize=8, color='gray',
+                    style='italic', va='top', ha='left')
             ax.legend(loc='lower right', fontsize=8, framealpha=0)
 
     fig.suptitle('AuroraGPT-2B  —  eval comparison across runs',

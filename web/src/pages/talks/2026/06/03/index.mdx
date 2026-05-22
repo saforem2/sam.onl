@@ -269,20 +269,13 @@ broke when we cut over.
 
 <Slide id="agpt-2b-loss">
 
-## 2B reference — train + val loss
+## 2B reference — training loss
 
 <figure>
     <img
         style="width:100%;"
-        src="/talks/2026-06-03/figures/2b-mds/light/train_val_loss_vs_iter.svg"
-        alt="AuroraGPT-2B train + val loss vs iteration"
-        class="figure-light"
-    />
-    <img
-        style="width:100%;"
-        src="/talks/2026-06-03/figures/2b-mds/dark/train_val_loss_vs_iter.svg"
-        alt="AuroraGPT-2B train + val loss vs iteration"
-        class="figure-dark"
+        src="/talks/2026-06-03/figures/loss-2b-reference.svg"
+        alt="AuroraGPT-2B training loss across 3 stages"
     />
     <figcaption>
         (1.) Pretrain[^stage1] → (2.) continued-pretrain[^stage2] → (3.)
@@ -293,7 +286,32 @@ broke when we cut over.
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-2B eval comparison — MDS vs TT (and the bug)
+2B training loss comparison — MDS full trajectory vs TT v2
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="agpt-2b-loss-compare">
+
+## 2B loss — MDS full trajectory vs `torchtitan`
+
+<figure>
+    <img
+        style="width:100%;"
+        src="/talks/2026-06-03/figures/loss-2b-compare.svg"
+        alt="2B training loss: MDS full 3-stage curve vs TT v2 256N chain"
+    />
+    <figcaption>
+        Same-node-count comparison (256N, GBS=6,144). MDS reference:
+        full 3-stage curve (~163K logged steps). TT v2 (fp32, 256N):
+        15.4K steps → loss 2.78, pulled from W&B. TT-v2 tracks the
+        MDS pretrain trajectory through ~700B tokens — the cutover
+        preserved training behavior at matched config.
+    </figcaption>
+</figure>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+2B eval comparison — MDS vs TT v2
 ───────────────────────────────────────────────────────────────*/}
 
 <Slide id="agpt-2b-eval">
@@ -304,13 +322,16 @@ broke when we cut over.
     <img
         style="width:100%;"
         src="/talks/2026-06-03/figures/eval-2b-compare.svg"
-        alt="2B eval comparison: MDS vs TT v1 vs TT v2"
+        alt="2B eval comparison: MDS vs TT v2"
     />
     <figcaption>
-        MDS (SophiaG): full trajectory, 7.77T tokens · TT v1 (bf16-master):
-        18K steps, flat at random — the bug · TT v2 (fp32-master, 512N): 13
-        checkpoints, 1.31T tokens — +13.9pp HellaSwag / +33.3pp ARC-Easy
-        over v1 at matched token budget
+        MDS (SophiaG): 28 evals, 5K→140K steps through
+        (1.) Pretrain[^stage1] → (2.) continued-pretrain[^stage2]
+        (~7T tokens; stage (3.) math+code[^stage3] not yet eval'd)
+        · TT v2 (fp32-master, 512N): 13 evals, 1K→13K steps (~1.3T
+        tokens) — tracks the MDS pretrain trajectory at matched
+        token budget. *(The bf16-broken v1 baseline lives on the
+        20B smoking-gun slide.)*
     </figcaption>
 </figure>
 
@@ -568,3 +589,7 @@ staging.
 Questions?
 
 </Slide>
+
+[^stage1]: [allenai/olmo-mix-1124](https://hf.co/datasets/allenai/olmo-mix-1124) — 0 → 4.67T tokens
+[^stage2]: [allenai/dolmino-mix-1124](https://hf.co/datasets/allenai/dolmino-mix-1124) — 4.67T → 7.06T tokens
+[^stage3]: NVIDIA/\{[Nemotron-CC-Math-v1](https://hf.co/datasets/nvidia/Nemotron-CC-Math-v1), [Code-CC-v1](https://huggingface.co/datasets/nvidia/Code-CC-v1)\} — 7.06T → 7.77T tokens
