@@ -187,7 +187,11 @@ const canonical = `https://sam.onl${url}`
                     e.preventDefault()
                     render(total - 1)
                     break
-                case 's':
+                case '.':
+                    // Ctrl+. opens the speaker-notes popup. Avoids the
+                    // global vim `s`-key sidebar focus on doc pages, and
+                    // Ctrl+. is not reserved by any major browser.
+                    if (!e.ctrlKey) break
                     e.preventDefault()
                     if (!isSpeaker) openSpeakerWindow()
                     break
@@ -284,5 +288,84 @@ const canonical = `https://sam.onl${url}`
         }
 
         render(current, { broadcast: false })
+
+        // Footnote hover/click popover (mirrors Doc.astro behavior).
+        // Source `<section data-footnotes>` is hidden via slides.css;
+        // the inline `[^N]` superscript becomes a hover popover whose
+        // content is cloned from the matching footnote list-item.
+        const footnoteRefs = deck.querySelectorAll<HTMLAnchorElement>(
+            'a[data-footnote-ref]',
+        )
+        for (const ref of footnoteRefs) {
+            const id = ref.getAttribute('href')?.replace('#', '')
+            if (!id) continue
+            const li = document.getElementById(id)
+            if (!li) continue
+            const clone = li.cloneNode(true) as HTMLElement
+            clone
+                .querySelectorAll('a[data-footnote-backref]')
+                .forEach((a) => a.remove())
+            const sup = ref.parentElement
+            if (!sup || sup.tagName !== 'SUP') continue
+            const parent = sup.parentElement
+            if (!parent) continue
+            // Use <span> instead of <details> so the popover never
+            // forces a line break — <details> has block-ish flow even
+            // with display:inline in some renderers.
+            const dlg = document.createElement('span')
+            dlg.classList.add('footnote-popover')
+            dlg.setAttribute('tabindex', '0')
+            const trigger = document.createElement('span')
+            trigger.classList.add('footnote-popover-trigger')
+            trigger.appendChild(sup.cloneNode(true))
+            const content = document.createElement('span')
+            content.classList.add('footnote-popover-content')
+            const tmp = clone.cloneNode(true) as HTMLElement
+            tmp.querySelectorAll('p').forEach((p) => {
+                while (p.firstChild) p.parentNode!.insertBefore(p.firstChild, p)
+                p.remove()
+            })
+            content.innerHTML = tmp.innerHTML.trim()
+            dlg.appendChild(trigger)
+            dlg.appendChild(content)
+            parent.insertBefore(dlg, sup)
+            sup.remove()
+            const setOpen = (v: boolean) => {
+                if (v) dlg.setAttribute('data-open', '')
+                else dlg.removeAttribute('data-open')
+            }
+            const reposition = () => {
+                const r = dlg.getBoundingClientRect()
+                const w = content.offsetWidth
+                let left = r.left
+                const maxLeft = window.innerWidth - w - 8
+                if (left > maxLeft) left = Math.max(8, maxLeft)
+                dlg.style.setProperty('--popover-left', `${left}px`)
+                dlg.style.setProperty('--popover-top', `${r.bottom}px`)
+            }
+            dlg.addEventListener('mouseenter', () => {
+                setOpen(true)
+                requestAnimationFrame(reposition)
+            })
+            dlg.addEventListener('mouseleave', () => setOpen(false))
+            dlg.addEventListener('focusin', () => {
+                setOpen(true)
+                requestAnimationFrame(reposition)
+            })
+            dlg.addEventListener('focusout', (e) => {
+                const next = (e as FocusEvent).relatedTarget as Node | null
+                if (!next || !dlg.contains(next)) setOpen(false)
+            })
+            window.addEventListener(
+                'scroll',
+                () => {
+                    if (dlg.open) reposition()
+                },
+                true,
+            )
+            window.addEventListener('resize', () => {
+                if (dlg.open) reposition()
+            })
+        }
     }
 </script>

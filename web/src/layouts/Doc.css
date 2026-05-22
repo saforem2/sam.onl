@@ -21,6 +21,16 @@
     overflow-x: auto;
 }
 
+/* WebTUI's box-= utility sets `isolation: isolate` on every box element,
+   which creates a stacking context. That traps the footnote tooltip
+   (position: fixed, z-index: 1000) inside #doc-article so the sidebar's
+   own stacking context paints over it. Disable isolation here so the
+   tooltip can stack against the viewport. The article's box border
+   doesn't need its own context. */
+#doc-article {
+    isolation: auto;
+}
+
 #doc-columns {
     margin-block-start: 0.5lh;
 }
@@ -220,12 +230,37 @@
         from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
     );
     color: var(--foreground2);
-    /* color: var(--green, oklch(from #51CF66 l c h)); */
-    /* background-color: var(--green, oklch(from #51CF66 l c h)); */
+    /* Extra breathing room inside the branch chip so the nerd-font
+       branch icon doesn't sit flush against the chip edge. */
+    padding-inline: 1.5ch !important;
 }
 
 .vsl-file {
     color: var(--foreground1);
+}
+
+/* Statusline segments that are real links — defeat the global body-link
+   reverse-video flash and underline so they look the same as the
+   non-link segments at rest, just clickable. */
+a.vsl-branch,
+a.vsl-site,
+a.vsl-file {
+    text-decoration: none !important;
+    cursor: pointer;
+    transition:
+        background-color 100ms linear,
+        color 100ms linear;
+}
+a.vsl-branch:hover,
+a.vsl-branch:focus-visible,
+a.vsl-site:hover,
+a.vsl-site:focus-visible,
+a.vsl-file:hover,
+a.vsl-file:focus-visible {
+    color: var(--foreground0) !important;
+    background-color: oklch(
+        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.4
+    ) !important;
 }
 
 .vsl-spacer {
@@ -238,6 +273,13 @@
     background-color: oklch(
         from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.33
     );
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1ch;
+}
+.vsl-clock-sep {
+    color: var(--foreground3);
+    opacity: 0.6;
 }
 
 .vsl-pos {
@@ -295,16 +337,19 @@
             border-right: none;
         }
     }
-    /* Help button: chip styling like the slide-deck status-bar `?` */
+    /* Help button — flush with the rest of the statusbar (no border /
+       radius), with a small horizontal padding so it doesn't feel
+       crowded against the adjacent date segment. */
     #vsl-btn-q {
         cursor: pointer;
-        padding: 0 0.75ch;
+        padding: 0 1ch;
+        margin: 0;
         color: var(--foreground2);
-        background-color: var(--background2);
-        border: 1px solid var(--foreground3);
-        border-radius: 3px;
-        border-right: 1px solid var(--foreground3);
-        line-height: 1;
+        background-color: transparent;
+        border: none;
+        border-radius: 0;
+        height: 1lh;
+        line-height: 1lh;
         transition:
             color 100ms linear,
             background-color 100ms linear;
@@ -312,8 +357,7 @@
         &:focus-visible {
             color: var(--foreground0);
             background-color: oklch(
-                from var(--accent, var(--blue))
-                    calc(l * var(--oklch-scale, 0.85)) c h / 0.2
+                from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.4
             );
         }
     }

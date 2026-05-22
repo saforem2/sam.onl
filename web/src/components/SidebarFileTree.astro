@@ -1166,7 +1166,17 @@ const ICON_FILE = '\uf0f6'
     #sidebar-actions {
         display: flex;
         gap: 0;
-        background-color: var(--background0);
+        /* Subtle TUI "key bar" frame: faint background + 1px outer border
+           with hairline dividers between buttons. Background is an opaque
+           mix of bg0 + foreground0 so the WebTUI box-= border behind the
+           sidebar doesn't bleed through. */
+        background-color: color-mix(
+            in oklch,
+            var(--background0),
+            var(--foreground0) 5%
+        );
+        border: 1px solid
+            color-mix(in oklch, var(--background0), var(--foreground0) 18%);
         position: relative;
         z-index: 10;
         width: fit-content;
@@ -1182,7 +1192,17 @@ const ICON_FILE = '\uf0f6'
             font-size: inherit;
             line-height: inherit;
             text-decoration: none;
-            transition: color 0.15s;
+            /* Hairline divider between adjacent buttons; suppressed on the
+               last button so the trailing edge meets the outer border
+               cleanly. */
+            border-right: 1px solid oklch(from var(--foreground0) l c h / 0.1);
+            transition:
+                color 0.15s,
+                background-color 0.15s;
+
+            &:last-child {
+                border-right: none;
+            }
 
             &:hover,
             &:focus-visible,

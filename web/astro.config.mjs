@@ -4,6 +4,8 @@ import { rehypeHeadingIds } from '@astrojs/markdown-remark'
 import { visit } from 'unist-util-visit'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import remarkSlides from './src/utils/remark-slides.mjs'
+import rehypeTaskListInteractive from './src/utils/rehype-task-list-interactive.mjs'
 // import rehypeMermaid from 'rehype-mermaid'
 // import Catppuccin from 'tm-themes/themes/catppuccin-mocha'
 // import { getSingletonHighlighter } from 'shiki'
@@ -265,6 +267,7 @@ export default defineConfig({
             rehypeMarkdownTabIndex,
             rehypeKatex,
             rehypeMermaidClientSide,
+            rehypeTaskListInteractive,
         ],
         syntaxHighlight: {
             type: 'shiki',
@@ -291,11 +294,12 @@ export default defineConfig({
     integrations: [
         mdx({
             extendMarkdownConfig: true,
-            remarkPlugins: [remarkMath],
+            remarkPlugins: [remarkMath, remarkSlides],
             rehypePlugins: [
                 rehypeGitHubCallouts,
                 rehypeKatex,
                 rehypeMermaidClientSide,
+                rehypeTaskListInteractive,
             ],
         }),
     ],
@@ -310,3 +314,8 @@ export default defineConfig({
         },
     },
 })
+
+
+
+import { appendFileSync as __af } from 'node:fs'
+

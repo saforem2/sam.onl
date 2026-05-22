@@ -7,6 +7,15 @@ import { compareUrlPaths } from '@/utils/url'
 import { getReadingTime } from '@/utils/readingTime'
 import ShareButtons from '@/components/ShareButtons.astro'
 import { getCollection } from 'astro:content'
+import { execSync } from 'node:child_process'
+
+let currentBranch = 'main'
+try {
+    const out = execSync('git rev-parse --abbrev-ref HEAD', {
+        encoding: 'utf8',
+    }).trim()
+    if (out && out !== 'HEAD') currentBranch = out
+} catch {}
 
 type DocHeading = {
     depth: number
@@ -487,23 +496,43 @@ const articleSchema =
         <div id="vim-statusline">
             <!-- <span class="vsl-vim-icon">&#xe62b; </span> -->
             <span class="vsl-mode">NORMAL</span>
-            <span class="vsl-branch">&#xe725; main</span>
-            <span class="vsl-author">Sam Foreman</span>
-            <span class="vsl-site">sam.onl/</span>
-            <span class="vsl-file"
-                >{
-                    sourceFilePath?.replace('web/src/pages/', '') ??
-                        Astro.url.pathname
-                }</span
-            >
+            <a
+                class="vsl-branch"
+                href={`${githubBase}/tree/${currentBranch}`}
+                target="_blank"
+                title={`View branch ${currentBranch} on GitHub`}>
+                &#xe725; {currentBranch}
+            </a>
+            <a
+                class="vsl-site"
+                href={githubBase}
+                target="_blank"
+                title="Source repository on GitHub">
+                &#xea84; sam.onl/
+            </a>
+            {
+                sourceFilePath ? (
+                    <a
+                        class="vsl-file"
+                        href={`${githubBase}/blob/${currentBranch}/${sourceFilePath}`}
+                        target="_blank"
+                        title={`View ${sourceFilePath} on GitHub`}>
+                        {sourceFilePath.replace('web/src/pages/', '')}
+                    </a>
+                ) : (
+                    <span class="vsl-file">{Astro.url.pathname}</span>
+                )
+            }
             <span class="vsl-spacer"></span>
             <span class="vsl-keys">
                 <span id="vsl-last-key"></span>
-                <button id="vsl-btn-j" tabindex="-1">j</button>
-                <button id="vsl-btn-k" tabindex="-1">k</button>
                 <button id="vsl-btn-q" tabindex="-1">?</button>
             </span>
-            <span class="vsl-clock"><span id="vsl-clock-text"></span></span>
+            <span class="vsl-clock">
+                <span id="vsl-clock-date"></span>
+                <span class="vsl-clock-sep">·</span>
+                <span id="vsl-clock-time"></span>
+            </span>
             <span class="vsl-pos">Top</span>
             <span class="vsl-loc">1:1</span>
         </div>
@@ -1893,7 +1922,8 @@ const articleSchema =
     const mainContent = document.getElementById('main-content')
     const posEl = document.querySelector('.vsl-pos')
     const locEl = document.querySelector('.vsl-loc')
-    const clockEl = document.getElementById('vsl-clock-text')
+    const clockDateEl = document.getElementById('vsl-clock-date')
+    const clockTimeEl = document.getElementById('vsl-clock-time')
 
     if (mainContent && posEl) {
         const update = () => {
@@ -1918,28 +1948,24 @@ const articleSchema =
         update()
     }
 
-    // Live clock
-    if (clockEl) {
+    // Live clock — date and time live in separate spans so a CSS
+    // separator (·) can sit between them.
+    if (clockDateEl && clockTimeEl) {
         const pad = (n: number) => String(n).padStart(2, '0')
         const tick = () => {
             const d = new Date()
-            clockEl.textContent = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+            clockDateEl.textContent = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+            clockTimeEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}`
         }
         tick()
         setInterval(tick, 10_000)
     }
 
     // Visual feedback for statusline keys + last-key indicator
-    const vslBtnJ = document.getElementById('vsl-btn-j')
-    const vslBtnK = document.getElementById('vsl-btn-k')
     const vslBtnQ = document.getElementById('vsl-btn-q')
     const lastKeyEl = document.getElementById('vsl-last-key')
     let lastKeyTimer: ReturnType<typeof setTimeout> | null = null
     const keyMap: Record<string, HTMLElement | null> = {
-        j: vslBtnJ,
-        ArrowDown: vslBtnJ,
-        k: vslBtnK,
-        ArrowUp: vslBtnK,
         '?': vslBtnQ,
     }
     window.addEventListener('keydown', (e) => {

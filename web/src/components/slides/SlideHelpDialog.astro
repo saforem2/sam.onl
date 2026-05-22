@@ -100,7 +100,7 @@ const fontOptions = {
                 <code>k / ←</code><span>Previous slide / fragment</span>
                 <code>Space</code><span>Advance (fragments first)</span>
                 <code>g / G</code><span>First / last slide</span>
-                <code>s</code><span>Open speaker window</span>
+                <code>Ctrl+.</code><span>Open speaker notes window</span>
                 <code>Esc</code><span>Toggle overview / close dialog</span>
                 <code>f</code><span>Fullscreen</span>
                 <code>p</code><span>Print / export to PDF</span>
@@ -130,7 +130,9 @@ const fontOptions = {
         display: flex;
         flex-direction: column;
         gap: 0.5lh;
-        padding: 1ch;
+        /* WebTUI `box-=` reserves 1lh / 1ch for the border; the extra
+           padding here gives content breathing room from that border. */
+        padding: 1lh 2ch;
         background-color: var(--background0);
         max-height: 86vh;
         overflow-y: auto;

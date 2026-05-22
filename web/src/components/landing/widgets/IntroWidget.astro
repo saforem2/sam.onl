@@ -25,10 +25,7 @@ const { variant, total, home = false } = Astro.props
     {
         (variant === 20 || variant === 21) && (
             <span is-="badge" class="iw-about-title">
-                &#xf2bd;{' '}
-                <a href="/about" class="widget-link">
-                    <u>a</u>bout
-                </a>
+                &#xf2bd; Sam Foreman
             </span>
         )
     }
@@ -120,11 +117,8 @@ const { variant, total, home = false } = Astro.props
         <a href="mailto:sf@omg.lol" title="Email" size-="small">&#xf0e0;</a>
         {
             home && (
-                <a
-                    href="/about/more"
-                    class="iw-nav-home"
-                    style="margin-left: auto;">
-                    [m]ore &rarr;
+                <a href="/about" class="iw-nav-home" style="margin-left: auto;">
+                    [a]bout &rarr;
                 </a>
             )
         }

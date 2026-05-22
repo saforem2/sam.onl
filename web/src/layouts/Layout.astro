@@ -450,5 +450,51 @@ const ogImage = ogSlug
                 )
             }
         </script>
+        <script>
+            // GFM task-list checkboxes: persist checked state per page+task.
+            // The rehype plugin strips `disabled` so they're already clickable;
+            // we just need to wire up storage. Key = page path + task text.
+            {
+                const STORAGE_KEY = 'task-checks-v1'
+                const items = document.querySelectorAll(
+                    'li.task-list-item > input[type="checkbox"]',
+                )
+                if (items.length > 0) {
+                    let store = {}
+                    try {
+                        store =
+                            JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? {}
+                    } catch {
+                        store = {}
+                    }
+                    const pageKey = location.pathname.replace(/\/$/, '') || '/'
+                    const pageStore = store[pageKey] ?? {}
+
+                    const taskKey = (input) => {
+                        const li = input.closest('li.task-list-item')
+                        return li
+                            ? li.textContent.trim().slice(0, 200)
+                            : input.outerHTML
+                    }
+
+                    for (const input of items) {
+                        const key = taskKey(input)
+                        if (key in pageStore) input.checked = !!pageStore[key]
+                        input.addEventListener('change', () => {
+                            const updated = JSON.parse(
+                                localStorage.getItem(STORAGE_KEY) || '{}',
+                            )
+                            const page = updated[pageKey] ?? {}
+                            page[key] = input.checked
+                            updated[pageKey] = page
+                            localStorage.setItem(
+                                STORAGE_KEY,
+                                JSON.stringify(updated),
+                            )
+                        })
+                    }
+                }
+            }
+        </script>
     </body>
 </html>
