@@ -65,8 +65,9 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 6. **Silent bug #2** — TP loss reported / `dp_world_size`
 7. **Vendor-portability war stories** (the _bad_)
 8. **Operational reality** — bad-node failover at 512N
-9. **What generalizes — what doesn't**
-10. **The ask** — open questions for TPC
+9. **Silent-hang detection** — `ezpz launch --timeout / --retries`
+10. **What generalizes — what doesn't**
+11. **The ask** — open questions for TPC
 
 </Slide>
 
@@ -529,6 +530,45 @@ those still need a heartbeat watchdog.
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
+The heartbeat watchdog — ezpz launch --timeout / --retries
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="watchdog">
+
+## Silent-hang detection — `ezpz launch --timeout / --retries`
+
+**The problem.** `xccl` on XPU silently ignores `train_timeout_seconds`,
+so a torchtitan job stuck in a hung collective sits consuming the full
+PBS walltime instead of aborting. Every collective hang quiets stdout
+(every rank blocks in the same call, nothing reaches the log) — that's
+the signal we can act on.
+
+```bash
+ezpz launch --timeout 600 --retries 3 \
+    python -m torchtitan.train --config-file ./config.toml
+```
+
+- **`--timeout SECONDS`** — kill the launched process if its stdout
+  goes **idle** (not walltime) for this many consecutive seconds.
+  `SIGTERM`, 10s grace, then `SIGKILL`. Returns exit code 124
+  (matches GNU `timeout(1)`) so wrappers can tell "killed for silence"
+  from "command failed".
+- **`--retries N`** — re-execute on any non-zero exit (including
+  the watchdog's 124) up to N times. Exponential backoff:
+  5s → 10s → 20s → 40s → 60s (capped).
+
+**Scope caveat.** Watches only the process `ezpz launch` spawns
+directly. If `qsub` runs a wrapper script that internally invokes
+`python train.py`, the watchdog needs to live inside that script
+(or you wrap the inner call with `ezpz launch` too).
+
+> **Open issue we'd like to push upstream:** make `xccl` honor
+> `train_timeout_seconds` (or the equivalent NCCL knob) on XPU so
+> the watchdog isn't load-bearing.
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
 What generalizes / open questions / fin
 ───────────────────────────────────────────────────────────────*/}
 
@@ -564,8 +604,8 @@ What generalizes / open questions / fin
 - **Optimizer failure at 80B+**: SophiaG + Muon both diverge —
   algorithmic or numerical?
 - **MoE EP↔FSDP** scaling boundaries at 16B / 64B / 100B
-- **Silent-hang detection** — heartbeat watchdog patterns that
-  actually work
+- **Make `xccl` honor `train_timeout_seconds`** so we don't have to
+  rely on an stdout-idle watchdog as the hang-detection ground truth
 
 </Slide>
 
