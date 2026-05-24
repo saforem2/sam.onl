@@ -61,13 +61,14 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 2. **AuroraGPT-2B** — the reference run on Aurora (3,072 GPUs, ~7.77T tokens)
 3. **Why we moved to `torchtitan`** — what we gained, what we agreed to pay
 4. **The fork tax** — upstream-sync as a workflow
-5. **Silent bug #1** — bf16 master ⇒ RMSNorm frozen
-6. **Silent bug #2** — TP loss reported / `dp_world_size`
-7. **Vendor-portability war stories** (the _bad_)
-8. **Operational reality** — bad-node failover at 512N
-9. **Silent-hang detection** — `ezpz launch --timeout / --retries`
-10. **What generalizes — what doesn't**
-11. **The ask** — open questions for TPC
+5. **Vendor-portability war stories** (the _bad_)
+6. **"The Restarts"** — three layers of recovery at different scopes
+   - Bad-node failover (node scope)
+   - `ezpz launch --timeout / --retries` (process scope, the heartbeat watchdog)
+7. **What generalizes — what doesn't**
+8. **The ask** — open questions for TPC
+
+*Appendix (backup):* silent-correctness bugs (bf16 RMSNorm freeze, TP loss reporting), `blendcorpus` deep-dive
 
 </Slide>
 
@@ -142,33 +143,6 @@ flowchart TB
 ```
 
 **The claim:** same code, every vendor — no `if device == "xpu"` branches in user code. Megatron-DeepSpeed sits alongside as the reference baseline (the 2B production model was trained there before we cut over to torchtitan).
-
-</Slide>
-
-<Slide>
-
-## `blendcorpus` — the boring layer that breaks first
-
-**What it does**
-
-- Weighted blending across N scientific corpora; deterministic shard
-  indexing so a given `(global_step, dp_rank)` always sees the same
-  bytes
-- Weight-stable resumption: changing per-corpus weights mid-run doesn't
-  re-shuffle history
-
-**Where it bites**
-
-- **Upstream shard churn** — corpus owners re-emit shards (dedup,
-  re-tokenization). Same logical corpus, different bytes → silent
-  history drift unless you pin shard SHAs in the manifest.
-- **Cross-backend dataloader skew** — `num_workers`, prefetch, NUMA
-  pinning behave differently on XPU vs CUDA hosts. Same seed, different
-  arrival order on the GPU → not reproducible across vendors.
-
-> Smoke test catches this: bit-exact first-step loss requires the
-> dataloader to deliver identical batches across runs, vendors, and
-> resumptions.
 
 </Slide>
 
@@ -396,81 +370,6 @@ flowchart LR
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-Silent killer #1 — bf16 RMSNorm freeze
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="bf16-freeze">
-
-## Silent bug #1 — bf16 master ⇒ RMSNorm frozen
-
-**Symptom.** Loss curves looked reasonable. lm-eval scores didn't
-move — ARC-Easy stuck at **~0.27** (random baseline) for 17K+ steps.
-
-**Cause.** `training.dtype=bfloat16` → bf16 master copy. RMSNorm
-weights init at `1.0`; bf16 ULP at scale 1.0 is `~7.8e-3`. Per-step
-optimizer update is `~1.6e-5` — **every update rounds to zero**. All
-25 RMSNorm tensors stayed at exactly `1.0` from step 100 → 17,400.
-
-**Why other params trained fine.** Linear layers init at `std≈0.02` →
-bf16 ULP at scale `0.02` is `~3.8e-5`, same magnitude as the update.
-RMSNorm's larger init scale = coarser ULP = updates lost in rounding.
-
-**Fix.** Default `training.dtype=float32`, FSDP
-`MixedPrecisionPolicy(param_dtype=bf16, reduce_dtype=fp32)`. Master is
-fp32; forward/backward stay bf16. Extra ~1 GB master at 2B, ~10 GB at
-20B — under budget.
-
-</Slide>
-
-<Slide id="bf16-freeze-evidence">
-
-## Silent bug #1 — the smoking gun
-
-![v1 (bf16-master) vs v2 (fp32-master) — 20B lm-eval](/talks/2026-06-03/figures/eval-20b-v1-vs-v2.png)
-
-<figcaption>
-    **v1** (bf16 master, 256N): ARC-Easy `0.27` flat across 2,500 steps · **v2**
-    (fp32 master, 512N): ARC-Easy `0.27 → 0.44` by step 800 · HellaSwag breaking
-    out.
-</figcaption>
-
-> **Lesson:** loss looks like training. lm-eval is the only ground
-> truth for "is the model actually learning?" Add a periodic eval gate.
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-Silent killer #2 — TP loss reporting
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="tp-loss">
-
-## Silent bug #2 — TP loss reported / `dp_world_size`
-
-- **Symptom**: Step-1 loss for `agpt_*` (vocab=256128) should be `ln(256128) ≈
-12.45`
-  - On TP=1 we see `12.95` ✓
-  - On TP=2 after upstream commit `1786292d` (2026-04-27):
-    - step-1 reported as `1.07` ✗ — exactly `12.84 / 12` where `dp_world_size = 12`
-
-- **Cause**: `_dist_reduce()` short-circuits on DTensor with
-  `full_tensor()`
-  - But the loss is **Replicated on the TP mesh**, and the reduction was
-      requested over `batch_mesh` (orthogonal)
-  - The short-circuit silently drops the cross-batch sum
-
-- **Why it survived review**: Gradients + optimizer steps are correct
-  - Only the `loss:` field that lands in stdout / W&B is wrong
-  - Loss curves look "reasonable" — just `1/12` of the true value
-  - Filed as `pytorch/torchtitan#3204`; our workaround calls `loss.full_tensor()`
-      before `dist_sum` in `ezpz/trainer.py:503-516`
-
-- **Lesson**: Bit-exact smoke caught this immediately; the prior 2B TP=1
-  baseline gave us a number to disagree with
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
 Vendor portability war stories
 ───────────────────────────────────────────────────────────────*/}
 
@@ -493,6 +392,58 @@ Vendor portability war stories
 
 - **Compile is noise** — 2-3% TPS band across compile attempts is
   the floor. Treat anything inside it as noise, not a regression.
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+"The Restarts" — three layers of recovery at different scopes
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="restart-cascade">
+
+## "The Restarts" — three layers of recovery
+
+Bad-node failover, hang-watchdog, and PBS resubmit each operate at a
+different scope. Together they turn "lost a 12 h walltime" into
+"lost a 10 min sub-step."
+
+```mermaid
+flowchart TB
+    subgraph job["📋 JOB SCOPE (PBS)"]
+        direction LR
+        Q["qsub
+        select=N+spare"] --> A1["attempt 1"]
+        A1 -.crashed.-> A2["attempt 2
+        (chained resubmit)"]
+        A2 -.walltime.-> A3["..."]
+    end
+    subgraph node["🖥 NODE SCOPE (failover wrapper)"]
+        direction LR
+        ACTIVE["active pool
+        (N nodes)"] -- "bad node\ndetected" --> SCRAPE["scrape host
+        from log"]
+        SCRAPE --> SWAP["swap from
+        spare pool"]
+        SWAP --> ACTIVE
+    end
+    subgraph proc["⏱ PROCESS SCOPE (ezpz launch --timeout / --retries)"]
+        direction LR
+        RUN["python train.py"] -- "stdout idle\n> N s" --> TERM["SIGTERM
+        → 10s → SIGKILL"]
+        TERM --> BACKOFF["wait 5/10/20/40/60s"]
+        BACKOFF --> RUN
+    end
+
+    job --> node
+    node --> proc
+
+    classDef jobC fill:transparent,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
+    classDef nodeC fill:transparent,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
+    classDef procC fill:transparent,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    class Q,A1,A2,A3 jobC
+    class ACTIVE,SCRAPE,SWAP nodeC
+    class RUN,TERM,BACKOFF procC
+```
 
 </Slide>
 
@@ -537,11 +488,11 @@ The heartbeat watchdog — ezpz launch --timeout / --retries
 
 ## Silent-hang detection — `ezpz launch --timeout / --retries`
 
-**The problem.** `xccl` on XPU silently ignores `train_timeout_seconds`,
-so a torchtitan job stuck in a hung collective sits consuming the full
-PBS walltime instead of aborting. Every collective hang quiets stdout
-(every rank blocks in the same call, nothing reaches the log) — that's
-the signal we can act on.
+**The problem.** `xccl` on XPU silently ignores
+`train_timeout_seconds`, so a torchtitan job stuck in a hung
+collective sits consuming the full PBS walltime instead of aborting.
+Every collective hang quiets stdout (every rank blocks in the same
+call, nothing reaches the log) — that's the signal we can act on.
 
 ```bash
 ezpz launch --timeout 600 --retries 3 \
@@ -550,21 +501,53 @@ ezpz launch --timeout 600 --retries 3 \
 
 - **`--timeout SECONDS`** — kill the launched process if its stdout
   goes **idle** (not walltime) for this many consecutive seconds.
-  `SIGTERM`, 10s grace, then `SIGKILL`. Returns exit code 124
-  (matches GNU `timeout(1)`) so wrappers can tell "killed for silence"
-  from "command failed".
+  Returns exit code 124 (matches GNU `timeout(1)`).
 - **`--retries N`** — re-execute on any non-zero exit (including
   the watchdog's 124) up to N times. Exponential backoff:
   5s → 10s → 20s → 40s → 60s (capped).
 
 **Scope caveat.** Watches only the process `ezpz launch` spawns
 directly. If `qsub` runs a wrapper script that internally invokes
-`python train.py`, the watchdog needs to live inside that script
-(or you wrap the inner call with `ezpz launch` too).
+`python train.py`, the watchdog needs to live inside that script (or
+you wrap the inner call with `ezpz launch` too).
 
 > **Open issue we'd like to push upstream:** make `xccl` honor
-> `train_timeout_seconds` (or the equivalent NCCL knob) on XPU so
-> the watchdog isn't load-bearing.
+> `train_timeout_seconds` (or the equivalent NCCL knob) on XPU so the
+> watchdog isn't load-bearing.
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Watchdog state machine — one cycle in detail
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="watchdog-fsm">
+
+## `ezpz launch --timeout` — one hang/recover cycle
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Running
+
+    Running --> Running: stdout line (reset idle timer)
+    Running --> Idle: idle exceeds timeout
+    Idle --> SIGTERM: send SIGTERM
+    SIGTERM --> SIGKILL: 10s grace expired
+    SIGTERM --> Exited: process exits
+    SIGKILL --> Exited
+
+    Running --> Exited: process exits
+
+    Exited --> Done: rc=0 or retries exhausted
+    Exited --> Backoff: rc nonzero (includes 124)
+    Backoff --> Running: wait 5/10/20/40/60s, re-exec
+    Done --> [*]
+```
+
+Every collective hang shows up as **`Running → Idle → SIGTERM`** — the
+process is "alive" by `kill -0` but nothing is happening. The watchdog
+fires on the *absence* of progress, not on a heartbeat ping.
 
 </Slide>
 
@@ -627,6 +610,138 @@ staging.
 - These slides — [https://sam.onl/talks/2026/06/03](https://sam.onl/talks/2026/06/03)
 
 Questions?
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+APPENDIX — silent-correctness bugs (deep-dive backup slides)
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="appendix">
+
+## Appendix — backup slides
+
+Material that didn't make the main path but is here for Q&A.
+
+**Silent-correctness bugs** — the two bugs that almost killed the v1
+production runs. Loss looked fine, training kept going, and only an
+external eval gate (or a bit-exact smoke comparison) flagged that
+something was wrong.
+
+- **Bug #1**: bf16 master ⇒ RMSNorm frozen — every update rounds to
+  zero at scale 1.0
+- **Bug #2**: TP loss reported as `true_loss / dp_world_size` —
+  looked reasonable on plots, caught only by smoke comparison
+
+**`blendcorpus`** — the data layer (deterministic shard indexing,
+weight-stable resumption; pain: upstream shard churn, dataloader skew
+across backends).
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Appendix: Silent killer #1 — bf16 RMSNorm freeze
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="bf16-freeze">
+
+## Silent bug #1 — bf16 master ⇒ RMSNorm frozen
+
+**Symptom.** Loss curves looked reasonable. lm-eval scores didn't
+move — ARC-Easy stuck at **~0.27** (random baseline) for 17K+ steps.
+
+**Cause.** `training.dtype=bfloat16` → bf16 master copy. RMSNorm
+weights init at `1.0`; bf16 ULP at scale 1.0 is `~7.8e-3`. Per-step
+optimizer update is `~1.6e-5` — **every update rounds to zero**. All
+25 RMSNorm tensors stayed at exactly `1.0` from step 100 → 17,400.
+
+**Why other params trained fine.** Linear layers init at `std≈0.02` →
+bf16 ULP at scale `0.02` is `~3.8e-5`, same magnitude as the update.
+RMSNorm's larger init scale = coarser ULP = updates lost in rounding.
+
+**Fix.** Default `training.dtype=float32`, FSDP
+`MixedPrecisionPolicy(param_dtype=bf16, reduce_dtype=fp32)`. Master is
+fp32; forward/backward stay bf16. Extra ~1 GB master at 2B, ~10 GB at
+20B — under budget.
+
+</Slide>
+
+<Slide id="bf16-freeze-evidence">
+
+## Silent bug #1 — the smoking gun
+
+![v1 (bf16-master) vs v2 (fp32-master) — 20B lm-eval](/talks/2026-06-03/figures/eval-20b-v1-vs-v2.png)
+
+<figcaption>
+    **v1** (bf16 master, 256N): ARC-Easy `0.27` flat across 2,500 steps · **v2**
+    (fp32 master, 512N): ARC-Easy `0.27 → 0.44` by step 800 · HellaSwag breaking
+    out.
+</figcaption>
+
+> **Lesson:** loss looks like training. lm-eval is the only ground
+> truth for "is the model actually learning?" Add a periodic eval gate.
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Appendix: Silent killer #2 — TP loss reporting
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="tp-loss">
+
+## Silent bug #2 — TP loss reported / `dp_world_size`
+
+- **Symptom**: Step-1 loss for `agpt_*` (vocab=256128) should be `ln(256128) ≈
+12.45`
+  - On TP=1 we see `12.95` ✓
+  - On TP=2 after upstream commit `1786292d` (2026-04-27):
+    - step-1 reported as `1.07` ✗ — exactly `12.84 / 12` where `dp_world_size = 12`
+
+- **Cause**: `_dist_reduce()` short-circuits on DTensor with
+  `full_tensor()`
+  - But the loss is **Replicated on the TP mesh**, and the reduction was
+      requested over `batch_mesh` (orthogonal)
+  - The short-circuit silently drops the cross-batch sum
+
+- **Why it survived review**: Gradients + optimizer steps are correct
+  - Only the `loss:` field that lands in stdout / W&B is wrong
+  - Loss curves look "reasonable" — just `1/12` of the true value
+  - Filed as `pytorch/torchtitan#3204`; our workaround calls `loss.full_tensor()`
+      before `dist_sum` in `ezpz/trainer.py:503-516`
+
+- **Lesson**: Bit-exact smoke caught this immediately; the prior 2B TP=1
+  baseline gave us a number to disagree with
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Appendix: blendcorpus deep-dive (parked for possible future revisit)
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="blendcorpus">
+
+## `blendcorpus` — the boring layer that breaks first
+
+**What it does**
+
+- Weighted blending across N scientific corpora; deterministic shard
+  indexing so a given `(global_step, dp_rank)` always sees the same
+  bytes
+- Weight-stable resumption: changing per-corpus weights mid-run doesn't
+  re-shuffle history
+
+**Where it bites**
+
+- **Upstream shard churn** — corpus owners re-emit shards (dedup,
+  re-tokenization). Same logical corpus, different bytes → silent
+  history drift unless you pin shard SHAs in the manifest.
+- **Cross-backend dataloader skew** — `num_workers`, prefetch, NUMA
+  pinning behave differently on XPU vs CUDA hosts. Same seed, different
+  arrival order on the GPU → not reproducible across vendors.
+
+> Smoke test catches this: bit-exact first-step loss requires the
+> dataloader to deliver identical batches across runs, vendors, and
+> resumptions.
 
 </Slide>
 
