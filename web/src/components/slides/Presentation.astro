@@ -276,6 +276,54 @@ const canonical = `https://sam.onl${url}`
             })
         })
 
+        // Touch / swipe navigation: phones have no keyboard. Horizontal
+        // swipes advance/retreat slides; vertical swipes are ignored so
+        // pinch-zooming an image or scrolling a long slide's content
+        // still works. Threshold prevents jitter from being treated as
+        // a swipe.
+        let touchStartX = 0
+        let touchStartY = 0
+        let touchActive = false
+        const SWIPE_MIN = 50 // px
+        const SWIPE_RATIO = 1.5 // |dx| must be at least this × |dy|
+        deck.addEventListener(
+            'touchstart',
+            (e) => {
+                if (e.touches.length !== 1) return // ignore multi-touch (pinch)
+                if (anyDialogOpen()) return
+                if (deck.dataset.mode === 'overview') return
+                touchStartX = e.touches[0].clientX
+                touchStartY = e.touches[0].clientY
+                touchActive = true
+            },
+            { passive: true },
+        )
+        deck.addEventListener(
+            'touchend',
+            (e) => {
+                if (!touchActive) return
+                touchActive = false
+                const t = e.changedTouches[0]
+                if (!t) return
+                const dx = t.clientX - touchStartX
+                const dy = t.clientY - touchStartY
+                // Reject if it wasn't a horizontal swipe
+                if (Math.abs(dx) < SWIPE_MIN) return
+                if (Math.abs(dx) < SWIPE_RATIO * Math.abs(dy)) return
+                // Don't intercept swipes that start on an interactive
+                // element (links, buttons, footnote popovers) — the
+                // user is probably tapping, not swiping the deck.
+                const target = e.target as HTMLElement | null
+                if (target?.closest('a, button, summary, input, textarea')) {
+                    return
+                }
+                // Right swipe → previous; left swipe → next. Matches
+                // iOS/Android book-page convention.
+                advance(dx < 0 ? 1 : -1)
+            },
+            { passive: true },
+        )
+
         // Hash changes from external nav (e.g. clicking a deep link)
         window.addEventListener('hashchange', () => render(indexFromHash()))
 

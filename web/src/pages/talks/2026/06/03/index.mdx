@@ -277,9 +277,9 @@ broke when we cut over.
     <figcaption>
         Same-node-count comparison (256N, GBS=6,144). MDS reference:
         full 3-stage curve (~163K logged steps). TT v2 (fp32, 256N):
-        15.4K steps → loss 2.78, pulled from W&B. TT-v2 tracks the
-        MDS pretrain trajectory through ~700B tokens — the cutover
-        preserved training behavior at matched config.
+        50K steps → loss 2.67, pulled from W&B (still running).
+        TT-v2 tracks the MDS pretrain trajectory through ~2.5T tokens
+        — the cutover preserved training behavior at matched config.
     </figcaption>
 </figure>
 
@@ -366,6 +366,191 @@ flowchart LR
 - ~6× weekly resyncs over 6 weeks
 - Smoke gate: bit-exact loss + grad-norm + peak memory at `--debug.deterministic --debug.seed=42`
 - Every "did upstream change something?" question gets a numeric answer in ≤30 min
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+The fork tax — state-machine redesign (alternative to fork-tax slide)
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="fork-tax-v2">
+
+## The fork tax — upstream-sync as a workflow
+
+```mermaid
+stateDiagram-v2
+    direction LR
+
+    state "SYNCED at HEAD" as Synced
+    state "REGRESSING" as Regressing
+    state "PROD" as Prod
+
+    [*] --> Synced
+
+    Synced --> Synced: weekly resync<br/>(fetch + replay patches)
+    Synced --> Prod: smoke OK<br/>(bit-exact loss / grad-norm / memory)
+    Synced --> Regressing: smoke diff<br/>vs prior baseline
+
+    Regressing --> Synced: bisect upstream<br/>+ workaround applied
+    Prod --> Synced: next sync cycle<br/>(repeat ~6×/wk)
+
+    note right of Synced
+        ~6 weekly resyncs over 6 weeks.
+        Smoke = 50 steps on debugmodel + 2B,
+        --debug.deterministic --debug.seed=42.
+        Every "did upstream change something?"
+        gets a numeric answer in ≤ 30 min.
+    end note
+```
+
+</Slide>
+
+{/*═══════════════════════════════════════════════════════════════
+  FORK-TAX EXPLORATIONS — riffing on alternative slide treatments.
+  Pick one, kill the rest before the talk.
+═══════════════════════════════════════════════════════════════*/}
+
+{/* OPTION A — Timeline strip: 41 days × ~1 dot per sync */}
+<Slide id="fork-tax-A">
+
+## The fork tax — option A (timeline)
+
+<div class="forktax-timeline">
+  <div class="forktax-row">
+    <span class="forktax-week">Apr 10–16</span>
+    <span class="forktax-dots">
+      <span class="d ok" title="2026-04-10 #1">●</span><span class="d ok" title="2026-04-10 #2">●</span><span class="d ok" title="2026-04-10 #3">●</span><span class="d ok" title="2026-04-10 #4">●</span><span class="d ok" title="2026-04-11 #5">●</span><span class="d ok" title="2026-04-12 #6">●</span><span class="d ok" title="2026-04-13 #7">●</span><span class="d ok" title="2026-04-13 #8">●</span><span class="d ok" title="2026-04-14 #9">●</span><span class="d ok" title="2026-04-14 #10">●</span><span class="d ok" title="2026-04-15 #11">●</span><span class="d ok" title="2026-04-15 #12">●</span><span class="d ok" title="2026-04-15 #13">●</span>
+    </span>
+    <span class="forktax-count">13</span>
+  </div>
+  <div class="forktax-row">
+    <span class="forktax-week">Apr 17–23</span>
+    <span class="forktax-dots">
+      <span class="d ok" title="#14">●</span><span class="d ok" title="#15">●</span><span class="d ok" title="#16">●</span><span class="d ok" title="#17">●</span>
+    </span>
+    <span class="forktax-count">4</span>
+  </div>
+  <div class="forktax-row">
+    <span class="forktax-week">Apr 24–30</span>
+    <span class="forktax-dots">
+      <span class="d bad" title="#18 torch 2.10 XCCL fixes + DTensor TP revert">●</span><span class="d ok" title="#19">●</span><span class="d ok" title="#20">●</span><span class="d ok" title="#21">●</span><span class="d ok" title="#22">●</span><span class="d ok" title="#23">●</span><span class="d ok" title="#24">●</span><span class="d ok" title="#25">●</span><span class="d ok" title="#26">●</span><span class="d ok" title="#27">●</span><span class="d bad" title="post-21st regression">●</span>
+    </span>
+    <span class="forktax-count">11</span>
+  </div>
+  <div class="forktax-row">
+    <span class="forktax-week">May 1–7</span>
+    <span class="forktax-dots">
+      <span class="d ok" title="#28">●</span><span class="d ok" title="#29">●</span><span class="d ok" title="#30">●</span><span class="d bad" title="#31 precompile revert + PP refactor">●</span><span class="d bad" title="#32 observability + MoE token-pad + CP fix">●</span>
+    </span>
+    <span class="forktax-count">5</span>
+  </div>
+  <div class="forktax-row">
+    <span class="forktax-week">May 8–14</span>
+    <span class="forktax-dots">
+      <span class="d ok" title="#33">●</span><span class="d bad" title="#34 RL vLLM v2 + repeat_interleave revert">●</span>
+    </span>
+    <span class="forktax-count">2</span>
+  </div>
+  <div class="forktax-row">
+    <span class="forktax-week">May 15–21</span>
+    <span class="forktax-dots">
+      <span class="d ok" title="#35">●</span><span class="d ok" title="#36">●</span><span class="d ok" title="#37 MoE clean DTensor boundaries">●</span>
+    </span>
+    <span class="forktax-count">3</span>
+  </div>
+</div>
+
+**38 upstream syncs in 41 days.** Each ● = one `git merge upstream/main` cycle. Red = revert / regression / non-trivial bisect. Most syncs are clean replays of the same patches; the cost is the *cadence*, not the per-sync work.
+
+<style>{`
+  .forktax-timeline { font-size: 0.95em; line-height: 1.4; margin-block: 0.5lh; }
+  .forktax-row {
+    display: grid;
+    grid-template-columns: 11ch 1fr 4ch;
+    align-items: baseline;
+    gap: 1ch;
+    padding-block: 0.15lh;
+  }
+  .forktax-week { color: var(--foreground2); }
+  .forktax-dots { letter-spacing: 0.4ch; }
+  .forktax-dots .d {
+    font-size: 1.4em;
+    line-height: 1;
+  }
+  .forktax-dots .d.ok { color: var(--green, #4CAF50); }
+  .forktax-dots .d.bad { color: var(--red, #EF5350); }
+  .forktax-count { color: var(--foreground3); text-align: right; }
+`}</style>
+
+</Slide>
+
+{/* OPTION B — One big number */}
+<Slide id="fork-tax-B">
+
+## The fork tax — option B (the number)
+
+<div class="forktax-counter">
+  <div class="forktax-bignum">38</div>
+  <div class="forktax-bigsub">upstream syncs in 6 weeks</div>
+
+  <div class="forktax-stats">
+    <div><strong>~6.4</strong>/week · <strong>5</strong> needed bisect/revert · <strong>33</strong> clean replays</div>
+  </div>
+</div>
+
+We chose to live on `pytorch/torchtitan main` instead of a tagged release. The smoke gate (50 steps on debugmodel + 2B, `--debug.deterministic --debug.seed=42`) is what makes that decision *tractable* — every "did upstream change something?" question gets a numeric answer in ≤30 min.
+
+<style>{`
+  .forktax-counter { text-align: center; margin-block: 1lh; }
+  .forktax-bignum { font-size: 6em; line-height: 1; color: var(--accent, var(--blue)); font-weight: 700; }
+  .forktax-bigsub { font-size: 1.3em; color: var(--foreground1); margin-block-start: 0.5lh; }
+  .forktax-stats { margin-block-start: 1lh; color: var(--foreground2); font-size: 0.95em; }
+  .forktax-stats strong { color: var(--foreground0); }
+`}</style>
+
+</Slide>
+
+{/* OPTION C — Real commit-log excerpt */}
+<Slide id="fork-tax-C">
+
+## The fork tax — option C (the commit log)
+
+```
+$ git log --oneline --grep='upstream sync' --since='6 weeks ago' | wc -l
+38
+
+$ git log --oneline --grep='upstream sync' --since='6 weeks ago' | head
+2026-05-20  #37  MoE clean DTensor boundaries + graph_trainer regional_inductor
+2026-05-20  #36  RL CI fixes only, no replay
+2026-05-19  #35  Full DTensor for Llama3 + graph_trainer churn + RL observability
+2026-05-13  #34  RL vLLM v2 + repeat_interleave revert + graph_trainer AOT removal
+2026-05-12  #33  _grouped_mm only path + graph_trainer churn
+2026-05-05  #32  observability + MoE token-pad + CP fix + RL/graph_trainer churn
+2026-05-04  #31  precompile revert + PP refactor + CI baseline
+2026-05-03  #30  graph_trainer only
+2026-05-01  #29  RL vLLM compile-time + graph_trainer skill
+2026-05-01  #28  graph_trainer qwen3 + CI lint + FT llama3 attn_backend
+...
+```
+
+This is the **actual** sync log (`docs/upstream-sync.md`). Each entry is a `git merge upstream/main` + replay-our-patches + 50-step smoke. The smoke gate is what makes this sustainable: bit-exact regressions surface immediately, so we never ship a sync to prod without knowing what changed.
+
+</Slide>
+
+{/* OPTION D — Kill the slide, fold into a one-liner */}
+<Slide id="fork-tax-D">
+
+## The fork tax — option D (no diagram)
+
+> ### "The fork tax"
+>
+> 38 upstream syncs in 6 weeks. The 50-step bit-exact smoke gate
+> (`--debug.deterministic --debug.seed=42`) makes it tractable — every
+> "did upstream change something?" question gets a numeric answer in
+> ≤ 30 min, so most syncs are 10-minute replays and only ~5 needed
+> non-trivial bisect work.
+
+*(no diagram, no flowchart, no state machine — just the one paragraph above)*
 
 </Slide>
 
