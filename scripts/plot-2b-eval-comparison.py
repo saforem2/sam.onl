@@ -1,36 +1,42 @@
 """
 Compare 2B model lm-eval trajectories across three runs:
-  - MDS:    Megatron-DeepSpeed SophiaG, 28 evals (5K-140K steps, 4 tasks)
-  - TT-v1:  torchtitan first cut (bf16 master, RMSNorm-freeze bug), 18 evals
-  - TT-v2:  torchtitan post-fix (fp32 master), 512N, 13 evals × 4 tasks
+  - MDS:        Megatron-DeepSpeed SophiaG, 28 evals (5K-140K steps, 4 tasks)
+  - TT-v1:      torchtitan first cut (bf16 master, RMSNorm-freeze bug), 18 evals
+  - TT-v2 256N: torchtitan post-fix (fp32 master), async, GBS=6144, 39 evals
+  - TT-v2 512N: torchtitan post-fix (fp32 master), sync,  GBS=12288, 22 evals
 
-X-axis: tokens consumed (log scale, common across the three runs).
-Y-axis: accuracy (`acc`).
+X-axis: tokens consumed (log scale, common across the runs).
+Y-axis: `acc_norm` for HellaSwag/ARC, `acc` for Winogrande.
 
-Renders one figure with a 2x2 task grid, in both light and dark variants.
+Renders one figure with a 2x2 task grid, transparent SVG.
 
-Data source for v2: the 2026-05-22 refresh in
+Data source: 2026-05-27 canonical-table refresh in
   torchtitan/experiments/ezpz/docs/evals/agpt/2b/README.md
 """
 
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).parent))
+from _plot_style import TALK_RCPARAMS_GRID, register_iosevka25
+
+register_iosevka25()
+
 # ----- DATA ------------------------------------------------------------------
 
 # All step counts × seq_len × GBS to get tokens. GBS varies per run:
-#   MDS:    GBS=6144,   seq=8192  ->  50.3M tokens/step
-#   TT-v1:  GBS=3072,   seq=8192  ->  25.2M tokens/step  (from README)
-#   TT-v2:  GBS=12_288, seq=8192  -> 100.7M tokens/step  (v2 512N, the
-#                                                          "full sweep" data
-#                                                          in the 2026-05-22
-#                                                          README refresh)
+#   MDS:        GBS=6144,   seq=8192  ->  50.3M tokens/step
+#   TT-v1:      GBS=3072,   seq=8192  ->  25.2M tokens/step
+#   TT-v2 256N: GBS=6144,   seq=8192  ->  50.3M tokens/step  (async chain)
+#   TT-v2 512N: GBS=12_288, seq=8192  -> 100.7M tokens/step  (sync chain)
 SEQ = 8192
 MDS_GBS = 6144
 TTV1_GBS = 3072
-TTV2_GBS = 12_288
+TTV2_256N_GBS = 6144
+TTV2_512N_GBS = 12_288
 
 # MDS: Megatron-DeepSpeed SophiaG, full eval trajectory.
 MDS_DATA = [
@@ -87,23 +93,79 @@ TTV1_DATA = [
     (18_000, 0.2522, 0.2727, 0.2500, 0.4949),
 ]
 
-# TT-v2: torchtitan post-fix (fp32-master), 512N full sweep
-# (2026-05-22 README refresh). `acc` (not `acc_norm`).
-TTV2_DATA = [
+# TT-v2 256N async chain (GBS=6144, fp32 master) — 2026-05-27 refresh.
+# Metric: `acc_norm` for HellaSwag/ARC, `acc` for Winogrande.
+TTV2_256N_DATA = [
     # (step, hellaswag, arc_easy, arc_challenge, winogrande)
-    (1_000, 0.2642, 0.3624, 0.1894, 0.5099),
-    (2_000, 0.2859, 0.4613, 0.1877, 0.5075),
-    (3_000, 0.3060, 0.5109, 0.1980, 0.5193),
-    (4_000, 0.3264, 0.5366, 0.2261, 0.5257),
-    (5_000, 0.3427, 0.5231, 0.2287, 0.5241),
-    (6_000, 0.3498, 0.5543, 0.2372, 0.5114),
-    (7_000, 0.3599, 0.5753, 0.2594, 0.5312),
-    (8_000, 0.3687, 0.5850, 0.2679, 0.5130),
-    (9_000, 0.3736, 0.6023, 0.2765, 0.5296),
-    (10_000, 0.3799, 0.5981, 0.2739, 0.5335),
-    (11_000, 0.3835, 0.6002, 0.2747, 0.5304),
-    (12_000, 0.3889, 0.6035, 0.2637, 0.5351),
-    (13_000, 0.3929, 0.6115, 0.2679, 0.5375),
+    # --- TTV2_256N_DATA_START ---
+    (200, 0.2548, 0.2774, 0.2270, 0.4933),
+    (400, 0.2542, 0.2908, 0.2167, 0.4925),
+    (600, 0.2601, 0.3106, 0.2278, 0.4862),
+    (800, 0.2621, 0.3308, 0.2065, 0.4799),
+    (1_000, 0.2616, 0.3413, 0.2125, 0.4996),
+    (1_200, 0.2682, 0.3662, 0.2142, 0.5146),
+    (1_400, 0.2748, 0.3960, 0.2201, 0.5067),
+    (1_600, 0.2839, 0.3981, 0.2270, 0.5059),
+    (1_800, 0.2942, 0.4095, 0.2338, 0.5020),
+    (2_000, 0.3014, 0.4289, 0.2346, 0.4957),
+    (14_000, 0.4878, 0.5358, 0.3038, 0.5185),
+    (15_000, 0.4929, 0.5438, 0.2995, 0.5193),
+    (16_000, 0.5020, 0.5484, 0.2918, 0.5304),
+    (17_000, 0.5064, 0.5543, 0.2995, 0.5272),
+    (18_000, 0.5045, 0.5568, 0.2961, 0.5335),
+    (19_000, 0.5046, 0.5598, 0.3055, 0.5414),
+    (20_000, 0.5109, 0.5568, 0.2995, 0.5383),
+    (21_000, 0.5203, 0.5593, 0.2927, 0.5328),
+    (22_000, 0.5181, 0.5669, 0.3012, 0.5383),
+    (23_000, 0.5232, 0.5627, 0.3020, 0.5320),
+    (24_000, 0.5236, 0.5682, 0.3055, 0.5501),
+    (25_000, 0.5225, 0.5657, 0.3080, 0.5272),
+    (25_100, 0.5297, 0.5673, 0.3080, 0.5320),
+    (36_000, 0.5340, 0.5800, 0.3183, 0.5509),
+    (37_000, 0.5383, 0.5774, 0.3089, 0.5564),
+    (38_000, 0.5137, 0.5829, 0.3148, 0.5556),
+    (38_800, 0.5378, 0.5829, 0.3131, 0.5430),
+    (40_000, 0.5375, 0.5762, 0.3166, 0.5446),
+    (41_000, 0.5437, 0.5779, 0.3200, 0.5549),
+    (42_000, 0.5402, 0.5749, 0.3131, 0.5556),
+    (42_500, 0.5437, 0.5880, 0.3157, 0.5651),
+    (44_000, 0.5471, 0.5880, 0.3166, 0.5549),
+    (45_000, 0.5462, 0.5838, 0.3106, 0.5454),
+    (45_500, 0.5452, 0.5812, 0.3140, 0.5509),
+    (47_000, 0.5470, 0.5779, 0.3131, 0.5470),
+    (48_000, 0.5461, 0.5779, 0.3157, 0.5588),
+    (49_000, 0.5483, 0.5816, 0.3080, 0.5454),
+    (49_500, 0.5452, 0.5896, 0.3276, 0.5462),
+    # --- TTV2_256N_DATA_END ---
+]
+
+# TT-v2 512N sync chain (GBS=12288, fp32 master) — 2026-05-27 refresh.
+TTV2_512N_DATA = [
+    # --- TTV2_512N_DATA_START ---
+    (1_000, 0.2636, 0.3460, 0.2235, 0.5099),
+    (2_000, 0.3039, 0.4179, 0.2270, 0.5075),
+    (3_000, 0.3477, 0.4474, 0.2500, 0.5193),
+    (4_000, 0.3786, 0.4701, 0.2654, 0.5257),
+    (5_000, 0.4061, 0.4714, 0.2730, 0.5241),
+    (6_000, 0.4261, 0.4882, 0.2688, 0.5114),
+    (7_000, 0.4388, 0.5189, 0.2747, 0.5312),
+    (8_000, 0.4499, 0.5223, 0.2790, 0.5130),
+    (9_000, 0.4594, 0.5417, 0.2833, 0.5296),
+    (10_000, 0.4702, 0.5345, 0.2807, 0.5335),
+    (11_000, 0.4791, 0.5547, 0.2884, 0.5304),
+    (12_000, 0.4853, 0.5354, 0.2807, 0.5351),
+    (13_000, 0.4926, 0.5535, 0.2756, 0.5375),
+    (14_000, 0.4977, 0.5455, 0.2884, 0.5391),
+    (15_000, 0.4980, 0.5543, 0.2790, 0.5320),
+    (16_000, 0.5030, 0.5564, 0.2901, 0.5430),
+    (21_000, 0.5160, 0.5745, 0.2969, 0.5351),
+    (22_000, 0.5227, 0.5749, 0.3020, 0.5399),
+    (23_000, 0.5203, 0.5800, 0.3080, 0.5193),
+    (24_000, 0.5241, 0.5741, 0.2961, 0.5178),
+    (25_000, 0.5230, 0.5795, 0.2901, 0.5280),
+    (26_000, 0.5262, 0.5918, 0.3038, 0.5414),
+    (27_000, 0.5263, 0.5850, 0.3020, 0.5241),
+    # --- TTV2_512N_DATA_END ---
 ]
 
 
@@ -113,6 +175,32 @@ def tokens(step, gbs):
 
 TASKS = ['HellaSwag', 'ARC-Easy', 'ARC-Challenge', 'Winogrande']
 RANDOM_BASELINE = [0.25, 0.25, 0.25, 0.50]
+
+# Per-task y-axis range. Was uniformly (0.22, 0.72) but Winogrande
+# data lives entirely in [0.50, 0.60] so most of its panel was empty
+# whitespace. Per-task zoom lets each panel use its full vertical
+# real estate without losing the cross-panel "all are accuracies"
+# read since the y-axis label still says Accuracy and ranges show.
+YLIM_PER_TASK = {
+    # ARC-Easy / HellaSwag: floor at 0.20 to keep the random-baseline
+    # horizontal line at 0.25 visible (with a touch of breathing room
+    # below) so the audience can read "above random" at a glance.
+    'HellaSwag':     (0.20, 0.65),
+    'ARC-Easy':      (0.20, 0.75),
+    'ARC-Challenge': (0.22, 0.45),
+    'Winogrande':    (0.45, 0.70),
+}
+
+# Panel position (row, col) per task. Data-tuple order is fixed
+# (HellaSwag=1, ARC-Easy=2, ARC-Chall=3, Winogrande=4), but the panel
+# layout swaps HellaSwag (top-left) ↔ ARC-Challenge (bottom-left) so
+# the two ARC tasks sit on the same column.
+PANEL_POS = {
+    'HellaSwag':     (1, 0),  # bottom-left
+    'ARC-Easy':      (0, 1),  # top-right
+    'ARC-Challenge': (0, 0),  # top-left
+    'Winogrande':    (1, 1),  # bottom-right
+}
 
 
 def render(out_path: Path):
@@ -129,20 +217,49 @@ def render(out_path: Path):
     import ambivalent  # required — no fallback; if missing, `uv run --with`
     plt.style.use(ambivalent.STYLES['ambivalent'])
 
-    plt.rcParams.update({
-        'font.family': 'monospace',
-        'font.size': 10,
-        'axes.spines.top': False,
-        'axes.spines.right': False,
-    })
+    plt.rcParams.update(TALK_RCPARAMS_GRID)
 
-    fig, axes = plt.subplots(2, 2, figsize=(11, 7), sharex=True)
+    # Aspect tuned for the slide layout. After the h2 heading and the
+    # figcaption eat their slice, the figure box is ~2.1:1 — wider than
+    # tall. A figure whose own aspect matches that fills the slot
+    # without empty bands on either axis under object-fit:contain.
+    # 15x7 = 2.14 just slightly width-constrained for a hair of vertical
+    # breathing room.
+    fig, axes = plt.subplots(2, 2, figsize=(16, 9), sharex=True)
     fig.patch.set_alpha(0)
 
     mds = np.array(MDS_DATA)
     mds_tokens = tokens(mds[:, 0], MDS_GBS)
-    v2 = np.array(TTV2_DATA)
-    v2_tokens = tokens(v2[:, 0], TTV2_GBS)
+    v2_256 = np.array(TTV2_256N_DATA)
+    v2_256_tokens = tokens(v2_256[:, 0], TTV2_256N_GBS)
+    v2_512 = np.array(TTV2_512N_DATA)
+    v2_512_tokens = tokens(v2_512[:, 0], TTV2_512N_GBS)
+
+    # Hand-picked checkpoints for marker placement. The raw chains have
+    # very uneven density — 256N has warmup (≤2K), mid cluster
+    # (14K-25K), then a big gap, then a late cluster (36K-49.5K); 512N
+    # is uniform 1-16K then a 5K gap then 21-27K. linspace-then-nearest
+    # collapses adjacent targets onto the same point in dense regions,
+    # so we pick explicit steps for clean ~150-300B spacing.
+    # Lines still draw through every datapoint — only markers are
+    # subsampled — so the trajectory shape is unchanged.
+    # Picked so the two chains overlay at matched tokens:
+    #   ~0.7T, ~1.0T, ~1.3T (first cluster)  +
+    #   ~1.9-2.1T, ~2.2-2.4T, ~2.5-2.7T (second cluster).
+    # 6 markers per chain gives clear breathing room (≥300B between
+    # adjacent markers) without losing the cluster-gap-cluster shape
+    # that's actually in the data.
+    V2_256N_MARKER_STEPS = [14_000, 20_000, 25_000, 38_000, 44_000, 49_500]
+    V2_512N_MARKER_STEPS = [7_000, 10_000, 13_000, 21_000, 24_000, 27_000]
+
+    def _markers_at(arr, tok, steps):
+        idx = [int(np.where(arr[:, 0] == s)[0][0]) for s in steps]
+        return arr[idx], tok[idx]
+
+    v2_256_m, v2_256_tokens_m = _markers_at(v2_256, v2_256_tokens,
+                                            V2_256N_MARKER_STEPS)
+    v2_512_m, v2_512_tokens_m = _markers_at(v2_512, v2_512_tokens,
+                                            V2_512N_MARKER_STEPS)
     # (TTV1_DATA / TTV1_GBS still defined at module top in case we ever
     #  want to bring the broken-baseline series back for a different
     #  framing — currently unused since this slide focuses on the fix.)
@@ -150,15 +267,20 @@ def render(out_path: Path):
     # Pin colors for cross-slide consistency. The loss-comparison slide
     # uses the same MDS=blue / TT-v2=red pair, so "blue=MDS, red=TT"
     # reads identically across both charts.
-    #   C0 = MDS (blue)  — reference trajectory
-    #   C1 = TT v2 (red) — the fix
-    # (TT v1 broken series removed; the bug story lives on the 20B
-    #  smoking-gun slide and the bf16-RMSNorm-freeze deep-dive.)
-    MDS_COLOR = 'C0'
-    TT_V2_COLOR = 'C1'
+    #   C0     = MDS (blue)        — reference trajectory
+    #   C1     = TT v2 256N (red)  — async chain, primary new evidence
+    #   #b71c1c = TT v2 512N (dark red) — sync chain, secondary line so the
+    #            two v2 trajectories don't overlap as the same red marker
+    # Pinned to the same dark navy used for MDS in the loss-comparison
+    # and loss-reference slides, so "blue = MDS" reads identically
+    # across all three 2B-result slides.
+    MDS_COLOR = '#0d2c6b'
+    TT_V2_256_COLOR = 'C1'
+    TT_V2_512_COLOR = '#b71c1c'
 
     for i, (task, baseline) in enumerate(zip(TASKS, RANDOM_BASELINE)):
-        ax = axes[i // 2][i % 2]
+        row, col = PANEL_POS[task]
+        ax = axes[row][col]
         ax.patch.set_alpha(0)
 
         ax.axhline(baseline, ls=':', lw=1, color='gray',
@@ -175,32 +297,77 @@ def render(out_path: Path):
             ax.axvline(x, ls='--', lw=0.7, color='gray', alpha=0.5, zorder=0)
 
         ax.plot(mds_tokens, mds[:, i + 1], '-o', color=MDS_COLOR,
-                lw=2, ms=4, label='MDS (SophiaG)', zorder=3)
-        ax.plot(v2_tokens, v2[:, i + 1], '-D', color=TT_V2_COLOR,
-                lw=2, ms=5, label='TT v2 (fp32, fix)', zorder=4)
+                lw=3, ms=7, label='MDS (SophiaG)', zorder=3)
+        # TT chains: line + markers only on the hand-picked checkpoints.
+        # Drawing through every raw point made the line wiggle on per-
+        # checkpoint eval noise, which read visually as "extra markers";
+        # connecting only the picked points gives a clean trajectory
+        # that's consistent with the marker cadence.
+        ax.plot(v2_256_tokens_m, v2_256_m[:, i + 1], '-s',
+                color=TT_V2_256_COLOR, lw=2.8, ms=9, zorder=4,
+                label='TT v2 256N (async)')
+        ax.plot(v2_512_tokens_m, v2_512_m[:, i + 1], '-D',
+                color=TT_V2_512_COLOR, lw=2.8, ms=9, zorder=5,
+                label='TT v2 512N (sync)')
 
-        ax.set_title(task, fontsize=11, pad=8)
-        ax.set_xscale('log')
-        ax.set_xlim(20, 10_000)
-        ax.set_ylim(0.15, 0.75)
+        ax.set_title(task, pad=8)
+        # Linear x: at 500B → 7T the chart only spans ~1.15 decades,
+        # so log mostly compresses the right side where MDS pulls
+        # ahead. Linear shows "twice the tokens = twice the distance"
+        # and makes the v2-stops-at-2.7T vs MDS-runs-to-7T gap visually
+        # honest. The 500B floor still clears the noise-bound warmup.
+        ax.set_xlim(500, 7_500)
+        # Tickformat: 1000B → 1T etc. Keep the underlying numbers in B
+        # (so xlim / data-coords math is unchanged), just relabel ticks.
+        from matplotlib.ticker import FuncFormatter
+        ax.xaxis.set_major_formatter(
+            FuncFormatter(lambda x_B, _pos: f'{x_B/1000:g}T')
+        )
+        # Tightened y from (0.15, 0.75) — at 500B+ tokens we've cleared
+        # the noise-bound warmup, so the empty band below 0.22 is just
+        # whitespace. Keep top at 0.72 (ARC-Easy peaks at 0.70 MDS).
+        # Random baselines at 0.25 (HellaSwag/ARC) and 0.50 (Winogrande)
+        # still fit comfortably.
+        # Per-task y-range — see YLIM_PER_TASK comment above.
+        # Defaults to a wide (0.22, 0.72) range if the task isn't listed.
+        ax.set_ylim(*YLIM_PER_TASK.get(task, (0.22, 0.72)))
         ax.grid(True, which='both', alpha=0.3)
 
-        if i % 2 == 0:
+        if col == 0:
             ax.set_ylabel('Accuracy')
-        if i // 2 == 1:
-            ax.set_xlabel('Tokens consumed (B)')
-        # Stage callouts only on the top-left panel; trim labels to a
-        # tight italic so they don't compete with the curves.
-        if i == 0:
-            ax.text(4673, 0.72, ' (2)', fontsize=8, color='gray',
+        if row == 1:
+            ax.set_xlabel('Tokens consumed (T)')
+        # Stage callouts only on the top-left panel (now ARC-Challenge
+        # after the HellaSwag swap); legend is moved out of the panels
+        # (see below) so it never crashes the data lines. Use a
+        # blended transform: x in data coords (so it lines up with the
+        # 4673/7064 stage boundaries on the token axis), y in axes
+        # fraction (so it stays just below the top edge regardless of
+        # the panel's per-task ylim).
+        if (row, col) == (0, 0):
+            from matplotlib.transforms import blended_transform_factory
+            tf = blended_transform_factory(ax.transData, ax.transAxes)
+            ax.text(4673, 0.97, ' (2)', color='gray', transform=tf,
                     style='italic', va='top', ha='left')
-            ax.text(7064, 0.72, ' (3)', fontsize=8, color='gray',
+            ax.text(7064, 0.97, ' (3)', color='gray', transform=tf,
                     style='italic', va='top', ha='left')
-            ax.legend(loc='lower right', fontsize=8, framealpha=0)
+
+    # Figure-level legend, laid out horizontally above the suptitle so
+    # it doesn't overlap any panel's data. Pulls handles+labels from
+    # the last-drawn axes (all panels have the same series, so any one
+    # is representative).
+    handles, labels = axes[-1][-1].get_legend_handles_labels()
+    fig.legend(
+        handles, labels,
+        loc='upper center',
+        bbox_to_anchor=(0.5, 0.97),
+        ncol=len(labels),
+        frameon=False,
+    )
 
     fig.suptitle('AuroraGPT-2B  —  eval comparison across runs',
-                 fontsize=12, y=0.995)
-    fig.tight_layout()
+                 y=1.02)
+    fig.tight_layout(rect=(0, 0, 1, 0.94))
     fig.savefig(out_path, format='svg', transparent=True, bbox_inches='tight')
     plt.close(fig)
     print(f'wrote {out_path}  ({out_path.stat().st_size // 1024} KB)')

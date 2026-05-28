@@ -1,13 +1,17 @@
 """
-Render the AuroraGPT-2B MDS reference loss curve — three-stage
-trajectory, no TT comparison overlay.
+Render the AuroraGPT-2B MDS reference loss curve (same 3-stage chart
+as plot-2b-loss-reference.py) with the TorchTitan 256N production run
+overlaid on top.
 
-Same styling as plot-2b-loss-comparison.py (Iosevka25, ambivalent
-palette, heavy lines, T-formatted x-axis) so slides 9 and 10 share a
-visual idiom.
+The overlay sits in the same axes / units as the MDS curve so the
+audience can see the TT trajectory start *inside* the MDS pretrain
+region and track it forward — answering "how does our v2 stack
+compare to the reference" without needing a second slide.
 
-Source: same parquet as the comparison chart.
-Output: web/public/talks/2026-06-03/figures/loss-2b-reference.svg
+Source:
+  - MDS:  ~/projects/saforem2/Megatron-DeepSpeed/.../loss_lm_loss_vs_tokens.parquet
+  - TT v2 256N: web/public/talks/2026-06-03/data/tt-v2-256n-loss.parquet
+Output: web/public/talks/2026-06-03/figures/loss-2b-reference-with-tt.svg
 """
 
 import sys
@@ -23,9 +27,14 @@ from _plot_style import TALK_RCPARAMS, register_iosevka25
 register_iosevka25()
 
 MDS_PARQUET = Path.home() / 'projects/saforem2/Megatron-DeepSpeed/ALCF/AuroraGPT/2B/data/loss_lm_loss_vs_tokens.parquet'
+TT_PARQUET = Path.home() / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/data/tt-v2-256n-loss.parquet'
 
-# Stage boundaries (tokens). Same source as the comparison plot.
+# Stage boundaries (tokens).
 MDS_STAGE_BOUNDARIES = [4_673e9, 7_064e9]
+
+# TT v2 256N config — must match fetch-tt-v2-loss.py.
+TT_GBS = 6_144
+TT_SEQ = 8_192
 
 
 def render(out_path: Path):
@@ -37,20 +46,14 @@ def render(out_path: Path):
     fig.patch.set_alpha(0)
     ax.patch.set_alpha(0)
 
-    # Three shades of blue — keeps the "MDS = blue family" idiom shared
-    # with the comparison slide (slide 10), and gives each stage its
-    # own distinct line. Shade darkness steps with the stage number so
-    # the reader can map (1)/(2)/(3) → dark/medium/light intuitively.
-    # Three blue shades, all dark enough to be visible on white
-    # projector backgrounds in a presentation hall. Old palette had
-    # stage 3 at #90caf9 which washed out completely on light theme.
-    # New: dark navy → mid blue → still-saturated steel (~#1565c0).
+    # MDS 3-stage trajectory — same palette as plot-2b-loss-reference
+    # for cross-slide consistency.
     MDS_STAGE_SHADES = ['#0d2c6b', '#1976d2', '#42a5f5']
     mds = pd.read_parquet(MDS_PARQUET).sort_values('x').reset_index(drop=True)
     stage_render = [
-        ('olmo-mix-1124.txt',                    '(1) pretrain',            MDS_STAGE_SHADES[0]),
-        ('dolmino-mix-1124-fused-file-list.txt', '(2) continued-pretrain',  MDS_STAGE_SHADES[1]),
-        ('stage1-33-stage2-33-stage3-34.txt',    '(3) math+code',           MDS_STAGE_SHADES[2]),
+        ('olmo-mix-1124.txt',                    'MDS (1) pretrain',           MDS_STAGE_SHADES[0]),
+        ('dolmino-mix-1124-fused-file-list.txt', 'MDS (2) continued-pretrain', MDS_STAGE_SHADES[1]),
+        ('stage1-33-stage2-33-stage3-34.txt',    'MDS (3) math+code',          MDS_STAGE_SHADES[2]),
     ]
     for stage, label, color in stage_render:
         sub = mds[mds['group_data_file'] == stage]
@@ -64,12 +67,22 @@ def render(out_path: Path):
         ax.axvline(b / 1e9, ls='--', lw=0.7, color='gray',
                    alpha=0.5, zorder=0)
 
-    # Endpoint annotation — final loss at the end of math+code.
+    # TorchTitan 256N production run — overlay in the same matching
+    # red used on the loss-comparison and eval-comparison slides so the
+    # audience reads "blue = MDS, red = TT" identically across all
+    # three 2B-result charts.
+    tt = pd.read_parquet(TT_PARQUET).sort_values('step').reset_index(drop=True)
+    tt_tokens_B = tt['step'].values * TT_GBS * TT_SEQ / 1e9
+    ax.plot(tt_tokens_B, tt['loss'].values,
+            color='C1', lw=2.0, label='TorchTitan (256N)',
+            zorder=4, alpha=0.95)
+
+    # MDS endpoint annotation (kept from the reference plot).
     final = mds.iloc[-1]
     final_tokens_B = float(final['x']) / 1e9
     final_loss = float(final['y'])
     ax.annotate(
-        f'final: loss {final_loss:.2f}\n@ {final_tokens_B/1000:.2f}T tokens',
+        f'MDS final: loss {final_loss:.2f}\n@ {final_tokens_B/1000:.2f}T tokens',
         xy=(final_tokens_B, final_loss),
         xytext=(0.92, 0.22),
         xycoords='data', textcoords='axes fraction',
@@ -80,11 +93,23 @@ def render(out_path: Path):
                     'connectionstyle': 'angle3,angleA=0,angleB=90'},
     )
 
-    # Log-y with plain decimal labels (2, 3, 4, …) instead of the
-    # default scientific 2×10⁰ notation. LogLocator pulls the standard
-    # decade subdivisions; ScalarFormatter renders them as bare numbers.
+    # TT endpoint annotation — call out the current TT loss/tokens.
+    tt_final_loss = float(tt['loss'].iloc[-1])
+    tt_final_tok_B = float(tt_tokens_B[-1])
+    ax.annotate(
+        f'TT: loss {tt_final_loss:.2f}\n@ {tt_final_tok_B/1000:.2f}T tokens',
+        xy=(tt_final_tok_B, tt_final_loss),
+        xytext=(0.55, 0.42),
+        xycoords='data', textcoords='axes fraction',
+        fontsize=14, ha='left', va='center',
+        color='C1',
+        arrowprops={'arrowstyle': '-', 'color': 'C1',
+                    'lw': 1.0, 'alpha': 0.7,
+                    'connectionstyle': 'angle3,angleA=0,angleB=90'},
+    )
+
     ax.set_yscale('log')
-    ax.set_xlim(0, 8e3)  # 0 → 8T (a hair past the 7.77T end)
+    ax.set_xlim(0, 8e3)
     ax.set_ylim(1.8, 14)
     ax.yaxis.set_major_locator(LogLocator(base=10.0, subs=(1.0,)))
     ax.yaxis.set_minor_locator(
@@ -101,7 +126,8 @@ def render(out_path: Path):
     ax.grid(True, which='both', alpha=0.3)
 
     ax.legend(loc='upper right', framealpha=0)
-    ax.set_title('AuroraGPT-2B  —  training loss (3 stages)', pad=10)
+    ax.set_title('AuroraGPT-2B  —  MDS reference + TorchTitan (256N)',
+                 pad=10)
     fig.tight_layout()
     fig.savefig(out_path, format='svg', transparent=True,
                 bbox_inches='tight')
@@ -112,4 +138,4 @@ def render(out_path: Path):
 if __name__ == '__main__':
     out = Path.home() / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/figures'
     out.mkdir(parents=True, exist_ok=True)
-    render(out / 'loss-2b-reference.svg')
+    render(out / 'loss-2b-reference-with-tt.svg')

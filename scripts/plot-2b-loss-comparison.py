@@ -13,30 +13,17 @@ Renders one transparent SVG that works on both site themes — same
 pattern as plot-2b-eval-comparison.py.
 """
 
-import os
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib import font_manager as _fm
 
+sys.path.insert(0, str(Path(__file__).parent))
+from _plot_style import TALK_RCPARAMS, register_iosevka25
 
-def _register_iosevka25():
-    """Register every Iosevka25 .ttf in /Library/Fonts/ with matplotlib.
-
-    matplotlib's bundled font cache often doesn't see fonts installed
-    outside ~/.fonts; this scans /Library/Fonts/ once per process so we
-    don't depend on a manual font-cache rebuild.
-    """
-    if not os.path.isdir('/Library/Fonts'):
-        return
-    for name in os.listdir('/Library/Fonts'):
-        if name.lower().startswith('iosevka25') and name.lower().endswith(('.ttf', '.otf', '.ttc')):
-            _fm.fontManager.addfont(f'/Library/Fonts/{name}')
-
-
-_register_iosevka25()
+register_iosevka25()
 
 MDS_PARQUET = Path.home() / 'projects/saforem2/Megatron-DeepSpeed/ALCF/AuroraGPT/2B/data/loss_lm_loss_vs_tokens.parquet'
 
@@ -50,8 +37,8 @@ TT_DATA_DIR = Path.home() / 'projects/saforem2/sam.onl/web/public/talks/2026-06-
 # isn't reading config trivia mid-talk; full config lives in the
 # slide caption.
 TT_CHAINS = [
-    # (TT_DATA_DIR / 'tt-v2-512n-loss.parquet', 'TT', 'TT 512N', 12_288),
-    (TT_DATA_DIR / 'tt-v2-256n-loss.parquet', 'TT', 'TT 256N', 6_144),
+    # (TT_DATA_DIR / 'tt-v2-512n-loss.parquet', 'TorchTitan', 'TT 512N', 12_288),
+    (TT_DATA_DIR / 'tt-v2-256n-loss.parquet', 'TorchTitan', 'TT 256N', 6_144),
 ]
 TT_SEQ = 8_192
 
@@ -65,24 +52,9 @@ MDS_STAGE_BOUNDARIES = [4_673e9, 7_064e9]
 def render(out_path: Path):
     import ambivalent
     plt.style.use(ambivalent.STYLES['ambivalent'])
-    plt.rcParams.update({
-        # Iosevka25 matches the site's display font (Iosevka Web fallback);
-        # monospace family is the final fallback if it isn't registered.
-        'font.family': ['Iosevka25', 'monospace'],
-        'font.size': 16,            # bumped from 14 — easier from the back
-        'font.weight': 500,         # medium — between regular (400) and bold (700)
-        'axes.titlesize': 18,
-        'axes.titleweight': 600,
-        'axes.labelsize': 16,
-        'axes.labelweight': 500,
-        'xtick.labelsize': 14,
-        'ytick.labelsize': 14,
-        'legend.fontsize': 14,
-        'axes.spines.top': False,
-        'axes.spines.right': False,
-    })
+    plt.rcParams.update(TALK_RCPARAMS)
 
-    fig, ax = plt.subplots(figsize=(11, 6.5))
+    fig, ax = plt.subplots(figsize=(15, 7))
     fig.patch.set_alpha(0)
     ax.patch.set_alpha(0)
 
@@ -92,32 +64,21 @@ def render(out_path: Path):
     MDS_COLOR = 'C0'
     TT_V2_COLOR = 'C1'
 
-    # --- MDS: full parquet, group by stage. Three shades of blue —
-    # stage 1 dark, stage 2 medium, stage 3 light — so the curves stay
-    # in the "MDS = blue family" visual idiom but each stage reads as
-    # its own distinct line. (Previously used alpha-stepping on a single
-    # blue, which made stages 2 and 3 hard to see.) All shades are
-    # fully opaque so they don't fade against the chart background.
-    MDS_STAGE_SHADES = ['#0d47a1', '#2196F3', '#90caf9']  # dark / med / light
+    # --- MDS: stage 1 only. TT v2 only reaches 2.49T, MDS stage 1 ends
+    # at 4.67T; rendering stages 2/3 (continued-pretrain, math+code)
+    # just adds two faint blips at the right edge that aren't in the
+    # comparison's scope. When TT crosses 4.67T we can bring stage 2
+    # back. Kept the dark-blue shade so the line still reads as "MDS"
+    # via the eval-slide color pairing.
+    # Same dark navy as stage-1 in plot-2b-loss-reference.py and the
+    # MDS series in plot-2b-eval-comparison.py — keeps the audience
+    # mapping "this blue = MDS" stable across all three slides.
+    MDS_STAGE_COLOR = '#0d2c6b'
     mds = pd.read_parquet(MDS_PARQUET).sort_values('x').reset_index(drop=True)
-    stage_render = [
-        ('olmo-mix-1124.txt',
-         'MDS (1) pretrain',                 MDS_STAGE_SHADES[0], 1.8),
-        ('dolmino-mix-1124-fused-file-list.txt',
-         'MDS (2) continued-pretrain',       MDS_STAGE_SHADES[1], 1.6),
-        ('stage1-33-stage2-33-stage3-34.txt',
-         'MDS (3) math+code',                MDS_STAGE_SHADES[2], 1.4),
-    ]
-    for stage, label, color, lw in stage_render:
-        sub = mds[mds['group_data_file'] == stage]
-        if len(sub) == 0:
-            continue
-        ax.plot(sub['x'].values / 1e9, sub['y'].values,
-                color=color, lw=lw, label=label, zorder=3)
-
-    for b in MDS_STAGE_BOUNDARIES:
-        ax.axvline(b / 1e9, ls='--', lw=0.7, color='gray',
-                   alpha=0.5, zorder=0)
+    mds_s1 = mds[mds['group_data_file'] == 'olmo-mix-1124.txt']
+    ax.plot(mds_s1['x'].values / 1e9, mds_s1['y'].values,
+            color=MDS_STAGE_COLOR, lw=1.8, label='Megatron-DeepSpeed',
+            zorder=3)
 
     # --- TT v2 chains: pinned to TT_V2_COLOR so the series matches
     # the eval slide. If multiple chains are enabled (e.g. 256N + 512N),
@@ -157,44 +118,52 @@ def render(out_path: Path):
         mds_final = mds.sort_values('x').iloc[-1]
         mds_x_B = float(mds_final['x']) / 1e9
         mds_y = float(mds_final['y'])
-    # Annotation color = the stage the matched-x falls in (stage 1 for
-    # the typical ~777B-token TT endpoint).
-    mds_endpoint = (None, mds_y, mds_x_B, MDS_STAGE_SHADES[0], 'MDS 256N')
+    # (mds_x_B + mds_y captured above; the matched-x value is consumed
+    # by the combined Δ annotation further down.)
 
-    # Stack annotations: anchor each to the lower-right corner so they
-    # don't overlap each other or the legend. Diagonal connector lines
-    # in each series' own color so the audience can tell which goes with
-    # which without squinting at color matching at the data point itself.
-    # Y-positions are in axes-fraction so they're stable across rescales.
-    all_endpoints = [mds_endpoint, *tt_endpoints]
-    anno_xys = [(0.92, 0.42), (0.92, 0.30), (0.92, 0.18)]
-    # Sort by loss so the higher-loss series gets the upper slot.
-    all_endpoints.sort(key=lambda e: -e[1])
-    for (step, loss, tok, color, tag), (ax_x, ax_y) in zip(all_endpoints, anno_xys):
-        # Drop the step count — it's TT-specific bookkeeping and the
-        # tag (256N) + loss are what the audience cares about.
-        text = f'{tag}: loss {loss:.2f}'
+    # Single combined annotation at the matched-x endpoint — the slide's
+    # whole point is "MDS loss ≈ TT loss at the same token budget", so
+    # show both numbers and the delta in one place rather than spreading
+    # them across two annotations the audience has to mentally diff.
+    if tt_endpoints:
+        # Use the first (=longest) TT chain's endpoint as the matched-x
+        # reference; mds_endpoint already pinned to that x above.
+        tt_step, tt_loss, tt_tok, tt_color, tt_tag = tt_endpoints[0]
+        delta = abs(tt_loss - mds_y)
         ax.annotate(
-            text,
-            xy=(tok, loss),
-            xytext=(ax_x, ax_y),
+            f'{tt_loss:.3f} @ {mds_x_B/1000:.2f}T tokens\n'
+            f'δ = {delta:.3f}',
+            xy=(tt_tok, (mds_y + tt_loss) / 2),  # point at midpoint between the two
+            xytext=(0.82, 0.30),
             xycoords='data', textcoords='axes fraction',
-            fontsize=11, ha='right', va='center',
-            color=color,
-            arrowprops={'arrowstyle': '-', 'color': color,
-                        'lw': 1.0, 'alpha': 0.7,
+            fontsize=20, ha='left', va='center',
+            color=tt_color,
+            arrowprops={'arrowstyle': '-', 'color': tt_color,
+                        'lw': 1.0, 'alpha': 0.6,
+                        'connectionstyle': 'angle3,angleA=0,angleB=90'},
+        )
+    else:
+        # Fallback: MDS-only annotation if no TT chain available
+        ax.annotate(
+            f'MDS: loss {mds_y:.2f}',
+            xy=(mds_x_B, mds_y),
+            xytext=(0.92, 0.20),
+            xycoords='data', textcoords='axes fraction',
+            fontsize=12, ha='right', va='center',
+            color=MDS_STAGE_COLOR,
+            arrowprops={'arrowstyle': '-', 'color': MDS_STAGE_COLOR,
+                        'lw': 1.0, 'alpha': 0.6,
                         'connectionstyle': 'angle3,angleA=0,angleB=90'},
         )
 
     ax.set_xscale('log')
     ax.set_yscale('log')
-    # Crop the leftmost decades: < 5B tokens is warmup (loss > 6), not
-    # part of the run comparison this chart is about. Both runs have
-    # already converged the easy "predict the next gemma token from
-    # frequency" loss by ~10B, so the interesting separation lives in
-    # the 10B → 10T range.
-    ax.set_xlim(5, 1e4)
-    ax.set_ylim(1.8, 14)
+    # Cap at 3T (TT's 2.49T endpoint with a hair of headroom). MDS
+    # stage 1 ends at 4.67T but we're trimming to the comparison's
+    # actual span. Y floor at 2.4 since neither curve dips below ~2.66
+    # in this range.
+    ax.set_xlim(1, 3_000)
+    ax.set_ylim(2.4, 13.5)
     # Keep underlying data in B (consistent with internal tokens math),
     # but format tick labels as trillions for the audience-facing axis.
     from matplotlib.ticker import FuncFormatter
@@ -207,9 +176,8 @@ def render(out_path: Path):
     ax.set_ylabel('LM training loss')
     ax.grid(True, which='both', alpha=0.3)
 
-    for x_T, label in zip(MDS_STAGE_BOUNDARIES, ['(2)', '(3)']):
-        ax.text(x_T / 1e9, 13.5, f' {label}', fontsize=11,
-                color='gray', style='italic', va='top', ha='left')
+    # Stage-boundary callouts dropped: the 4.67T / 7.06T boundaries
+    # are off-chart now that we've capped x at 3T to match TT's span.
 
     ax.legend(loc='upper right', framealpha=0)
     ax.set_title('AuroraGPT-2B  —  training loss vs tokens', pad=10)
