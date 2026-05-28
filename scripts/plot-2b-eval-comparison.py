@@ -421,6 +421,12 @@ def render(out_path: Path):
         # Per-task y-range — see YLIM_PER_TASK comment above.
         # Defaults to a wide (0.22, 0.72) range if the task isn't listed.
         ax.set_ylim(*YLIM_PER_TASK.get(task, (0.22, 0.72)))
+        # Force consistent y-tick formatting: fixed 0.05 stride + 2
+        # decimal places. Default ScalarFormatter strips trailing
+        # zeros ('0.20' -> '0.2') so adjacent panels read mismatched.
+        from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+        ax.yaxis.set_major_locator(MultipleLocator(0.05))
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
         ax.grid(True, which='both', alpha=0.3)
 
         if col == 0:

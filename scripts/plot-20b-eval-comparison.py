@@ -208,6 +208,13 @@ def render(out_path: Path):
             )
         )
         ax.set_ylim(*YLIM_PER_TASK.get(task, (0.20, 0.70)))
+        # Force consistent y-tick formatting: fixed 0.05 stride + 2
+        # decimal places (matches the 2B chart). Default ScalarFormatter
+        # strips trailing zeros ('0.20' -> '0.2') so adjacent panels
+        # otherwise read mismatched.
+        from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+        ax.yaxis.set_major_locator(MultipleLocator(0.05))
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
         ax.grid(True, which='both', alpha=0.3)
 
         if col == 0:
