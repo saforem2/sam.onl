@@ -42,10 +42,12 @@ def render(out_path: Path):
     # own distinct line. Shade darkness steps with the stage number so
     # the reader can map (1)/(2)/(3) → dark/medium/light intuitively.
     # Three blue shades, all dark enough to be visible on white
-    # projector backgrounds in a presentation hall. Old palette had
-    # stage 3 at #90caf9 which washed out completely on light theme.
-    # New: dark navy → mid blue → still-saturated steel (~#1565c0).
-    MDS_STAGE_SHADES = ['#0d2c6b', '#1976d2', '#42a5f5']
+    # projector backgrounds in a presentation hall.
+    # Shifted one step lighter from the old [#0d2c6b, #1976d2, #42a5f5]
+    # ramp so stage (1) reads on dark backgrounds too (the old dark
+    # navy disappeared on mobile dark theme). Same Material blue ramp,
+    # just one rung up.
+    MDS_STAGE_SHADES = ['#1976d2', '#42a5f5', '#90caf9']
     mds = pd.read_parquet(MDS_PARQUET).sort_values('x').reset_index(drop=True)
     stage_render = [
         ('olmo-mix-1124.txt',                    '(1) pretrain',            MDS_STAGE_SHADES[0]),

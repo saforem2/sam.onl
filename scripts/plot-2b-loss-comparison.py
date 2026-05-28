@@ -70,10 +70,12 @@ def render(out_path: Path):
     # comparison's scope. When TT crosses 4.67T we can bring stage 2
     # back. Kept the dark-blue shade so the line still reads as "MDS"
     # via the eval-slide color pairing.
-    # Same dark navy as stage-1 in plot-2b-loss-reference.py and the
+    # Same mid blue as stage-1 in plot-2b-loss-reference.py and the
     # MDS series in plot-2b-eval-comparison.py — keeps the audience
     # mapping "this blue = MDS" stable across all three slides.
-    MDS_STAGE_COLOR = '#0d2c6b'
+    # Shifted from the old #0d2c6b dark navy so the line is visible
+    # on dark backgrounds too.
+    MDS_STAGE_COLOR = '#1976d2'
     mds = pd.read_parquet(MDS_PARQUET).sort_values('x').reset_index(drop=True)
     mds_s1 = mds[mds['group_data_file'] == 'olmo-mix-1124.txt']
     ax.plot(mds_s1['x'].values / 1e9, mds_s1['y'].values,

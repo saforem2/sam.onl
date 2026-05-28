@@ -155,7 +155,7 @@ def render(out_path: Path):
     # red = TT v2 256N, dark red = TT v2 512N"). 20B 512N is green so
     # the size-class jump (2B → 20B) is visually distinct from any
     # within-2B comparison.
-    MDS_COLOR = '#0d2c6b'         # dark navy — matches 2B-eval chart's MDS
+    MDS_COLOR = '#1976d2'         # mid blue: readable on both light + dark bg
     TT2B_256_COLOR = 'C1'         # red — matches 2B-eval chart's 256N
     TT2B_512_COLOR = '#b71c1c'    # dark red — matches 2B-eval chart's 512N
     TT20B_512_COLOR = '#1b8a3a'   # green — 20B = new model, new color

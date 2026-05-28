@@ -364,7 +364,7 @@ def render(out_path: Path):
     # Pinned to the same dark navy used for MDS in the loss-comparison
     # and loss-reference slides, so "blue = MDS" reads identically
     # across all three 2B-result slides.
-    MDS_COLOR = '#0d2c6b'
+    MDS_COLOR = '#1976d2'
     TT_V2_256_COLOR = 'C1'
     TT_V2_512_COLOR = '#b71c1c'
 

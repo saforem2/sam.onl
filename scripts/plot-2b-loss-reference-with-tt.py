@@ -48,7 +48,10 @@ def render(out_path: Path):
 
     # MDS 3-stage trajectory — same palette as plot-2b-loss-reference
     # for cross-slide consistency.
-    MDS_STAGE_SHADES = ['#0d2c6b', '#1976d2', '#42a5f5']
+    # Shifted one step lighter so stage (1) reads on dark backgrounds
+    # too. Same Material blue ramp, just one rung up. Matches
+    # plot-2b-loss-reference.py.
+    MDS_STAGE_SHADES = ['#1976d2', '#42a5f5', '#90caf9']
     mds = pd.read_parquet(MDS_PARQUET).sort_values('x').reset_index(drop=True)
     stage_render = [
         ('olmo-mix-1124.txt',                    'MDS (1) pretrain',           MDS_STAGE_SHADES[0]),
