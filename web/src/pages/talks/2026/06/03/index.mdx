@@ -72,7 +72,7 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
    - What generalizes — what doesn't
 4. **Open Questions for TPC**
 
-_Backups_: optimizer experiments (Mano · Muon · SophiaG · LR-finder), silent-correctness bugs (bf16 RMSNorm freeze, TP loss reporting), `blendcorpus` deep-dive
+_Backups_: optimizer experiments (Mano · Muon · SophiaG · LR-finder), silent-correctness bugs (bf16 RMSNorm freeze, TP loss reporting), `blendcorpus` deep-dive, bad-node failover ops
 
 </Slide>
 
@@ -344,7 +344,31 @@ is the "fork tax" — the rest of this talk.
         src="/talks/2026-06-03/figures/eval-2b-compare.svg"
         alt="2B eval comparison: MDS vs TT v2"
     />
-    <figcaption>Both v2 chains track MDS at matched tokens.</figcaption>
+    <figcaption>
+        Data: [`docs/evals/agpt/2b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals/agpt/2b),
+        production run: [`docs/production/agpt/2b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/2b)
+    </figcaption>
+</figure>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+20B eval comparison — v1 (broken) vs v2 256N / 512N
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="agpt-20b-eval">
+
+## 20B eval — all-production overlay (2B + 20B)
+
+<figure>
+    <img
+        src="/talks/2026-06-03/figures/eval-20b-compare.svg"
+        alt="All-production eval overlay: 2B MDS, 2B TT 256N, 2B TT 512N, 20B TT 512N"
+    />
+    <figcaption>
+        Data: [`docs/evals/agpt/20b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals/agpt/20b),
+        production run: [`docs/production/agpt/20b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/20b)
+    </figcaption>
 </figure>
 
 </Slide>
@@ -483,77 +507,92 @@ different scope. Together they turn "lost a 12 h walltime" into
 "lost a 10 min sub-step."
 
 ```mermaid
-flowchart LR
-    subgraph proc["⏱ process — ezpz launch"]
-        direction TB
-        RUN["python train.py"] -. "idle ≥ N s" .-> TERM["kill + backoff"]
-        TERM --> RUN
-    end
-    subgraph node["🖥 node — failover wrapper"]
-        direction TB
-        ACTIVE["active pool"] -. "bad node" .-> SWAP["swap in spare"]
-        SWAP --> ACTIVE
-    end
-    subgraph job["📋 job — PBS"]
-        direction TB
-        A1["attempt N"] -. "crash / walltime" .-> A2["attempt N+1"]
-        A2 --> A1
+flowchart TB
+    subgraph job["📋 JOB scope — PBS · hours"]
+        JOB_TXT["crash / walltime → chained resubmit"]
+        subgraph node["🖥 NODE scope — failover wrapper · minutes"]
+            NODE_TXT["bad host detected → swap from spare pool"]
+            subgraph proc["⏱ PROCESS scope — ezpz launch · seconds"]
+                PROC_TXT["stdout idle ≥ N s → kill + backoff"]
+            end
+        end
     end
 
-    proc -. "spare pool drained" .-> node
-    node -. "out of spares" .-> job
-
-    classDef procC fill:transparent,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    classDef jobC  fill:transparent,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
     classDef nodeC fill:transparent,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
-    classDef jobC fill:transparent,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
-    class RUN,TERM procC
-    class ACTIVE,SWAP nodeC
-    class A1,A2 jobC
+    classDef procC fill:transparent,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    classDef jobTxt  fill:transparent,stroke:none,color:#118cc2
+    classDef nodeTxt fill:transparent,stroke:none,color:#ee8f24
+    classDef procTxt fill:transparent,stroke:none,color:#1da811
+    class JOB_TXT jobTxt
+    class NODE_TXT nodeTxt
+    class PROC_TXT procTxt
+    class job jobC
+    class node nodeC
+    class proc procC
 ```
 
-Inner loops handle most failures; outer loops handle the rest. Seconds → minutes → hours.
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-Operational reality — failover wrapper
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="restarts">
-
-## Operational reality — bad-node failover
-
-**5+ production jobs killed by bad-node failures in 2 weeks.** Pattern:
-PBS gives us 256 / 512 nodes, one is bad, training crashes or hangs
-after N hours, walltime gone.
-
-| Job     | Trajectory  | Failure                                           |
-| ------- | ----------- | ------------------------------------------------- |
-| 8459818 | 2B 256N v2  | `shepherd died from signal 9` after step 2070     |
-| 8470102 | 20B 256N v2 | gloo TCP `Connection closed by peer` after ~3h    |
-| 8479579 | 20B 512N v2 | **silent hang** at step 803 (heartbeat continued) |
-
-**Failover wrapper:** request `select=N+spare` (~2%, min 4). Split
-into active + spare pool. On crash, scrape bad nodes from log, swap a
-spare in, retry.
-
-```bash
-qsub -q prod -l select=522 -v NHOSTS_TRAIN=512 \
-    submit_agpt_2b_aurora_venv_failover.sh
-```
-
-Handles 6 recurring crash modes. **Does not handle silent hangs** —
-those still need a heartbeat watchdog.
+**Inner loops catch most failures; outer loops catch the rest.**
 
 <style>{`
-  /* Pin the Job + Trajectory columns to just the width they need;
-     let Failure (the long, prose-y cell) take the rest. */
-  #restarts table th:nth-child(1), #restarts table td:nth-child(1) { width: 10ch; }
-  #restarts table th:nth-child(2), #restarts table td:nth-child(2) { width: 14ch; }
-  #restarts table th:nth-child(3), #restarts table td:nth-child(3) { width: auto; }
-  /* Codeblock: span full slide width so the short qsub command has
-     visual presence instead of shrinking to its tiny max-content box. */
-  #restarts pre.astro-code { width: 100%; }
+  /* Russian-doll cluster titles rendered as colored chip-badges
+     (like the sidebar [t]alks / [p]osts / [w]ork chips). Mermaid
+     emits each cluster as <g class="cluster {classDef-name}">;
+     inside that lives a <g class="cluster-label"> > <foreignObject>
+     > <div> > <span class="nodeLabel">. Style the span as the chip:
+     square corners, no border, light tinted bg, dark text — matching
+     sidebar chip aesthetic (default foreground color, not the
+     accent, so the text reads cleanly on the tinted bg). */
+  #restart-cascade .mermaid .cluster .cluster-label foreignObject {
+      overflow: visible;
+  }
+  #restart-cascade .mermaid .cluster .cluster-label span {
+      display: inline-block;
+      padding: 0 1ch;
+      color: var(--foreground0, #222) !important;
+      font-weight: 600;
+  }
+  #restart-cascade .mermaid .cluster.jobC .cluster-label span {
+      background: #118cc218;
+  }
+  #restart-cascade .mermaid .cluster.nodeC .cluster-label span {
+      background: #ee8f2418;
+  }
+  #restart-cascade .mermaid .cluster.procC .cluster-label span {
+      background: #1da81118;
+  }
+  /* Body text inside each cluster — match the cluster's accent color.
+     Mermaid's default node style applies a black fill via the inline
+     foreignObject span color, so classDef color is overridden. Force
+     it via CSS scoped to the classDef class on the node group. */
+  #restart-cascade .mermaid g.node.jobTxt .nodeLabel,
+  #restart-cascade .mermaid g.node.jobTxt span,
+  #restart-cascade .mermaid g.node.jobTxt p {
+      color: #118cc2 !important;
+  }
+  #restart-cascade .mermaid g.node.nodeTxt .nodeLabel,
+  #restart-cascade .mermaid g.node.nodeTxt span,
+  #restart-cascade .mermaid g.node.nodeTxt p {
+      color: #ee8f24 !important;
+  }
+  #restart-cascade .mermaid g.node.procTxt .nodeLabel,
+  #restart-cascade .mermaid g.node.procTxt span,
+  #restart-cascade .mermaid g.node.procTxt p {
+      color: #1da811 !important;
+  }
+  /* Descender clip fix — mermaid's node foreignObject has overflow:
+     hidden and the inner <p> has a tight line-height that cuts off
+     descenders (g, p, y, q) on the bottom row of multi-line labels.
+     Make the foreignObject visible and pad the p slightly so the
+     descender on "pool" (and any future labels with descenders) is
+     fully rendered. */
+  #restart-cascade .mermaid g.node foreignObject {
+      overflow: visible;
+  }
+  #restart-cascade .mermaid g.node p {
+      line-height: 1.35;
+      padding-bottom: 0.1em;
+  }
 `}</style>
 
 </Slide>
@@ -725,6 +764,210 @@ something was wrong.
 **`blendcorpus`** — the data layer (deterministic shard indexing,
 weight-stable resumption; pain: upstream shard churn, dataloader skew
 across backends).
+
+**Operational reality — bad-node failover** — the production
+table + qsub wrapper that swaps spares in on crash.
+
+**Optimizer + LR-finder** — AdamW · Muon · SophiaG sweep across
+\{2B, 20B, 80B\} on Aurora / Sunspot / Polaris; speedrun rounds with
+Mano + QK-Norm; `yeet-env` tarball broadcast scaling.
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Appendix: Operational reality — failover wrapper
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="restarts">
+
+## Operational reality — bad-node failover
+
+**5+ production jobs killed by bad-node failures in 2 weeks.** Pattern:
+PBS gives us 256 / 512 nodes, one is bad, training crashes or hangs
+after N hours, walltime gone.
+
+| Job     | Trajectory  | Failure                                           |
+| ------- | ----------- | ------------------------------------------------- |
+| 8459818 | 2B 256N v2  | `shepherd died from signal 9` after step 2070     |
+| 8470102 | 20B 256N v2 | gloo TCP `Connection closed by peer` after ~3h    |
+| 8479579 | 20B 512N v2 | **silent hang** at step 803 (heartbeat continued) |
+
+**Failover wrapper:** request `select=N+spare` (~2%, min 4). Split
+into active + spare pool. On crash, scrape bad nodes from log, swap a
+spare in, retry.
+
+```bash
+qsub -q prod -l select=522 -v NHOSTS_TRAIN=512 \
+    submit_agpt_2b_aurora_venv_failover.sh
+```
+
+Handles 6 recurring crash modes. **Does not handle silent hangs** —
+those still need a heartbeat watchdog.
+
+<style>{`
+  /* Pin the Job + Trajectory columns to just the width they need;
+     let Failure (the long, prose-y cell) take the rest. */
+  #restarts table th:nth-child(1), #restarts table td:nth-child(1) { width: 10ch; }
+  #restarts table th:nth-child(2), #restarts table td:nth-child(2) { width: 14ch; }
+  #restarts table th:nth-child(3), #restarts table td:nth-child(3) { width: auto; }
+  /* Codeblock: span full slide width so the short qsub command has
+     visual presence instead of shrinking to its tiny max-content box. */
+  #restarts pre.astro-code { width: 100%; }
+`}</style>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Appendix: LR-finder methodology + cross-optimizer sweep
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="lr-finder">
+
+## LR-finder — exponential sweep, blow-up / 10
+
+Smith 2015 / Gugger: exponentially ramp LR over ~10% of training,
+record EMA-smoothed loss, pick LR at the steepest descent (or
+blow-up point / 10 as a conservative default).
+
+<figure>
+    <img
+        src="/talks/2026-06-03/figures/optimizers-lr-finder.svg"
+        alt="LR-vs-loss sweeps for AdamW, Muon, SophiaG across 2B and 20B configs on Aurora"
+    />
+    <figcaption>
+        Cross-optimizer sweep on Aurora (Intel Max 1550, 2 nodes / 24
+        XPUs). Source:
+        [`docs/experiments/lr-finder`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/experiments/lr-finder)
+    </figcaption>
+</figure>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Appendix: LR-finder 2B detail + optimal-LR bars
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="lr-finder-results">
+
+## LR-finder — 2B sweep + optimal LR per config
+
+<div class="lr-finder-grid">
+
+<figure>
+    <img
+        src="/talks/2026-06-03/figures/lr-finder-aurora-2b.svg"
+        alt="2B LR-vs-loss sweep — AdamW, Muon, SophiaG overlaid"
+    />
+    <figcaption>2B sweep — flat / descent / blow-up signature.</figcaption>
+</figure>
+
+<figure>
+    <img
+        src="/talks/2026-06-03/figures/lr-finder-aurora-bars.svg"
+        alt="Optimal LR per (model size, optimizer) — bar chart"
+    />
+    <figcaption>Optimal LR per config. AdamW most tolerant; SophiaG ~10× lower.</figcaption>
+</figure>
+
+</div>
+
+**Findings:** AdamW most LR-tolerant; SophiaG needs ~10× lower LR;
+SophiaG + Muon both break at 80B (bf16 overflow in Newton-Schulz /
+Hessian estimate on 9216-dim matrices).
+
+<style>{`
+  #lr-finder-results .lr-finder-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2ch;
+      align-items: start;
+  }
+  #lr-finder-results .lr-finder-grid figure {
+      margin: 0;
+  }
+`}</style>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Appendix: Optimizer speedrun rounds — Mano / AdamW / Muon
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="optimizer-speedrun">
+
+## Optimizer speedrun — Mano LR sweep, WSM, Schedule-Free
+
+<figure>
+    <img
+        src="/talks/2026-06-03/figures/optimizers-r5-loss-curves.png"
+        alt="Mano LR sweep + WSM + Schedule-Free loss curves, 8 nodes, 10B tokens"
+    />
+    <figcaption>
+        Round 5 speedrun: 8 nodes, GBS=384, 10B tokens. Dual view —
+        by step and by tokens consumed.
+    </figcaption>
+</figure>
+
+**Headline numbers (Round 3, 10B tokens / 8N / GBS=384):**
+
+| Rank | Config           | Loss      | TPS/GPU |
+| ---: | :--------------- | :-------- | ------: |
+|    1 | AdamW            | **2.711** |   7,354 |
+|    2 | AdamW + QK-Norm  | 2.720     |   7,480 |
+|    3 | Mano + QK-Norm   | 2.854     |   7,346 |
+|    4 | Mano             | 2.875     |   7,429 |
+|    5 | Muon             | DNF       |       — |
+
+**AdamW wins at GBS=384.** Mano lands ~0.16 behind — LR finder was
+tuned at GBS=48 and the manifold update under-shoots at large batch.
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Appendix: yeet-env tarball broadcast scaling
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="yeet-env">
+
+## `yeet-env` — venv tarball broadcast at scale
+
+<div class="yeet-env-grid">
+
+<figure>
+    <img
+        src="/talks/2026-06-03/figures/yeet-env-seconds.png"
+        alt="Total wall-clock for yeet-env broadcast vs node count, 8 to 4096 nodes"
+    />
+    <figcaption>Total wall-clock (8 → 4096 nodes).</figcaption>
+</figure>
+
+<figure>
+    <img
+        src="/talks/2026-06-03/figures/yeet-env-per-node.png"
+        alt="Per-node amortized cost vs node count, 8 to 4096 nodes"
+    />
+    <figcaption>Per-node amortized cost. 48× efficiency over the sweep.</figcaption>
+</figure>
+
+</div>
+
+**Two regimes.** 8-64N is extract-bound (~70-90s flat, fixed-cost
+extraction amortizes); ≥128N is broadcast-bound, total grows
+super-linearly. At 4096 nodes the full Aurora broadcast finishes in
+~13 min. The pre-tarball per-file rsync mode predicted hours at
+256+ nodes — never reached production.
+
+<style>{`
+  #yeet-env .yeet-env-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2ch;
+      align-items: start;
+  }
+  #yeet-env .yeet-env-grid figure {
+      margin: 0;
+  }
+`}</style>
 
 </Slide>
 
