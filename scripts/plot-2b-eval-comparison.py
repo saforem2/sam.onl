@@ -259,12 +259,12 @@ RANDOM_BASELINE = [0.25, 0.25, 0.25, 0.50]
 # real estate without losing the cross-panel "all are accuracies"
 # read since the y-axis label still says Accuracy and ranges show.
 YLIM_PER_TASK = {
-    # ARC-Easy / HellaSwag: floor at 0.20 to keep the random-baseline
-    # horizontal line at 0.25 visible (with a touch of breathing room
-    # below) so the audience can read "above random" at a glance.
+    # Per-task zoom — but MUST stay identical to the 20B chart's
+    # YLIM_PER_TASK so the panels lock visually when switching slides.
+    # Any change here needs the same change in plot-20b-eval-comparison.py.
     'HellaSwag':     (0.20, 0.65),
     'ARC-Easy':      (0.20, 0.75),
-    'ARC-Challenge': (0.22, 0.45),
+    'ARC-Challenge': (0.20, 0.45),
     'Winogrande':    (0.45, 0.70),
 }
 
@@ -406,7 +406,9 @@ def render(out_path: Path):
         # ahead. Linear shows "twice the tokens = twice the distance"
         # and makes the v2-stops-at-2.7T vs MDS-runs-to-7T gap visually
         # honest. The 500B floor still clears the noise-bound warmup.
-        ax.set_xlim(0, 7_500)
+        # Same xlim as the 20B chart so panels lock visually when
+        # switching slides — see note on YLIM_PER_TASK above.
+        ax.set_xlim(0, 7_700)
         # Tickformat: 1000B → 1T etc. Keep the underlying numbers in B
         # (so xlim / data-coords math is unchanged), just relabel ticks.
         from matplotlib.ticker import FuncFormatter
@@ -421,11 +423,12 @@ def render(out_path: Path):
         # Per-task y-range — see YLIM_PER_TASK comment above.
         # Defaults to a wide (0.22, 0.72) range if the task isn't listed.
         ax.set_ylim(*YLIM_PER_TASK.get(task, (0.22, 0.72)))
-        # Force consistent y-tick formatting: fixed 0.05 stride + 2
-        # decimal places. Default ScalarFormatter strips trailing
-        # zeros ('0.20' -> '0.2') so adjacent panels read mismatched.
-        from matplotlib.ticker import MultipleLocator, FormatStrFormatter
-        ax.yaxis.set_major_locator(MultipleLocator(0.05))
+        # Consistent y-tick formatting: ~5 ticks per panel (adapts
+        # per-task ylim instead of a fixed 0.05 stride that crammed
+        # wide panels with 10+ ticks) + 2 decimal places (default
+        # ScalarFormatter strips trailing zeros).
+        from matplotlib.ticker import MaxNLocator, FormatStrFormatter
+        ax.yaxis.set_major_locator(MaxNLocator(nbins=5, steps=[1, 2, 5, 10]))
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
         ax.grid(True, which='both', alpha=0.3)
 

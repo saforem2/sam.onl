@@ -95,6 +95,8 @@ RANDOM_BASELINE = [0.25, 0.25, 0.25, 0.50]
 # Span the full 4-trajectory accuracy range. 2B-MDS late evals reach
 # 0.69 on ARC-Easy; 20B 512N early evals start near 0.22 on ARC-C.
 YLIM_PER_TASK = {
+    # Must stay identical to the 2B chart's YLIM_PER_TASK so the
+    # panels lock visually when switching slides.
     'HellaSwag':     (0.20, 0.65),
     'ARC-Easy':      (0.20, 0.75),
     'ARC-Challenge': (0.20, 0.45),
@@ -208,12 +210,9 @@ def render(out_path: Path):
             )
         )
         ax.set_ylim(*YLIM_PER_TASK.get(task, (0.20, 0.70)))
-        # Force consistent y-tick formatting: fixed 0.05 stride + 2
-        # decimal places (matches the 2B chart). Default ScalarFormatter
-        # strips trailing zeros ('0.20' -> '0.2') so adjacent panels
-        # otherwise read mismatched.
-        from matplotlib.ticker import MultipleLocator, FormatStrFormatter
-        ax.yaxis.set_major_locator(MultipleLocator(0.05))
+        # Y-ticks match the 2B chart: MaxNLocator + 2-decimal format.
+        from matplotlib.ticker import MaxNLocator, FormatStrFormatter
+        ax.yaxis.set_major_locator(MaxNLocator(nbins=5, steps=[1, 2, 5, 10]))
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
         ax.grid(True, which='both', alpha=0.3)
 
