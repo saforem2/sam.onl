@@ -66,6 +66,11 @@ const canonical = `https://sam.onl${url}`
         const totalEl = document.getElementById('ss-total')
         const currentEl = document.getElementById('ss-current')
         if (totalEl) totalEl.textContent = String(total)
+        // Tag each slide with its 1-based index for the overview-mode
+        // corner badge (CSS ::after reads data-slide-index via attr()).
+        slides.forEach((s, i) => {
+            s.dataset.slideIndex = String(i + 1)
+        })
 
         const channel = new BroadcastChannel('slides-sync')
         const isSpeaker =

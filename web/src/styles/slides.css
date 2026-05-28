@@ -545,11 +545,10 @@ body[data-speaker-window] [is-~='notes'] {
 [is-~='presentation'][data-mode='overview'] {
     [is-~='slides'] {
         display: grid;
-        /* Each tile is at least 36ch wide, 16:9 ratio. Auto-rows match
-           the column height to keep tiles square-ish without aspect-ratio
-           drama (which collapses when children are position:absolute). */
-        grid-template-columns: repeat(auto-fit, minmax(36ch, 1fr));
-        grid-auto-rows: calc((36ch * 9) / 16);
+        /* Tighter minmax (24ch from 36ch) so 4-6 tiles fit per row at
+           normal viewport, matching Reveal's overview density. */
+        grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
+        grid-auto-rows: calc((24ch * 9) / 16);
         gap: 2ch;
         padding: 2lh 3ch calc(2lh + 1lh) 3ch;
         overflow-y: auto;
@@ -590,6 +589,20 @@ body[data-speaker-window] [is-~='notes'] {
         flex-direction: column;
         justify-content: safe center;
     }
+    /* Per-tile slide-number badge (top-right corner). Reveal puts the
+       slide index there so the audience can navigate by number. JS
+       sets data-slide-index on each <slide> when entering overview. */
+    [is-~='slide']::after {
+        content: attr(data-slide-index);
+        position: absolute;
+        top: 0.25lh;
+        right: 0.5ch;
+        font-size: 0.75em;
+        color: var(--foreground2);
+        font-variant-numeric: tabular-nums;
+        z-index: 2;
+        pointer-events: none;
+    }
     [is-~='slide'] {
         transition:
             box-shadow 100ms linear,
@@ -601,10 +614,18 @@ body[data-speaker-window] [is-~='notes'] {
         border-color: var(--accent, var(--blue));
         box-shadow: 3px 3px 0 0 var(--foreground0);
     }
+    /* Stronger current-slide highlight — outline + larger shadow so
+       the eye snaps to where you are even in a dense grid. */
     [is-~='slide'][data-current] {
         opacity: 1 !important;
         border-color: var(--accent, var(--blue));
-        box-shadow: 2px 2px 0 0 var(--foreground0);
+        outline: 2px solid var(--accent, var(--blue));
+        outline-offset: 1px;
+        box-shadow: 4px 4px 0 0 var(--foreground0);
+    }
+    [is-~='slide'][data-current]::after {
+        color: var(--accent, var(--blue));
+        font-weight: var(--font-weight-bold);
     }
 }
 
