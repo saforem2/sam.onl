@@ -72,11 +72,13 @@
     /* Mobile (≤ 768px): tighter padding, top-anchor content. Codeblocks
        keep their normal `white-space: pre` + horizontal scroll behavior;
        no forced soft-wrap (which clobbers indentation and breaks lines
-       that would fit fine with a small horizontal scroll). */
+       that would fit fine with a small horizontal scroll). Extra
+       bottom padding so the statusbar (~1lh tall + its own padding)
+       doesn't clip the last line of content. */
     @media (max-width: 768px) {
         .slide-inner {
             font-size: 1.1rem;
-            padding: 1lh 2ch;
+            padding: 1lh 2ch 2.5lh 2ch;
             justify-content: flex-start;
         }
     }
@@ -824,6 +826,15 @@ body.slides-print-mode [is-~='slide']::after {
    below lights up only when the title slide is the current one. */
 [is-~='presentation']:has(#title-slide[data-current]) .deck-corner-logo {
     display: none !important;
+}
+/* Hide the persistent logo on mobile — at narrow widths it overlaps
+   content rather than tucking into a corner (less horizontal slack
+   for content to flow around it). The title slide still shows its
+   own bigger logo via the title-specific block below. */
+@media (max-width: 768px) {
+    .deck-corner-logo {
+        display: none !important;
+    }
 }
 
 /* Footnotes on slides: hide the appended <section data-footnotes>

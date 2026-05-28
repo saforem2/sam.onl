@@ -139,6 +139,32 @@ const fontOptions = {
         scrollbar-width: thin;
     }
 
+    /* Mobile (≤ 768px): take more of the viewport, shrink TOC entries
+       so long slide titles don't wrap into towering 4-line blocks
+       that hog vertical space, and tuck the navbar icons under the
+       Slides badge in a tighter row. */
+    @media (max-width: 768px) {
+        .slide-help-dialog {
+            max-width: 95vw;
+            max-height: 92vh;
+        }
+        .slide-help-content {
+            padding: 0.5lh 1ch;
+            gap: 0.25lh;
+            max-height: 92vh;
+            font-size: 0.95em;
+        }
+        /* Tighter TOC entries on mobile: smaller font + tighter
+           line-height so each item is a single line where possible. */
+        .slide-help-toc {
+            font-size: 0.85em;
+            line-height: 1.25;
+        }
+        .slide-help-toc li {
+            margin-block: 0.1lh;
+        }
+    }
+
     .slide-help-navbar {
         display: flex;
         gap: 0;
