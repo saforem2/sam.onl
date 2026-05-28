@@ -297,6 +297,48 @@ const ogImage = ogSlug
                 line-height: 1.35;
                 padding-bottom: 0.1em;
             }
+            /* Per-cluster text colors for restart-cascade clones.
+               classDef colors get serialized into the cluster <g>
+               class list (jobC/nodeC/procC/jobTxt/nodeTxt/procTxt),
+               so we can match on those even after the SVG is
+               cloned outside the talk's scoped <style> block. Keep
+               in sync with the in-deck rules. */
+            .mermaid-modal-inner svg g.node.jobTxt .nodeLabel,
+            .mermaid-modal-inner svg g.node.jobTxt span,
+            .mermaid-modal-inner svg g.node.jobTxt p {
+                color: #118cc2 !important;
+            }
+            .mermaid-modal-inner svg g.node.nodeTxt .nodeLabel,
+            .mermaid-modal-inner svg g.node.nodeTxt span,
+            .mermaid-modal-inner svg g.node.nodeTxt p {
+                color: #ee8f24 !important;
+            }
+            .mermaid-modal-inner svg g.node.procTxt .nodeLabel,
+            .mermaid-modal-inner svg g.node.procTxt span,
+            .mermaid-modal-inner svg g.node.procTxt p {
+                color: #1da811 !important;
+            }
+            /* Cluster-title chip badges + their per-cluster bg
+               tints. Same selectors as in-deck, just no
+               #restart-cascade prefix since the modal is outside it. */
+            .mermaid-modal-inner svg .cluster .cluster-label foreignObject {
+                overflow: visible;
+            }
+            .mermaid-modal-inner svg .cluster .cluster-label span {
+                display: inline-block;
+                padding: 0 1ch;
+                color: var(--foreground0, #222) !important;
+                font-weight: 600;
+            }
+            .mermaid-modal-inner svg .cluster.jobC .cluster-label span {
+                background: #118cc218;
+            }
+            .mermaid-modal-inner svg .cluster.nodeC .cluster-label span {
+                background: #ee8f2418;
+            }
+            .mermaid-modal-inner svg .cluster.procC .cluster-label span {
+                background: #1da81118;
+            }
             .mermaid-modal-close {
                 position: absolute;
                 top: 1ch;
