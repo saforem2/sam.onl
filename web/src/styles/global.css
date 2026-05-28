@@ -617,6 +617,10 @@
         color: var(--foreground2);
         font: inherit;
         line-height: inherit;
+        /* `[ ]` contains a literal space, which is a valid line-break
+           opportunity — without nowrap the closing `]` can wrap to the
+           next line when the input box width is constrained. */
+        white-space: nowrap;
         /* Force the checkbox glyph string to stay in the monospace
            font even if individual chars (like ✓) would fall back to
            a proportional font. */
