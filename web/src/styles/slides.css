@@ -467,9 +467,9 @@ body[data-speaker-window] [is-~='notes'] {
     display: block;
 }
 
-/* Bottom status bar — left: title + help button, center: deep link,
-   right: current/total. Responsive: at narrow widths the title/link
-   truncate or hide so the bar stays at one line. */
+/* Bottom status bar — left: menu icon, center: deep link,
+   right: current/total. Responsive: at narrow widths the link
+   truncates so the bar stays at one line. */
 [is-~='slide-status'] {
     position: fixed;
     bottom: 0;
@@ -480,10 +480,10 @@ body[data-speaker-window] [is-~='notes'] {
     padding-inline: 2ch;
     background-color: var(--background1);
     color: var(--foreground3);
-    font-size: 0.85em;
+    font-size: 1em;
     display: grid;
-    /* URL (left, ellipsis-truncated) + position+help (right) */
-    grid-template-columns: minmax(0, 1fr) auto;
+    /* menu (left, fixed) + link (center, ellipsis) + position (right) */
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 1ch;
     align-items: center;
     z-index: 10;
@@ -493,47 +493,50 @@ body[data-speaker-window] [is-~='notes'] {
     .ss-link {
         color: var(--foreground2);
         text-decoration: none;
-        justify-self: start;
+        justify-self: center;
         overflow: hidden;
         text-overflow: ellipsis;
         min-width: 0;
+        max-width: 100%;
         &:hover,
         &:focus-visible {
             color: var(--accent, var(--blue));
         }
     }
-    .ss-right {
-        display: flex;
-        align-items: center;
-        gap: 1ch;
-        justify-self: end;
-    }
-
-    /* Phone (< 480px): keep the URL visible; ellipsis already
-       truncates it if the screen is narrower than the link text. */
     .ss-pos {
         color: var(--foreground2);
+        justify-self: end;
     }
-    .ss-help {
+    /* Menu / help button — bottom-left, hamburger icon. Replaces the
+       former [?] chip in the bottom-right. The three CSS-drawn lines
+       inherit currentColor so hover/focus tints come for free. */
+    .ss-menu {
         all: unset;
         cursor: pointer;
-        padding: 0 0.75ch;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        justify-self: start;
+        width: 2.5ch;
+        height: 1lh;
         color: var(--foreground2);
-        background-color: var(--background2);
-        border: 1px solid var(--foreground3);
-        border-radius: 3px;
-        line-height: 1;
-        transition:
-            color 100ms linear,
-            background-color 100ms linear;
+        transition: color 100ms linear;
         &:hover,
         &:focus-visible {
-            color: var(--foreground0);
-            background-color: oklch(
-                from var(--accent, var(--blue))
-                    calc(l * var(--oklch-scale, 0.85)) c h / 0.2
-            );
+            color: var(--accent, var(--blue));
         }
+    }
+    .ss-menu-icon {
+        display: inline-block;
+        width: 1.5ch;
+        height: 0.7lh;
+        background:
+            linear-gradient(currentColor, currentColor) top / 100% 1px
+                no-repeat,
+            linear-gradient(currentColor, currentColor) center / 100% 1px
+                no-repeat,
+            linear-gradient(currentColor, currentColor) bottom / 100% 1px
+                no-repeat;
     }
 }
 

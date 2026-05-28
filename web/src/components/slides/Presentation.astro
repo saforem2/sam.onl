@@ -10,7 +10,7 @@ interface Props {
     title?: string
 }
 const url = Astro.url.pathname
-const canonical = `https://sam.onl${url}`
+const canonical = `sam.onl${url}`
 ---
 
 <main is-="presentation" data-mode="deck">
@@ -30,17 +30,17 @@ const canonical = `https://sam.onl${url}`
         class="deck-corner-logo deck-corner-logo-dark"
     />
     <div is-="slide-status">
+        <button
+            type="button"
+            id="ss-help-btn"
+            class="ss-menu"
+            aria-label="Show keybinds and navigation"
+        >
+            <span class="ss-menu-icon" aria-hidden="true"></span>
+        </button>
         <a class="ss-link" href={url}>{canonical}</a>
-        <span class="ss-right">
-            <span class="ss-pos">
-                <span id="ss-current">1</span>/<span id="ss-total">1</span>
-            </span>
-            <button
-                type="button"
-                id="ss-help-btn"
-                class="ss-help"
-                aria-label="Show keybinds and navigation">?</button
-            >
+        <span class="ss-pos">
+            <span id="ss-current">1</span>/<span id="ss-total">1</span>
         </span>
     </div>
     <SlideHelpDialog />
