@@ -581,13 +581,20 @@
        adds, and a tiny script persists state per page+task in localStorage). */
     .task-list-item {
         list-style: none;
-        margin-left: -2ch;
+        /* No negative margin — task items should share a left edge
+           with regular bullet items. The "- " bullet glyph is replaced
+           by the rendered `[ ]` / `[x]` chip, so visual alignment
+           lands at the same indent as normal `<li>`s. */
     }
     .task-list-item input[type='checkbox'] {
         appearance: none;
         -webkit-appearance: none;
         display: inline-block;
         position: relative;
+        /* Width sized for "[x]" in monospace; the bracket-checkmark
+           "[✓]" combo widens because U+2713 falls back to a non-mono
+           font with wider advance — chars rendered side-by-side
+           naturally pick up that width without needing extra. */
         width: 3ch;
         height: 1lh;
         margin: 0 0.5ch 0 0;
@@ -610,10 +617,18 @@
         color: var(--foreground2);
         font: inherit;
         line-height: inherit;
+        /* Force the checkbox glyph string to stay in the monospace
+           font even if individual chars (like ✓) would fall back to
+           a proportional font. */
+        font-family: var(--font-family, monospace);
+        font-variant-numeric: tabular-nums;
     }
     .task-list-item input[type='checkbox']:checked::before {
+        /* Use 'x' (in monospace) instead of '✓' (which falls back
+           and gets a wider advance, blowing out the box). Green
+           color carries the "completed" signal on its own. */
         content: '[x]';
-        color: var(--accent, var(--green, var(--blue)));
+        color: var(--green, #4caf50);
         font-weight: var(--font-weight-bold);
     }
     .task-list-item input[type='checkbox']:focus-visible::before {
@@ -622,12 +637,8 @@
     .task-list-item input[type='checkbox']:hover::before {
         color: var(--accent, var(--green, var(--blue)));
     }
-    .task-list-item:has(input[type='checkbox']:checked) {
-        color: var(--foreground2);
-        text-decoration: line-through;
-        text-decoration-thickness: 1px;
-        text-decoration-color: var(--foreground2);
-    }
+    /* Checked task items keep full color/weight — no strike-through.
+       The `[x]` chip itself is the completion signal. */
     /* Disabled-style override (when JS hasn't enabled them yet): keep the
        same look but show not-allowed cursor. No solid-block fallback. */
     .task-list-item input[type='checkbox']:disabled {
@@ -672,8 +683,14 @@
 
     pre.astro-code,
     pre.astro-code code {
-        font-size: clamp(0.7rem, 2.5vw, 0.875rem);
-        line-height: 1.4;
+        /* Inherit from parent context so code stays at body-text size
+           everywhere it appears. Bumped a hair past 1em because the
+           monospace font is optically narrower per char than the
+           proportional body font, so at the same em-size it reads
+           slightly smaller. Line-height matches body (1.5) so the
+           codeblock doesn't look cramped against surrounding prose. */
+        font-size: 1.05em;
+        line-height: 1.5;
     }
 }
 
@@ -776,18 +793,21 @@ pre.astro-code {
     margin-block: 0.5lh 1lh;
     align-self: start;
     background-color: var(--pre-background, var(--background1)) !important;
-    max-height: round(calc(0.4 * 100vh), 1lh);
-    /* Vertical scroll when a block exceeds max-height; otherwise the bar
-       is hidden by the browser since content fits. */
-    overflow-y: auto;
-    /* Cap at column width and let the `pre`'s own overflow-x: auto (set in
-       @layer components above) handle long lines with a horizontal
-       scrollbar. `min-width: 0` is the magic incantation for flex children:
-       without it, the `pre` would expand to its content's max-content width
-       and get clipped by #main-content's overflow-x: hidden. */
+    /* No max-height cap here — the surrounding container (slide-inner,
+       article body) handles its own overflow. Capping the pre forces
+       internal scrolling which clips visible content and makes users
+       think the codeblock is broken (especially on slides). */
+    overflow-y: visible;
+    /* Hug content by default; only grow up to the column width. Long
+       lines still get capped at 100% and the `pre`'s own overflow-x:
+       auto (set in @layer components above) provides horizontal scroll
+       when needed. `min-width: 0` is the magic incantation for flex
+       children — without it, a long-line `pre` would expand to its
+       content's max-content width and get clipped by #main-content's
+       overflow-x: hidden instead of scrolling internally. */
     min-width: 0;
     max-width: 100%;
-    width: 100%;
+    width: max-content;
     padding-inline-end: 0;
 }
 
@@ -808,6 +828,10 @@ pre.astro-code > code {
     counter-reset: line;
     line-height: initial;
     /* background-color: var(--background1, var(--pre-background)) !important; */
+    /* Trailing padding so the last char of the longest line doesn't kiss the
+       block edge — without this, lines that exactly hit max-content get clipped
+       at the right when the `pre`'s own padding-inline-end is 0. */
+    padding-inline-end: 4ch;
 }
 
 pre.astro-code span.line[tabindex='0'] {

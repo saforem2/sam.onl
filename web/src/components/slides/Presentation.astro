@@ -337,10 +337,28 @@ const canonical = `https://sam.onl${url}`
 
         render(current, { broadcast: false })
 
+        // Populate the Footnotes slide with content cloned from the
+        // GFM-generated <section data-footnotes>. The source <section>
+        // stays hidden (slides.css); the cloned <ol> lives inside the
+        // #footnotes-target div on the dedicated Footnotes slide.
+        const fnSection = document.querySelector<HTMLElement>(
+            'section[data-footnotes], section.footnotes',
+        )
+        const fnTarget = document.getElementById('footnotes-target')
+        if (fnSection && fnTarget) {
+            const fnList = fnSection.querySelector('ol')
+            if (fnList) {
+                fnTarget.appendChild(fnList.cloneNode(true))
+            }
+        }
+
         // Footnote hover/click popover (mirrors Doc.astro behavior).
         // Source `<section data-footnotes>` is hidden via slides.css;
         // the inline `[^N]` superscript becomes a hover popover whose
         // content is cloned from the matching footnote list-item.
+        // The trigger is *also* a real anchor link that jumps to the
+        // matching <li> inside the Footnotes slide on click — so users
+        // who want to see all footnotes in context can click through.
         const footnoteRefs = deck.querySelectorAll<HTMLAnchorElement>(
             'a[data-footnote-ref]',
         )
@@ -363,9 +381,34 @@ const canonical = `https://sam.onl${url}`
             const dlg = document.createElement('span')
             dlg.classList.add('footnote-popover')
             dlg.setAttribute('tabindex', '0')
-            const trigger = document.createElement('span')
+            // Trigger doubles as a clickable link to the footnote on
+            // the Footnotes slide. The footnote-ref's href already
+            // points to "#user-content-fn-N" — that ID exists inside
+            // the cloned <ol> we appended to #footnotes-target. We
+            // intercept the click to jump to the footnotes slide
+            // first, then scroll into view.
+            const trigger = document.createElement('a')
             trigger.classList.add('footnote-popover-trigger')
+            trigger.setAttribute('href', `#${id}`)
             trigger.appendChild(sup.cloneNode(true))
+            trigger.addEventListener('click', (e) => {
+                e.preventDefault()
+                const fnSlide = document.getElementById('footnotes')
+                if (!fnSlide) return
+                const fnSlideIdx = slides.findIndex((s) => s === fnSlide)
+                if (fnSlideIdx >= 0) {
+                    go(fnSlideIdx)
+                    // Scroll the target footnote into view after the
+                    // slide change finishes.
+                    requestAnimationFrame(() => {
+                        const target = document.getElementById(id)
+                        target?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center',
+                        })
+                    })
+                }
+            })
             const content = document.createElement('span')
             content.classList.add('footnote-popover-content')
             const tmp = clone.cloneNode(true) as HTMLElement

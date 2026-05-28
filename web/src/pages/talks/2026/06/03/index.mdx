@@ -57,18 +57,22 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 ## Outline
 
-1. **The stack** — `blendcorpus` · `torchtitan-fork` · `ezpz` (the _good_)
-2. **AuroraGPT-2B** — the reference run on Aurora (3,072 GPUs, ~7.77T tokens)
-3. **Why we moved to `torchtitan`** — what we gained, what we agreed to pay
-4. **The fork tax** — upstream-sync as a workflow
-5. **Vendor-portability war stories** (the _bad_)
-6. **"The Restarts"** — three layers of recovery at different scopes
-   - Bad-node failover (node scope)
-   - `ezpz launch --timeout / --retries` (process scope, the heartbeat watchdog)
-7. **What generalizes — what doesn't**
-8. **The ask** — open questions for TPC
+1. **The Good**
+   - The stack (`ezpz` · `torchtitan-fork` · `blendcorpus`)
+   - AuroraGPT-2B — the reference run on Aurora
+   - Moving to `torchtitan`
+2. **The Bad**
+   - The fork tax (living on a fast-moving upstream)
+   - Vendor-portability pitfalls (silent fallbacks, NVIDIA-shaped defaults)
+   - At scale, failure is the default
+3. **The Restarts**
+   - 3 layers of recovery (process · node · job)
+   - Timeout & heartbeat watchdog
+   - `--auto-retry` with spare nodes
+   - What generalizes — what doesn't
+4. **Open Questions for TPC**
 
-*Appendix (backup):* silent-correctness bugs (bf16 RMSNorm freeze, TP loss reporting), `blendcorpus` deep-dive
+_Backups_: optimizer experiments (Mano · Muon · SophiaG · LR-finder), silent-correctness bugs (bf16 RMSNorm freeze, TP loss reporting), `blendcorpus` deep-dive
 
 </Slide>
 
@@ -78,6 +82,7 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 - How to do _production training_ on a _rapidly evolving_ software
   stack?
+  - across \{Intel, NVIDIA, AMD\} hardware?
   - **while also mitigating hardware and system failures** ?
 
 - Tension between:
@@ -99,124 +104,90 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 ## The stack in one slide
 
-```mermaid
-flowchart TB
-    subgraph data["📚 DATA"]
-        BC["blendcorpus
-        weighted blending
-        over scientific corpora"]
-    end
-    subgraph model["🧠 MODEL + PARALLELISM"]
-        direction TB
-        TT["torchtitan (fork)
-        FSDP · TP · PP · EP · MoE · AC
-        + XPU / SYCL patches"]
-        MDS["argonne-lcf/Megatron-DeepSpeed
-        (reference 2B baseline)"]
-    end
-    subgraph launch["🍋 LAUNCH + ENV"]
-        EZ["ezpz
-        setup_torch · wrap_model
-        ezpz launch (PBS / Slurm / local)"]
-    end
-    BC --> TT
-    EZ --> TT
-    TT --> NV["Polaris · Perlmutter
-    NVIDIA · nccl"]
-    TT --> XP["Aurora · Sunspot
-    Intel XPU · xccl / gloo"]
-    TT --> AM["Frontier
-    AMD · rccl"]
-    TT --> CP["MacBook · CI
-    MPS / CPU · gloo"]
+**Current stack:**
 
-    classDef layerData fill:transparent,stroke:#1da811,stroke-width:1px,color:#1da811
-    classDef layerModel fill:transparent,stroke:#118cc2,stroke-width:1px,color:#118cc2
-    classDef layerLaunch fill:transparent,stroke:#ee8f24,stroke-width:1px,color:#ee8f24
-    classDef backend fill:transparent,stroke:#888,stroke-width:1px,color:#888
-    classDef ref fill:transparent,stroke:#888,stroke-width:1px,color:#888,stroke-dasharray: 4 3
-    class BC layerData
-    class TT layerModel
-    class EZ layerLaunch
-    class MDS ref
-    class NV,XP,AM,CP backend
-```
+- 🍋 [`saforem2/ezpz`](https://github.com/saforem2/ezpz): `setup_torch` · `wrap_model` · `ezpz launch`
+- 🧠 [`saforem2/torchtitan@ezpz`](https://github.com/saforem2/torchtitan/tree/ezpz): FSDP · TP · PP · EP · MoE · AC + XPU/SYCL patches
+- 📚 [`zhenghh04/blendcorpus`](https://github.com/zhenghh04/blendcorpus): weighted blending over multiple datasets
 
-**The claim:** same code, every vendor — no `if device == "xpu"` branches in user code. Megatron-DeepSpeed sits alongside as the reference baseline (the 2B production model was trained there before we cut over to torchtitan).
+**Old stack (reference):**
+
+- 🪦 [`argonne-lcf/Megatron-DeepSpeed`](https://github.com/argonne-lcf/Megatron-DeepSpeed): pre-`torchtitan` 2B baseline (SophiaG, ~7.77T tokens)
+
+**The claim:** same code, every vendor — no `if device == "xpu"` branches in user code.
 
 </Slide>
 
 <Slide id="ezpz">
 
-## 🍋 `ezpz` — write once, launch anywhere
+<div class="ezpz-grid">
+
+<div class="ezpz-text">
+
+## 🍋 `ezpz`: write once, launch anywhere
 
 ```python
-import ezpz, torch
+# train.py
 
-rank = ezpz.setup_torch()       # device + backend autodetect, init pg
-model = ezpz.wrap_model(model)  # FSDP by default; DDP / FSDP+TP optional
+import ezpz
+# auto device + backend selection
+rank = ezpz.setup_torch()
+print(rank)
 ```
 
 ```bash
-ezpz launch python -m torchtitan.train --config-file ./config.toml
-#  ↑ auto: nccl/xccl/rccl/gloo · mpiexec/srun · PBS/Slurm/local
-#         per-cluster CPU bindings · tile-compact wrappers
+ezpz launch python3 train.py
 ```
 
-Without `ezpz`, the same launch on Aurora is ~6 lines of `mpiexec
---cpu-bind verbose,list:1-7:8-15:...` with a `gpu_tile_compact.sh`
-wrapper; Polaris is different bindings + `torch.distributed.run`;
-Perlmutter is `srun`. With `ezpz`, the _training code_ and the _launch
-command_ are both unchanged across all five sites.
+Same code, same launch command, every site. No per-cluster `mpiexec` / `srun` invocations, CPU bindings, or tile-compact wrappers. Full docs: [ezpz.cool](https://ezpz.cool).
 
-</Slide>
+</div>
 
-{/*───────────────────────────────────────────────────────────────
-🍋 ezpz dispatch — one source, five targets
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="ezpz-dispatch">
-
-## 🍋 `ezpz launch` — one source, five targets
+<div class="ezpz-diagram">
 
 ```mermaid
-flowchart TB
-    SRC["train.py
-    (no vendor branches)"]
-    EZ["🍋 ezpz launch"]
-    SRC --> EZ
+flowchart LR
+    EZ(["🍋 ezpz launch"])
+    EZ --> AURORA["Aurora<br/>PBS · Intel"]
+    EZ --> POLARIS["Polaris<br/>PBS · NVIDIA"]
+    EZ --> PM["Perlmutter<br/>SLURM · NVIDIA"]
+    EZ --> FRONTIER["Frontier<br/>SLURM · AMD"]
+    EZ --> MAC["MacBook / Multi-CPU<br/>none · CPU"]
 
-    EZ --> A["Aurora
-    PBS · xpu
-    xccl + gloo barrier
-    tile-compact wrap"]
-    EZ --> P["Polaris
-    PBS · cuda
-    nccl
-    --cpu-bind depth -d 16"]
-    EZ --> PM["Perlmutter
-    SLURM · cuda
-    nccl
-    --gpus-per-node=4"]
-    EZ --> F["Frontier
-    SLURM · rocm
-    rccl
-    HIP env + ROCm wrap"]
-    EZ --> M["MacBook
-    none · mps
-    gloo
-    world_size=1"]
-
-    classDef src fill:transparent,stroke:#1da811,color:#1da811,stroke-width:2px
-    classDef ez fill:transparent,stroke:#ee8f24,color:#ee8f24,stroke-width:2px
-    classDef target fill:transparent,stroke:#888,color:#888,stroke-width:1px
-    class SRC src
-    class EZ ez
-    class A,P,PM,F,M target
+    classDef hub fill:transparent,stroke:#ee8f24,color:#ee8f24,stroke-width:2px
+    classDef aurora    fill:#3b82f622,stroke:#3b82f6,color:#3b82f6,stroke-width:2px
+    classDef polaris   fill:#10b98122,stroke:#10b981,color:#10b981,stroke-width:2px
+    classDef perlmutter fill:#06b6d422,stroke:#06b6d4,color:#06b6d4,stroke-width:2px
+    classDef frontier  fill:#ef444422,stroke:#ef4444,color:#ef4444,stroke-width:2px
+    classDef mac       fill:#a78bfa22,stroke:#a78bfa,color:#a78bfa,stroke-width:2px
+    class EZ hub
+    class AURORA aurora
+    class POLARIS polaris
+    class PM perlmutter
+    class FRONTIER frontier
+    class MAC mac
 ```
 
-Everything below `ezpz launch` is per-site bookkeeping that _would_
-otherwise leak into the training code or a per-cluster submit script.
+</div>
+
+</div>
+
+<style>{`
+  #ezpz .ezpz-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3ch;
+    align-items: center;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+  }
+  #ezpz .ezpz-text { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+  #ezpz .ezpz-text > h2 { margin-block-start: 0; }
+  #ezpz .ezpz-text pre.astro-code { width: 100%; }
+  #ezpz .ezpz-diagram { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+  #ezpz .ezpz-diagram .mermaid svg { width: 100%; max-width: 100%; }
+`}</style>
 
 </Slide>
 
@@ -228,17 +199,43 @@ AuroraGPT-2B (Megatron-DeepSpeed reference baseline)
 
 ## AuroraGPT-2B — the reference run on Aurora
 
-| Spec         | Value                                                                               |
-| ------------ | ----------------------------------------------------------------------------------- |
-| Architecture | Llama 3-style, 1.986B params, 12 layers, GQA (16h / 4 kv), 8192 ctx                 |
-| Tokenizer    | `google/gemma-7b` SentencePiece, vocab=256K                                         |
-| Hardware     | **256 Aurora nodes × 12 Intel Max GPUs = 3,072 GPUs**, BF16                         |
-| Framework    | Megatron-DeepSpeed (ZeRO Stage 0), SophiaG (β=0.9/0.95, ρ=0.01, wd=0.1, LR=2.28e-5) |
-| Stages       | 3 (pretrain · continued-pretrain · math+code), **~7.77T total tokens**              |
+| Spec         | Value                                                                  |
+| ------------ | ---------------------------------------------------------------------- |
+| Architecture | 1.986B params, 12 layers, GQA (16h / 4 kv), 8192 ctx[^batch-tokens], LBS=2 |
+| Tokenizer    | SentencePiece, vocab=256K                                              |
+| Hardware     | **256 Aurora nodes × 12 Intel Max GPUs = 3,072 GPUs**, BF16            |
+| Framework    | Megatron-DeepSpeed (ZeRO Stage 0)                                      |
+| Optimizer    | SophiaG (β=0.9/0.95, ρ=0.01, wd=0.1, LR=2.28e-5)                       |
+| Stages       | 3 (pretrain · continued-pretrain · math+code)                          |
+| Tokens       | **~7.77T total**                                                       |
 
 This is the **pre-`torchtitan` reference**. Everything that follows is
 the migration story: same scale, same data, what changed and what
 broke when we cut over.
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Why MDS in the first place — the pre-torchtitan landscape
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="mds-context">
+
+## Why MDS first — the only option at the time
+
+When AuroraGPT kicked off, MDS was the **only** LLM pre-training framework that ran:
+
+- [x] at scale
+- [x] on Intel XPU
+
+Supporting context:
+
+- **PyTorch FSDP1** had Intel XPU gaps — collectives, AC patterns, optimizer-state sharding
+- **torchtitan** existed as a research project but not yet on XPU / not yet usable for our config
+- **blendcorpus** had a stable MDS integration; the data pipeline was already a known quantity
+- The fork was _ours_ — every Aurora-specific patch could land same-day
+
+MDS was the pragmatic choice. By mid-2026 the calculus changed — `torchtitan` + DTensor + FSDP2 closed the gap and the MDS fork's maintenance cost crossed over.
 
 </Slide>
 
@@ -248,13 +245,66 @@ broke when we cut over.
 
 <figure>
     <img
-        style="width:100%;"
         src="/talks/2026-06-03/figures/loss-2b-reference.svg"
         alt="AuroraGPT-2B training loss across 3 stages"
     />
     <figcaption>
         (1.) Pretrain[^stage1] → (2.) continued-pretrain[^stage2] → (3.)
         math+code[^stage3]
+    </figcaption>
+</figure>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Why move off MDS — and what broke
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="why-titan">
+
+## Why we moved to `torchtitan`
+
+|                                          | MDS  |  TT  |
+| :--------------------------------------- | :--: | :--: |
+| Actively maintained upstream             |  ❌️  |  ✅  |
+| Declarative parallelism (DTensor, FSDP2) |  ❌️  |  ✅  |
+| FSDP+TP / EP / CP without plumbing       |  ❌️  |  ✅  |
+| MoE support                              |  ❌️  |  ✅  |
+| Cross-vendor from one launcher           |  ❌️  |  ✅  |
+
+**The trade-off we accepted:** living on a fast-moving upstream
+(`pytorch/torchtitan main`) instead of a tagged release. That trade
+is the "fork tax" — the rest of this talk.
+
+<style>{`
+  #why-titan table { table-layout: fixed; width: 100%; max-width: 70ch; }
+  #why-titan table th:nth-child(1), #why-titan table td:nth-child(1) { width: auto; }
+  #why-titan table th:nth-child(2), #why-titan table td:nth-child(2),
+  #why-titan table th:nth-child(3), #why-titan table td:nth-child(3) {
+    width: 6ch; text-align: center;
+  }
+`}</style>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+2B reference + TT overlay — MDS 3-stage chart with TT v2 256N drawn on top
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="agpt-2b-loss-with-tt">
+
+## 2B reference + `torchtitan` overlay
+
+<figure>
+    <img
+        src="/talks/2026-06-03/figures/loss-2b-reference-with-tt.svg"
+        alt="AuroraGPT-2B MDS 3-stage trajectory with TorchTitan 256N production run overlaid"
+    />
+    <figcaption>
+        Same MDS trajectory as the reference chart, with the
+        `torchtitan` 256N production run drawn on the same axes —
+        starts inside the MDS pretrain region and tracks the same
+        loss-vs-tokens curve.
     </figcaption>
 </figure>
 
@@ -270,16 +320,12 @@ broke when we cut over.
 
 <figure>
     <img
-        style="width:100%;"
         src="/talks/2026-06-03/figures/loss-2b-compare.svg"
         alt="2B training loss: MDS full 3-stage curve vs TT v2 256N chain"
     />
     <figcaption>
-        Same-node-count comparison (256N, GBS=6,144). MDS reference:
-        full 3-stage curve (~163K logged steps). TT v2 (fp32, 256N):
-        50K steps → loss 2.67, pulled from W&B (still running).
-        TT-v2 tracks the MDS pretrain trajectory through ~2.5T tokens
-        — the cutover preserved training behavior at matched config.
+        256N / GBS=6,144. At matched tokens, **δ ≈ 0.02** — within
+        run-to-run noise. The cutover preserved training behavior.
     </figcaption>
 </figure>
 
@@ -295,42 +341,11 @@ broke when we cut over.
 
 <figure>
     <img
-        style="width:100%;"
         src="/talks/2026-06-03/figures/eval-2b-compare.svg"
         alt="2B eval comparison: MDS vs TT v2"
     />
-    <figcaption>
-        MDS (SophiaG): 28 evals, 5K→140K steps through
-        (1.) Pretrain[^stage1] → (2.) continued-pretrain[^stage2]
-        (~7T tokens; stage (3.) math+code[^stage3] not yet eval'd)
-        · TT v2 (fp32-master, 512N): 13 evals, 1K→13K steps (~1.3T
-        tokens) — tracks the MDS pretrain trajectory at matched
-        token budget. *(The bf16-broken v1 baseline lives on the
-        20B smoking-gun slide.)*
-    </figcaption>
+    <figcaption>Both v2 chains track MDS at matched tokens.</figcaption>
 </figure>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-Why move off MDS — and what broke
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="why-titan">
-
-## Why we moved to `torchtitan`
-
-|                                  | Megatron-DeepSpeed (v1)                  | torchtitan + ezpz (v2)                             |
-| -------------------------------- | ---------------------------------------- | -------------------------------------------------- |
-| Upstream status                  | **unmaintained** (no active development) | active, `pytorch/torchtitan` main, weekly+ commits |
-| Parallelism authoring            | hand-wired MP/DP/PP groups               | DTensor mesh + FSDP2 (declarative)                 |
-| New strategies (FSDP+TP, EP, CP) | weeks of plumbing                        | hours, via `parallel_dims`                         |
-| MoE                              | **not supported**                        | first-class in DTensor                             |
-| Cross-vendor                     | Aurora-only patches in our fork          | one launcher, four backends                        |
-
-**The trade-off we accepted:** living on a fast-moving upstream
-(`pytorch/torchtitan main`) instead of a tagged release. That trade
-is the "fork tax" — the rest of this talk.
 
 </Slide>
 
@@ -340,217 +355,76 @@ The fork tax
 
 <Slide id="fork-tax">
 
+<div class="fork-tax-grid">
+
+<div class="fork-tax-text">
+
 ## The fork tax — upstream-sync as a workflow
-
-```mermaid
-flowchart LR
-    A["pytorch/torchtitan
-    main @ HEAD"] -->|fetch / rebase| B["resync our patches"]
-    B --> C["50-step smoke
-    debugmodel + 2B
-    deterministic"]
-    C -->|bit-exact match| D["green: ship to prod"]
-    C -.->|diff detected| E["bisect upstream
-    triage workaround"]
-    E --> B
-    D -->|on prod| F["scaling run
-    + lm-eval gate"]
-    F --> A
-
-    classDef stage fill:transparent,stroke:#118cc2,color:#118cc2
-    classDef bad fill:transparent,stroke:#e05560,color:#e05560
-    class A,B,C,D,F stage
-    class E bad
-```
 
 - ~6× weekly resyncs over 6 weeks
 - Smoke gate: bit-exact loss + grad-norm + peak memory at `--debug.deterministic --debug.seed=42`
 - Every "did upstream change something?" question gets a numeric answer in ≤30 min
 
-</Slide>
+</div>
 
-{/*───────────────────────────────────────────────────────────────
-The fork tax — state-machine redesign (alternative to fork-tax slide)
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="fork-tax-v2">
-
-## The fork tax — upstream-sync as a workflow
+<div class="fork-tax-diagram">
 
 ```mermaid
-stateDiagram-v2
-    direction LR
+flowchart TB
+    A["upstream @ HEAD"] --> B["resync + smoke<br/>(50 steps, deterministic)"]
+    B --> D{"bit-exact?"}
+    D -->|✅| C["✓ ship"]
+    D -.->|❌️| F["bisect + fix"]
+    F -.-> B
 
-    state "SYNCED at HEAD" as Synced
-    state "REGRESSING" as Regressing
-    state "PROD" as Prod
-
-    [*] --> Synced
-
-    Synced --> Synced: weekly resync<br/>(fetch + replay patches)
-    Synced --> Prod: smoke OK<br/>(bit-exact loss / grad-norm / memory)
-    Synced --> Regressing: smoke diff<br/>vs prior baseline
-
-    Regressing --> Synced: bisect upstream<br/>+ workaround applied
-    Prod --> Synced: next sync cycle<br/>(repeat ~6×/wk)
-
-    note right of Synced
-        ~6 weekly resyncs over 6 weeks.
-        Smoke = 50 steps on debugmodel + 2B,
-        --debug.deterministic --debug.seed=42.
-        Every "did upstream change something?"
-        gets a numeric answer in ≤ 30 min.
-    end note
+    classDef stage fill:transparent,stroke:#118cc2,color:#118cc2,stroke-width:2px
+    classDef ship  fill:transparent,stroke:#1da811,color:#1da811,stroke-width:2px
+    classDef gate  fill:transparent,stroke:#888,color:#444,stroke-width:1.5px
+    classDef bad   fill:transparent,stroke:#e05560,color:#e05560,stroke-width:2px
+    class A,B stage
+    class D gate
+    class C ship
+    class F bad
 ```
 
-</Slide>
-
-{/*═══════════════════════════════════════════════════════════════
-  FORK-TAX EXPLORATIONS — riffing on alternative slide treatments.
-  Pick one, kill the rest before the talk.
-═══════════════════════════════════════════════════════════════*/}
-
-{/* OPTION A — Timeline strip: 41 days × ~1 dot per sync */}
-<Slide id="fork-tax-A">
-
-## The fork tax — option A (timeline)
-
-<div class="forktax-timeline">
-  <div class="forktax-row">
-    <span class="forktax-week">Apr 10–16</span>
-    <span class="forktax-dots">
-      <span class="d ok" title="2026-04-10 #1">●</span><span class="d ok" title="2026-04-10 #2">●</span><span class="d ok" title="2026-04-10 #3">●</span><span class="d ok" title="2026-04-10 #4">●</span><span class="d ok" title="2026-04-11 #5">●</span><span class="d ok" title="2026-04-12 #6">●</span><span class="d ok" title="2026-04-13 #7">●</span><span class="d ok" title="2026-04-13 #8">●</span><span class="d ok" title="2026-04-14 #9">●</span><span class="d ok" title="2026-04-14 #10">●</span><span class="d ok" title="2026-04-15 #11">●</span><span class="d ok" title="2026-04-15 #12">●</span><span class="d ok" title="2026-04-15 #13">●</span>
-    </span>
-    <span class="forktax-count">13</span>
-  </div>
-  <div class="forktax-row">
-    <span class="forktax-week">Apr 17–23</span>
-    <span class="forktax-dots">
-      <span class="d ok" title="#14">●</span><span class="d ok" title="#15">●</span><span class="d ok" title="#16">●</span><span class="d ok" title="#17">●</span>
-    </span>
-    <span class="forktax-count">4</span>
-  </div>
-  <div class="forktax-row">
-    <span class="forktax-week">Apr 24–30</span>
-    <span class="forktax-dots">
-      <span class="d bad" title="#18 torch 2.10 XCCL fixes + DTensor TP revert">●</span><span class="d ok" title="#19">●</span><span class="d ok" title="#20">●</span><span class="d ok" title="#21">●</span><span class="d ok" title="#22">●</span><span class="d ok" title="#23">●</span><span class="d ok" title="#24">●</span><span class="d ok" title="#25">●</span><span class="d ok" title="#26">●</span><span class="d ok" title="#27">●</span><span class="d bad" title="post-21st regression">●</span>
-    </span>
-    <span class="forktax-count">11</span>
-  </div>
-  <div class="forktax-row">
-    <span class="forktax-week">May 1–7</span>
-    <span class="forktax-dots">
-      <span class="d ok" title="#28">●</span><span class="d ok" title="#29">●</span><span class="d ok" title="#30">●</span><span class="d bad" title="#31 precompile revert + PP refactor">●</span><span class="d bad" title="#32 observability + MoE token-pad + CP fix">●</span>
-    </span>
-    <span class="forktax-count">5</span>
-  </div>
-  <div class="forktax-row">
-    <span class="forktax-week">May 8–14</span>
-    <span class="forktax-dots">
-      <span class="d ok" title="#33">●</span><span class="d bad" title="#34 RL vLLM v2 + repeat_interleave revert">●</span>
-    </span>
-    <span class="forktax-count">2</span>
-  </div>
-  <div class="forktax-row">
-    <span class="forktax-week">May 15–21</span>
-    <span class="forktax-dots">
-      <span class="d ok" title="#35">●</span><span class="d ok" title="#36">●</span><span class="d ok" title="#37 MoE clean DTensor boundaries">●</span>
-    </span>
-    <span class="forktax-count">3</span>
-  </div>
 </div>
 
-**38 upstream syncs in 41 days.** Each ● = one `git merge upstream/main` cycle. Red = revert / regression / non-trivial bisect. Most syncs are clean replays of the same patches; the cost is the *cadence*, not the per-sync work.
+</div>
 
 <style>{`
-  .forktax-timeline { font-size: 0.95em; line-height: 1.4; margin-block: 0.5lh; }
-  .forktax-row {
+  /* Full-bleed grid: left col holds the H2 + bullets (top-aligned),
+     right col holds the mermaid diagram and spans the full slide
+     height. Grid itself claims flex: 1 from the slide-inner so it
+     reaches the bottom; min-height: 0 lets the mermaid SVG shrink
+     to its column. */
+  #fork-tax .fork-tax-grid {
     display: grid;
-    grid-template-columns: 11ch 1fr 4ch;
-    align-items: baseline;
-    gap: 1ch;
-    padding-block: 0.15lh;
+    grid-template-columns: 1fr 1fr;
+    gap: 3ch;
+    align-items: stretch;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
   }
-  .forktax-week { color: var(--foreground2); }
-  .forktax-dots { letter-spacing: 0.4ch; }
-  .forktax-dots .d {
-    font-size: 1.4em;
-    line-height: 1;
+  #fork-tax .fork-tax-text {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
-  .forktax-dots .d.ok { color: var(--green, #4CAF50); }
-  .forktax-dots .d.bad { color: var(--red, #EF5350); }
-  .forktax-count { color: var(--foreground3); text-align: right; }
+  #fork-tax .fork-tax-text > h2 { margin-block-start: 0; }
+  #fork-tax .fork-tax-diagram {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  #fork-tax .fork-tax-diagram .mermaid svg,
+  #fork-tax .fork-tax-diagram pre.astro-code {
+    width: 100%;
+    max-width: 100%;
+  }
 `}</style>
-
-</Slide>
-
-{/* OPTION B — One big number */}
-<Slide id="fork-tax-B">
-
-## The fork tax — option B (the number)
-
-<div class="forktax-counter">
-  <div class="forktax-bignum">38</div>
-  <div class="forktax-bigsub">upstream syncs in 6 weeks</div>
-
-  <div class="forktax-stats">
-    <div><strong>~6.4</strong>/week · <strong>5</strong> needed bisect/revert · <strong>33</strong> clean replays</div>
-  </div>
-</div>
-
-We chose to live on `pytorch/torchtitan main` instead of a tagged release. The smoke gate (50 steps on debugmodel + 2B, `--debug.deterministic --debug.seed=42`) is what makes that decision *tractable* — every "did upstream change something?" question gets a numeric answer in ≤30 min.
-
-<style>{`
-  .forktax-counter { text-align: center; margin-block: 1lh; }
-  .forktax-bignum { font-size: 6em; line-height: 1; color: var(--accent, var(--blue)); font-weight: 700; }
-  .forktax-bigsub { font-size: 1.3em; color: var(--foreground1); margin-block-start: 0.5lh; }
-  .forktax-stats { margin-block-start: 1lh; color: var(--foreground2); font-size: 0.95em; }
-  .forktax-stats strong { color: var(--foreground0); }
-`}</style>
-
-</Slide>
-
-{/* OPTION C — Real commit-log excerpt */}
-<Slide id="fork-tax-C">
-
-## The fork tax — option C (the commit log)
-
-```
-$ git log --oneline --grep='upstream sync' --since='6 weeks ago' | wc -l
-38
-
-$ git log --oneline --grep='upstream sync' --since='6 weeks ago' | head
-2026-05-20  #37  MoE clean DTensor boundaries + graph_trainer regional_inductor
-2026-05-20  #36  RL CI fixes only, no replay
-2026-05-19  #35  Full DTensor for Llama3 + graph_trainer churn + RL observability
-2026-05-13  #34  RL vLLM v2 + repeat_interleave revert + graph_trainer AOT removal
-2026-05-12  #33  _grouped_mm only path + graph_trainer churn
-2026-05-05  #32  observability + MoE token-pad + CP fix + RL/graph_trainer churn
-2026-05-04  #31  precompile revert + PP refactor + CI baseline
-2026-05-03  #30  graph_trainer only
-2026-05-01  #29  RL vLLM compile-time + graph_trainer skill
-2026-05-01  #28  graph_trainer qwen3 + CI lint + FT llama3 attn_backend
-...
-```
-
-This is the **actual** sync log (`docs/upstream-sync.md`). Each entry is a `git merge upstream/main` + replay-our-patches + 50-step smoke. The smoke gate is what makes this sustainable: bit-exact regressions surface immediately, so we never ship a sync to prod without knowing what changed.
-
-</Slide>
-
-{/* OPTION D — Kill the slide, fold into a one-liner */}
-<Slide id="fork-tax-D">
-
-## The fork tax — option D (no diagram)
-
-> ### "The fork tax"
->
-> 38 upstream syncs in 6 weeks. The 50-step bit-exact smoke gate
-> (`--debug.deterministic --debug.seed=42`) makes it tractable — every
-> "did upstream change something?" question gets a numeric answer in
-> ≤ 30 min, so most syncs are 10-minute replays and only ~5 needed
-> non-trivial bisect work.
-
-*(no diagram, no flowchart, no state machine — just the one paragraph above)*
 
 </Slide>
 
@@ -560,23 +434,39 @@ Vendor portability war stories
 
 <Slide id="vendor-bugs">
 
-## Vendor-portability war stories _(the "bad")_
+## What "the bad" looks like
 
-- **SDPA backend ignored inside FSDP** — XPU `OVERRIDEABLE` kernel
-  is **23× faster** than `MATH`, but `sdpa_kernel()` is silently
-  dropped under FSDP wrappers.
-  → reorder backend list, force `OVERRIDEABLE` first.
+Three patterns we hit over and over running on non-NVIDIA:
 
-- **`DeviceMesh` in saved tensors** _(torch 2.13 + AC + TP=2)_ —
-  AOT-autograd assertion fires on every 80B-family config.
-  → `compile=OFF` or pin torch 2.10.
+- **Silent fallbacks.** Vendor-specific fast paths get dropped inside abstractions (FSDP, `torch.compile`, AC) with no warning. _e.g._ XPU `OVERRIDEABLE` SDPA kernel is **23×** faster than `MATH` — silently swapped out under FSDP.
+- **NVIDIA-shaped defaults.** "Sensible" microbatch / memory / collective settings target H100; on Intel Max they OOM, on AMD they hang. Every default needs an XPU-aware override path.
+- **Cross-version churn.** Upstream APIs shift faster than vendor support catches up. `DeviceMesh` + AC + TP=2 + torch 2.13 → AOT-autograd assertion on every 80B config; pin torch 2.10 until it lands.
 
-- **Config defaults are NVIDIA-shaped** — vocab projection at LBS=8
-  OOMs on Intel Max (the "sensible default" asked for 31 GiB).
-  → XPU-aware default microbatch.
+**The meta-lesson:** at scale, the deepest portability bugs aren't "wrong answer" — they're _silently slower_ or _silently more memory_, and you only catch them with bit-exact regression gates.
 
-- **Compile is noise** — 2-3% TPS band across compile attempts is
-  the floor. Treat anything inside it as noise, not a regression.
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+"The Restarts" — motivation: at scale, failure is the default
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="restarts-motivation">
+
+## The Restarts: At Scale, Failure is the Default
+
+Production pre-training is long, large, and routinely interrupted:
+
+- **Llama 3 405B** — 16K H100s · 54 days · **419** failures (≈ **1 every 3h**); 99% recovered via automation[^llama3]
+- **OPT-175B** — 35 manual restarts + 100+ cycled hosts in 2 mo on ~1K A100s[^opt]
+- **BLOOM-176B** — frequent loss spikes; embedding-norm + checkpoint cadence on 384 A100s × 3.5 mo[^bloom]
+- **GLM-130B** — loss spikes "increasingly frequent"; some recover, others go to NaN[^glm]
+
+> **At our scale, the question isn't _if_ training breaks — it's _how cheaply you recover._**
+
+[^llama3]: [Llama 3 herd of models](https://arxiv.org/abs/2407.21783) (Meta AI, 2024), §3.3.2 (Training reliability)
+[^opt]: [OPT-175B chronicles + dev log](https://github.com/facebookresearch/metaseq/blob/main/projects/OPT/chronicles/OPT175B_Logbook.pdf) (Zhang et al., 2022)
+[^bloom]: [BLOOM: A 176B-Parameter Open-Access Multilingual Language Model](https://arxiv.org/abs/2211.05100) (BigScience, 2022)
+[^glm]: [GLM-130B: An Open Bilingual Pre-Trained Model](https://arxiv.org/abs/2210.02414) (Zeng et al., ICLR 2023)
 
 </Slide>
 
@@ -593,42 +483,35 @@ different scope. Together they turn "lost a 12 h walltime" into
 "lost a 10 min sub-step."
 
 ```mermaid
-flowchart TB
-    subgraph job["📋 JOB SCOPE (PBS)"]
-        direction LR
-        Q["qsub
-        select=N+spare"] --> A1["attempt 1"]
-        A1 -.crashed.-> A2["attempt 2
-        (chained resubmit)"]
-        A2 -.walltime.-> A3["..."]
+flowchart LR
+    subgraph proc["⏱ process — ezpz launch"]
+        direction TB
+        RUN["python train.py"] -. "idle ≥ N s" .-> TERM["kill + backoff"]
+        TERM --> RUN
     end
-    subgraph node["🖥 NODE SCOPE (failover wrapper)"]
-        direction LR
-        ACTIVE["active pool
-        (N nodes)"] -- "bad node\ndetected" --> SCRAPE["scrape host
-        from log"]
-        SCRAPE --> SWAP["swap from
-        spare pool"]
+    subgraph node["🖥 node — failover wrapper"]
+        direction TB
+        ACTIVE["active pool"] -. "bad node" .-> SWAP["swap in spare"]
         SWAP --> ACTIVE
     end
-    subgraph proc["⏱ PROCESS SCOPE (ezpz launch --timeout / --retries)"]
-        direction LR
-        RUN["python train.py"] -- "stdout idle\n> N s" --> TERM["SIGTERM
-        → 10s → SIGKILL"]
-        TERM --> BACKOFF["wait 5/10/20/40/60s"]
-        BACKOFF --> RUN
+    subgraph job["📋 job — PBS"]
+        direction TB
+        A1["attempt N"] -. "crash / walltime" .-> A2["attempt N+1"]
+        A2 --> A1
     end
 
-    job --> node
-    node --> proc
+    proc -. "spare pool drained" .-> node
+    node -. "out of spares" .-> job
 
-    classDef jobC fill:transparent,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
-    classDef nodeC fill:transparent,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
     classDef procC fill:transparent,stroke:#1da811,color:#1da811,stroke-width:1.5px
-    class Q,A1,A2,A3 jobC
-    class ACTIVE,SCRAPE,SWAP nodeC
-    class RUN,TERM,BACKOFF procC
+    classDef nodeC fill:transparent,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
+    classDef jobC fill:transparent,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
+    class RUN,TERM procC
+    class ACTIVE,SWAP nodeC
+    class A1,A2 jobC
 ```
+
+Inner loops handle most failures; outer loops handle the rest. Seconds → minutes → hours.
 
 </Slide>
 
@@ -640,14 +523,13 @@ Operational reality — failover wrapper
 
 ## Operational reality — bad-node failover
 
-**6+ production jobs killed by bad-node failures in 2 weeks.** Pattern:
+**5+ production jobs killed by bad-node failures in 2 weeks.** Pattern:
 PBS gives us 256 / 512 nodes, one is bad, training crashes or hangs
 after N hours, walltime gone.
 
 | Job     | Trajectory  | Failure                                           |
 | ------- | ----------- | ------------------------------------------------- |
 | 8459818 | 2B 256N v2  | `shepherd died from signal 9` after step 2070     |
-| 8460302 | 20B 512N v2 | signal 9 at end of walltime                       |
 | 8470102 | 20B 256N v2 | gloo TCP `Connection closed by peer` after ~3h    |
 | 8479579 | 20B 512N v2 | **silent hang** at step 803 (heartbeat continued) |
 
@@ -662,6 +544,17 @@ qsub -q prod -l select=522 -v NHOSTS_TRAIN=512 \
 
 Handles 6 recurring crash modes. **Does not handle silent hangs** —
 those still need a heartbeat watchdog.
+
+<style>{`
+  /* Pin the Job + Trajectory columns to just the width they need;
+     let Failure (the long, prose-y cell) take the rest. */
+  #restarts table th:nth-child(1), #restarts table td:nth-child(1) { width: 10ch; }
+  #restarts table th:nth-child(2), #restarts table td:nth-child(2) { width: 14ch; }
+  #restarts table th:nth-child(3), #restarts table td:nth-child(3) { width: auto; }
+  /* Codeblock: span full slide width so the short qsub command has
+     visual presence instead of shrinking to its tiny max-content box. */
+  #restarts pre.astro-code { width: 100%; }
+`}</style>
 
 </Slide>
 
@@ -714,31 +607,42 @@ Watchdog state machine — one cycle in detail
 stateDiagram-v2
     direction LR
     [*] --> Running
-
-    Running --> Running: stdout line (reset idle timer)
-    Running --> Idle: idle exceeds timeout
-    Idle --> SIGTERM: send SIGTERM
-    SIGTERM --> SIGKILL: 10s grace expired
-    SIGTERM --> Exited: process exits
-    SIGKILL --> Exited
-
-    Running --> Exited: process exits
-
-    Exited --> Done: rc=0 or retries exhausted
-    Exited --> Backoff: rc nonzero (includes 124)
-    Backoff --> Running: wait 5/10/20/40/60s, re-exec
-    Done --> [*]
+    Running --> Hung: no stdout for N seconds
+    Hung --> Killed: SIGTERM → SIGKILL
+    Killed --> Running: backoff, re-exec
 ```
 
-Every collective hang shows up as **`Running → Idle → SIGTERM`** — the
-process is "alive" by `kill -0` but nothing is happening. The watchdog
-fires on the *absence* of progress, not on a heartbeat ping.
+Every collective hang shows up as **silence on stdout** — the process is "alive" by `kill -0` but nothing is happening. The watchdog fires on the _absence_ of progress, not on a heartbeat ping.
 
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
 What generalizes / open questions / fin
 ───────────────────────────────────────────────────────────────*/}
+
+{/*───────────────────────────────────────────────────────────────
+ezpz launch --auto-retry — new failover wrapper (PR #144)
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="auto-retry">
+
+## `--auto-retry` — bad-node failover, on tap
+
+Allocate spares up front, swap them in on failure:
+
+```bash
+# 522 nodes allocated, train on 512, keep 10 as spares.
+# Loop until success, walltime, or spare exhaustion.
+ezpz launch --auto-retry --np 512 -- python -m torchtitan.train …
+```
+
+- Classifies each attempt's exit → `success` / `walltime` / `bad-node` / `stuck-pre-training`
+- On bad-node: scrapes the failing host from the log, swaps in a spare, re-execs
+- Guards against config bugs: 2 consecutive attempts with zero `step=` markers → stop (don't burn the whole spare pool on a broken run)
+
+Ships in [`saforem2/ezpz#144`](https://github.com/saforem2/ezpz/pull/144). Same scraper as the bash-lib path; pure-Python loop on top.
+
+</Slide>
 
 <Slide id="generalizes">
 
@@ -930,6 +834,34 @@ Appendix: blendcorpus deep-dive (parked for possible future revisit)
 
 </Slide>
 
+{/*───────────────────────────────────────────────────────────────
+Footnotes — a dedicated slide that mirrors all footnote definitions
+in the deck. Populated at runtime from the GFM-generated <section
+data-footnotes> (see Presentation.astro). Refs in slides jump here;
+backrefs here jump back to the referencing slide.
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="footnotes">
+
+## Footnotes
+
+<div id="footnotes-target"></div>
+
+<style>{`
+  #footnotes ol { padding-inline-start: 3ch; }
+  #footnotes li { margin-block: 0.3lh; }
+  #footnotes li p { display: inline; margin: 0; }
+  #footnotes a[data-footnote-backref] {
+    text-decoration: none;
+    margin-inline-start: 1ch;
+    opacity: 0.6;
+  }
+  #footnotes a[data-footnote-backref]:hover { opacity: 1; }
+`}</style>
+
+</Slide>
+
+[^batch-tokens]: LBS=2 × 3,072 GPUs × 8192 ctx ≈ **50M tokens/step**
 [^stage1]: [allenai/olmo-mix-1124](https://hf.co/datasets/allenai/olmo-mix-1124) — 0 → 4.67T tokens
 [^stage2]: [allenai/dolmino-mix-1124](https://hf.co/datasets/allenai/dolmino-mix-1124) — 4.67T → 7.06T tokens
 [^stage3]: NVIDIA/\{[Nemotron-CC-Math-v1](https://hf.co/datasets/nvidia/Nemotron-CC-Math-v1), [Code-CC-v1](https://huggingface.co/datasets/nvidia/Code-CC-v1)\} — 7.06T → 7.77T tokens

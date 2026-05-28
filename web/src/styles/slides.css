@@ -41,31 +41,43 @@
        deck mode; in overview it becomes a scaled fixed-size canvas. */
     .slide-inner {
         position: absolute;
-        inset: 0;
+        /* Reserve the bottom 1lh of the viewport for the fixed status
+           bar so figures, captions, and tables can't slide under it. */
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 1lh;
         display: flex;
         flex-direction: column;
         /* Anchor content to the top — `safe center` falls back to
            flex-start when content would overflow, preventing the top
            half from being clipped off-screen at large zooms. */
         justify-content: safe center;
-        padding: 2lh 6ch;
+        padding: 1lh 4ch;
         overflow: auto;
         /* Responsive type scale: hard min so it stays readable on phones,
            viewport-relative middle so it grows with the canvas, hard max
            so it doesn't get cartoonish on 4K displays. */
-        font-size: clamp(0.95rem, 1.6vw + 0.5rem, 1.75rem);
+        font-size: clamp(1.05rem, 1.8vw + 0.55rem, 2rem);
         line-height: 1.5;
     }
-    /* On narrow viewports give the slide more breathing room — the type
-       has to fit, the padding can give. */
-    @media (max-width: 768px) {
+    /* Tablet (≤ 1024px): slightly smaller type, tighter padding. */
+    @media (max-width: 1024px) {
         .slide-inner {
+            font-size: 1.25rem;
             padding: 1lh 3ch;
         }
     }
-    @media (max-width: 480px) {
+
+    /* Mobile (≤ 768px): tighter padding, top-anchor content. Codeblocks
+       keep their normal `white-space: pre` + horizontal scroll behavior;
+       no forced soft-wrap (which clobbers indentation and breaks lines
+       that would fit fine with a small horizontal scroll). */
+    @media (max-width: 768px) {
         .slide-inner {
-            padding: 0.5lh 2ch;
+            font-size: 1.1rem;
+            padding: 1lh 2ch;
+            justify-content: flex-start;
         }
     }
 
@@ -123,9 +135,25 @@
     th,
     td {
         white-space: normal;
-        overflow-wrap: anywhere;
-        word-break: break-word;
+        /* Break only at word boundaries; don't slice through letters
+           mid-word ("Architectu" / "re"). `normal` keeps the browser's
+           default word-wrap; only force a break (anywhere/break-word)
+           if a single token is wider than the column. */
+        overflow-wrap: normal;
+        word-break: normal;
+        hyphens: none;
+        /* Body cells: top-anchor so multi-line content (long Value
+           cells) stays aligned with the row label. Header cells get
+           middle alignment below so they look anchored to the row,
+           not floating above it. */
         vertical-align: top;
+        /* Extra vertical breathing room — default cells render at ~0
+           top/bottom padding which makes dense spec tables feel cramped
+           on slides. 0.3lh top + bottom adds ~half a line of air. */
+        padding-block: 0.3lh;
+    }
+    th {
+        vertical-align: middle;
     }
     /* Two-column tables (the common Spec/Value pattern): give the value
        column ~3× the label column so the long cell wraps less. */
@@ -137,7 +165,7 @@
     }
     pre,
     code {
-        font-size: 0.9em;
+        font-size: 1em;
     }
     p code {
         padding-block: 0.05em;
@@ -158,6 +186,63 @@
         height: auto;
         display: block;
     }
+
+    /* Figure-in-slide layout: explicit <figure>...<img>...</figure>
+       blocks (used for the loss / eval / lr-finder slides) claim
+       whatever vertical space is left after the heading + figcaption
+       render, via flex: 1 + min-height: 0. `object-fit: contain` keeps
+       aspect ratio while filling.
+
+       Scoped to `.slide-inner > figure` so we only catch *top-level*
+       figures the slide author wrote — not mermaid's wrapper figure
+       (`.mermaid`), not figures inside grid wrappers, not nested
+       containers. That avoids siblings (codeblocks, prose) getting
+       squished by a mermaid svg that erroneously claimed flex: 1.
+
+       Don't set inline `style="width:100%"` on slide figure images —
+       it overrides this flex sizing. */
+    .slide-inner > figure {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 0;
+        flex: 1;
+        margin-block: 0.5lh;
+    }
+    .slide-inner > figure > img,
+    .slide-inner > figure > svg {
+        flex: 1;
+        min-height: 0;
+        max-width: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+    }
+    /* Short-but-wide viewports (laptops in landscape with the browser
+       sized down, ~< 700px tall but still wide enough for the figure
+       aspect to be height-bound). object-fit: contain shrinks the
+       figure to fit the limiting axis (height) and leaves huge
+       horizontal margins. Switch to width-priority so the figure fills
+       the slide horizontally; slide-inner has overflow: auto so any
+       small vertical spill is recoverable via scroll. */
+    @media (max-aspect-ratio: 2/1) and (max-height: 700px) {
+        .slide-inner > figure > img,
+        .slide-inner > figure > svg {
+            width: 100%;
+            height: auto;
+            flex: none;
+            object-fit: initial;
+        }
+    }
+    @media (min-aspect-ratio: 2/1) {
+        .slide-inner > figure > img,
+        .slide-inner > figure > svg {
+            width: 100%;
+            height: auto;
+            flex: none;
+            object-fit: initial;
+        }
+    }
     /* Click-to-zoom signal */
     img {
         cursor: zoom-in;
@@ -172,7 +257,10 @@
        <img class="title-slide-logo"> inside the title slide. */
     .title-slide-logo {
         position: absolute;
-        bottom: 1lh;
+        /* Flush against the slide-inner's bottom edge — the slide-inner
+           itself already sits 1lh above the status bar, so the logo
+           lands just above the bar with no extra gap. */
+        bottom: 0;
         right: 1ch;
         height: 1lh;
         width: auto;
@@ -421,14 +509,8 @@ body[data-speaker-window] [is-~='notes'] {
         justify-self: end;
     }
 
-    /* Phone (< 480px): drop the link, just N/total + ? */
-    @media (max-width: 480px) {
-        grid-template-columns: auto;
-        justify-content: end;
-        .ss-link {
-            display: none;
-        }
-    }
+    /* Phone (< 480px): keep the URL visible; ellipsis already
+       truncates it if the screen is narrower than the link text. */
     .ss-pos {
         color: var(--foreground2);
     }
@@ -501,7 +583,7 @@ body[data-speaker-window] [is-~='notes'] {
         height: 720px;
         transform-origin: top left;
         transform: scale(var(--ov-scale, 0.32));
-        padding: 2lh 6ch;
+        padding: 1lh 4ch;
         font-size: 2em;
         line-height: 1.4;
         display: flex;
@@ -627,6 +709,30 @@ body.slides-print-mode [is-~='slide'] .slide-inner {
     width: 100% !important;
     height: 100% !important;
     transform: none !important;
+    /* Re-assert the deck-mode flex column so figure { flex: 1 } can
+       still grow figures to fill the printed page. Without these, the
+       figure falls back to intrinsic size — matplotlib SVGs measure
+       in inches and the browser shrinks them to tiny thumbnails. */
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Print-mode per-slide footer: the position:fixed status bar doesn't
+   repeat across paginated pages, so each printed slide gets its own
+   URL stamp in the bottom-left corner via a ::after pseudo-element.
+   The URL is read from --slide-url, set on the presentation root by
+   the runtime (Presentation.astro). Falls back to an empty string if
+   unset so older sessions don't print a literal `var(...)`. */
+body.slides-print-mode [is-~='slide']::after {
+    content: var(--slide-url, '');
+    position: absolute;
+    bottom: 0.5lh;
+    left: 1ch;
+    font-size: 0.7em;
+    color: var(--foreground3, #888);
+    font-family: var(--font-family, monospace);
+    z-index: 100;
+    pointer-events: none;
 }
 
 /* Theme-aware title slide logo. Two SVG variants ship; show the one
@@ -669,7 +775,9 @@ body.slides-print-mode [is-~='slide'] .slide-inner {
     right: 1ch;
     height: 1.25lh;
     width: auto;
-    opacity: 0.5;
+    /* No opacity dim — the black/white SVG variants already contrast
+       appropriately against their respective theme backgrounds. The
+       previous opacity:0.5 made both variants look washed-out grey. */
     z-index: 5;
     pointer-events: none;
 }
@@ -721,11 +829,21 @@ body.slides-print-mode [is-~='slide'] .slide-inner {
     margin: 0;
     background-color: var(--background1);
     border: 1px solid var(--foreground2);
-    padding: 0.5lh 1ch;
-    max-width: min(40ch, calc(100vw - 4ch));
+    /* More horizontal breathing room than vertical — citation text
+       feels cramped against the border at 1-2ch but reads cleanly at
+       3ch+ inset. Reset any inherited text-indent so the first line
+       doesn't kiss the border while subsequent lines indent normally. */
+    padding: 0.5lh 3ch;
+    text-indent: 0;
+    max-width: min(60ch, calc(100vw - 6ch));
     width: max-content;
+    /* Break long tokens (URLs, citation titles, etc) instead of
+       overflowing past the right border. */
+    overflow-wrap: anywhere;
+    word-break: break-word;
     font-size: 0.85em;
     line-height: 1.4;
     z-index: 1000;
     box-shadow: 2px 2px 0 0 var(--foreground0);
+    box-sizing: border-box;
 }
