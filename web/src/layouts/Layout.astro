@@ -286,6 +286,17 @@ const ogImage = ogSlug
                 width: auto !important;
                 height: auto !important;
             }
+            /* Descender clip fix for cloned SVG in the popout.
+               Same rule we apply in-deck (see #restart-cascade in
+               talks/2026-06-03/index.mdx). The popout clones the
+               SVG outside that scope, so we need a global rule too. */
+            .mermaid-modal-inner svg g.node foreignObject {
+                overflow: visible;
+            }
+            .mermaid-modal-inner svg g.node p {
+                line-height: 1.35;
+                padding-bottom: 0.1em;
+            }
             .mermaid-modal-close {
                 position: absolute;
                 top: 1ch;

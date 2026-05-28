@@ -585,13 +585,32 @@ flowchart TB
      descenders (g, p, y, q) on the bottom row of multi-line labels.
      Make the foreignObject visible and pad the p slightly so the
      descender on "pool" (and any future labels with descenders) is
-     fully rendered. */
+     fully rendered. NB: the modal popout (.mermaid-modal) clones the
+     SVG outside this #restart-cascade scope — see slides.css for
+     the global rule that catches the modal case too. */
   #restart-cascade .mermaid g.node foreignObject {
       overflow: visible;
   }
   #restart-cascade .mermaid g.node p {
       line-height: 1.35;
       padding-bottom: 0.1em;
+  }
+  /* Depth-of-field on the russian-doll clusters. Each scope gets a
+     progressively softer + larger drop-shadow so inner = closer to
+     viewer (more shadow above it, smaller blur), outer = further
+     away (broader, softer shadow). The colors are tinted to each
+     box's accent so the depth cue carries the same blue/orange/
+     green semantics as the borders and badges — not just neutral
+     gray. drop-shadow works on SVG elements (vs box-shadow which
+     doesn't) and respects the rect's actual outline. */
+  #restart-cascade .mermaid g.cluster.jobC > rect {
+      filter: drop-shadow(0 4px 12px #118cc230);
+  }
+  #restart-cascade .mermaid g.cluster.nodeC > rect {
+      filter: drop-shadow(0 3px 8px #ee8f2438);
+  }
+  #restart-cascade .mermaid g.cluster.procC > rect {
+      filter: drop-shadow(0 2px 5px #1da81140);
   }
 `}</style>
 
