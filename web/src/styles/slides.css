@@ -507,9 +507,8 @@ body[data-speaker-window] [is-~='notes'] {
         color: var(--foreground2);
         justify-self: end;
     }
-    /* Menu / help button — bottom-left, hamburger icon. Replaces the
-       former [?] chip in the bottom-right. The three CSS-drawn lines
-       inherit currentColor so hover/focus tints come for free. */
+    /* Menu / help button — bottom-left, hamburger glyph (U+2630).
+       Replaces the former [?] chip in the bottom-right. */
     .ss-menu {
         all: unset;
         cursor: pointer;
@@ -517,26 +516,16 @@ body[data-speaker-window] [is-~='notes'] {
         align-items: center;
         justify-content: center;
         justify-self: start;
-        width: 2.5ch;
         height: 1lh;
+        padding: 0 0.5ch;
+        font-size: 1.2em;
+        line-height: 1;
         color: var(--foreground2);
         transition: color 100ms linear;
         &:hover,
         &:focus-visible {
             color: var(--accent, var(--blue));
         }
-    }
-    .ss-menu-icon {
-        display: inline-block;
-        width: 1.5ch;
-        height: 0.7lh;
-        background:
-            linear-gradient(currentColor, currentColor) top / 100% 1px
-                no-repeat,
-            linear-gradient(currentColor, currentColor) center / 100% 1px
-                no-repeat,
-            linear-gradient(currentColor, currentColor) bottom / 100% 1px
-                no-repeat;
     }
 }
 
