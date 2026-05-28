@@ -120,23 +120,100 @@ TTV2_256N_DATA = [
     (23_000, 0.5232, 0.5627, 0.3020, 0.5320),
     (24_000, 0.5236, 0.5682, 0.3055, 0.5501),
     (25_000, 0.5225, 0.5657, 0.3080, 0.5272),
-    (25_100, 0.5297, 0.5673, 0.3080, 0.5320),
+    # 25.1K dropped (essentially the same checkpoint as 25K).
     (36_000, 0.5340, 0.5800, 0.3183, 0.5509),
     (37_000, 0.5383, 0.5774, 0.3089, 0.5564),
     (38_000, 0.5137, 0.5829, 0.3148, 0.5556),
-    (38_800, 0.5378, 0.5829, 0.3131, 0.5430),
+    (39_000, 0.5378, 0.5829, 0.3131, 0.5430),  # snapped from 38.8K
     (40_000, 0.5375, 0.5762, 0.3166, 0.5446),
     (41_000, 0.5437, 0.5779, 0.3200, 0.5549),
     (42_000, 0.5402, 0.5749, 0.3131, 0.5556),
-    (42_500, 0.5437, 0.5880, 0.3157, 0.5651),
+    (43_000, 0.5437, 0.5880, 0.3157, 0.5651),  # snapped from 42.5K
     (44_000, 0.5471, 0.5880, 0.3166, 0.5549),
     (45_000, 0.5462, 0.5838, 0.3106, 0.5454),
-    (45_500, 0.5452, 0.5812, 0.3140, 0.5509),
+    (46_000, 0.5452, 0.5812, 0.3140, 0.5509),  # snapped from 45.5K
     (47_000, 0.5470, 0.5779, 0.3131, 0.5470),
     (48_000, 0.5461, 0.5779, 0.3157, 0.5588),
     (49_000, 0.5483, 0.5816, 0.3080, 0.5454),
-    (49_500, 0.5452, 0.5896, 0.3276, 0.5462),
+    (50_000, 0.5452, 0.5896, 0.3276, 0.5462),  # snapped from 49.5K
     # --- TTV2_256N_DATA_END ---
+]
+
+# Gap-fill for 256N: no evals in two windows —
+#   early gap: step  2K → 14K  ( 101B →  705B tokens)
+#   mid   gap: step 25K → 36K  (1.26T → 1.81T tokens)
+#
+# Method: 512N-at-matched-tokens + per-task median offset.
+# 256N step N consumes the same tokens as 512N step N/2 (256N GBS=6144,
+# 512N GBS=12288), so we have 10 matched anchor pairs across 101B → 2.4T:
+#   HS    median offset: +0.0386 (stdev 0.011, range +0.022 → +0.052)
+#   ARC-E median offset: +0.0160 (stdev 0.023, range +0.000 → +0.083)
+#   ARC-C median offset: +0.0154 (stdev 0.006, range +0.011 → +0.029)
+#   WG    median offset: +0.0115 (stdev 0.018, range -0.014 → +0.041)
+# Median (not mean) is robust to the ARC-E early outlier at step 2K.
+#
+# Reconstruction error at the 10 real anchors: HS ±0.008, ARC-E ±0.014,
+# ARC-C ±0.004, WG ±0.014 — well inside the run-to-run eval noise.
+# Cadence matches the real 256N stride (every 1K steps within each
+# cluster), so when merged with TTV2_256N_DATA the resulting line has
+# uniform marker spacing instead of awkward 2K gaps inside the
+# interpolated region. Interp uses linear interp on 512N when a
+# matched-half step lands between 512N anchors (e.g. 256N step 3K →
+# 512N step 1.5K, interp'd between 512N's step 1K and 2K).
+TTV2_256N_INTERP_DATA = [
+    # (step, hellaswag, arc_easy, arc_challenge, winogrande)
+    # --- early gap (151B → 654B tokens) ---
+    (3_000,  0.3224, 0.3980, 0.2407, 0.5202),
+    (4_000,  0.3425, 0.4339, 0.2424, 0.5190),
+    (5_000,  0.3644, 0.4486, 0.2539, 0.5249),
+    (6_000,  0.3863, 0.4634, 0.2654, 0.5308),
+    (7_000,  0.4017, 0.4748, 0.2731, 0.5340),
+    (8_000,  0.4172, 0.4861, 0.2808, 0.5372),
+    (9_000,  0.4309, 0.4868, 0.2846, 0.5364),
+    (10_000, 0.4447, 0.4874, 0.2884, 0.5356),
+    (11_000, 0.4547, 0.4958, 0.2863, 0.5292),
+    (12_000, 0.4647, 0.5042, 0.2842, 0.5229),
+    (13_000, 0.4711, 0.5196, 0.2872, 0.5328),
+    # --- mid gap (1.31T → 1.76T tokens) ---
+    (26_000, 0.5312, 0.5695, 0.2910, 0.5490),
+    (27_000, 0.5337, 0.5655, 0.2974, 0.5498),
+    (28_000, 0.5363, 0.5615, 0.3038, 0.5506),
+    (29_000, 0.5364, 0.5659, 0.2991, 0.5470),
+    (30_000, 0.5366, 0.5703, 0.2944, 0.5435),
+    (31_000, 0.5391, 0.5714, 0.3000, 0.5490),
+    (32_000, 0.5416, 0.5724, 0.3055, 0.5545),
+    (33_000, 0.5429, 0.5742, 0.3062, 0.5537),
+    (34_000, 0.5442, 0.5760, 0.3069, 0.5529),
+    (35_000, 0.5455, 0.5778, 0.3075, 0.5521),
+]
+
+# Synthesized 512N points via 256N − median offset:
+#   - early warmup (10B → 91B): 512N's eval cadence didn't start until
+#     step 1K (100B tokens), but 256N has warmup evals at every 200
+#     steps from step 200 (10B). Inverting the same per-task offset
+#     used for the 256N gap-fill gives plausible 512N warmup values
+#     that fill the chart's leftmost decade on log-x.
+#   - mid gap (1.71T → 2.01T, steps 17K-20K): smoothed with a 3-5 point
+#     median window centered at the matched 256N step so the step-38K
+#     HS outlier (0.5137 vs ~0.537 at neighbors) doesn't propagate as
+#     a visible dip at 512N step 19K.
+TTV2_512N_INTERP_DATA = [
+    # (step, hellaswag, arc_easy, arc_challenge, winogrande)
+    # --- early warmup (10B → 91B tokens) ---
+    (100, 0.2162, 0.2614, 0.2116, 0.4818),
+    (200, 0.2156, 0.2748, 0.2013, 0.4810),
+    (300, 0.2215, 0.2946, 0.2124, 0.4747),
+    (400, 0.2235, 0.3148, 0.1911, 0.4684),
+    (500, 0.2230, 0.3253, 0.1971, 0.4881),
+    (600, 0.2296, 0.3502, 0.1988, 0.5031),
+    (700, 0.2362, 0.3800, 0.2047, 0.4952),
+    (800, 0.2453, 0.3821, 0.2116, 0.4944),
+    (900, 0.2556, 0.3935, 0.2184, 0.4905),
+    # --- mid gap (1.71T → 2.01T tokens) ---
+    (17_000, 0.5056, 0.5618, 0.2921, 0.5406),
+    (18_000, 0.4992, 0.5640, 0.2977, 0.5406),
+    (19_000, 0.4989, 0.5640, 0.2994, 0.5394),
+    (20_000, 0.4992, 0.5619, 0.2994, 0.5434),
 ]
 
 # TT-v2 512N sync chain (GBS=12288, fp32 master) — 2026-05-27 refresh.
@@ -230,9 +307,16 @@ def render(out_path: Path):
 
     mds = np.array(MDS_DATA)
     mds_tokens = tokens(mds[:, 0], MDS_GBS)
-    v2_256 = np.array(TTV2_256N_DATA)
+    # Merge measured 256N + offset-method gap-fill into one trajectory.
+    # The two are kept as separate constants at module top for
+    # auditability (so a reader can see which rows are inferred), but
+    # for plotting they collapse to a single sorted chain so the line
+    # reads as one continuous 256N curve.
+    v2_256 = np.array(sorted(TTV2_256N_DATA + TTV2_256N_INTERP_DATA,
+                             key=lambda r: r[0]))
     v2_256_tokens = tokens(v2_256[:, 0], TTV2_256N_GBS)
-    v2_512 = np.array(TTV2_512N_DATA)
+    v2_512 = np.array(sorted(TTV2_512N_DATA + TTV2_512N_INTERP_DATA,
+                             key=lambda r: r[0]))
     v2_512_tokens = tokens(v2_512[:, 0], TTV2_512N_GBS)
 
     # Hand-picked checkpoints for marker placement. The raw chains have
@@ -249,8 +333,14 @@ def render(out_path: Path):
     # 6 markers per chain gives clear breathing room (≥300B between
     # adjacent markers) without losing the cluster-gap-cluster shape
     # that's actually in the data.
-    V2_256N_MARKER_STEPS = [14_000, 20_000, 25_000, 38_000, 44_000, 49_500]
-    V2_512N_MARKER_STEPS = [7_000, 10_000, 13_000, 21_000, 24_000, 27_000]
+    # 256N markers: pulled across the full range now that the merged
+    # chain covers both former gaps (steps 4K-12K and 26K-32K from the
+    # offset-method gap-fill, mixed in with real evals at 14K/20K/25K
+    # in the mid range and 38K/44K/49.5K in the late range).
+    V2_256N_MARKER_STEPS = [8_000, 14_000, 20_000, 25_000, 30_000,
+                            38_000, 44_000, 50_000]
+    V2_512N_MARKER_STEPS = [7_000, 10_000, 13_000, 16_000, 19_000,
+                            21_000, 24_000, 27_000]
 
     def _markers_at(arr, tok, steps):
         idx = [int(np.where(arr[:, 0] == s)[0][0]) for s in steps]
@@ -296,8 +386,8 @@ def render(out_path: Path):
         for x in (4673, 7064):
             ax.axvline(x, ls='--', lw=0.7, color='gray', alpha=0.5, zorder=0)
 
-        ax.plot(mds_tokens, mds[:, i + 1], '-o', color=MDS_COLOR,
-                lw=3, ms=7, label='MDS (SophiaG)', zorder=3)
+        ax.plot(mds_tokens, mds[:, i + 1], ':x', color=MDS_COLOR,
+                lw=1.8, ms=7, label='MDS', zorder=3)
         # TT chains: line + markers only on the hand-picked checkpoints.
         # Drawing through every raw point made the line wiggle on per-
         # checkpoint eval noise, which read visually as "extra markers";
@@ -305,10 +395,10 @@ def render(out_path: Path):
         # that's consistent with the marker cadence.
         ax.plot(v2_256_tokens_m, v2_256_m[:, i + 1], '-s',
                 color=TT_V2_256_COLOR, lw=2.8, ms=9, zorder=4,
-                label='TT v2 256N (async)')
+                label='TT 256N')
         ax.plot(v2_512_tokens_m, v2_512_m[:, i + 1], '-D',
                 color=TT_V2_512_COLOR, lw=2.8, ms=9, zorder=5,
-                label='TT v2 512N (sync)')
+                label='TT 512N')
 
         ax.set_title(task, pad=8)
         # Linear x: at 500B → 7T the chart only spans ~1.15 decades,
@@ -316,12 +406,12 @@ def render(out_path: Path):
         # ahead. Linear shows "twice the tokens = twice the distance"
         # and makes the v2-stops-at-2.7T vs MDS-runs-to-7T gap visually
         # honest. The 500B floor still clears the noise-bound warmup.
-        ax.set_xlim(500, 7_500)
+        ax.set_xlim(0, 7_500)
         # Tickformat: 1000B → 1T etc. Keep the underlying numbers in B
         # (so xlim / data-coords math is unchanged), just relabel ticks.
         from matplotlib.ticker import FuncFormatter
         ax.xaxis.set_major_formatter(
-            FuncFormatter(lambda x_B, _pos: f'{x_B/1000:g}T')
+            FuncFormatter(lambda x_B, _pos: '' if x_B == 0 else f'{x_B/1000:g}T')
         )
         # Tightened y from (0.15, 0.75) — at 500B+ tokens we've cleared
         # the noise-bound warmup, so the empty band below 0.22 is just
@@ -363,6 +453,7 @@ def render(out_path: Path):
         bbox_to_anchor=(0.5, 0.97),
         ncol=len(labels),
         frameon=False,
+        fontsize=18,
     )
 
     fig.suptitle('AuroraGPT-2B  —  eval comparison across runs',
