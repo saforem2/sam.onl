@@ -257,6 +257,29 @@ MDS was the pragmatic choice. By mid-2026 the calculus changed — `torchtitan` 
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
+2B reference + TT overlay — MDS 3-stage chart with TT v2 256N drawn on top
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="agpt-2b-loss-with-tt">
+
+## 2B reference + `torchtitan` overlay
+
+<figure>
+    <img
+        src="/talks/2026-06-03/figures/loss-2b-reference-with-tt.svg"
+        alt="AuroraGPT-2B MDS 3-stage trajectory with TorchTitan 256N production run overlaid"
+    />
+    <figcaption>
+        Same MDS trajectory as the reference chart, with the
+        `torchtitan` 256N production run drawn on the same axes:
+        starts inside the MDS pretrain region and tracks the same
+        loss-vs-tokens curve.
+    </figcaption>
+</figure>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
 Why move off MDS — and what broke
 ───────────────────────────────────────────────────────────────*/}
 
@@ -274,7 +297,7 @@ Why move off MDS — and what broke
 
 **The trade-off we accepted:** living on a fast-moving upstream
 (`pytorch/torchtitan main`) instead of a tagged release. That trade
-is the "fork tax" — the rest of this talk.
+is the "fork tax", the rest of this talk.
 
 <style>{`
   #why-titan table { table-layout: fixed; width: 100%; max-width: 70ch; }
@@ -284,29 +307,6 @@ is the "fork tax" — the rest of this talk.
     width: 6ch; text-align: center;
   }
 `}</style>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-2B reference + TT overlay — MDS 3-stage chart with TT v2 256N drawn on top
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="agpt-2b-loss-with-tt">
-
-## 2B reference + `torchtitan` overlay
-
-<figure>
-    <img
-        src="/talks/2026-06-03/figures/loss-2b-reference-with-tt.svg"
-        alt="AuroraGPT-2B MDS 3-stage trajectory with TorchTitan 256N production run overlaid"
-    />
-    <figcaption>
-        Same MDS trajectory as the reference chart, with the
-        `torchtitan` 256N production run drawn on the same axes —
-        starts inside the MDS pretrain region and tracks the same
-        loss-vs-tokens curve.
-    </figcaption>
-</figure>
 
 </Slide>
 
@@ -780,18 +780,18 @@ Full writeup: [`docs/experiments/agpt/aurora/20260523-failover-silent-hang-recov
 
 ## Thanks
 
-**AuroraGPT team** — Venkat Vishwanath, the AI/ML Group at ALCF,
+**AuroraGPT team**: Venkat Vishwanath, the AI/ML Group at ALCF,
 collaborators across ANL.
 
-**Argonne Leadership Computing Facility** — Aurora time, Sunspot
+**Argonne Leadership Computing Facility**: Aurora time, Sunspot
 staging.
 
 **Code & docs**
 
-- `ezpz` — [github.com/saforem2/ezpz](https://github.com/saforem2/ezpz)
-- `torchtitan` fork (experiments/ezpz) —
+- `ezpz`: [github.com/saforem2/ezpz](https://github.com/saforem2/ezpz)
+- `torchtitan` fork (experiments/ezpz):
   [github.com/saforem2/torchtitan](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz)
-- These slides — [https://sam.onl/talks/2026/06/03](https://sam.onl/talks/2026/06/03)
+- These slides: [sam.onl/talks/2026/06/03](https://sam.onl/talks/2026/06/03)
 
 Questions?
 
