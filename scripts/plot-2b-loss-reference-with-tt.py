@@ -89,14 +89,20 @@ def render(out_path: Path):
     final = mds.iloc[-1]
     final_tokens_B = float(final['x']) / 1e9
     final_loss = float(final['y'])
+    # Annotations: high-contrast dark colors (MDS=dark navy, TT=dark
+    # red) instead of the lighter palette which washed out on white
+    # projector. fontsize bumped 14 -> 18 for back-of-room legibility.
+    mds_annot_color = '#0d2c6b'
+    tt_annot_color = '#b71c1c'
     ax.annotate(
         f'MDS final: loss {final_loss:.2f}\n@ {final_tokens_B/1000:.2f}T tokens',
         xy=(final_tokens_B, final_loss),
         xytext=(0.92, 0.22),
         xycoords='data', textcoords='axes fraction',
-        fontsize=14, ha='right', va='center',
-        color=MDS_STAGE_SHADES[2],
-        arrowprops={'arrowstyle': '-', 'color': MDS_STAGE_SHADES[2],
+        fontsize=18, ha='right', va='center',
+        color=mds_annot_color,
+        fontweight='bold',
+        arrowprops={'arrowstyle': '-', 'color': mds_annot_color,
                     'lw': 1.0, 'alpha': 0.7,
                     'connectionstyle': 'angle3,angleA=0,angleB=90'},
     )
@@ -109,9 +115,10 @@ def render(out_path: Path):
         xy=(tt_final_tok_B, tt_final_loss),
         xytext=(0.55, 0.42),
         xycoords='data', textcoords='axes fraction',
-        fontsize=14, ha='left', va='center',
-        color='C1',
-        arrowprops={'arrowstyle': '-', 'color': 'C1',
+        fontsize=18, ha='left', va='center',
+        color=tt_annot_color,
+        fontweight='bold',
+        arrowprops={'arrowstyle': '-', 'color': tt_annot_color,
                     'lw': 1.0, 'alpha': 0.7,
                     'connectionstyle': 'angle3,angleA=0,angleB=90'},
     )

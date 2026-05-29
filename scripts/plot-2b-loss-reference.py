@@ -77,14 +77,19 @@ def render(out_path: Path):
     final = mds.iloc[-1]
     final_tokens_B = float(final['x']) / 1e9
     final_loss = float(final['y'])
+    # Annotation: dark navy (high contrast on white projector) instead
+    # of the stage-3 light blue which washed out. fontsize bumped 14 -> 18
+    # so it reads from the back of the room.
+    annot_color = '#0d2c6b'
     ax.annotate(
         f'final: loss {final_loss:.2f}\n@ {final_tokens_B/1000:.2f}T tokens',
         xy=(final_tokens_B, final_loss),
         xytext=(0.92, 0.22),
         xycoords='data', textcoords='axes fraction',
-        fontsize=14, ha='right', va='center',
-        color=MDS_STAGE_SHADES[2],
-        arrowprops={'arrowstyle': '-', 'color': MDS_STAGE_SHADES[2],
+        fontsize=18, ha='right', va='center',
+        color=annot_color,
+        fontweight='bold',
+        arrowprops={'arrowstyle': '-', 'color': annot_color,
                     'lw': 1.0, 'alpha': 0.7,
                     'connectionstyle': 'angle3,angleA=0,angleB=90'},
     )

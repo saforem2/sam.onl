@@ -34,13 +34,13 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 <img
     style="height:1lh;"
-    src="/anl-logos/anl-wireframe-light.svg"
+    src="/anl-logos/anl-color-light.svg"
     alt="Argonne National Laboratory"
     class="title-slide-logo title-slide-logo-light"
 />
 <img
     style="height:1lh;"
-    src="/anl-logos/anl-wireframe-dark.svg"
+    src="/anl-logos/anl-color-dark.svg"
     alt="Argonne National Laboratory"
     class="title-slide-logo title-slide-logo-dark"
 />
@@ -698,6 +698,30 @@ flowchart TB
   #restart-cascade .mermaid g.cluster.procC > rect {
       filter: drop-shadow(0 2px 5px #1da81140);
   }
+  /* Bump font size on the russian-doll diagram so labels are legible
+     from the back of a room. Mermaid sets text via inline foreignObject
+     <span> / <p> children — override the computed font-size on both. */
+  #restart-cascade .mermaid .cluster .cluster-label span,
+  #restart-cascade .mermaid g.node span,
+  #restart-cascade .mermaid g.node p {
+      font-size: 1.25em;
+  }
+  /* Keep mermaid labels on one line — the slide-global
+     word-break: break-word rule (applied to tables) was bleeding
+     into mermaid foreignObject text and breaking node labels mid-word
+     (e.g. stdout idle would split across multiple lines). Reset to
+     default + force nowrap on the inner elements so mermaid sizes
+     the box to the text instead of the text wrapping inside a
+     fixed box. */
+  #restart-cascade .mermaid g.node foreignObject,
+  #restart-cascade .mermaid g.node foreignObject *,
+  #restart-cascade .mermaid .cluster .cluster-label *,
+  #restart-cascade .mermaid g.node span,
+  #restart-cascade .mermaid g.node p {
+      white-space: nowrap !important;
+      word-break: normal !important;
+      overflow-wrap: normal !important;
+  }
   /* On narrow viewports let the nested mermaid fill the slide width;
      the russian-doll nesting reads cleanly even on phones (mermaid
      stacks children top-down when there's no horizontal room).
@@ -705,10 +729,25 @@ flowchart TB
      (mermaid-render.ts processes every .mermaid block once and the
      duplicated render path was tearing down the viewport wrapper). */
   @media (max-width: 768px) {
+      /* Let the diagram fill the slide width AND grow much taller
+         so it claims real estate on portrait screens. Mermaid renders
+         the russian-doll at a wide intrinsic aspect; without a min
+         height the auto-scaled SVG sits in a thin band at the top.
+         Force min-height: 60vh so it visibly fills the slide; the
+         aspect-ratio: auto + width: 100% combo will stretch the SVG
+         vertically (the nested boxes get taller, text size stays
+         readable because we already bumped font-size: 1.25em). */
+      #restart-cascade .mermaid {
+          min-height: 60vh;
+          display: flex;
+          align-items: stretch;
+      }
       #restart-cascade .mermaid svg {
-          width: 100%;
-          max-width: 100%;
-          height: auto;
+          width: 100% !important;
+          max-width: 100% !important;
+          height: auto !important;
+          min-height: 60vh;
+          aspect-ratio: auto;
       }
   }
 `}</style>
