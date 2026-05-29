@@ -685,10 +685,6 @@ directly. If `qsub` runs a wrapper script that internally invokes
 `python train.py`, the watchdog needs to live inside that script (or
 you wrap the inner call with `ezpz launch` too).
 
-> **Open issue we'd like to push upstream:** make `xccl` honor
-> `train_timeout_seconds` (or the equivalent NCCL knob) on XPU so the
-> watchdog isn't load-bearing.
-
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
@@ -874,6 +870,12 @@ table + qsub wrapper that swaps spares in on crash.
 \{2B, 20B, 80B\} on Aurora / Sunspot / Polaris; speedrun rounds with
 Mano + QK-Norm; `yeet-env` tarball broadcast scaling.
 
+> [!TIP]
+> **`xccl` train-timeout fix incoming upstream.** An official fix
+> for `xccl` honoring `train_timeout_seconds` on XPU is landing in
+> a nightly PyTorch release — the stdout-idle watchdog (see main
+> path) won't stay load-bearing.
+
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
@@ -882,7 +884,7 @@ Appendix: Operational reality — failover wrapper
 
 <Slide id="restarts">
 
-## Operational reality — bad-node failover
+### Operational reality — bad-node failover
 
 **5+ production jobs killed by bad-node failures in 2 weeks.** Pattern:
 PBS gives us 256 / 512 nodes, one is bad, training crashes or hangs
@@ -929,7 +931,7 @@ Appendix: LR-finder methodology + cross-optimizer sweep
 
 <Slide id="lr-finder">
 
-## LR-finder — exponential sweep, blow-up / 10
+### LR-finder — exponential sweep, blow-up / 10
 
 Smith 2015 / Gugger: exponentially ramp LR over ~10% of training,
 record EMA-smoothed loss, pick LR at the steepest descent (or
@@ -955,7 +957,7 @@ Appendix: LR-finder 2B detail + optimal-LR bars
 
 <Slide id="lr-finder-results">
 
-## LR-finder — 2B sweep + optimal LR per config
+### LR-finder — 2B sweep + optimal LR per config
 
 <div class="lr-finder-grid">
 
@@ -1001,7 +1003,7 @@ Appendix: Optimizer speedrun rounds — Mano / AdamW / Muon
 
 <Slide id="optimizer-speedrun">
 
-## Optimizer speedrun — Mano LR sweep, WSM, Schedule-Free
+### Optimizer speedrun — Mano LR sweep, WSM, Schedule-Free
 
 <div class="opt-speedrun-grid">
 
@@ -1065,7 +1067,7 @@ Appendix: yeet-env tarball broadcast scaling
 
 <Slide id="yeet-env" size="sm">
 
-## `yeet-env`: venv tarball broadcast at scale
+### `yeet-env`: venv tarball broadcast at scale
 
 <div class="yeet-env-grid">
 
@@ -1133,7 +1135,7 @@ Appendix: Silent killer #1 — bf16 RMSNorm freeze
 
 <Slide id="bf16-freeze">
 
-## Silent bug #1 — bf16 master ⇒ RMSNorm frozen
+### Silent bug #1 — bf16 master ⇒ RMSNorm frozen
 
 **Symptom.** Loss curves looked reasonable. lm-eval scores didn't
 move — ARC-Easy stuck at **~0.27** (random baseline) for 17K+ steps.
@@ -1156,7 +1158,7 @@ fp32; forward/backward stay bf16. Extra ~1 GB master at 2B, ~10 GB at
 
 <Slide id="bf16-freeze-evidence">
 
-## Silent bug #1 — the smoking gun
+### Silent bug #1 — the smoking gun
 
 ![v1 (bf16-master) vs v2 (fp32-master) — 20B lm-eval](/talks/2026-06-03/figures/eval-20b-v1-vs-v2.png)
 
@@ -1177,7 +1179,7 @@ Appendix: Silent killer #2 — TP loss reporting
 
 <Slide id="tp-loss">
 
-## Silent bug #2 — TP loss reported / `dp_world_size`
+### Silent bug #2 — TP loss reported / `dp_world_size`
 
 - **Symptom**: Step-1 loss for `agpt_*` (vocab=256128) should be `ln(256128) ≈
 12.45`
@@ -1208,7 +1210,7 @@ Appendix: blendcorpus deep-dive (parked for possible future revisit)
 
 <Slide id="blendcorpus">
 
-## `blendcorpus` — the boring layer that breaks first
+### `blendcorpus` — the boring layer that breaks first
 
 **What it does**
 
