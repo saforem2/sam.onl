@@ -543,13 +543,9 @@ Vendor portability war stories
 
 ## What "the bad" looks like
 
-Three patterns we hit over and over running on non-NVIDIA:
+**Cross-version churn.** Upstream APIs shift faster than vendor support catches up.
 
-- **Silent fallbacks.** Vendor-specific fast paths get dropped inside abstractions (FSDP, `torch.compile`, AC) with no warning. _e.g._ XPU `OVERRIDEABLE` SDPA kernel is **23×** faster than `MATH` — silently swapped out under FSDP.
-- **NVIDIA-shaped defaults.** "Sensible" microbatch / memory / collective settings target H100; on Intel Max they OOM, on AMD they hang. Every default needs an XPU-aware override path.
-- **Cross-version churn.** Upstream APIs shift faster than vendor support catches up. `DeviceMesh` + AC + TP=2 + torch 2.13 → AOT-autograd assertion on every 80B config; pin torch 2.10 until it lands.
-
-**The meta-lesson:** at scale, the deepest portability bugs aren't "wrong answer" — they're _silently slower_ or _silently more memory_, and you only catch them with bit-exact regression gates.
+`DeviceMesh` + AC + TP=2 + torch 2.13 → AOT-autograd assertion on every 80B config; pin torch 2.10 until it lands.
 
 </Slide>
 
