@@ -987,6 +987,8 @@ Appendix: Optimizer speedrun rounds — Mano / AdamW / Muon
 
 ## Optimizer speedrun — Mano LR sweep, WSM, Schedule-Free
 
+<div class="opt-speedrun-grid">
+
 <figure>
     <img
         src="/talks/2026-06-03/figures/optimizers-r5-loss-curves.png"
@@ -998,7 +1000,11 @@ Appendix: Optimizer speedrun rounds — Mano / AdamW / Muon
     </figcaption>
 </figure>
 
+<div class="opt-speedrun-text">
+
 **Headline numbers (Round 3, 10B tokens / 8N / GBS=384):**
+
+<div class="tight-table">
 
 | Rank | Config           | Loss      | TPS/GPU |
 | ---: | :--------------- | :-------- | ------: |
@@ -1008,8 +1014,32 @@ Appendix: Optimizer speedrun rounds — Mano / AdamW / Muon
 |    4 | Mano             | 2.875     |   7,429 |
 |    5 | Muon             | DNF       |       — |
 
+</div>
+
 **AdamW wins at GBS=384.** Mano lands ~0.16 behind — LR finder was
 tuned at GBS=48 and the manifold update under-shoots at large batch.
+
+</div>
+
+</div>
+
+<style>{`
+  #optimizer-speedrun .opt-speedrun-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      gap: 2ch;
+      align-items: start;
+  }
+  #optimizer-speedrun .opt-speedrun-grid > figure { margin: 0; }
+  #optimizer-speedrun .opt-speedrun-grid > figure > img {
+      width: 100%; height: auto;
+  }
+  @media (max-width: 768px) {
+      #optimizer-speedrun .opt-speedrun-grid {
+          grid-template-columns: 1fr;
+      }
+  }
+`}</style>
 
 </Slide>
 
@@ -1017,7 +1047,7 @@ tuned at GBS=48 and the manifold update under-shoots at large batch.
 Appendix: yeet-env tarball broadcast scaling
 ───────────────────────────────────────────────────────────────*/}
 
-<Slide id="yeet-env">
+<Slide id="yeet-env" size="sm">
 
 ## `yeet-env`: venv tarball broadcast at scale
 
@@ -1046,13 +1076,6 @@ Appendix: yeet-env tarball broadcast scaling
     <img
         src="/talks/2026-06-03/figures/yeet-env-seconds.svg"
         alt="Total wall-clock for yeet broadcast vs node count, 8 to 4096 nodes"
-    />
-</figure>
-
-<figure>
-    <img
-        src="/talks/2026-06-03/figures/yeet-env-per-node.svg"
-        alt="Per-node amortized cost vs node count, 8 to 4096 nodes"
     />
 </figure>
 
