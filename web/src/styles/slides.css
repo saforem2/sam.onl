@@ -202,9 +202,16 @@
             padding-block: 0.05lh !important;
         }
     }
-    pre,
-    code {
+    pre {
         font-size: 1em;
+    }
+    /* Inline <code> renders ~8% smaller so the chip's x-height matches
+       the surrounding prose. Iosevka's metrics give it a slightly
+       larger advance + cap-height than the body font at the same
+       computed size, which makes 1em inline-code chips visibly
+       taller than the line they sit in. */
+    code {
+        font-size: 0.92em;
     }
     /* Codeblocks on slides must never overflow past the slide right
        edge — long shell commands (qsub lines, ezpz launch with
