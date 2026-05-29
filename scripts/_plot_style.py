@@ -47,17 +47,20 @@ TALK_RCPARAMS = {
     'figure.titleweight': 600,
     'axes.spines.top': False,
     'axes.spines.right': False,
-    # ambivalent ships with grey text (~#555) that washes out on white
-    # projector backgrounds. Override to near-black so axis labels,
-    # ticks, titles, legend all read clearly in a presentation hall.
-    # Stays in a `dark grey rather than pure black so it doesn't
-    # clobber the color palette's contrast.
-    'text.color': '#222',
-    'axes.labelcolor': '#222',
-    'axes.titlecolor': '#222',
-    'xtick.color': '#222',
-    'ytick.color': '#222',
-    'axes.edgecolor': '#444',
+    # Mid-grey (#838383) for all chart text. The charts render once
+    # but ship on both light + dark site themes — pure black washed
+    # out the dark theme background to unreadable, pure grey washes
+    # out the light theme. #838383 sits at the contrast crossover
+    # point that's readable on both (slightly lower contrast on light,
+    # slightly lower contrast on dark, but legible in both). Avoids
+    # the alternative of rendering theme-specific SVGs and swapping
+    # via <picture media="(prefers-color-scheme: dark)">.
+    'text.color': '#838383',
+    'axes.labelcolor': '#838383',
+    'axes.titlecolor': '#838383',
+    'xtick.color': '#838383',
+    'ytick.color': '#838383',
+    'axes.edgecolor': '#838383',
 }
 
 # Variant for the 4-panel eval comparison. The grid divides the figure
