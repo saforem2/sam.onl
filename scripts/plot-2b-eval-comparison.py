@@ -262,10 +262,12 @@ YLIM_PER_TASK = {
     # Per-task zoom — but MUST stay identical to the 20B chart's
     # YLIM_PER_TASK so the panels lock visually when switching slides.
     # Any change here needs the same change in plot-20b-eval-comparison.py.
-    'HellaSwag':     (0.20, 0.65),
-    'ARC-Easy':      (0.20, 0.75),
-    'ARC-Challenge': (0.20, 0.45),
-    'Winogrande':    (0.45, 0.70),
+    # Ranges hug the data + leave the random baseline visible at the
+    # panel floor (0.25 for HS/ARC, 0.50 for WG).
+    'HellaSwag':     (0.25, 0.60),
+    'ARC-Easy':      (0.25, 0.70),
+    'ARC-Challenge': (0.20, 0.40),
+    'Winogrande':    (0.48, 0.60),
 }
 
 # Panel position (row, col) per task. Data-tuple order is fixed

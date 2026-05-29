@@ -97,10 +97,10 @@ RANDOM_BASELINE = [0.25, 0.25, 0.25, 0.50]
 YLIM_PER_TASK = {
     # Must stay identical to the 2B chart's YLIM_PER_TASK so the
     # panels lock visually when switching slides.
-    'HellaSwag':     (0.20, 0.65),
-    'ARC-Easy':      (0.20, 0.75),
-    'ARC-Challenge': (0.20, 0.45),
-    'Winogrande':    (0.45, 0.70),
+    'HellaSwag':     (0.25, 0.60),
+    'ARC-Easy':      (0.25, 0.70),
+    'ARC-Challenge': (0.20, 0.40),
+    'Winogrande':    (0.48, 0.60),
 }
 
 PANEL_POS = {
