@@ -145,6 +145,12 @@ const fontOptions = {
        Slides badge in a tighter row. */
     @media (max-width: 768px) {
         .slide-help-dialog {
+            /* <dialog> default is shrink-to-fit. Force the full width
+               so the panel actually fills the viewport instead of
+               sitting at the intrinsic width of the inner content
+               (which was ~50vw because the navbar + TOC items are
+               narrow on their own). */
+            width: 95vw;
             max-width: 95vw;
             max-height: 92vh;
         }
@@ -153,6 +159,8 @@ const fontOptions = {
             gap: 0.25lh;
             max-height: 92vh;
             font-size: 0.95em;
+            box-sizing: border-box;
+            width: 100%;
         }
         /* Tighter TOC entries on mobile: smaller font + tighter
            line-height so each item is a single line where possible. */

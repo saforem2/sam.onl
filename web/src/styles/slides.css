@@ -78,7 +78,13 @@
     @media (max-width: 768px) {
         .slide-inner {
             font-size: 1.1rem;
-            padding: 1lh 2ch 2.5lh 2ch;
+            /* Bottom padding has to clear the fixed statusbar (≈1lh
+               tall) PLUS enough cushion that the last line of content
+               isn't visually pinned to the bar's top edge. 4lh has
+               worked across the densest mobile slides; previous 2.5lh
+               wasn't enough (last line of body text was getting eaten
+               by the statusbar). */
+            padding: 1lh 2ch 4lh 2ch;
             justify-content: flex-start;
         }
     }
@@ -102,9 +108,11 @@
     }
     /* If the heading is the first thing in the slide, kill its top
        margin so the content doesn't get pushed off the top in
-       safe-center layout. */
+       safe-center layout. Give it a half-line gap below so it
+       doesn't visually fuse with the first paragraph/list/figure. */
     .slide-inner > :is(h1, h2, h3):first-child {
         margin-block-start: 0;
+        margin-block-end: 0.5lh;
     }
     /* Heads are only slightly bigger than body — keeps proportions
        balanced and avoids "billboard title, mouse-print body" effect.
@@ -154,8 +162,8 @@
            mid-word ("Architectu" / "re"). `normal` keeps the browser's
            default word-wrap; only force a break (anywhere/break-word)
            if a single token is wider than the column. */
-        overflow-wrap: normal;
-        word-break: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
         hyphens: none;
         /* Body cells: top-anchor so multi-line content (long Value
            cells) stays aligned with the row label. Header cells get
@@ -176,6 +184,20 @@
         th:first-child,
         td:first-child {
             width: 22%;
+        }
+    }
+    /* Mobile: drop the fixed ratio (which forced 'Architecture' to
+       wrap mid-word and bleed into the Value column at 22%) and let
+       the browser size to content. table-layout: auto is the default
+       for HTML tables — overriding our 'fixed' rule above. */
+    @media (max-width: 768px) {
+        table { table-layout: auto; }
+        table:has(tr > td:nth-child(2):last-child) {
+            th:first-child,
+            td:first-child {
+                width: auto;
+                white-space: nowrap;
+            }
         }
     }
     /* Compact table utility — for slides where a figure + table share
@@ -573,9 +595,29 @@ body[data-speaker-window] [is-~='notes'] {
     .ss-pos {
         color: var(--foreground2);
         justify-self: end;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 3ch;
+        padding: 0 0.5ch;
+        height: calc(1lh - 0.2ch);
+        border: 1px solid var(--background3, var(--foreground3));
+        border-radius: 2px;
+        background: var(--background0);
+        font-variant-numeric: tabular-nums;
+        transition:
+            color 100ms linear,
+            border-color 100ms linear;
+        &:hover,
+        &:focus-visible {
+            color: var(--accent, var(--blue));
+            border-color: var(--accent, var(--blue));
+        }
     }
-    /* Menu / help button — bottom-left, hamburger glyph (U+2630).
-       Replaces the former [?] chip in the bottom-right. */
+    /* Menu / help button — bottom-left, Font Awesome 'bars' glyph
+       (\f0c9). Pulled flush to the bar's left edge via negative
+       margin that cancels the statusbar's padding-inline: 2ch. */
     .ss-menu {
         all: unset;
         cursor: pointer;
@@ -584,14 +626,21 @@ body[data-speaker-window] [is-~='notes'] {
         justify-content: center;
         justify-self: start;
         height: 1lh;
-        padding: 0 0.5ch;
-        font-size: 1.2em;
+        padding: 0 1ch;
+        margin-inline-start: -1ch;
+        font-size: 1.1em;
         line-height: 1;
         color: var(--foreground2);
-        transition: color 100ms linear;
+        transition:
+            color 100ms linear,
+            background-color 100ms linear;
         &:hover,
         &:focus-visible {
             color: var(--accent, var(--blue));
+            background-color: oklch(
+                from var(--accent, var(--blue))
+                    calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+            );
         }
     }
 }

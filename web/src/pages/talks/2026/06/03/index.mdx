@@ -221,6 +221,12 @@ flowchart LR
   #ezpz .ezpz-text pre.astro-code { width: 100%; }
   #ezpz .ezpz-diagram { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
   #ezpz .ezpz-diagram .mermaid svg { width: 100%; max-width: 100%; }
+  @media (max-width: 768px) {
+    #ezpz .ezpz-grid {
+      grid-template-columns: 1fr;
+      gap: 1lh;
+    }
+  }
 `}</style>
 
 </Slide>
@@ -467,6 +473,12 @@ flowchart TB
     flex: 1;
     min-height: 0;
     width: 100%;
+  }
+  @media (max-width: 768px) {
+    #fork-tax .fork-tax-grid {
+      grid-template-columns: 1fr;
+      gap: 1lh;
+    }
   }
   #fork-tax .fork-tax-text {
     min-width: 0;
@@ -993,6 +1005,11 @@ Hessian estimate on 9216-dim matrices).
   #lr-finder-results .lr-finder-grid figure {
       margin: 0;
   }
+  @media (max-width: 768px) {
+      #lr-finder-results .lr-finder-grid {
+          grid-template-columns: 1fr;
+      }
+  }
 `}</style>
 
 </Slide>
@@ -1113,6 +1130,11 @@ Full write-up: [sam.onl/posts/2026/05/01](https://sam.onl/posts/2026/05/01/#scal
       grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
       gap: 2ch;
       align-items: start;
+  }
+  @media (max-width: 768px) {
+      #yeet-env .yeet-env-grid {
+          grid-template-columns: 1fr;
+      }
   }
   #yeet-env .yeet-env-table table {
       font-size: 0.85em;
