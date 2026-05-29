@@ -313,7 +313,7 @@ def render(out_path: Path):
     # MOBILE: portrait (9, 16) so the 2x2 grid stacks tall — each panel
     # then has more vertical real estate on a phone in portrait, instead
     # of getting crushed into a thin landscape band.
-    figsize = (9, 16) if MOBILE else (16, 9)
+    figsize = (9, 16) if MOBILE else (16, 12)
     fig, axes = plt.subplots(2, 2, figsize=figsize, sharex=True)
     fig.patch.set_alpha(0)
 

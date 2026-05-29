@@ -46,7 +46,7 @@ def render(out_path: Path):
     plt.style.use(ambivalent.STYLES['ambivalent'])
     plt.rcParams.update(TALK_RCPARAMS)
 
-    figsize = (8, 10) if MOBILE else (14, 8)
+    figsize = (8, 10) if MOBILE else (14, 10)
     fig, ax = plt.subplots(figsize=figsize)
     fig.patch.set_alpha(0)
     ax.patch.set_alpha(0)

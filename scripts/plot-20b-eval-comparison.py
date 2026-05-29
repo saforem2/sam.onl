@@ -121,7 +121,7 @@ def render(out_path: Path):
     plt.rcParams.update(TALK_RCPARAMS_GRID)
 
     # MOBILE: portrait (9, 16) for the 2x2 grid — see 2b script.
-    figsize = (9, 16) if MOBILE else (16, 9)
+    figsize = (9, 16) if MOBILE else (16, 12)
     fig, axes = plt.subplots(2, 2, figsize=figsize, sharex=True)
     fig.patch.set_alpha(0)
 
