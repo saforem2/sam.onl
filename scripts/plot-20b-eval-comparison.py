@@ -186,8 +186,7 @@ def render(out_path: Path):
         ax.patch.set_alpha(0)
 
         ax.axhline(baseline, ls=':', lw=1, color='gray',
-                   label=None if MOBILE else f'random ({baseline:.0%})',
-                   zorder=1)
+                   label=f'random ({baseline:.0%})', zorder=1)
 
         # MDS stage-boundary annotations (matches 2B-eval chart). The
         # 2B MDS trajectory ran in 3 stages: (1) olmo-mix-1124 pretrain
@@ -255,23 +254,19 @@ def render(out_path: Path):
                     style='italic', va='top', ha='left')
 
     handles, labels = axes[-1][-1].get_legend_handles_labels()
-    # Cap at 4 cols (vs 5 labels) so the legend wraps to 2 rows on
-    # the mobile portrait figsize (9, 16). With 5 cols all on one
-    # row, matplotlib's tight_layout widens the figure to fit them
-    # — which then gets scaled down by CSS, shrinking all chart
-    # text vs the 2B chart's 4-column single-row legend.
+    # Vertical legend parked outside the right edge of the panel
+    # grid. Redundant 'AuroraGPT eval' suptitle dropped — slide
+    # title above already says it.
     fig.legend(
         handles, labels,
-        loc='upper center',
-        bbox_to_anchor=(0.5, 0.97),
-        ncol=min(len(labels), 4),
+        loc='center left',
+        bbox_to_anchor=(1.0, 0.5),
+        ncol=1,
         frameon=False,
         fontsize=18,
     )
 
-    fig.suptitle('AuroraGPT eval — all-production overlay (2B + 20B)',
-                 y=1.02)
-    fig.tight_layout(rect=(0, 0, 1, 0.94))
+    fig.tight_layout(rect=(0, 0, 0.85, 1))
     fig.savefig(out_path, format='svg', transparent=True,
                 bbox_inches='tight')
     plt.close(fig)

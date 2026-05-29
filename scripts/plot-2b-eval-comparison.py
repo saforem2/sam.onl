@@ -388,8 +388,7 @@ def render(out_path: Path):
         ax.patch.set_alpha(0)
 
         ax.axhline(baseline, ls=':', lw=1, color='gray',
-                   label=None if MOBILE else f'random ({baseline:.0%})',
-                   zorder=1)
+                   label=f'random ({baseline:.0%})', zorder=1)
 
         # MDS stage-boundary annotations. The 2B MDS trajectory ran in
         # 3 stages (per the model card): (1) pretrain on olmo-mix-1124,
@@ -467,23 +466,21 @@ def render(out_path: Path):
             ax.text(7064, 0.97, ' (3)', color='gray', transform=tf,
                     style='italic', va='top', ha='left')
 
-    # Figure-level legend, laid out horizontally above the suptitle so
-    # it doesn't overlap any panel's data. Pulls handles+labels from
-    # the last-drawn axes (all panels have the same series, so any one
-    # is representative).
+    # Figure-level legend, laid out vertically (1 col, N rows) and
+    # parked outside the right edge of the panel grid. Redundant
+    # 'AuroraGPT-2B — eval comparison' suptitle dropped since the
+    # slide title above already says it.
     handles, labels = axes[-1][-1].get_legend_handles_labels()
     fig.legend(
         handles, labels,
-        loc='upper center',
-        bbox_to_anchor=(0.5, 0.97),
-        ncol=len(labels),
+        loc='center left',
+        bbox_to_anchor=(1.0, 0.5),
+        ncol=1,
         frameon=False,
         fontsize=18,
     )
 
-    fig.suptitle('AuroraGPT-2B  —  eval comparison across runs',
-                 y=1.02)
-    fig.tight_layout(rect=(0, 0, 1, 0.94))
+    fig.tight_layout(rect=(0, 0, 0.85, 1))
     fig.savefig(out_path, format='svg', transparent=True, bbox_inches='tight')
     plt.close(fig)
     print(f'wrote {out_path}  ({out_path.stat().st_size // 1024} KB)')
