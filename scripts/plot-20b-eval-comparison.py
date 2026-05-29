@@ -104,9 +104,9 @@ YLIM_PER_TASK = {
 }
 
 PANEL_POS = {
-    'HellaSwag':     (1, 0),
+    'HellaSwag':     (0, 0),
     'ARC-Easy':      (0, 1),
-    'ARC-Challenge': (0, 0),
+    'ARC-Challenge': (1, 0),
     'Winogrande':    (1, 1),
 }
 
@@ -180,25 +180,19 @@ def render(out_path: Path):
         ax.plot(mds_tokens, mds[:, i + 1], ':x',
                 color=MDS_COLOR, lw=1.8, ms=5,
                 label='2B MDS', zorder=2)
-        # 2B/20B TT chains: line through every datapoint (warmup at
-        # 10-100B tokens visible so curves start near origin instead
-        # of jumping in at ~400B), markers only at the hand-picked
-        # checkpoints for visual cadence.
-        ax.plot(tt2b_256_tokens, tt2b_256[:, i + 1], '-',
-                color=TT2B_256_COLOR, lw=2.2, zorder=3,
-                label='2B TT 256N')
-        ax.plot(tt2b_256_tokens_m, tt2b_256_m[:, i + 1], 's',
-                color=TT2B_256_COLOR, ms=8, zorder=3)
-        ax.plot(tt2b_512_tokens, tt2b_512[:, i + 1], '-',
-                color=TT2B_512_COLOR, lw=2.2, zorder=4,
-                label='2B TT 512N')
-        ax.plot(tt2b_512_tokens_m, tt2b_512_m[:, i + 1], 'D',
-                color=TT2B_512_COLOR, ms=8, zorder=4)
-        ax.plot(tt20b_512_tokens, tt20b_512[:, i + 1], '-',
-                color=TT20B_512_COLOR, lw=2.6, zorder=5,
-                label='20B TT 512N')
-        ax.plot(tt20b_512_tokens_m, tt20b_512_m[:, i + 1], '^',
-                color=TT20B_512_COLOR, ms=10, zorder=5)
+        # 2B/20B TT chains: line through every datapoint + small
+        # markers, matching upstream plot_evals_combined.py style
+        # (lw=1.8, ms=5, alpha=0.9). Plays down per-checkpoint eval
+        # noise vs chunky markers that amplify it.
+        ax.plot(tt2b_256_tokens, tt2b_256[:, i + 1], '-s',
+                color=TT2B_256_COLOR, lw=1.8, ms=5, alpha=0.9,
+                zorder=3, label='2B TT 256N')
+        ax.plot(tt2b_512_tokens, tt2b_512[:, i + 1], '-D',
+                color=TT2B_512_COLOR, lw=1.8, ms=5, alpha=0.9,
+                zorder=4, label='2B TT 512N')
+        ax.plot(tt20b_512_tokens, tt20b_512[:, i + 1], '-^',
+                color=TT20B_512_COLOR, lw=1.8, ms=5, alpha=0.9,
+                zorder=5, label='20B TT 512N')
 
         ax.set_title(task, pad=8)
         # Linear x — full 0-7.7T range so MDS reference trajectory is
@@ -210,7 +204,7 @@ def render(out_path: Path):
         ax.xaxis.set_major_formatter(
             FuncFormatter(
                 lambda x_B, _pos: (
-                    '' if x_B == 0
+                    '0' if x_B == 0
                     else f'{x_B/1000:g}T' if x_B >= 1000
                     else f'{int(x_B)}B'
                 )

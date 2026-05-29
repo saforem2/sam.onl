@@ -270,14 +270,13 @@ YLIM_PER_TASK = {
     'Winogrande':    (0.48, 0.60),
 }
 
-# Panel position (row, col) per task. Data-tuple order is fixed
-# (HellaSwag=1, ARC-Easy=2, ARC-Chall=3, Winogrande=4), but the panel
-# layout swaps HellaSwag (top-left) ↔ ARC-Challenge (bottom-left) so
-# the two ARC tasks sit on the same column.
+# Panel position (row, col) per task. HellaSwag top-left + ARC-Easy
+# top-right (the two highest-data tasks lead the eye), ARC-C bottom-
+# left + Winogrande bottom-right.
 PANEL_POS = {
-    'HellaSwag':     (1, 0),  # bottom-left
+    'HellaSwag':     (0, 0),  # top-left
     'ARC-Easy':      (0, 1),  # top-right
-    'ARC-Challenge': (0, 0),  # top-left
+    'ARC-Challenge': (1, 0),  # bottom-left
     'Winogrande':    (1, 1),  # bottom-right
 }
 
@@ -389,21 +388,19 @@ def render(out_path: Path):
             ax.axvline(x, ls='--', lw=0.7, color='gray', alpha=0.5, zorder=0)
 
         ax.plot(mds_tokens, mds[:, i + 1], ':x', color=MDS_COLOR,
-                lw=1.8, ms=7, label='MDS', zorder=3)
-        # TT chains: line through *every* datapoint (so warmup region
-        # at 10-100B tokens is visible — line starts near origin instead
-        # of jumping straight to ~400B from the first marker), markers
-        # only at the hand-picked checkpoints for visual cadence.
-        ax.plot(v2_256_tokens, v2_256[:, i + 1], '-',
-                color=TT_V2_256_COLOR, lw=2.4, zorder=4,
+                lw=1.8, ms=5, alpha=0.9, label='MDS', zorder=3)
+        # TT chains: line through every datapoint (warmup at 10-100B
+        # tokens visible) + small markers at every datapoint. Matches
+        # the upstream torchtitan plot_evals_combined.py style: thin
+        # lines + small markers play down per-checkpoint eval noise
+        # (especially the ARC-C wiggle from its 1172-question test set)
+        # vs our previous chunky markers which amplified it.
+        ax.plot(v2_256_tokens, v2_256[:, i + 1], '-s',
+                color=TT_V2_256_COLOR, lw=1.8, ms=5, alpha=0.9, zorder=4,
                 label='TT 256N')
-        ax.plot(v2_256_tokens_m, v2_256_m[:, i + 1], 's',
-                color=TT_V2_256_COLOR, ms=9, zorder=4)
-        ax.plot(v2_512_tokens, v2_512[:, i + 1], '-',
-                color=TT_V2_512_COLOR, lw=2.4, zorder=5,
+        ax.plot(v2_512_tokens, v2_512[:, i + 1], '-D',
+                color=TT_V2_512_COLOR, lw=1.8, ms=5, alpha=0.9, zorder=5,
                 label='TT 512N')
-        ax.plot(v2_512_tokens_m, v2_512_m[:, i + 1], 'D',
-                color=TT_V2_512_COLOR, ms=9, zorder=5)
 
         ax.set_title(task, pad=8)
         # Linear x: at 500B → 7T the chart only spans ~1.15 decades,
@@ -418,7 +415,7 @@ def render(out_path: Path):
         # (so xlim / data-coords math is unchanged), just relabel ticks.
         from matplotlib.ticker import FuncFormatter
         ax.xaxis.set_major_formatter(
-            FuncFormatter(lambda x_B, _pos: '' if x_B == 0 else f'{x_B/1000:g}T')
+            FuncFormatter(lambda x_B, _pos: '0' if x_B == 0 else f'{x_B/1000:g}T')
         )
         # Tightened y from (0.15, 0.75) — at 500B+ tokens we've cleared
         # the noise-bound warmup, so the empty band below 0.22 is just
