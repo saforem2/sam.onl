@@ -112,8 +112,9 @@ RANDOM_BASELINE = [0.25, 0.25, 0.25, 0.50]
 # 0.69 on ARC-Easy; 20B 512N early evals start near 0.22 on ARC-C.
 YLIM_PER_TASK = {
     # Must stay identical to the 2B chart's YLIM_PER_TASK so the
-    # panels lock visually when switching slides.
-    'HellaSwag':     (0.25, 0.60),
+    # panels lock visually when switching slides. HellaSwag upper
+    # bumped 0.60 -> 0.65 to clear 20B 512N step-4,400 (0.6346).
+    'HellaSwag':     (0.25, 0.65),
     'ARC-Easy':      (0.25, 0.70),
     'ARC-Challenge': (0.20, 0.40),
     'Winogrande':    (0.48, 0.60),

@@ -270,8 +270,10 @@ YLIM_PER_TASK = {
     # YLIM_PER_TASK so the panels lock visually when switching slides.
     # Any change here needs the same change in plot-20b-eval-comparison.py.
     # Ranges hug the data + leave the random baseline visible at the
-    # panel floor (0.25 for HS/ARC, 0.50 for WG).
-    'HellaSwag':     (0.25, 0.60),
+    # panel floor (0.25 for HS/ARC, 0.50 for WG). Upper bounds bumped
+    # to clear the new 20B 512N tail through step 4,400 (HS 0.6346,
+    # ARC-E 0.6662, ARC-C 0.3797, WG 0.5943).
+    'HellaSwag':     (0.25, 0.65),
     'ARC-Easy':      (0.25, 0.70),
     'ARC-Challenge': (0.20, 0.40),
     'Winogrande':    (0.48, 0.60),
