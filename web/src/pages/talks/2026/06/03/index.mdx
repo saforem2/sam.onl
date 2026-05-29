@@ -288,10 +288,16 @@ MDS was the pragmatic choice. By mid-2026 the calculus changed — `torchtitan` 
 ## 2B reference — training loss
 
 <figure>
-    <img
-        src="/talks/2026-06-03/figures/loss-2b-reference.svg"
-        alt="AuroraGPT-2B training loss across 3 stages"
-    />
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-06-03/figures/loss-2b-reference-mobile.svg"
+        />
+        <img
+            src="/talks/2026-06-03/figures/loss-2b-reference.svg"
+            alt="AuroraGPT-2B training loss across 3 stages"
+        />
+    </picture>
     <figcaption>
         (1.) Pretrain[^stage1] → (2.) continued-pretrain[^stage2] → (3.)
         math+code[^stage3]
@@ -309,10 +315,16 @@ MDS was the pragmatic choice. By mid-2026 the calculus changed — `torchtitan` 
 ## 2B reference + `torchtitan` overlay
 
 <figure>
-    <img
-        src="/talks/2026-06-03/figures/loss-2b-reference-with-tt.svg"
-        alt="AuroraGPT-2B MDS 3-stage trajectory with TorchTitan 256N production run overlaid"
-    />
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-06-03/figures/loss-2b-reference-with-tt-mobile.svg"
+        />
+        <img
+            src="/talks/2026-06-03/figures/loss-2b-reference-with-tt.svg"
+            alt="AuroraGPT-2B MDS 3-stage trajectory with TorchTitan 256N production run overlaid"
+        />
+    </picture>
     <figcaption>
         Same MDS trajectory as the reference chart, with the `torchtitan` 256N
         production run drawn on the same axes: starts inside the MDS pretrain
@@ -362,10 +374,16 @@ is the "fork tax", the rest of this talk.
 ## 2B loss — MDS full trajectory vs `torchtitan`
 
 <figure>
-    <img
-        src="/talks/2026-06-03/figures/loss-2b-compare.svg"
-        alt="2B training loss: MDS full 3-stage curve vs TT v2 256N chain"
-    />
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-06-03/figures/loss-2b-compare-mobile.svg"
+        />
+        <img
+            src="/talks/2026-06-03/figures/loss-2b-compare.svg"
+            alt="2B training loss: MDS full 3-stage curve vs TT v2 256N chain"
+        />
+    </picture>
     <figcaption>
         256N / GBS=6,144. At matched tokens, **δ ≈ 0.02** — within run-to-run
         noise. The cutover preserved training behavior.
@@ -383,10 +401,16 @@ is the "fork tax", the rest of this talk.
 ## 2B eval — MDS reference vs `torchtitan`
 
 <figure>
-    <img
-        src="/talks/2026-06-03/figures/eval-2b-compare.svg"
-        alt="2B eval comparison: MDS vs TT v2"
-    />
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-06-03/figures/eval-2b-compare-mobile.svg"
+        />
+        <img
+            src="/talks/2026-06-03/figures/eval-2b-compare.svg"
+            alt="2B eval comparison: MDS vs TT v2"
+        />
+    </picture>
     <figcaption>
         Data:
         [`docs/evals/agpt/2b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals/agpt/2b),
@@ -406,10 +430,16 @@ is the "fork tax", the rest of this talk.
 ## 20B eval — all-production overlay (2B + 20B)
 
 <figure>
-    <img
-        src="/talks/2026-06-03/figures/eval-20b-compare.svg"
-        alt="All-production eval overlay: 2B MDS, 2B TT 256N, 2B TT 512N, 20B TT 512N"
-    />
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-06-03/figures/eval-20b-compare-mobile.svg"
+        />
+        <img
+            src="/talks/2026-06-03/figures/eval-20b-compare.svg"
+            alt="All-production eval overlay: 2B MDS, 2B TT 256N, 2B TT 512N, 20B TT 512N"
+        />
+    </picture>
     <figcaption>
         Data:
         [`docs/evals/agpt/20b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals/agpt/20b),
