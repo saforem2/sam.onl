@@ -597,11 +597,11 @@ different scope. Together they turn "lost a 12 h walltime" into
 ```mermaid
 flowchart TB
     subgraph job["📋 JOB scope — PBS · hours"]
-        JOB_TXT["crash / walltime →<br/>chained resubmit"]
+        JOB_TXT["<i>crash / walltime</i> →<br/><b>chained resubmit</b>"]
         subgraph node["🖥 NODE scope — failover wrapper · minutes"]
-            NODE_TXT["bad host detected →<br/>swap from spare pool"]
+            NODE_TXT["<i>bad host detected</i> →<br/><b>swap from spare pool</b>"]
             subgraph proc["⏱ PROCESS scope — ezpz launch · seconds"]
-                PROC_TXT["stdout idle ≥ N s →<br/>kill + backoff"]
+                PROC_TXT["<i>stdout idle ≥ N s</i> →<br/><b>kill + backoff</b>"]
             end
         end
     end
@@ -627,13 +627,13 @@ flowchart TB
 ```mermaid
 flowchart TB
     subgraph proc["⏱ PROCESS · seconds"]
-        PROC_TXT["ezpz launch watchdog<br/>stdout idle ≥ N s<br/>→ kill + backoff"]
+        PROC_TXT["<i>stdout idle ≥ N s</i> →<br/><b>kill + backoff</b>"]
     end
     subgraph node["🖥 NODE · minutes"]
-        NODE_TXT["failover wrapper<br/>bad host detected<br/>→ swap from spare pool"]
+        NODE_TXT["<i>bad host detected</i> →<br/><b>swap from spare pool</b>"]
     end
     subgraph job["📋 JOB · hours"]
-        JOB_TXT["PBS chained resubmit<br/>crash / walltime<br/>→ next job in chain"]
+        JOB_TXT["<i>crash / walltime</i> →<br/><b>chained resubmit</b>"]
     end
 
     proc -- "process exit" --> node
