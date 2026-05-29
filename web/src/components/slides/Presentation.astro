@@ -286,20 +286,69 @@ const canonical = `sam.onl${url}`
         // pinch-zooming an image or scrolling a long slide's content
         // still works. Threshold prevents jitter from being treated as
         // a swipe.
+        //
+        // The handlers are intentionally `passive: true` — we never
+        // preventDefault on touchmove, because the slide-inner has
+        // `overflow: auto` and the user must be able to scroll long
+        // slides vertically while we observe their horizontal intent.
+        // CSS `touch-action: pan-y` on the deck (see slides.css) is
+        // what actually tells the browser to skip its 300ms gesture-
+        // disambiguation wait — without that, swipes feel laggy even
+        // with perfect JS handlers.
         let touchStartX = 0
         let touchStartY = 0
         let touchActive = false
+        // Once we observe enough vertical movement to commit to a
+        // scroll, lock this gesture out of the swipe handler. Prevents
+        // accidental slide changes when the user scrolls a long slide
+        // and lifts their finger with a small horizontal component.
+        let verticalLock = false
         const SWIPE_MIN = 50 // px
         const SWIPE_RATIO = 1.5 // |dx| must be at least this × |dy|
+        // If vertical movement exceeds this before any horizontal
+        // intent is clear, treat the gesture as a scroll and ignore it.
+        const VERT_LOCK = 12 // px
         deck.addEventListener(
             'touchstart',
             (e) => {
                 if (e.touches.length !== 1) return // ignore multi-touch (pinch)
                 if (anyDialogOpen()) return
                 if (deck.dataset.mode === 'overview') return
+                // Don't even start tracking if the touch began on an
+                // interactive element — tap targets get to be tap
+                // targets. (Previously we only filtered on touchend,
+                // which still meant the gesture competed with the tap.)
+                const target = e.target as HTMLElement | null
+                if (
+                    target?.closest(
+                        'a, button, summary, input, textarea, img, .footnote-popover',
+                    )
+                ) {
+                    touchActive = false
+                    return
+                }
                 touchStartX = e.touches[0].clientX
                 touchStartY = e.touches[0].clientY
                 touchActive = true
+                verticalLock = false
+            },
+            { passive: true },
+        )
+        deck.addEventListener(
+            'touchmove',
+            (e) => {
+                if (!touchActive || verticalLock) return
+                const t = e.touches[0]
+                if (!t) return
+                const dx = t.clientX - touchStartX
+                const dy = t.clientY - touchStartY
+                // If vertical motion clearly dominates before we hit
+                // the swipe threshold, abandon this gesture so a brief
+                // horizontal jitter at the end of the scroll doesn't
+                // fire a slide change.
+                if (Math.abs(dy) > VERT_LOCK && Math.abs(dy) > Math.abs(dx)) {
+                    verticalLock = true
+                }
             },
             { passive: true },
         )
@@ -308,6 +357,7 @@ const canonical = `sam.onl${url}`
             (e) => {
                 if (!touchActive) return
                 touchActive = false
+                if (verticalLock) return
                 const t = e.changedTouches[0]
                 if (!t) return
                 const dx = t.clientX - touchStartX
@@ -315,16 +365,19 @@ const canonical = `sam.onl${url}`
                 // Reject if it wasn't a horizontal swipe
                 if (Math.abs(dx) < SWIPE_MIN) return
                 if (Math.abs(dx) < SWIPE_RATIO * Math.abs(dy)) return
-                // Don't intercept swipes that start on an interactive
-                // element (links, buttons, footnote popovers) — the
-                // user is probably tapping, not swiping the deck.
-                const target = e.target as HTMLElement | null
-                if (target?.closest('a, button, summary, input, textarea')) {
-                    return
-                }
                 // Right swipe → previous; left swipe → next. Matches
                 // iOS/Android book-page convention.
                 advance(dx < 0 ? 1 : -1)
+            },
+            { passive: true },
+        )
+        // Cancel — fires when the system (e.g. notification, browser
+        // gesture) takes over the touch. Treat as no-swipe.
+        deck.addEventListener(
+            'touchcancel',
+            () => {
+                touchActive = false
+                verticalLock = false
             },
             { passive: true },
         )

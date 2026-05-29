@@ -12,6 +12,14 @@
     background-color: var(--background0);
     color: var(--foreground1);
     z-index: 1;
+    /* Tell the browser: we own horizontal gestures (swipe nav), it owns
+       vertical (scroll inside .slide-inner) and pinch-zoom on images.
+       Without this, the browser waits ~300ms to disambiguate the gesture
+       before dispatching, which makes swipes feel laggy on mobile. */
+    touch-action: pan-y pinch-zoom;
+    /* Prevent iOS rubber-band / pull-to-refresh bouncing the whole deck
+       when a swipe overshoots a slide-inner scroll boundary. */
+    overscroll-behavior: contain;
 }
 
 [is-~='slides'] {
@@ -55,6 +63,16 @@
         justify-content: safe center;
         padding: 1lh 4ch;
         overflow: auto;
+        /* Match the deck-level touch-action: vertical scroll is the
+           browser's job here, horizontal gestures bubble to the deck
+           handler. pinch-zoom remains for images. */
+        touch-action: pan-y pinch-zoom;
+        /* Stop momentum scroll at the slide-inner boundary so it
+           doesn't propagate up to the (otherwise unscrollable) deck
+           and trigger iOS rubber-band frames. */
+        overscroll-behavior: contain;
+        /* Smooth iOS momentum scrolling inside long slides. */
+        -webkit-overflow-scrolling: touch;
         /* Responsive type scale: hard min so it stays readable on phones,
            viewport-relative middle so it grows with the canvas, hard max
            so it doesn't get cartoonish on 4K displays. */
@@ -95,10 +113,14 @@
         font-size: clamp(0.9rem, 1.5vw + 0.45rem, 1.7rem);
     }
     @media (max-width: 1024px) {
-        &[data-size='sm'] .slide-inner { font-size: 1.05rem; }
+        &[data-size='sm'] .slide-inner {
+            font-size: 1.05rem;
+        }
     }
     @media (max-width: 768px) {
-        &[data-size='sm'] .slide-inner { font-size: 0.95rem; }
+        &[data-size='sm'] .slide-inner {
+            font-size: 0.95rem;
+        }
     }
 
     h1,
@@ -191,7 +213,9 @@
        the browser size to content. table-layout: auto is the default
        for HTML tables — overriding our 'fixed' rule above. */
     @media (max-width: 768px) {
-        table { table-layout: auto; }
+        table {
+            table-layout: auto;
+        }
         table:has(tr > td:nth-child(2):last-child) {
             th:first-child,
             td:first-child {
