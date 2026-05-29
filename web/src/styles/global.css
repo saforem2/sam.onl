@@ -1319,14 +1319,17 @@ html[data-webtui-theme='catppuccin-latte'] {
     table:not([data-table-style='terminal']) tr:first-child :is(th) {
         background-color: var(--background1);
     }
-    /* Zebra striping for body rows. Tint = --background1 (header tone) at
-       a noticeable alpha. The :is(tbody, :scope) makes it work whether or
-       not there's an explicit <tbody>. */
+    /* Zebra striping for body rows. Soft tint = --background1 at low
+       opacity so the stripe is "barely there" — visible as a row
+       separator without dominating the table. Was full --background1
+       which read as a hard alternation; this is ~3-4× subtler.
+       The :is(tbody, :scope) makes it work whether or not there's
+       an explicit <tbody>. */
     table:not([data-table-style='terminal'])
         :is(tbody, :scope)
         > tr:nth-child(even):not(:has(th))
         > :is(td, th) {
-        background-color: var(--background1);
+        background-color: oklch(from var(--background1) l c h / 0.4);
     }
     /* Row hover — subtle tint so the user can track their reading row
        across wide tables. Wins over the zebra-stripe rule via specificity
