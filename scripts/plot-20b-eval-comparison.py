@@ -240,11 +240,16 @@ def render(out_path: Path):
                     style='italic', va='top', ha='left')
 
     handles, labels = axes[-1][-1].get_legend_handles_labels()
+    # Cap at 4 cols (vs 5 labels) so the legend wraps to 2 rows on
+    # the mobile portrait figsize (9, 16). With 5 cols all on one
+    # row, matplotlib's tight_layout widens the figure to fit them
+    # — which then gets scaled down by CSS, shrinking all chart
+    # text vs the 2B chart's 4-column single-row legend.
     fig.legend(
         handles, labels,
         loc='upper center',
         bbox_to_anchor=(0.5, 0.97),
-        ncol=len(labels),
+        ncol=min(len(labels), 4),
         frameon=False,
         fontsize=18,
     )
