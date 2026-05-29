@@ -133,7 +133,7 @@ def render(out_path: Path):
     # Pick ~6-7 markers per chain on the 0-3T axis = one marker every
     # ~400-500B. Drop early-warmup markers since they'd cluster at x≈0.
     TT2B_256N_MARKER_STEPS = [8_000, 14_000, 20_000, 25_000, 30_000,
-                              38_000, 44_000, 50_000]
+                              38_000, 44_000, 49_500]
     TT2B_512N_MARKER_STEPS = [4_000, 7_000, 10_000, 13_000, 16_000,
                               19_000, 21_000, 24_000, 27_000]
     # 20B 512N has 24 points across 0.01T → 0.32T tokens; pick 6 evenly.
@@ -180,18 +180,25 @@ def render(out_path: Path):
         ax.plot(mds_tokens, mds[:, i + 1], ':x',
                 color=MDS_COLOR, lw=1.8, ms=5,
                 label='2B MDS', zorder=2)
-        # 2B/20B TT chains: line connects only the hand-picked
-        # checkpoints (same convention as the 2B-eval chart) so the
-        # trajectory reads cleanly without per-checkpoint noise wiggle.
-        ax.plot(tt2b_256_tokens_m, tt2b_256_m[:, i + 1], '-s',
-                color=TT2B_256_COLOR, lw=2.4, ms=8, zorder=3,
+        # 2B/20B TT chains: line through every datapoint (warmup at
+        # 10-100B tokens visible so curves start near origin instead
+        # of jumping in at ~400B), markers only at the hand-picked
+        # checkpoints for visual cadence.
+        ax.plot(tt2b_256_tokens, tt2b_256[:, i + 1], '-',
+                color=TT2B_256_COLOR, lw=2.2, zorder=3,
                 label='2B TT 256N')
-        ax.plot(tt2b_512_tokens_m, tt2b_512_m[:, i + 1], '-D',
-                color=TT2B_512_COLOR, lw=2.4, ms=8, zorder=4,
+        ax.plot(tt2b_256_tokens_m, tt2b_256_m[:, i + 1], 's',
+                color=TT2B_256_COLOR, ms=8, zorder=3)
+        ax.plot(tt2b_512_tokens, tt2b_512[:, i + 1], '-',
+                color=TT2B_512_COLOR, lw=2.2, zorder=4,
                 label='2B TT 512N')
-        ax.plot(tt20b_512_tokens_m, tt20b_512_m[:, i + 1], '-^',
-                color=TT20B_512_COLOR, lw=2.8, ms=10, zorder=5,
+        ax.plot(tt2b_512_tokens_m, tt2b_512_m[:, i + 1], 'D',
+                color=TT2B_512_COLOR, ms=8, zorder=4)
+        ax.plot(tt20b_512_tokens, tt20b_512[:, i + 1], '-',
+                color=TT20B_512_COLOR, lw=2.6, zorder=5,
                 label='20B TT 512N')
+        ax.plot(tt20b_512_tokens_m, tt20b_512_m[:, i + 1], '^',
+                color=TT20B_512_COLOR, ms=10, zorder=5)
 
         ax.set_title(task, pad=8)
         # Linear x — full 0-7.7T range so MDS reference trajectory is

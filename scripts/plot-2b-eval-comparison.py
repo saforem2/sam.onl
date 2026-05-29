@@ -120,22 +120,22 @@ TTV2_256N_DATA = [
     (23_000, 0.5232, 0.5627, 0.3020, 0.5320),
     (24_000, 0.5236, 0.5682, 0.3055, 0.5501),
     (25_000, 0.5225, 0.5657, 0.3080, 0.5272),
-    # 25.1K dropped (essentially the same checkpoint as 25K).
+    (25_100, 0.5297, 0.5673, 0.3080, 0.5320),
     (36_000, 0.5340, 0.5800, 0.3183, 0.5509),
     (37_000, 0.5383, 0.5774, 0.3089, 0.5564),
     (38_000, 0.5137, 0.5829, 0.3148, 0.5556),
-    (39_000, 0.5378, 0.5829, 0.3131, 0.5430),  # snapped from 38.8K
+    (38_800, 0.5378, 0.5829, 0.3131, 0.5430),
     (40_000, 0.5375, 0.5762, 0.3166, 0.5446),
     (41_000, 0.5437, 0.5779, 0.3200, 0.5549),
     (42_000, 0.5402, 0.5749, 0.3131, 0.5556),
-    (43_000, 0.5437, 0.5880, 0.3157, 0.5651),  # snapped from 42.5K
+    (42_500, 0.5437, 0.5880, 0.3157, 0.5651),
     (44_000, 0.5471, 0.5880, 0.3166, 0.5549),
     (45_000, 0.5462, 0.5838, 0.3106, 0.5454),
-    (46_000, 0.5452, 0.5812, 0.3140, 0.5509),  # snapped from 45.5K
+    (45_500, 0.5452, 0.5812, 0.3140, 0.5509),
     (47_000, 0.5470, 0.5779, 0.3131, 0.5470),
     (48_000, 0.5461, 0.5779, 0.3157, 0.5588),
     (49_000, 0.5483, 0.5816, 0.3080, 0.5454),
-    (50_000, 0.5452, 0.5896, 0.3276, 0.5462),  # snapped from 49.5K
+    (49_500, 0.5452, 0.5896, 0.3276, 0.5462),
     # --- TTV2_256N_DATA_END ---
 ]
 
@@ -338,7 +338,7 @@ def render(out_path: Path):
     # offset-method gap-fill, mixed in with real evals at 14K/20K/25K
     # in the mid range and 38K/44K/49.5K in the late range).
     V2_256N_MARKER_STEPS = [8_000, 14_000, 20_000, 25_000, 30_000,
-                            38_000, 44_000, 50_000]
+                            38_000, 44_000, 49_500]
     V2_512N_MARKER_STEPS = [7_000, 10_000, 13_000, 16_000, 19_000,
                             21_000, 24_000, 27_000]
 
@@ -388,17 +388,20 @@ def render(out_path: Path):
 
         ax.plot(mds_tokens, mds[:, i + 1], ':x', color=MDS_COLOR,
                 lw=1.8, ms=7, label='MDS', zorder=3)
-        # TT chains: line + markers only on the hand-picked checkpoints.
-        # Drawing through every raw point made the line wiggle on per-
-        # checkpoint eval noise, which read visually as "extra markers";
-        # connecting only the picked points gives a clean trajectory
-        # that's consistent with the marker cadence.
-        ax.plot(v2_256_tokens_m, v2_256_m[:, i + 1], '-s',
-                color=TT_V2_256_COLOR, lw=2.8, ms=9, zorder=4,
+        # TT chains: line through *every* datapoint (so warmup region
+        # at 10-100B tokens is visible — line starts near origin instead
+        # of jumping straight to ~400B from the first marker), markers
+        # only at the hand-picked checkpoints for visual cadence.
+        ax.plot(v2_256_tokens, v2_256[:, i + 1], '-',
+                color=TT_V2_256_COLOR, lw=2.4, zorder=4,
                 label='TT 256N')
-        ax.plot(v2_512_tokens_m, v2_512_m[:, i + 1], '-D',
-                color=TT_V2_512_COLOR, lw=2.8, ms=9, zorder=5,
+        ax.plot(v2_256_tokens_m, v2_256_m[:, i + 1], 's',
+                color=TT_V2_256_COLOR, ms=9, zorder=4)
+        ax.plot(v2_512_tokens, v2_512[:, i + 1], '-',
+                color=TT_V2_512_COLOR, lw=2.4, zorder=5,
                 label='TT 512N')
+        ax.plot(v2_512_tokens_m, v2_512_m[:, i + 1], 'D',
+                color=TT_V2_512_COLOR, ms=9, zorder=5)
 
         ax.set_title(task, pad=8)
         # Linear x: at 500B → 7T the chart only spans ~1.15 decades,
