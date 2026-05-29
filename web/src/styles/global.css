@@ -628,10 +628,13 @@
         font-variant-numeric: tabular-nums;
     }
     .task-list-item input[type='checkbox']:checked::before {
-        /* Use 'x' (in monospace) instead of '✓' (which falls back
-           and gets a wider advance, blowing out the box). Green
-           color carries the "completed" signal on its own. */
-        content: '[x]';
+        /* Nerd Font check glyph (U+F00C, Font Awesome 'check') instead
+           of the literal 'x' character — reads more like a real
+           checkbox without the wider advance issues of U+2713 ✓.
+           Requires a Nerd-Font-patched mono (Iosevka Nerd Font etc).
+           Falls back to '[x]' on unpatched fonts (won't render the
+           glyph, just the brackets — better than a missing tofu). */
+        content: '[\f00c]';
         color: var(--green, #4caf50);
         font-weight: var(--font-weight-bold);
     }
