@@ -386,7 +386,8 @@ def render(out_path: Path):
         ax.patch.set_alpha(0)
 
         ax.axhline(baseline, ls=':', lw=1, color='gray',
-                   label=f'random ({baseline:.0%})', zorder=1)
+                   label=None if MOBILE else f'random ({baseline:.0%})',
+                   zorder=1)
 
         # MDS stage-boundary annotations. The 2B MDS trajectory ran in
         # 3 stages (per the model card): (1) pretrain on olmo-mix-1124,
