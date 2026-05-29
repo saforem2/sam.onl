@@ -592,8 +592,6 @@ Bad-node failover, hang-watchdog, and PBS resubmit each operate at a
 different scope. Together they turn "lost a 12 h walltime" into
 "lost a 10 min sub-step."
 
-<div class="cascade-desktop">
-
 ```mermaid
 flowchart TB
     subgraph job["📋 JOB scope — PBS · hours"]
@@ -619,41 +617,6 @@ flowchart TB
     class node nodeC
     class proc procC
 ```
-
-</div>
-
-<div class="cascade-mobile">
-
-```mermaid
-flowchart TB
-    subgraph proc["⏱ PROCESS · seconds"]
-        PROC_TXT["ezpz launch watchdog<br/>stdout idle ≥ N s<br/>→ kill + backoff"]
-    end
-    subgraph node["🖥 NODE · minutes"]
-        NODE_TXT["failover wrapper<br/>bad host detected<br/>→ swap from spare pool"]
-    end
-    subgraph job["📋 JOB · hours"]
-        JOB_TXT["PBS chained resubmit<br/>crash / walltime<br/>→ next job in chain"]
-    end
-
-    proc -- "process exit" --> node
-    node -- "node exhaustion" --> job
-
-    classDef jobC  fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
-    classDef nodeC fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
-    classDef procC fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
-    classDef jobTxt  fill:transparent,stroke:none,color:#118cc2
-    classDef nodeTxt fill:transparent,stroke:none,color:#ee8f24
-    classDef procTxt fill:transparent,stroke:none,color:#1da811
-    class JOB_TXT jobTxt
-    class NODE_TXT nodeTxt
-    class PROC_TXT procTxt
-    class job jobC
-    class node nodeC
-    class proc procC
-```
-
-</div>
 
 **Inner loops catch most failures; outer loops catch the rest.**
 
@@ -735,17 +698,14 @@ flowchart TB
   #restart-cascade .mermaid g.cluster.procC > rect {
       filter: drop-shadow(0 2px 5px #1da81140);
   }
-  /* Desktop/mobile variant swap. Default: show desktop nested-russian-doll
-     diagram; hide the tall mobile variant. On narrow viewports flip both
-     so the tall sibling-stack version fills the portrait band instead.
-     Both variants reuse the #restart-cascade-scoped chip/badge/shadow
-     rules above — the wrapper divs only gate visibility, the inner
-     .mermaid block inherits all styling identically. */
-  #restart-cascade .cascade-mobile { display: none; }
+  /* On narrow viewports let the nested mermaid fill the slide width;
+     the russian-doll nesting reads cleanly even on phones (mermaid
+     stacks children top-down when there's no horizontal room).
+     A separate mobile-only variant broke the interactive controls
+     (mermaid-render.ts processes every .mermaid block once and the
+     duplicated render path was tearing down the viewport wrapper). */
   @media (max-width: 768px) {
-      #restart-cascade .cascade-desktop { display: none; }
-      #restart-cascade .cascade-mobile { display: block; }
-      #restart-cascade .cascade-mobile .mermaid svg {
+      #restart-cascade .mermaid svg {
           width: 100%;
           max-width: 100%;
           height: auto;
