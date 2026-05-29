@@ -592,6 +592,8 @@ Bad-node failover, hang-watchdog, and PBS resubmit each operate at a
 different scope. Together they turn "lost a 12 h walltime" into
 "lost a 10 min sub-step."
 
+<div class="cascade-desktop">
+
 ```mermaid
 flowchart TB
     subgraph job["📋 JOB scope — PBS · hours"]
@@ -617,6 +619,41 @@ flowchart TB
     class node nodeC
     class proc procC
 ```
+
+</div>
+
+<div class="cascade-mobile">
+
+```mermaid
+flowchart TB
+    subgraph proc["⏱ PROCESS · seconds"]
+        PROC_TXT["ezpz launch watchdog<br/>stdout idle ≥ N s<br/>→ kill + backoff"]
+    end
+    subgraph node["🖥 NODE · minutes"]
+        NODE_TXT["failover wrapper<br/>bad host detected<br/>→ swap from spare pool"]
+    end
+    subgraph job["📋 JOB · hours"]
+        JOB_TXT["PBS chained resubmit<br/>crash / walltime<br/>→ next job in chain"]
+    end
+
+    proc -- "process exit" --> node
+    node -- "node exhaustion" --> job
+
+    classDef jobC  fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
+    classDef nodeC fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
+    classDef procC fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    classDef jobTxt  fill:transparent,stroke:none,color:#118cc2
+    classDef nodeTxt fill:transparent,stroke:none,color:#ee8f24
+    classDef procTxt fill:transparent,stroke:none,color:#1da811
+    class JOB_TXT jobTxt
+    class NODE_TXT nodeTxt
+    class PROC_TXT procTxt
+    class job jobC
+    class node nodeC
+    class proc procC
+```
+
+</div>
 
 **Inner loops catch most failures; outer loops catch the rest.**
 
@@ -728,26 +765,19 @@ flowchart TB
      A separate mobile-only variant broke the interactive controls
      (mermaid-render.ts processes every .mermaid block once and the
      duplicated render path was tearing down the viewport wrapper). */
+  /* Desktop/mobile variant swap. Default: nested russian-doll on
+     desktop. On narrow viewports: hide the nested version, show the
+     tall sibling-stack version. Both render via the same mermaid
+     pipeline; only one is visible at a time so interactive controls
+     attach to the visible block. */
+  #restart-cascade .cascade-mobile { display: none; }
   @media (max-width: 768px) {
-      /* Let the diagram fill the slide width AND grow much taller
-         so it claims real estate on portrait screens. Mermaid renders
-         the russian-doll at a wide intrinsic aspect; without a min
-         height the auto-scaled SVG sits in a thin band at the top.
-         Force min-height: 60vh so it visibly fills the slide; the
-         aspect-ratio: auto + width: 100% combo will stretch the SVG
-         vertically (the nested boxes get taller, text size stays
-         readable because we already bumped font-size: 1.25em). */
-      #restart-cascade .mermaid {
-          min-height: 60vh;
-          display: flex;
-          align-items: stretch;
-      }
+      #restart-cascade .cascade-desktop { display: none; }
+      #restart-cascade .cascade-mobile { display: block; }
       #restart-cascade .mermaid svg {
-          width: 100% !important;
-          max-width: 100% !important;
-          height: auto !important;
-          min-height: 60vh;
-          aspect-ratio: auto;
+          width: 100%;
+          max-width: 100%;
+          height: auto;
       }
   }
 `}</style>
@@ -894,6 +924,79 @@ Full writeup: [`docs/experiments/agpt/aurora/20260523-failover-silent-hang-recov
 - AC boundaries (MoE + AC + compile = grief)
 - EP↔FSDP frontier
 - Collective tuning (XCCL vs gloo fallbacks, NCCL env)
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+ezpz yeet — env broadcast at scale
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="yeet-env" size="sm">
+
+## `ezpz yeet` — Efficiently Running 50k Python Processes
+
+<div class="yeet-env-grid">
+
+<div class="yeet-env-table tight-table">
+
+| Nodes | yeet (s) | First-step (s) | Per-node (ms) |
+| ----: | -------: | -------------: | ------------: |
+|     8 |     69.7 |           29.3 |         8,712 |
+|    16 |     89.7 |           31.6 |         5,606 |
+|    32 |     89.2 |           20.9 |         2,788 |
+|    64 |     91.2 |           34.6 |         1,425 |
+|   128 |    110.4 |           30.5 |           862 |
+|   256 |    132.9 |           37.6 |           519 |
+|   512 |    174.5 |           44.5 |           341 |
+|  1024 |    255.4 |           60.8 |           249 |
+|  2048 |    421.4 |           94.8 |           206 |
+|  4096 |    750.6 |          194.0 |           183 |
+
+</div>
+
+<div class="yeet-env-figures">
+
+<figure>
+    <img
+        src="/talks/2026-06-03/figures/yeet-env-seconds.svg"
+        alt="Total wall-clock for yeet broadcast vs node count, 8 to 4096 nodes"
+    />
+</figure>
+
+</div>
+
+</div>
+
+**Two regimes.** 8–64 nodes extract-bound (~70–91s flat, per-node cost
+falls 8.7s → 1.4s); ≥128 nodes broadcast-bound, each 2× in nodes adds
+~1.5–1.8× wall-clock. **48× per-node efficiency gain** over the sweep.
+
+Full write-up: [sam.onl/posts/2026/05/01](https://sam.onl/posts/2026/05/01/#scaling-on-aurora-8--4096-nodes)
+
+<style>{`
+  #yeet-env .yeet-env-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+      gap: 2ch;
+      align-items: start;
+  }
+  @media (max-width: 768px) {
+      #yeet-env .yeet-env-grid {
+          grid-template-columns: 1fr;
+      }
+  }
+  #yeet-env .yeet-env-table table {
+      font-size: 0.85em;
+      width: 100%;
+  }
+  #yeet-env .yeet-env-figures {
+      display: flex;
+      flex-direction: column;
+      gap: 1ch;
+  }
+  #yeet-env .yeet-env-figures figure { margin: 0; }
+  #yeet-env .yeet-env-figures img { width: 100%; height: auto; }
+`}</style>
 
 </Slide>
 
@@ -1164,79 +1267,6 @@ tuned at GBS=48 and the manifold update under-shoots at large batch.
           grid-template-columns: 1fr;
       }
   }
-`}</style>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-Appendix: yeet-env tarball broadcast scaling
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="yeet-env" size="sm">
-
-### `yeet-env`: venv tarball broadcast at scale
-
-<div class="yeet-env-grid">
-
-<div class="yeet-env-table tight-table">
-
-| Nodes | yeet (s) | First-step (s) | Per-node (ms) |
-| ----: | -------: | -------------: | ------------: |
-|     8 |     69.7 |           29.3 |         8,712 |
-|    16 |     89.7 |           31.6 |         5,606 |
-|    32 |     89.2 |           20.9 |         2,788 |
-|    64 |     91.2 |           34.6 |         1,425 |
-|   128 |    110.4 |           30.5 |           862 |
-|   256 |    132.9 |           37.6 |           519 |
-|   512 |    174.5 |           44.5 |           341 |
-|  1024 |    255.4 |           60.8 |           249 |
-|  2048 |    421.4 |           94.8 |           206 |
-|  4096 |    750.6 |          194.0 |           183 |
-
-</div>
-
-<div class="yeet-env-figures">
-
-<figure>
-    <img
-        src="/talks/2026-06-03/figures/yeet-env-seconds.svg"
-        alt="Total wall-clock for yeet broadcast vs node count, 8 to 4096 nodes"
-    />
-</figure>
-
-</div>
-
-</div>
-
-**Two regimes.** 8–64 nodes extract-bound (~70–91s flat, per-node cost
-falls 8.7s → 1.4s); ≥128 nodes broadcast-bound, each 2× in nodes adds
-~1.5–1.8× wall-clock. **48× per-node efficiency gain** over the sweep.
-
-Full write-up: [sam.onl/posts/2026/05/01](https://sam.onl/posts/2026/05/01/#scaling-on-aurora-8--4096-nodes)
-
-<style>{`
-  #yeet-env .yeet-env-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-      gap: 2ch;
-      align-items: start;
-  }
-  @media (max-width: 768px) {
-      #yeet-env .yeet-env-grid {
-          grid-template-columns: 1fr;
-      }
-  }
-  #yeet-env .yeet-env-table table {
-      font-size: 0.85em;
-      width: 100%;
-  }
-  #yeet-env .yeet-env-figures {
-      display: flex;
-      flex-direction: column;
-      gap: 1ch;
-  }
-  #yeet-env .yeet-env-figures figure { margin: 0; }
-  #yeet-env .yeet-env-figures img { width: 100%; height: auto; }
 `}</style>
 
 </Slide>
