@@ -825,6 +825,8 @@ Watchdog state machine — one cycle in detail
 
 ## `ezpz launch --timeout` — one hang/recover cycle
 
+<div class="watchdog-desktop">
+
 ```mermaid
 stateDiagram-v2
     direction LR
@@ -834,7 +836,36 @@ stateDiagram-v2
     Killed --> Running: backoff, re-exec
 ```
 
+</div>
+
+<div class="watchdog-mobile">
+
+```mermaid
+stateDiagram-v2
+    direction TB
+    [*] --> Running
+    Running --> Hung: no stdout for N seconds
+    Hung --> Killed: SIGTERM → SIGKILL
+    Killed --> Running: backoff, re-exec
+```
+
+</div>
+
 Every collective hang shows up as **silence on stdout** — the process is "alive" by `kill -0` but nothing is happening. The watchdog fires on the _absence_ of progress, not on a heartbeat ping.
+
+<style>{`
+  /* Desktop/mobile mermaid variant swap, same pattern as restart-cascade. */
+  #watchdog-fsm .watchdog-mobile { display: none; }
+  @media (max-width: 768px) {
+      #watchdog-fsm .watchdog-desktop { display: none; }
+      #watchdog-fsm .watchdog-mobile { display: block; }
+      #watchdog-fsm .mermaid svg {
+          width: 100%;
+          max-width: 100%;
+          height: auto;
+      }
+  }
+`}</style>
 
 </Slide>
 
