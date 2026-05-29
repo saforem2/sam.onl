@@ -18,6 +18,7 @@ Output: web/public/talks/2026-06-03/figures/eval-20b-compare.svg
 """
 
 import importlib.util
+import os
 import sys
 from pathlib import Path
 
@@ -28,6 +29,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 from _plot_style import TALK_RCPARAMS_GRID, register_iosevka25
 
 register_iosevka25()
+
+# Mobile portrait variant — see plot-2b-eval-comparison.py for rationale.
+MOBILE = bool(os.environ.get('MOBILE'))
 
 # Import the 2B eval data tables from the sibling script. The filename
 # has hyphens (not legal Python ident) so use importlib.
@@ -116,7 +120,9 @@ def render(out_path: Path):
     plt.style.use(ambivalent.STYLES['ambivalent'])
     plt.rcParams.update(TALK_RCPARAMS_GRID)
 
-    fig, axes = plt.subplots(2, 2, figsize=(16, 9), sharex=True)
+    # MOBILE: portrait (9, 16) for the 2x2 grid — see 2b script.
+    figsize = (9, 16) if MOBILE else (16, 9)
+    fig, axes = plt.subplots(2, 2, figsize=figsize, sharex=True)
     fig.patch.set_alpha(0)
 
     mds = np.array(MDS_DATA)
@@ -255,4 +261,5 @@ def render(out_path: Path):
 if __name__ == '__main__':
     out = Path.home() / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/figures'
     out.mkdir(parents=True, exist_ok=True)
-    render(out / 'eval-20b-compare.svg')
+    fname = 'eval-20b-compare-mobile.svg' if MOBILE else 'eval-20b-compare.svg'
+    render(out / fname)

@@ -13,6 +13,7 @@ Renders one transparent SVG that works on both site themes — same
 pattern as plot-2b-eval-comparison.py.
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -24,6 +25,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 from _plot_style import TALK_RCPARAMS, register_iosevka25
 
 register_iosevka25()
+
+# Mobile portrait variant — see plot-2b-loss-reference.py for rationale.
+MOBILE = bool(os.environ.get('MOBILE'))
 
 MDS_PARQUET = Path.home() / 'projects/saforem2/Megatron-DeepSpeed/ALCF/AuroraGPT/2B/data/loss_lm_loss_vs_tokens.parquet'
 
@@ -54,7 +58,8 @@ def render(out_path: Path):
     plt.style.use(ambivalent.STYLES['ambivalent'])
     plt.rcParams.update(TALK_RCPARAMS)
 
-    fig, ax = plt.subplots(figsize=(15, 7))
+    figsize = (8, 10) if MOBILE else (15, 7)
+    fig, ax = plt.subplots(figsize=figsize)
     fig.patch.set_alpha(0)
     ax.patch.set_alpha(0)
 
@@ -193,4 +198,5 @@ def render(out_path: Path):
 if __name__ == '__main__':
     out = Path.home() / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/figures'
     out.mkdir(parents=True, exist_ok=True)
-    render(out / 'loss-2b-compare.svg')
+    fname = 'loss-2b-compare-mobile.svg' if MOBILE else 'loss-2b-compare.svg'
+    render(out / fname)

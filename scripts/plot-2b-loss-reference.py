@@ -10,6 +10,7 @@ Source: same parquet as the comparison chart.
 Output: web/public/talks/2026-06-03/figures/loss-2b-reference.svg
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -22,6 +23,11 @@ from _plot_style import TALK_RCPARAMS, register_iosevka25
 
 register_iosevka25()
 
+# Mobile portrait variant — single-panel chart, swap to a slightly
+# taller-than-wide figsize so the line shape isn't crushed in a thin
+# landscape band on a phone in portrait orientation.
+MOBILE = bool(os.environ.get('MOBILE'))
+
 MDS_PARQUET = Path.home() / 'projects/saforem2/Megatron-DeepSpeed/ALCF/AuroraGPT/2B/data/loss_lm_loss_vs_tokens.parquet'
 
 # Stage boundaries (tokens). Same source as the comparison plot.
@@ -33,7 +39,8 @@ def render(out_path: Path):
     plt.style.use(ambivalent.STYLES['ambivalent'])
     plt.rcParams.update(TALK_RCPARAMS)
 
-    fig, ax = plt.subplots(figsize=(14, 8))
+    figsize = (8, 10) if MOBILE else (14, 8)
+    fig, ax = plt.subplots(figsize=figsize)
     fig.patch.set_alpha(0)
     ax.patch.set_alpha(0)
 
@@ -114,4 +121,5 @@ def render(out_path: Path):
 if __name__ == '__main__':
     out = Path.home() / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/figures'
     out.mkdir(parents=True, exist_ok=True)
-    render(out / 'loss-2b-reference.svg')
+    fname = 'loss-2b-reference-mobile.svg' if MOBILE else 'loss-2b-reference.svg'
+    render(out / fname)

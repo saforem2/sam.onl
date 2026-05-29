@@ -14,6 +14,7 @@ Data source: 2026-05-27 canonical-table refresh in
   torchtitan/experiments/ezpz/docs/evals/agpt/2b/README.md
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -24,6 +25,12 @@ sys.path.insert(0, str(Path(__file__).parent))
 from _plot_style import TALK_RCPARAMS_GRID, register_iosevka25
 
 register_iosevka25()
+
+# Mobile portrait variant — swap the figsize so the 2x2 grid stacks
+# tall instead of wide. Triggered by env var so the desktop default
+# is unchanged; CI / scripts call MOBILE=1 python scripts/foo.py to
+# render the alternate.
+MOBILE = bool(os.environ.get('MOBILE'))
 
 # ----- DATA ------------------------------------------------------------------
 
@@ -303,7 +310,11 @@ def render(out_path: Path):
     # without empty bands on either axis under object-fit:contain.
     # 15x7 = 2.14 just slightly width-constrained for a hair of vertical
     # breathing room.
-    fig, axes = plt.subplots(2, 2, figsize=(16, 9), sharex=True)
+    # MOBILE: portrait (9, 16) so the 2x2 grid stacks tall — each panel
+    # then has more vertical real estate on a phone in portrait, instead
+    # of getting crushed into a thin landscape band.
+    figsize = (9, 16) if MOBILE else (16, 9)
+    fig, axes = plt.subplots(2, 2, figsize=figsize, sharex=True)
     fig.patch.set_alpha(0)
 
     mds = np.array(MDS_DATA)
@@ -478,4 +489,5 @@ def render(out_path: Path):
 if __name__ == '__main__':
     out = Path('/Users/samforeman/projects/saforem2/sam.onl/web/public/talks/2026-06-03/figures')
     out.mkdir(parents=True, exist_ok=True)
-    render(out / 'eval-2b-compare.svg')
+    fname = 'eval-2b-compare-mobile.svg' if MOBILE else 'eval-2b-compare.svg'
+    render(out / fname)
