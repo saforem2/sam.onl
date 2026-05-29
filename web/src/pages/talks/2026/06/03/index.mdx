@@ -597,11 +597,11 @@ different scope. Together they turn "lost a 12 h walltime" into
 ```mermaid
 flowchart TB
     subgraph job["📋 JOB scope — PBS · hours"]
-        JOB_TXT["crash / walltime → chained resubmit"]
+        JOB_TXT["crash / walltime →<br/>chained resubmit"]
         subgraph node["🖥 NODE scope — failover wrapper · minutes"]
-            NODE_TXT["bad host detected → swap from spare pool"]
+            NODE_TXT["bad host detected →<br/>swap from spare pool"]
             subgraph proc["⏱ PROCESS scope — ezpz launch · seconds"]
-                PROC_TXT["stdout idle ≥ N s → kill + backoff"]
+                PROC_TXT["stdout idle ≥ N s →<br/>kill + backoff"]
             end
         end
     end

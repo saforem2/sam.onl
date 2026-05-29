@@ -495,9 +495,21 @@ export function initMermaid() {
             },
         })
 
-        const nodes = document.querySelectorAll('.mermaid')
+        // Filter to visible blocks only. Hidden .mermaid blocks
+        // (e.g. .cascade-mobile / .cascade-desktop CSS-toggled
+        // variants) measure as 0×0 inside display:none parents,
+        // which makes mermaid's layout pass produce a 0-height SVG
+        // and trips the post-render stabilize → setupInteractiveViewport
+        // chain (the SVG never gets its proper dimensions, controls
+        // never attach). Skip them; they'll render on viewport
+        // crossing the breakpoint when the resize listener fires.
+        const allNodes = Array.from(
+            document.querySelectorAll<HTMLElement>('.mermaid'),
+        )
+        const nodes = allNodes.filter(
+            (n) => n.offsetParent !== null || n === document.body,
+        )
         nodes.forEach((node) => {
-            if (!(node instanceof HTMLElement)) return
             const source = node.dataset.mermaid
             if (!source) return
             // Re-render: drop interactive flag and existing wrapper/controls
@@ -523,4 +535,17 @@ export function initMermaid() {
         attributes: true,
         attributeFilter: ['data-webtui-theme'],
     })
+
+    // Re-render when the mobile breakpoint is crossed (e.g. user
+    // resizes window or rotates device) — the previously-hidden
+    // variant needs its layout pass now that it's visible.
+    const mq = window.matchMedia('(max-width: 768px)')
+    const onBreakpoint = () => render()
+    if (typeof mq.addEventListener === 'function') {
+        mq.addEventListener('change', onBreakpoint)
+    } else {
+        // Safari < 14 fallback
+        // @ts-expect-error deprecated API
+        mq.addListener(onBreakpoint)
+    }
 }
