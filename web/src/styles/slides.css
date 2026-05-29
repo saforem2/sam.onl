@@ -181,13 +181,20 @@
     /* Compact table utility — for slides where a figure + table share
        vertical space and the default 0.3lh per-side cell padding
        crowds the chart out. Wrap the table in <div class="tight-table">
-       (or apply directly to a markdown table via a parent div). */
+       (or apply directly to a markdown table via a parent div).
+       Shrinks the table font ~10%; line-height stays at 1.5 (browser
+       default-ish) so rows still breathe — the savings come from
+       cell padding (0.3lh -> 0) + slightly smaller type, not from
+       cramped lines. */
+    .tight-table {
+        font-size: 0.9em;
+    }
     .tight-table table,
     table.tight-table {
         th,
         td {
             padding-block: 0 !important;
-            line-height: 1.1;
+            line-height: 1.5;
         }
         /* Trim header bottom-border padding too so the head doesn't
            visually disconnect from the first row at zero padding. */
@@ -208,10 +215,17 @@
        NB: do NOT force `display: inline-block` on the inner <code>
        here — it exposes a bg-color gap between shiki's line-number
        gutter and the code body. The default `display: block` (with
-       its natural width) scrolls correctly under the pre's overflow. */
+       its natural width) scrolls correctly under the pre's overflow.
+       NB2: flex-shrink: 0 + overflow-y: visible are required because
+       the slide-inner is a flex column — without flex-shrink: 0 the
+       <pre> gets squeezed below its content height when viewport is
+       short, and overflow-y defaults to auto once overflow-x is set,
+       which then clips the squeezed content invisibly. */
     pre {
         max-width: 100%;
         overflow-x: auto;
+        overflow-y: visible;
+        flex-shrink: 0;
     }
     p code {
         padding-block: 0.05em;

@@ -791,10 +791,12 @@ html[data-webtui-theme='catppuccin-latte'] .astro-code span {
 }
 
 /* Code-block container: hugs content, no internal padding band.
-   Half-line gap above so code blocks don't crowd preceding text. */
+   Half-line gap above and below so code blocks don't crowd
+   surrounding text. (Was asymmetric 0.5lh top / 1lh bottom for
+   no good reason — equalized.) */
 pre.astro-code {
     padding: 0;
-    margin-block: 0.5lh 1lh;
+    margin-block: 0.5lh;
     align-self: start;
     background-color: var(--pre-background, var(--background1)) !important;
     /* No max-height cap here — the surrounding container (slide-inner,

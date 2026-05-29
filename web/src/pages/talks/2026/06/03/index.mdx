@@ -233,6 +233,8 @@ AuroraGPT-2B (Megatron-DeepSpeed reference baseline)
 
 ## AuroraGPT-2B — the reference run on Aurora
 
+<div class="tight-table">
+
 | Spec         | Value                                                                  |
 | ------------ | ---------------------------------------------------------------------- |
 | Architecture | 1.986B params, 12 layers, GQA (16h / 4 kv), 8192 ctx[^batch-tokens], LBS=2 |
@@ -242,6 +244,8 @@ AuroraGPT-2B (Megatron-DeepSpeed reference baseline)
 | Optimizer    | SophiaG (β=0.9/0.95, ρ=0.01, wd=0.1, LR=2.28e-5)                       |
 | Stages       | 3 (pretrain · continued-pretrain · math+code)                          |
 | Tokens       | **~7.77T total**                                                       |
+
+</div>
 
 This is the **pre-`torchtitan` reference**. Everything that follows is
 the migration story: same scale, same data, what changed and what
@@ -748,6 +752,8 @@ Failover wrapper validation — the silent hang it was built for
 log goes **completely silent** at step 37. No traceback, no MPI error,
 no rank dying. Just dead.
 
+<div class="tight-table">
+
 | Time (CT) | Event                                                     |
 | --------- | --------------------------------------------------------- |
 | 21:06:41  | step 37 logged · `loss 11.80 · tps 3,919`                 |
@@ -756,6 +762,8 @@ no rank dying. Just dead.
 | 21:36:43  | no traceback to scrape → **blind swap** of rank-0 host    |
 | 21:36:45  | attempt 2 launches on swapped node set                    |
 | 21:57:49  | walltime hit · step 296 · loss 5.68 · ckpts persisted     |
+
+</div>
 
 **Three new pieces had to fire in sequence on a real-world hang to
 prove production-readiness:** `--timeout=1800` watchdog · `exit 124`
@@ -876,11 +884,15 @@ Appendix: Operational reality — failover wrapper
 PBS gives us 256 / 512 nodes, one is bad, training crashes or hangs
 after N hours, walltime gone.
 
+<div class="tight-table">
+
 | Job     | Trajectory  | Failure                                           |
 | ------- | ----------- | ------------------------------------------------- |
 | 8459818 | 2B 256N v2  | `shepherd died from signal 9` after step 2070     |
 | 8470102 | 20B 256N v2 | gloo TCP `Connection closed by peer` after ~3h    |
 | 8479579 | 20B 512N v2 | **silent hang** at step 803 (heartbeat continued) |
+
+</div>
 
 **Failover wrapper:** request `select=N+spare` (~2%, min 4). Split
 into active + spare pool. On crash, scrape bad nodes from log, swap a
@@ -1053,7 +1065,7 @@ Appendix: yeet-env tarball broadcast scaling
 
 <div class="yeet-env-grid">
 
-<div class="yeet-env-table">
+<div class="yeet-env-table tight-table">
 
 | Nodes | yeet (s) | First-step (s) | Per-node (ms) |
 | ----: | -------: | -------------: | ------------: |
