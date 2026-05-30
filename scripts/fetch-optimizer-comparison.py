@@ -36,16 +36,29 @@ import pandas as pd
 import wandb
 
 PROJECT = "aurora_gpt/AuroraGPT"
-# Two parallel experiment trees on Flare ran the same comparison: the
-# `optimizer-experiments` tree (Oct–Nov 2025) and the earlier
-# `large-batch-training/tok50M-n512` tree (Sep 2025, where Muon lived).
-# We need both to recreate the chart.
-OUTDIR_FILTERS = (
+
+# The W&B report's comparison uses ONE outdir per optimizer:
+#   - AdamW / Lamb / MuonClip / SophiaG → the canonical Oct-Nov 2025
+#     "optimizer-experiments/Megatron-DeepSpeed" campaign at GBS=6,144
+#   - Muon → the earlier Sep 2025 "large-batch-training/tok50M-n512"
+#     campaign (Muon never ran in the later outdir).
+# Including the early Lamb chain (Oct 6-8, also lived in tok50M-n512)
+# would conflate two distinct experiments — that chain reaches 7T
+# tokens at loss 1.32, which is a different setup we don't want to
+# attribute to the comparison.
+OUTDIR_OPTIMIZER_TREE = (
     "/lus/flare/projects/AuroraGPT/AuroraGPT-v1/Experiments/AuroraGPT-2B/"
-    "optimizer-experiments/Megatron-DeepSpeed",
-    "/lus/flare/projects/AuroraGPT/AuroraGPT-v1/Experiments/AuroraGPT-2B/"
-    "large-batch-training/tok50M-n512/Megatron-DeepSpeed",
+    "optimizer-experiments/Megatron-DeepSpeed"
 )
+OUTDIR_LARGE_BATCH_TREE = (
+    "/lus/flare/projects/AuroraGPT/AuroraGPT-v1/Experiments/AuroraGPT-2B/"
+    "large-batch-training/tok50M-n512/Megatron-DeepSpeed"
+)
+# Per-optimizer outdir scope. Optimizers not listed here use
+# OUTDIR_OPTIMIZER_TREE by default.
+OPTIMIZER_OUTDIR_OVERRIDE = {
+    "muon": OUTDIR_LARGE_BATCH_TREE,
+}
 
 STEP_KEY = "_step"
 TOKEN_KEY = "training/consumed_tokens"
@@ -76,38 +89,40 @@ OUT_DIR = (
 
 
 def _group_runs(api: wandb.Api):
-    runs = api.runs(
-        PROJECT,
-        filters={"config.outdir": {"$in": list(OUTDIR_FILTERS)}},
-        per_page=500,
-    )
-    print(f"matched {len(runs)} runs across {len(OUTDIR_FILTERS)} outdirs")
+    """For each optimizer, fetch only the runs in *its* canonical outdir.
+
+    Running one big query across both outdirs and then filtering would
+    pull the early Oct 6-8 Lamb chain (which lived in the
+    large-batch-training tree) into the Lamb concat — that chain
+    reaches 7T tokens at loss 1.32 and represents a different setup
+    than the optimizer-comparison campaign. Scoping per-optimizer
+    avoids the cross-campaign contamination.
+    """
     by_opt: dict[str, list] = defaultdict(list)
-    for r in runs:
-        if r.id in RUN_BLACKLIST:
-            continue
-        # config["args"] is the megatron arg-namespace as a dict; the
-        # optimizer flag lives there as `optimizer`. Earlier we tried
-        # the flattened "args.optimizer" key which wandb does NOT
-        # populate — every run silently fell into UNKNOWN.
-        args = r.config.get("args") or {}
-        opt = args.get("optimizer") if isinstance(args, dict) else None
-        if not isinstance(opt, str):
-            continue
-        opt = opt.strip().lower()
-        if opt not in OPTIMIZERS:
-            # Don't print every UNKNOWN — the loop has a `for r in runs`
-            # iterator that already filtered to the right outdir, so
-            # mismatches here are minor (e.g. an early experimental
-            # optimizer key like "dshampoo"). Surface in summary instead.
-            by_opt.setdefault(f"__skip__{opt}", []).append(r)
-            continue
-        by_opt[opt].append(r)
-    # Surface skipped opts so we know if we're missing anything.
-    for key in [k for k in by_opt if k.startswith("__skip__")]:
-        opt = key.removeprefix("__skip__")
-        print(f"  skipping {len(by_opt[key])} runs with optimizer={opt!r}")
-        del by_opt[key]
+    for opt_key in OPTIMIZERS:
+        outdir = OPTIMIZER_OUTDIR_OVERRIDE.get(opt_key, OUTDIR_OPTIMIZER_TREE)
+        runs = api.runs(
+            PROJECT,
+            filters={"config.outdir": outdir},
+            per_page=500,
+        )
+        for r in runs:
+            if r.id in RUN_BLACKLIST:
+                continue
+            # config["args"] is the megatron arg-namespace as a dict;
+            # the optimizer flag lives there as `optimizer`. The
+            # flattened "args.optimizer" key isn't populated.
+            args = r.config.get("args") or {}
+            opt = args.get("optimizer") if isinstance(args, dict) else None
+            if not isinstance(opt, str):
+                continue
+            if opt.strip().lower() != opt_key:
+                continue
+            by_opt[opt_key].append(r)
+        print(
+            f"  {opt_key:15s}  outdir=…/{outdir.rsplit('/', 2)[-2]}/{outdir.rsplit('/', 1)[-1]}  "
+            f"runs={len(by_opt[opt_key])}"
+        )
     return by_opt
 
 
