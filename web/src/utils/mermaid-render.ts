@@ -541,7 +541,29 @@ export function initMermaid() {
             await mermaid.run({ nodes })
             stabilizeMermaidSvgLayout()
         } catch (error) {
-            console.error('Mermaid rendering failed:', error)
+            // Mermaid throws plain objects in some failure modes, so a
+            // bare `console.error(error)` logs `[object Object]` and
+            // hides which diagram broke. Surface the actual message
+            // (or JSON-stringify as a last resort) so the offending
+            // diagram is identifiable from the browser console.
+            const err = error as { message?: string; str?: string } | undefined
+            const detail =
+                err?.message ??
+                err?.str ??
+                (typeof error === 'string' ? error : '') ??
+                ''
+            const fallback = (() => {
+                try {
+                    return JSON.stringify(error)
+                } catch {
+                    return String(error)
+                }
+            })()
+            console.error(
+                'Mermaid rendering failed:',
+                detail || fallback,
+                error,
+            )
         }
     }
 
