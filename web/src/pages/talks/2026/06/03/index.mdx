@@ -237,7 +237,7 @@ AuroraGPT-2B (Megatron-DeepSpeed reference baseline)
 
 <Slide id="agpt-2b">
 
-## AuroraGPT-2B — the reference run on Aurora
+## AuroraGPT-2B: the reference run on Aurora
 
 <div class="tight-table">
 
@@ -266,7 +266,7 @@ Why MDS in the first place — the pre-torchtitan landscape
 
 <Slide id="mds-context">
 
-## Why MDS first — the only option at the time
+## Why MDS first: the only option at the time
 
 When AuroraGPT kicked off, MDS was the **only** LLM pre-training framework that ran:
 
@@ -286,7 +286,7 @@ MDS was the pragmatic choice. By mid-2026 the calculus changed — `torchtitan` 
 
 <Slide id="agpt-2b-loss">
 
-## 2B reference — training loss
+## 2B reference: training loss
 
 <figure>
     <picture>
@@ -372,7 +372,7 @@ is the "fork tax", the rest of this talk.
 
 <Slide id="agpt-2b-loss-compare">
 
-## 2B loss — MDS full trajectory vs `torchtitan`
+## 2B loss: MDS full trajectory vs `torchtitan`
 
 <figure>
     <picture>
@@ -399,7 +399,7 @@ is the "fork tax", the rest of this talk.
 
 <Slide id="agpt-2b-eval">
 
-## 2B eval — MDS reference vs `torchtitan`
+## 2B eval: MDS reference vs `torchtitan`
 
 <figure>
     <picture>
@@ -428,7 +428,7 @@ is the "fork tax", the rest of this talk.
 
 <Slide id="agpt-20b-eval">
 
-## 20B eval — all-production overlay (2B + 20B)
+## 20B eval: all-production overlay (2B + 20B)
 
 <figure>
     <picture>
@@ -461,7 +461,7 @@ The fork tax
 
 <div class="fork-tax-text">
 
-## The fork tax — upstream-sync as a workflow
+## The fork tax: upstream-sync as a workflow
 
 - ~6× weekly resyncs over 6 weeks
 - Smoke gate: bit-exact loss + grad-norm + peak memory at `--debug.deterministic --debug.seed=42`
@@ -583,7 +583,7 @@ Production pre-training is long, large, and routinely interrupted:
 
 <Slide id="restart-cascade">
 
-## "The Restarts" — three layers of recovery
+## "The Restarts": three layers of recovery
 
 Bad-node failover, hang-watchdog, and PBS resubmit each operate at a
 different scope. Together they turn "lost a 12 h walltime" into
@@ -787,7 +787,7 @@ The heartbeat watchdog — ezpz launch --timeout / --retries
 
 <Slide id="watchdog">
 
-## Silent-hang detection — `ezpz launch --timeout / --retries`
+## Silent-hang detection: `ezpz launch --timeout / --retries`
 
 **The problem.** `xccl` on XPU silently ignores
 `train_timeout_seconds`, so a torchtitan job stuck in a hung
@@ -820,7 +820,7 @@ Watchdog state machine — one cycle in detail
 
 <Slide id="watchdog-fsm">
 
-## `ezpz launch --timeout` — one hang/recover cycle
+## `ezpz launch --timeout`: one hang/recover cycle
 
 <div class="watchdog-desktop">
 
@@ -876,7 +876,7 @@ ezpz launch --auto-retry — new failover wrapper (PR #144)
 
 <Slide id="auto-retry">
 
-## `--auto-retry` — bad-node failover, on tap
+## `--auto-retry`: bad-node failover, on tap
 
 Allocate spares up front, swap them in on failure:
 
@@ -900,7 +900,7 @@ Failover wrapper validation — the silent hang it was built for
 
 <Slide id="failover-validation">
 
-## Failover wrapper — caught a real silent hang in production
+## Failover wrapper: caught a real silent hang in production
 
 **Job `8505298`, 2026-05-23.** Attempt 1 trains cleanly steps 1→37, then
 log goes **completely silent** at step 37. No traceback, no MPI error,
@@ -937,7 +937,7 @@ Full writeup: [`docs/experiments/agpt/aurora/20260523-failover-silent-hang-recov
 
 <Slide id="generalizes">
 
-## What generalizes — what doesn't
+## What generalizes, what doesn't
 
 **Generalizes across vendors / sites / models**
 
@@ -961,7 +961,7 @@ ezpz yeet — env broadcast at scale
 
 <Slide id="yeet-env" size="sm">
 
-## `ezpz yeet` — Efficiently Running 50k Python Processes
+## `ezpz yeet`: Efficiently Running 50k Python Processes
 
 <div class="yeet-env-grid">
 
@@ -1030,7 +1030,7 @@ Full write-up: [sam.onl/posts/2026/05/01](https://sam.onl/posts/2026/05/01/#scal
 
 <Slide id="ask">
 
-## Open questions — the ask
+## Open questions: the ask
 
 - A **portable bit-exact regression suite** across vendors — does
   anyone have one?
@@ -1076,7 +1076,7 @@ APPENDIX — silent-correctness bugs (deep-dive backup slides)
 
 <Slide id="appendix">
 
-## Appendix — backup slides
+## Appendix: backup slides
 
 Material that didn't make the main path but is here for Q&A.
 
