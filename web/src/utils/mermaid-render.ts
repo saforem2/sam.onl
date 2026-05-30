@@ -519,6 +519,24 @@ export function initMermaid() {
             node.textContent = source
         })
 
+        // Wait for the body font to actually load before measuring.
+        // Mermaid sizes each node's box from the text's measured width;
+        // without this await, the first paint runs with the fallback
+        // metrics and any subsequent swap-in of Iosevka (wider glyphs)
+        // overflows the box (clipped text inside Aurora/Polaris/etc.).
+        // document.fonts.ready resolves once *all* declared @font-face
+        // resources finish loading, so this also covers later additions.
+        try {
+            if (
+                document.fonts &&
+                typeof document.fonts.ready?.then === 'function'
+            ) {
+                await document.fonts.ready
+            }
+        } catch {
+            // FontFaceSet missing or rejected — render anyway.
+        }
+
         try {
             await mermaid.run({ nodes })
             stabilizeMermaidSvgLayout()
