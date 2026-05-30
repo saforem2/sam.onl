@@ -329,8 +329,17 @@
         flex: 1;
         margin-block: 0.5lh;
     }
+    /* <picture> is a layout-transparent wrapper for responsive <source>
+       swapping — collapse it so the child <img> participates in the
+       figure's flex column directly (otherwise the picture box has no
+       flex sizing and the inner img falls back to intrinsic aspect,
+       producing the ~800px-tall overflows we saw on the eval slides). */
+    .slide-inner > figure > picture {
+        display: contents;
+    }
     .slide-inner > figure > img,
-    .slide-inner > figure > svg {
+    .slide-inner > figure > svg,
+    .slide-inner > figure > picture > img {
         flex: 1;
         min-height: 0;
         max-width: 100%;
@@ -347,7 +356,8 @@
        small vertical spill is recoverable via scroll. */
     @media (max-aspect-ratio: 2/1) and (max-height: 700px) {
         .slide-inner > figure > img,
-        .slide-inner > figure > svg {
+        .slide-inner > figure > svg,
+        .slide-inner > figure > picture > img {
             width: 100%;
             height: auto;
             flex: none;
@@ -356,7 +366,8 @@
     }
     @media (min-aspect-ratio: 2/1) {
         .slide-inner > figure > img,
-        .slide-inner > figure > svg {
+        .slide-inner > figure > svg,
+        .slide-inner > figure > picture > img {
             width: 100%;
             height: auto;
             flex: none;
