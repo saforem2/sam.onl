@@ -4,3 +4,11 @@ publish = "web/dist"
 
 [build.environment]
 NODE_OPTIONS = "--max-old-space-size=4096"
+
+# Self-hosted fonts (Iosevka, Nerd Font) are content-addressable by
+# path; pin them as immutable for a year so users never re-download.
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Access-Control-Allow-Origin = "*"

@@ -109,21 +109,20 @@ const ogImage = ogSlug
         />
         <meta name="theme-color" content="#1c1c1c" />
 
-        <!-- Fonts -->
-        <link
-            rel="preconnect"
-            href="https://iosevka-webfonts.github.io"
-            crossorigin
-        />
+        <!-- Fonts: self-hosted, subset Iosevka WOFF2 (~668KB vs ~11MB
+             upstream). Preload only the Regular weight — the LCP-blocking
+             one; the rest swap in via font-display:swap as needed. See
+             web/public/fonts/iosevka/iosevka.css for the @font-face decls
+             and .claude/plans/velvety-twirling-glade.md for the
+             subsetting recipe. -->
         <link
             rel="preload"
-            href="https://iosevka-webfonts.github.io/iosevka/Iosevka.css"
-            as="style"
+            href="/fonts/iosevka/Iosevka-Regular.woff2"
+            as="font"
+            type="font/woff2"
+            crossorigin
         />
-        <link
-            href="https://iosevka-webfonts.github.io/iosevka/Iosevka.css"
-            rel="stylesheet"
-        />
+        <link href="/fonts/iosevka/iosevka.css" rel="stylesheet" />
         <style is:inline>
             svg[id^='mermaid-'] {
                 display: block;
