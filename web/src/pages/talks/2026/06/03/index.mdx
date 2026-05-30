@@ -304,13 +304,8 @@ Why SophiaG — large-batch optimizer comparison
         />
     </picture>
     <figcaption>
-        256N · GBS=6,144 (50M tok/batch · 8192 ctx · LBS=2), aggregated
-        across every restart chain per optimizer. **SophiaG** is the
-        only one that keeps descending to loss ≈ 2.4 with bounded grad
-        norms; Lamb plateaus ~3.0, MuonClip drifts up + spikes, Muon
-        diverges before 250B tokens, AdamW dies in the warmup. That's
-        why SophiaG is the optimizer in every 2B/20B reference chart
-        that follows.
+        256N · GBS=6,144 · 50M tok/batch. **SophiaG** is the only one
+        that stays in the low-loss band with bounded grad norms.
     </figcaption>
 </figure>
 
