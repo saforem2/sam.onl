@@ -68,27 +68,33 @@ def render():
     for fname, label, color in RUNS:
         df = pd.read_parquet(DATA_DIR / fname)
         df = df.dropna(subset=['tokens']).sort_values('tokens').reset_index(drop=True)
-        # Convert tokens to billions for a friendlier x-axis (these runs
-        # consume ~250B before crashing, so a 0–300B linear axis reads
-        # cleaner than scientific notation).
-        x = df.tokens / 1e9
+        # Smooth loss + grad with a wide window (200 rows ≈ 200 steps ≈
+        # 10B tokens) because we now have 30K rows per chain. The
+        # narrow rolling mean would render every grad-norm tick; widen
+        # so the structure-level story is the visible signal.
+        loss = _smooth(df.loss, window=200)
+        gn = _smooth(df.grad_norm, window=200)
 
-        # Smooth loss + clip clearly-broken post-divergence values so
-        # the y-axis isn't dominated by Muon's loss-12 spike.
-        loss = _smooth(df.loss, window=50)
+        # Decimate so the SVG stays slide-friendly. 60K points across
+        # 5 chains turns into a multi-MB SVG — 1,500 points per chain
+        # is plenty for the smoothed curve at slide-render resolution.
+        n_target = 1500
+        stride = max(1, len(df) // n_target)
+        x = (df.tokens / 1e12).iloc[::stride]
+        loss = loss.iloc[::stride]
+        gn = gn.iloc[::stride]
+
         ax_loss.plot(x, loss, color=color, label=label, linewidth=2.0, alpha=0.95)
-
-        gn = _smooth(df.grad_norm, window=50)
         ax_grad.plot(x, gn, color=color, label=label, linewidth=2.0, alpha=0.95)
 
-    # Loss panel — tight zoom to the band where the optimizers actually
-    # compete (2.6–3.5). Muon's post-divergence trace shoots to ~12 but
-    # the relevant story (SophiaG converges lowest, Muon/MuonClip drift
-    # up, AdamW dies early) lives in this window. Anything above 3.5 is
-    # post-failure noise — let the line clip at the top of the panel.
-    ax_loss.set_ylim(2.6, 3.6)
-    ax_loss.set_ylabel('LM training loss')
-    ax_loss.grid(True, alpha=0.2)
+    # Loss panel — match the W&B report axis ([~3, ~11]) so we show
+    # AdamW's crash trajectory, Muon's loss-explosion at ~150B, and
+    # SophiaG's clean descent to 2.4. Log y to compress the divergence
+    # spikes without losing detail in the converged band.
+    ax_loss.set_yscale('log')
+    ax_loss.set_ylim(2.3, 12)
+    ax_loss.set_ylabel('LM training loss  (log)')
+    ax_loss.grid(True, alpha=0.2, which='both')
     ax_loss.legend(
         loc='upper right',
         frameon=False,
@@ -100,12 +106,12 @@ def render():
     # times; log keeps the small (Lamb ~1) and large (Muon 17) coexisting
     # in one panel.
     ax_grad.set_yscale('log')
-    ax_grad.set_ylabel('grad norm')
-    ax_grad.set_xlabel('consumed tokens (B)')
+    ax_grad.set_ylabel('grad norm  (log)')
+    ax_grad.set_xlabel('consumed tokens (T)')
     ax_grad.grid(True, alpha=0.2, which='both')
 
     fig.suptitle(
-        'AuroraGPT-2B  —  optimizer comparison  (GBS=6,144 · 50M tok/batch)',
+        'AuroraGPT-2B  optimizer comparison  (GBS=6,144 · 50M tok/batch)',
         fontsize=22,
         fontweight=600,
         y=0.995,
