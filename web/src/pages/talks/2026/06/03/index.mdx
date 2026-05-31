@@ -75,25 +75,33 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 <div>
 
-1. **The Good**
-    - **CODING AGENTS**
-    - AuroraGPT-2B — the reference run on Aurora
-    - Moving to `torchtitan`
-2. **The Bad**
-    - The fork tax (living on a fast-moving upstream)
-    - Vendor-portability pitfalls (silent fallbacks, NVIDIA-shaped defaults)
-    - At scale, failure is the default
+1. **The Good**:
+    - AuroraGPT-2B:
+      - Training on 7.8T tokens
+    - Software stack:
+      - Using [ `ezpz`](https://github.com/saforem2/ezpz)
+      - Moving to [ `torchtitan`](https://github.com/saforem2/torchtitan/blob/ezpz)[^mds]
+      - **CODING AGENTS** !!
+
+2. **The Bad**:
+    - At scale, *failure is the default*
+    - Fork tax (fast-moving upstream!)
+    - Rapidly evolving software
+      - _and hardware_
+
+[^mds]: And *away* from [argonne-lcf/Megatron-DeepSpeed](https://github.com/argonne-lcf/Megatron-DeepSpeed)!
 
 </div>
 
 <div>
 
-3. **The Restarts**
-    - 3 layers of recovery (process · node · job)
-    - Timeout & heartbeat watchdog
-    - `--auto-retry` with spare nodes
-    - What generalizes — what doesn't
-4. **Open Questions for TPC**
+3. **The Restarts**:
+    - Towards resilient training!
+      - Automatic fault tolerance
+      - Swapping bad nodes at runtime
+      - Heartbeat Watchdog
+    - 3 layers of recovery:
+      - Job -> Node -> Process
 
 </div>
 
@@ -152,15 +160,20 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 **Current stack:**
 
-- 🍋 [`saforem2/ezpz`](https://github.com/saforem2/ezpz): `setup_torch` · `wrap_model` · `ezpz launch`
-- 🧠 [`saforem2/torchtitan@ezpz`](https://github.com/saforem2/torchtitan/tree/ezpz): FSDP · TP · PP · EP · MoE · AC + XPU/SYCL
-- 📚 [`zhenghh04/blendcorpus`](https://github.com/zhenghh04/blendcorpus): weighted blending over multiple datasets
+- 🍋 [saforem2/`ezpz`](https://github.com/saforem2/ezpz) (\+ [ezpz.cool](https://ezpz.cool))
+- 🧠 [saforem2/`torchtitan@ezpz`](https://github.com/saforem2/torchtitan/tree/ezpz): FSDP · TP · PP · EP · MoE
+- 📚 [zhenghh04/`blendcorpus`](https://github.com/zhenghh04/blendcorpus): weighted blending across datasets
+
+[^ezpz.cool]: https://ezpz.cool
 
 **Old stack (reference):**
 
-- 🪦 [`argonne-lcf/Megatron-DeepSpeed`](https://github.com/argonne-lcf/Megatron-DeepSpeed): pre-`torchtitan` 2B baseline (SophiaG, ~7.77T tokens)
+- 🪦 [argonne-lcf/`Megatron-DeepSpeed`](https://github.com/argonne-lcf/Megatron-DeepSpeed):
+  - AuroraGPT-2B reference (~7.77T tokens)
+  - **pre**-`torchtitan`
 
-**The claim:** same code, every vendor — no `cuda` in user code !
+> [!NOTE]
+> **The claim:** same code, every vendor — no `cuda` in user code !
 
 </Slide>
 
@@ -193,16 +206,18 @@ Same code, same launch command, every site. No per-cluster `mpiexec` / `srun` in
 
 ```mermaid
 flowchart LR
-    EZ(["<i>launch</i><br/><span style='font-weight:700'>🍋 ezpz launch</span>"])
+    EZ(["<span style='font-weight:700'>ezpz launch</span>"])
     EZ --> AURORA["<i>PBS · Intel</i><br/><span style='font-weight:700'>Aurora</span>"]
     EZ --> POLARIS["<i>PBS · NVIDIA</i><br/><span style='font-weight:700'>Polaris</span>"]
     EZ --> PM["<i>SLURM · NVIDIA</i><br/><span style='font-weight:700'>Perlmutter</span>"]
     EZ --> FRONTIER["<i>SLURM · AMD</i><br/><span style='font-weight:700'>Frontier</span>"]
-    EZ --> MAC["<i>none · CPU</i><br/><span style='font-weight:700'>MacBook / Multi-CPU</span>"]
+    %% EZ --> CLUSTER["<i>{SLURM, PBS} · ANY!}</i>< br/><span style='font-weight:700'>private-cluster</span>"]
+    EZ --> MAC["<span style='font-weight:700'>Multi-CPU</span>"]
 
     classDef hub        fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
     classDef aurora     fill:#3b82f608,stroke:#3b82f6,color:#3b82f6,stroke-width:1.5px
     classDef polaris    fill:#10b98108,stroke:#10b981,color:#10b981,stroke-width:1.5px
+    %% classDef cluster    fill:#88888808,stroke:#888888,color:#888888,stroke-width:1.5px
     classDef perlmutter fill:#06b6d408,stroke:#06b6d4,color:#06b6d4,stroke-width:1.5px
     classDef frontier   fill:#ef444408,stroke:#ef4444,color:#ef4444,stroke-width:1.5px
     classDef mac        fill:#a78bfa08,stroke:#a78bfa,color:#a78bfa,stroke-width:1.5px
@@ -733,20 +748,6 @@ flowchart TB
     stroke-width: 2 !important;
   }
 `}</style>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-Vendor portability war stories
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="vendor-bugs">
-
-## Cross-version churn: APIs shift faster than vendor support catches up
-
-**Cross-version churn.** Upstream APIs shift faster than vendor support catches up.
-
-`DeviceMesh` + AC + TP=2 + torch 2.13 → AOT-autograd assertion on every 80B config; pin torch 2.10 until it lands.
 
 </Slide>
 
@@ -1296,6 +1297,11 @@ across backends).
 
 **Operational reality — bad-node failover** — the production
 table + qsub wrapper that swaps spares in on crash.
+
+**Cross-version churn** — APIs shift faster than vendor support
+catches up. Example: `DeviceMesh` + AC + TP=2 + torch 2.13 →
+AOT-autograd assertion on every 80B config; pin torch 2.10 until
+the upstream fix lands.
 
 **Optimizer + LR-finder** — AdamW · Muon · SophiaG sweep across
 \{2B, 20B, 80B\} on Aurora / Sunspot / Polaris; speedrun rounds with
