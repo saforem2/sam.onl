@@ -193,19 +193,19 @@ Same code, same launch command, every site. No per-cluster `mpiexec` / `srun` in
 
 ```mermaid
 flowchart LR
-    EZ(["🍋 ezpz launch"])
-    EZ --> AURORA["Aurora<br/>PBS · Intel"]
-    EZ --> POLARIS["Polaris<br/>PBS · NVIDIA"]
-    EZ --> PM["Perlmutter<br/>SLURM · NVIDIA"]
-    EZ --> FRONTIER["Frontier<br/>SLURM · AMD"]
-    EZ --> MAC["MacBook / Multi-CPU<br/>none · CPU"]
+    EZ(["<i>launch</i><br/><span style='font-weight:700'>🍋 ezpz launch</span>"])
+    EZ --> AURORA["<i>PBS · Intel</i><br/><span style='font-weight:700'>Aurora</span>"]
+    EZ --> POLARIS["<i>PBS · NVIDIA</i><br/><span style='font-weight:700'>Polaris</span>"]
+    EZ --> PM["<i>SLURM · NVIDIA</i><br/><span style='font-weight:700'>Perlmutter</span>"]
+    EZ --> FRONTIER["<i>SLURM · AMD</i><br/><span style='font-weight:700'>Frontier</span>"]
+    EZ --> MAC["<i>none · CPU</i><br/><span style='font-weight:700'>MacBook / Multi-CPU</span>"]
 
-    classDef hub fill:transparent,stroke:#ee8f24,color:#ee8f24,stroke-width:2px
-    classDef aurora    fill:#3b82f622,stroke:#3b82f6,color:#3b82f6,stroke-width:2px
-    classDef polaris   fill:#10b98122,stroke:#10b981,color:#10b981,stroke-width:2px
-    classDef perlmutter fill:#06b6d422,stroke:#06b6d4,color:#06b6d4,stroke-width:2px
-    classDef frontier  fill:#ef444422,stroke:#ef4444,color:#ef4444,stroke-width:2px
-    classDef mac       fill:#a78bfa22,stroke:#a78bfa,color:#a78bfa,stroke-width:2px
+    classDef hub        fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
+    classDef aurora     fill:#3b82f608,stroke:#3b82f6,color:#3b82f6,stroke-width:1.5px
+    classDef polaris    fill:#10b98108,stroke:#10b981,color:#10b981,stroke-width:1.5px
+    classDef perlmutter fill:#06b6d408,stroke:#06b6d4,color:#06b6d4,stroke-width:1.5px
+    classDef frontier   fill:#ef444408,stroke:#ef4444,color:#ef4444,stroke-width:1.5px
+    classDef mac        fill:#a78bfa08,stroke:#a78bfa,color:#a78bfa,stroke-width:1.5px
     class EZ hub
     class AURORA aurora
     class POLARIS polaris
@@ -239,6 +239,51 @@ flowchart LR
       gap: 1lh;
     }
   }
+
+  /* ---- Chip-badge styling (mirrors fork-tax + restart-cascade) ----
+     Each node's italic top line is the descriptor (e.g. "PBS · Intel"),
+     bold bottom line is the action / name. Force the classDef hue onto
+     the inline foreignObject span/p so the chip text matches the
+     stroke color (mermaid paints span text black by default). */
+  #ezpz .mermaid g.node.hub        .nodeLabel,
+  #ezpz .mermaid g.node.hub        span,
+  #ezpz .mermaid g.node.hub        p { color: #ee8f24 !important; }
+  #ezpz .mermaid g.node.aurora     .nodeLabel,
+  #ezpz .mermaid g.node.aurora     span,
+  #ezpz .mermaid g.node.aurora     p { color: #3b82f6 !important; }
+  #ezpz .mermaid g.node.polaris    .nodeLabel,
+  #ezpz .mermaid g.node.polaris    span,
+  #ezpz .mermaid g.node.polaris    p { color: #10b981 !important; }
+  #ezpz .mermaid g.node.perlmutter .nodeLabel,
+  #ezpz .mermaid g.node.perlmutter span,
+  #ezpz .mermaid g.node.perlmutter p { color: #06b6d4 !important; }
+  #ezpz .mermaid g.node.frontier   .nodeLabel,
+  #ezpz .mermaid g.node.frontier   span,
+  #ezpz .mermaid g.node.frontier   p { color: #ef4444 !important; }
+  #ezpz .mermaid g.node.mac        .nodeLabel,
+  #ezpz .mermaid g.node.mac        span,
+  #ezpz .mermaid g.node.mac        p { color: #a78bfa !important; }
+
+  /* Descender clip + tight line-height fix — same as restart-cascade. */
+  #ezpz .mermaid g.node foreignObject { overflow: visible; }
+  #ezpz .mermaid g.node p {
+    line-height: 1.35;
+    padding-bottom: 0.1em;
+  }
+  /* Slide-distance legible. */
+  #ezpz .mermaid g.node span,
+  #ezpz .mermaid g.node p {
+    font-size: 1.2em;
+  }
+  /* Accent-tinted drop shadow on each box. The hub is a stadium
+     (rounded ellipse, <rect> with rx). The five target nodes are
+     <rect>s. */
+  #ezpz .mermaid g.node.hub        > rect { filter: drop-shadow(0 2px 5px #ee8f2430); }
+  #ezpz .mermaid g.node.aurora     > rect { filter: drop-shadow(0 2px 5px #3b82f630); }
+  #ezpz .mermaid g.node.polaris    > rect { filter: drop-shadow(0 2px 5px #10b98130); }
+  #ezpz .mermaid g.node.perlmutter > rect { filter: drop-shadow(0 2px 5px #06b6d430); }
+  #ezpz .mermaid g.node.frontier   > rect { filter: drop-shadow(0 2px 5px #ef444430); }
+  #ezpz .mermaid g.node.mac        > rect { filter: drop-shadow(0 2px 5px #a78bfa30); }
 `}</style>
 
 </Slide>
