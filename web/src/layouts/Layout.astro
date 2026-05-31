@@ -142,6 +142,15 @@ const ogImage = ogSlug
                    crowd the surrounding text. */
                 margin-block: 1lh;
             }
+            /* On slides the slide-inner already provides the visual
+               container, and the diagram is the dominant content of
+               its column — the extra border + tinted background just
+               box it in unnecessarily. Strip both inside any <Slide>. */
+            [is-~='slide'] .mermaid.mermaid-interactive {
+                background-color: transparent;
+                border: none;
+                margin-block: 0;
+            }
             .mermaid.mermaid-interactive:focus-visible {
                 outline: 1px solid var(--blue);
                 outline-offset: -1px;
