@@ -519,7 +519,7 @@ flowchart TB
     classDef source fill:#7c4ed508,stroke:#7c4ed5,color:#7c4ed5,stroke-width:1.5px
     classDef stage  fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
     classDef ship   fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
-    classDef gate   fill:#88888808,stroke:#888,color:#444,stroke-width:1.5px
+    classDef gate   fill:#8a8a8a18,stroke:#9a9a9a,color:#838383,stroke-width:1.5px
     classDef bad    fill:#e0556008,stroke:#e05560,color:#e05560,stroke-width:1.5px
     class A source
     class B stage
@@ -593,10 +593,14 @@ flowchart TB
   #fork-tax .mermaid g.node.ship p {
     color: #1da811 !important;
   }
+  /* Gate (bit-exact diamond) — #838383 is the crossover mid-gray
+     that reads on both light and dark themes (same trick used in
+     the matplotlib chart text); pure #444 disappears against the
+     dark/catppuccin backgrounds. */
   #fork-tax .mermaid g.node.gate .nodeLabel,
   #fork-tax .mermaid g.node.gate span,
   #fork-tax .mermaid g.node.gate p {
-    color: #444 !important;
+    color: #838383 !important;
   }
   #fork-tax .mermaid g.node.bad .nodeLabel,
   #fork-tax .mermaid g.node.bad span,
