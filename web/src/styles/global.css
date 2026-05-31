@@ -1175,6 +1175,21 @@ html[data-webtui-theme='catppuccin'] {
     --base: oklch(from #1e1e2e l c h);
     --mantle: oklch(from #181825 l c h);
     --crust: oklch(from #11111b l c h);
+
+    /* Dark-theme heading swap: h2 reads blue, h3 reads green.
+       Overrides the shared [data-webtui-theme|='catppuccin'] block
+       above (which keeps peach/yellow for the latte/light variant). */
+    --h2: var(--blue);
+    --h3: var(--green);
+}
+
+/* Same dark-theme heading swap on the custom-dark theme. The
+   `[data-webtui-theme|='catppuccin']` block doesn't reach here, so
+   we set --h2 and --h3 explicitly. Other heading levels inherit
+   the global fallback (orange/green/etc.). */
+html[data-webtui-theme='custom-dark'] {
+    --h2: var(--blue);
+    --h3: var(--green);
 }
 
 html[data-webtui-theme='catppuccin-latte'] {
