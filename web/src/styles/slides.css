@@ -611,7 +611,10 @@ body[data-speaker-window] [is-~='notes'] {
     padding-inline: 2ch;
     background-color: var(--background1);
     color: var(--foreground3);
-    font-size: 1.15em;
+    /* Was 1.15em — bumped down to 1.12em so the link/page-chip glyphs
+       don't kiss the top + bottom edges of the 1lh-tall bar. Same
+       trick applied to the menu button below (1.1em → 1.07em). */
+    font-size: 1.12em;
     display: grid;
     /* menu (left, fixed) + link (center, ellipsis) + position (right) */
     grid-template-columns: auto minmax(0, 1fr) auto;
@@ -670,7 +673,7 @@ body[data-speaker-window] [is-~='notes'] {
         height: 1lh;
         padding: 0 1ch;
         margin-inline-start: -1ch;
-        font-size: 1.1em;
+        font-size: 1.07em;
         line-height: 1;
         color: var(--foreground2);
         transition:
