@@ -153,20 +153,51 @@ const rehypeGitHubCallouts = () => {
                 calloutTitleByType[calloutType] ||
                 toTitleCase(rawType)
 
-            let removeMarkerParagraph = true
+            // Three blockquote shapes we need to handle:
+            //   (a) `> [!NOTE] body on same line`    → single <p>, single text node
+            //   (b) `> [!NOTE]\n> body on next line` → single <p>, body in
+            //       following children of THAT paragraph
+            //   (c) `> [!NOTE]\n>\n> body in next paragraph` (blank `>` line)
+            //       → TWO <p>s — marker paragraph + body paragraph
+            //
+            // The original implementation only handled (a). For (b)/(c) the
+            // marker's first text node had no remaining lines, so the
+            // marker paragraph was deleted and the rest of the paragraph
+            // (case b) or the entire body paragraph (case c) was either
+            // dropped or stranded as a sibling of the marker text.
+            const remainingTextOnFirstLine = remainingLines.join('\n').replace(/^\s+/, '')
+            const hasInlineBody = remainingTextOnFirstLine.trim().length > 0
+            const hasMoreSiblingsInMarkerParagraph =
+                paragraph.children.indexOf(firstTextNode) <
+                paragraph.children.length - 1
+            const markerParagraphHasBody =
+                hasInlineBody || hasMoreSiblingsInMarkerParagraph
 
-            if (remainingLines.length > 0) {
-                const remainingText = remainingLines
-                    .join('\n')
-                    .replace(/^\s+/, '')
-
-                if (remainingText.trim().length > 0) {
-                    firstTextNode.value = remainingText
-                    removeMarkerParagraph = false
+            if (hasInlineBody) {
+                // Case (a)/(b) inline tail — strip the marker line, keep
+                // the rest as the paragraph's leading text.
+                firstTextNode.value = remainingTextOnFirstLine
+            } else if (hasMoreSiblingsInMarkerParagraph) {
+                // Case (b) where the marker is the only text on the first
+                // line but the paragraph has more inline content after
+                // (e.g. `> [!NOTE]\n> **bold** body`). Drop the marker
+                // text node, keep the rest of the paragraph intact.
+                paragraph.children.splice(
+                    paragraph.children.indexOf(firstTextNode),
+                    1,
+                )
+                // Trim a leading newline-text remnant if remark left one.
+                const next = paragraph.children[
+                    paragraph.children.indexOf(firstTextNode)
+                ]
+                if (next && next.type === 'text' && typeof next.value === 'string') {
+                    next.value = next.value.replace(/^\s+/, '')
                 }
             }
 
-            if (removeMarkerParagraph) {
+            // Drop the marker paragraph from the blockquote if it has no
+            // remaining body content (case c — body is in a separate <p>).
+            if (!markerParagraphHasBody) {
                 node.children.splice(paragraphIndex, 1)
             }
 
