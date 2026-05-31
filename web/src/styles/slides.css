@@ -3,6 +3,34 @@
    site. Layout is one full-viewport slide at a time, with the current
    slide selected by CSS attr [data-current]. */
 
+/* Lock the entire page down on slide-deck routes. Without these, iOS
+   mobile chains touch-scroll out of the slide-inner (despite its
+   `overscroll-behavior: contain`) all the way up to the document
+   scroll context — which manifests as the URL bar / address bar
+   pulling in and out and the whole page jiggling. The deck is
+   `position: fixed; inset: 0`, so html/body have no content to scroll
+   anyway; making that explicit prevents iOS from treating them as
+   eligible scroll targets.
+
+   `:has()` here scopes the lock to pages that actually contain the
+   deck (any page rendered through SlideLayout) — non-deck routes
+   keep the normal body-scroll behavior. */
+html:has(main[is-~='presentation']),
+html:has(main[is-~='presentation']) body {
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    /* iOS rubber-band / pull-to-refresh comes from the document
+       scroll context; pinning the body to the viewport stops it
+       from being a scroll target at all. */
+    position: fixed;
+    inset: 0;
+    width: 100%;
+}
+
 [is-~='presentation'] {
     position: fixed;
     inset: 0;
