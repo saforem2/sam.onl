@@ -82,9 +82,11 @@ def _draw(ax_loss, ax_grad):
         ax_grad.plot(x, gn, color=color, label=label, linewidth=2.0, alpha=0.95)
 
     # Loss panel — log y so the AdamW crash + Muon explosion compress
-    # without losing detail in the converged ~2.4–3 band.
+    # without losing detail in the converged ~2.4–3 band. Cap at 8;
+    # the brief MuonClip spike past 8 clips, but the structure that
+    # matters (which optimizer ends up where) lives in [2.4, 6].
     ax_loss.set_yscale('log')
-    ax_loss.set_ylim(2.3, 12)
+    ax_loss.set_ylim(2.3, 8)
     ax_loss.set_ylabel('LM training loss  (log)')
     ax_loss.grid(True, alpha=0.2, which='both')
 
@@ -97,6 +99,30 @@ def _draw(ax_loss, ax_grad):
         ax.set_xlim(0, X_MAX_T)
 
 
+def _legend_in_line_order(ax) -> None:
+    """Draw the legend on `ax` with entries ordered by where each line
+    sits visually at the right edge of the loss plot — top entry is
+    the highest-loss line, bottom is the lowest. This means readers
+    can match labels to lines by left-to-right scanning rather than
+    color-hunting.
+
+    Order (highest → lowest terminal loss in the [0, 1.5T] window):
+      MuonClip, Muon, AdamW, ipex.FusedLamb, SophiaG
+    """
+    order = ['MuonClip', 'Muon', 'AdamW', 'ipex.FusedLamb', 'SophiaG']
+    handles, labels = ax.get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    ordered = [(by_label[name], name) for name in order if name in by_label]
+    ax.legend(
+        [h for h, _ in ordered],
+        [n for _, n in ordered],
+        loc='upper right',
+        frameon=False,
+        ncol=1,
+        handlelength=2,
+    )
+
+
 def render_stacked(out_name: str, figsize: tuple[float, float]) -> None:
     """Loss above grad_norm, sharing the x-axis. Use for portrait /
     tall slide layouts (mobile)."""
@@ -105,7 +131,7 @@ def render_stacked(out_name: str, figsize: tuple[float, float]) -> None:
         2, 1, figsize=figsize, sharex=True, gridspec_kw={'hspace': 0.08}
     )
     _draw(ax_loss, ax_grad)
-    ax_loss.legend(loc='upper right', frameon=False, ncol=1, handlelength=2)
+    _legend_in_line_order(ax_grad)
     fig.suptitle(
         'AuroraGPT-2B  optimizer comparison  (GBS=6,144 · 50M tok/batch)',
         fontsize=22, fontweight=600, y=0.995,
@@ -122,8 +148,7 @@ def render_side_by_side(out_name: str, figsize: tuple[float, float]) -> None:
     _draw(ax_loss, ax_grad)
     # Both panels need x-labels now (no shared axis between rows).
     ax_loss.set_xlabel('consumed tokens (T)')
-    # Legend on the loss panel (left) since it reads first.
-    ax_loss.legend(loc='upper right', frameon=False, ncol=1, handlelength=2)
+    _legend_in_line_order(ax_grad)
     fig.suptitle(
         'AuroraGPT-2B  optimizer comparison  (GBS=6,144 · 50M tok/batch)',
         fontsize=22, fontweight=600, y=0.995,
