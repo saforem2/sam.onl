@@ -657,6 +657,24 @@ flowchart TB
   #fork-tax .mermaid g.node.gate > polygon {
     filter: drop-shadow(0 2px 5px #88888830);
   }
+  /* Bump arrowhead size — mermaid's defaults are sized for in-doc
+     diagrams, not slide-distance viewing. Scale up the arrowhead
+     marker SVGs ~1.8x via transform on the marker children, and
+     thicken the edge paths so the connector strokes match the
+     bigger heads. */
+  #fork-tax .mermaid marker {
+    markerWidth: 16;
+    markerHeight: 16;
+  }
+  #fork-tax .mermaid .marker {
+    fill: var(--foreground2, #888) !important;
+    stroke: var(--foreground2, #888) !important;
+    stroke-width: 1.5 !important;
+  }
+  #fork-tax .mermaid g.edgePaths .path,
+  #fork-tax .mermaid g.edgePaths path {
+    stroke-width: 2 !important;
+  }
 `}</style>
 
 </Slide>
