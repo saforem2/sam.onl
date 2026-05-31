@@ -409,11 +409,17 @@
         object-fit: contain;
     }
     /* <picture>-wrapped panels (used for the desktop/mobile srcset
-       swap). The picture wrapper is layout-transparent so its inner
-       <img> participates in the grid cell directly — same trick used
-       on `.slide-inner > figure > picture` for the loss charts. */
+       swap). The picture wrapper IS the grid cell (do NOT use
+       `display: contents` here — grid placement on a display-contents
+       box is ignored, which silently collapses the placement and
+       drops the panel into auto-flow at row 1). Make the picture a
+       sized block, then have its inner <img> fill it. */
     .slide-inner > figure.eval-grid > picture.eval-panel {
-        display: contents;
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
     }
     .slide-inner > figure.eval-grid > picture.eval-panel > img {
         flex: none;
