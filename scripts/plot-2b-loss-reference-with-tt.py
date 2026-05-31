@@ -99,11 +99,15 @@ def render(out_path: Path):
     final = mds.iloc[-1]
     final_tokens_B = float(final['x']) / 1e9
     final_loss = float(final['y'])
-    # Annotations: high-contrast dark colors (MDS=dark navy, TT=dark
-    # red) instead of the lighter palette which washed out on white
-    # projector. fontsize bumped 14 -> 18 for back-of-room legibility.
-    mds_annot_color = '#0d2c6b'
-    tt_annot_color = '#b71c1c'
+    # Annotations: pinned to the matching LINE colors instead of a
+    # dark-saturated variant. The previous picks (#0d2c6b navy, #b71c1c
+    # deep red) read well on a white projector but disappeared against
+    # the site's dark / catppuccin themes — the SVG ships once for all
+    # themes via `transparent=True`, so the annotation color has to
+    # work on both. #1976d2 + #b71c1c switched to the chart's already-
+    # theme-validated mid blue + Material red (C1, #ef4444).
+    mds_annot_color = '#1976d2'
+    tt_annot_color = '#ef4444'
     ax.annotate(
         f'MDS final: loss {final_loss:.2f}\n@ {final_tokens_B/1000:.2f}T tokens',
         xy=(final_tokens_B, final_loss),

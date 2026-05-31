@@ -86,10 +86,12 @@ def render(out_path: Path):
     final = mds.iloc[-1]
     final_tokens_B = float(final['x']) / 1e9
     final_loss = float(final['y'])
-    # Annotation: dark navy (high contrast on white projector) instead
-    # of the stage-3 light blue which washed out. fontsize bumped 14 -> 18
-    # so it reads from the back of the room.
-    annot_color = '#0d2c6b'
+    # Annotation: pinned to the stage-1 mid blue (#1976d2) instead of
+    # the previous dark navy (#0d2c6b) — navy reads fine on white
+    # projector but disappears against the site's dark / catppuccin
+    # themes. Mid blue is the same color the stage-1 line already uses,
+    # which is theme-validated. fontsize stays at 18 for back-of-room.
+    annot_color = '#1976d2'
     ax.annotate(
         f'final: loss {final_loss:.2f}\n@ {final_tokens_B/1000:.2f}T tokens',
         xy=(final_tokens_B, final_loss),
