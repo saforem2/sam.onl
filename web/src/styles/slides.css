@@ -424,6 +424,39 @@
         max-height: 100%;
         object-fit: contain;
     }
+    /* Pin each panel to an explicit grid cell. Without this, the four
+       panels auto-flow starting from row 1 — and the legend's
+       explicit `grid-row: 1` doesn't reserve that row from auto-flow,
+       so the first two panels (HellaSwag, ARC-Easy) end up stacked
+       *under* the legend and collapse to zero height. Anchoring each
+       panel to the right row + column avoids the overlap. */
+    .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(1) {
+        grid-row: 2; grid-column: 1;
+    }
+    .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(2) {
+        grid-row: 2; grid-column: 2;
+    }
+    .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(3) {
+        grid-row: 3; grid-column: 1;
+    }
+    .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(4) {
+        grid-row: 3; grid-column: 2;
+    }
+    @media (max-width: 768px) {
+        /* On mobile (single column) each panel takes its own row 2-5. */
+        .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(1) {
+            grid-row: 2; grid-column: 1;
+        }
+        .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(2) {
+            grid-row: 3; grid-column: 1;
+        }
+        .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(3) {
+            grid-row: 4; grid-column: 1;
+        }
+        .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(4) {
+            grid-row: 5; grid-column: 1;
+        }
+    }
     .slide-inner > figure.eval-grid > .eval-legend {
         /* Explicit row 1, full width — pin above the panels. */
         grid-row: 1;
