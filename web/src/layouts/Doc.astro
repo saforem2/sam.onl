@@ -2636,10 +2636,36 @@ const articleSchema =
             closeBtn.title = 'Close (Esc)'
 
             const big = document.createElement('img')
-            big.src = img.currentSrc || img.src
+            // Pick the source URL the page actually resolved at click
+            // time. `currentSrc` is the right answer for <img>, BUT
+            // when the <img> is inside a <picture> with a matching
+            // <source media="...">, some browsers still report the
+            // bare `src` attribute and we end up showing the desktop
+            // variant in a modal launched from the mobile variant.
+            // Resolve it ourselves: clone the parent <picture> if
+            // present, append a temporary <img> with the same loading
+            // pipeline, and read its currentSrc. Falls back to the
+            // simple currentSrc/src on bare <img>.
+            const resolveModalSrc = () => {
+                const picture = img.closest('picture')
+                if (!picture) return img.currentSrc || img.src
+                for (const source of picture.querySelectorAll('source')) {
+                    const media = source.getAttribute('media')
+                    if (media && !window.matchMedia(media).matches) continue
+                    const srcset = source.getAttribute('srcset')
+                    if (!srcset) continue
+                    // Pick the first candidate (we don't author multi-density
+                    // srcsets on these slides; each <source> has one URL).
+                    const first = srcset.split(',')[0].trim().split(/\s+/)[0]
+                    if (first) return first
+                }
+                return img.currentSrc || img.src
+            }
+            big.src = resolveModalSrc()
             big.alt = img.alt
-            // Preserve srcset/sizes if Astro generated them
-            if (img.srcset) big.srcset = img.srcset
+            // Don't copy srcset/sizes onto the modal img — it's
+            // outside a <picture>, and a srcset would re-trigger source
+            // selection at the modal's viewport size.
             if (img.sizes) big.sizes = img.sizes
 
             inner.append(closeBtn, big)
