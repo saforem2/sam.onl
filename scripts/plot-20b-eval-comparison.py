@@ -217,26 +217,30 @@ def render_panel(task: str, out_path: Path, chains, baseline: float, i: int) -> 
 
 
 def render_legend(out_path: Path) -> None:
+    """Standalone horizontal legend, banner above the panel grid.
+    Font bumped to 28 so it reads at slide distance — larger than
+    per-panel tick labels because the strip has no competing text."""
     import ambivalent  # noqa: F401
     plt.style.use(ambivalent.STYLES['ambivalent'])
     plt.rcParams.update(TALK_RCPARAMS_GRID)
-    fig, ax = plt.subplots(figsize=(20, 1.2))
+    fig, ax = plt.subplots(figsize=(20, 0.9))
     fig.patch.set_alpha(0)
     ax.set_axis_off()
     proxies = [
-        ax.plot([], [], ':', color='gray', lw=1, label='random (25% / 50%)')[0],
-        ax.plot([], [], ':x', color=MDS_COLOR, lw=1.8, ms=6, label='2B MDS')[0],
-        ax.plot([], [], '-s', color=TT2B_256_COLOR, lw=1.8, ms=6, label='2B TT 256N')[0],
-        ax.plot([], [], '-D', color=TT2B_512_COLOR, lw=1.8, ms=6, label='2B TT 512N')[0],
-        ax.plot([], [], '-^', color=TT20B_512_COLOR, lw=1.8, ms=6, label='20B TT 512N')[0],
+        ax.plot([], [], ':', color='gray', lw=1.5, label='random (25% / 50%)')[0],
+        ax.plot([], [], ':x', color=MDS_COLOR, lw=2.2, ms=10, label='2B MDS')[0],
+        ax.plot([], [], '-s', color=TT2B_256_COLOR, lw=2.2, ms=10, label='2B TT 256N')[0],
+        ax.plot([], [], '-D', color=TT2B_512_COLOR, lw=2.2, ms=10, label='2B TT 512N')[0],
+        ax.plot([], [], '-^', color=TT20B_512_COLOR, lw=2.2, ms=10, label='20B TT 512N')[0],
     ]
     ax.legend(
         handles=proxies,
         loc='center',
         ncol=len(proxies),
         frameon=False,
-        handlelength=2.5,
-        columnspacing=3,
+        handlelength=3,
+        columnspacing=4,
+        fontsize=28,
     )
     fig.tight_layout(pad=0)
     fig.savefig(out_path, format='svg', transparent=True, bbox_inches='tight')

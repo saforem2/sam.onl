@@ -381,33 +381,38 @@ def render_panel(task: str, out_path: Path, chains, baseline: float, i: int) -> 
 
 
 def render_legend(out_path: Path) -> None:
-    """Standalone horizontal legend SVG. Sits below the 2x2 panel grid
-    in the slide layout; not embedded inside any single panel so each
-    panel keeps its full plot area for data."""
+    """Standalone horizontal legend SVG. Sits above the 2x2 panel
+    grid in the slide layout; not embedded inside any single panel
+    so each panel keeps its full plot area for data. Font size is
+    bumped well past TALK_RCPARAMS_GRID's per-panel size — the
+    legend renders into its own ~16:1 strip so it can be larger
+    than the in-panel tick labels without overwhelming them."""
     import ambivalent  # noqa: F401
     plt.style.use(ambivalent.STYLES['ambivalent'])
     plt.rcParams.update(TALK_RCPARAMS_GRID)
 
-    fig, ax = plt.subplots(figsize=(16, 1.2))
+    # Slimmer + wider strip so the legend sits as a one-line banner
+    # above the panel grid (figsize aspect ≈ 16:0.9). Bumped fontsize
+    # to 28 so it reads at slide distance — bigger than per-panel
+    # tick labels (≈ 17) because the strip has no other text to
+    # compete with.
+    fig, ax = plt.subplots(figsize=(16, 0.9))
     fig.patch.set_alpha(0)
     ax.set_axis_off()
-    # Draw zero-length proxy lines at off-axes coordinates just to
-    # collect the right line styles for the legend handles. (Drawing
-    # invisible artists is the simplest way to seed a legend without
-    # data points.)
     proxies = [
-        ax.plot([], [], ':', color='gray', lw=1, label='random (25% / 50%)')[0],
-        ax.plot([], [], ':x', color=MDS_COLOR, lw=1.8, ms=6, label='MDS')[0],
-        ax.plot([], [], '-s', color=TT_V2_256_COLOR, lw=1.8, ms=6, label='TT 256N')[0],
-        ax.plot([], [], '-D', color=TT_V2_512_COLOR, lw=1.8, ms=6, label='TT 512N')[0],
+        ax.plot([], [], ':', color='gray', lw=1.5, label='random (25% / 50%)')[0],
+        ax.plot([], [], ':x', color=MDS_COLOR, lw=2.2, ms=10, label='MDS')[0],
+        ax.plot([], [], '-s', color=TT_V2_256_COLOR, lw=2.2, ms=10, label='TT 256N')[0],
+        ax.plot([], [], '-D', color=TT_V2_512_COLOR, lw=2.2, ms=10, label='TT 512N')[0],
     ]
     ax.legend(
         handles=proxies,
         loc='center',
         ncol=len(proxies),
         frameon=False,
-        handlelength=2.5,
-        columnspacing=3,
+        handlelength=3,
+        columnspacing=4,
+        fontsize=28,
     )
     fig.tight_layout(pad=0)
     fig.savefig(out_path, format='svg', transparent=True, bbox_inches='tight')

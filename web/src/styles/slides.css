@@ -385,7 +385,8 @@
     .slide-inner > figure.eval-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr auto auto;
+        /* Row 1: legend banner. Rows 2-3: 2x2 panels. Row 4: caption. */
+        grid-template-rows: auto 1fr 1fr auto;
         column-gap: 1ch;
         row-gap: 0.25lh;
         align-content: stretch;
@@ -408,25 +409,26 @@
         object-fit: contain;
     }
     .slide-inner > figure.eval-grid > .eval-legend {
+        /* Explicit row 1, full width — pin above the panels. */
+        grid-row: 1;
         grid-column: 1 / -1;
         width: 100%;
         max-width: 100%;
         height: auto;
-        max-height: 2lh;
+        max-height: 1.5lh;
         flex: none;
         object-fit: contain;
+        justify-self: center;
     }
     .slide-inner > figure.eval-grid > figcaption {
         grid-column: 1 / -1;
     }
-    /* Narrow viewports (phones in portrait): collapse to one column
-       so each panel gets full width. Five rows of panels + legend +
-       caption inside the slide's vertical scroll area — readable
-       without the cramped 2x2-on-phone look the old single SVG had. */
+    /* Narrow viewports (phones in portrait): collapse to one column.
+       Legend still banner-row at top, four panels stacked below. */
     @media (max-width: 768px) {
         .slide-inner > figure.eval-grid {
             grid-template-columns: 1fr;
-            grid-template-rows: repeat(4, auto) auto auto;
+            grid-template-rows: auto repeat(4, auto) auto;
         }
     }
 
