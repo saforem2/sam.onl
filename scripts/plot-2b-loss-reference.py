@@ -19,7 +19,7 @@ import pandas as pd
 from matplotlib.ticker import FuncFormatter, LogLocator, ScalarFormatter
 
 sys.path.insert(0, str(Path(__file__).parent))
-from _plot_style import TALK_RCPARAMS, register_iosevka25
+from _plot_style import TALK_RCPARAMS, linear_marker_indices, register_iosevka25
 
 register_iosevka25()
 
@@ -56,17 +56,26 @@ def render(out_path: Path):
     # just one rung up.
     MDS_STAGE_SHADES = ['#1976d2', '#42a5f5', '#90caf9']
     mds = pd.read_parquet(MDS_PARQUET).sort_values('x').reset_index(drop=True)
+    # Distinct marker per stage so the three blue shades have a second
+    # visual channel (helpful on print + colorblind). The (1)/(2)/(3)
+    # ordering matches the timeline: pretrain → continued → math+code.
     stage_render = [
-        ('olmo-mix-1124.txt',                    '(1) pretrain',            MDS_STAGE_SHADES[0]),
-        ('dolmino-mix-1124-fused-file-list.txt', '(2) continued-pretrain',  MDS_STAGE_SHADES[1]),
-        ('stage1-33-stage2-33-stage3-34.txt',    '(3) math+code',           MDS_STAGE_SHADES[2]),
+        ('olmo-mix-1124.txt',                    '(1) pretrain',            MDS_STAGE_SHADES[0], 'o'),
+        ('dolmino-mix-1124-fused-file-list.txt', '(2) continued-pretrain',  MDS_STAGE_SHADES[1], 's'),
+        ('stage1-33-stage2-33-stage3-34.txt',    '(3) math+code',           MDS_STAGE_SHADES[2], 'D'),
     ]
-    for stage, label, color in stage_render:
+    for stage, label, color, marker in stage_render:
         sub = mds[mds['group_data_file'] == stage]
         if len(sub) == 0:
             continue
-        ax.plot(sub['x'].values / 1e9, sub['y'].values,
+        x_B = sub['x'].values / 1e9
+        # ~6 markers across each stage's span. Stage 3 is short
+        # (~700B), so this gives ~1 marker per ~100B — readable but not
+        # zipper-noisy.
+        ax.plot(x_B, sub['y'].values,
                 color=color, lw=2.2, label=label,
+                marker=marker, markevery=linear_marker_indices(x_B, n_target=6),
+                ms=8, markeredgewidth=0,
                 zorder=3, alpha=0.95)
 
     for b in MDS_STAGE_BOUNDARIES:

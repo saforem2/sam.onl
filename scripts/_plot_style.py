@@ -3,6 +3,7 @@
 Single source for:
   - Iosevka25 font registration (the site's display font)
   - The canonical rcParams (size, weight, spine policy)
+  - Sparse-marker helpers (linear + log spacing)
 
 So every chart in the talk renders with the same typography without
 each script copy-pasting the helper.
@@ -10,6 +11,7 @@ each script copy-pasting the helper.
 
 import os
 
+import numpy as np
 from matplotlib import font_manager as _fm
 
 
@@ -76,3 +78,50 @@ TALK_RCPARAMS_GRID = {
     'legend.fontsize': 17,
     'figure.titlesize': 22,
 }
+
+
+def log_marker_indices(x, n_target: int = 8) -> list[int]:
+    """Return indices in `x` whose values land closest to evenly-spaced
+    log-tick targets across [x.min(), x.max()].
+
+    Use for `markevery=...` on log-x line plots — uniform-stride
+    markevery clumps every marker on the right edge of a log axis;
+    log-spacing distributes them visually evenly across the decades.
+    Returns a sorted, deduped list.
+    """
+    arr = np.asarray(x, dtype=float)
+    arr = arr[np.isfinite(arr) & (arr > 0)]
+    if len(arr) == 0:
+        return []
+    targets = np.logspace(np.log10(arr.min()), np.log10(arr.max()), n_target)
+    full = np.asarray(x, dtype=float)
+    idxs = []
+    for t in targets:
+        # Restrict argmin to finite positives so log-axis chokes don't
+        # pick up zero or NaN rows.
+        mask = np.isfinite(full) & (full > 0)
+        if not mask.any():
+            continue
+        candidate_idx = np.where(mask)[0]
+        nearest = candidate_idx[np.argmin(np.abs(full[mask] - t))]
+        idxs.append(int(nearest))
+    return sorted(set(idxs))
+
+
+def linear_marker_indices(x, n_target: int = 8) -> list[int]:
+    """Same idea, but evenly spaced in linear-x. Use for linear axes."""
+    arr = np.asarray(x, dtype=float)
+    arr = arr[np.isfinite(arr)]
+    if len(arr) == 0:
+        return []
+    targets = np.linspace(arr.min(), arr.max(), n_target)
+    full = np.asarray(x, dtype=float)
+    idxs = []
+    for t in targets:
+        mask = np.isfinite(full)
+        if not mask.any():
+            continue
+        candidate_idx = np.where(mask)[0]
+        nearest = candidate_idx[np.argmin(np.abs(full[mask] - t))]
+        idxs.append(int(nearest))
+    return sorted(set(idxs))

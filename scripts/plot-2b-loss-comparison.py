@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
-from _plot_style import TALK_RCPARAMS, register_iosevka25
+from _plot_style import TALK_RCPARAMS, log_marker_indices, register_iosevka25
 
 register_iosevka25()
 
@@ -83,8 +83,11 @@ def render(out_path: Path):
     MDS_STAGE_COLOR = '#1976d2'
     mds = pd.read_parquet(MDS_PARQUET).sort_values('x').reset_index(drop=True)
     mds_s1 = mds[mds['group_data_file'] == 'olmo-mix-1124.txt']
-    ax.plot(mds_s1['x'].values / 1e9, mds_s1['y'].values,
+    mds_x_B = mds_s1['x'].values / 1e9
+    ax.plot(mds_x_B, mds_s1['y'].values,
             color=MDS_STAGE_COLOR, lw=1.8, label='Megatron-DeepSpeed',
+            marker='x', markevery=log_marker_indices(mds_x_B, n_target=8),
+            ms=8, markeredgewidth=1.5,
             zorder=3)
 
     # --- TT v2 chains: pinned to TT_V2_COLOR so the series matches
@@ -102,6 +105,8 @@ def render(out_path: Path):
         line, = ax.plot(tt_tokens_B, tt['loss'].values,
                         color=TT_V2_COLOR, lw=lw, ls=ls,
                         label=label,
+                        marker='s', markevery=log_marker_indices(tt_tokens_B, n_target=8),
+                        ms=7, markeredgewidth=0,
                         zorder=5, alpha=0.95)
         tt_endpoints.append((
             int(tt['step'].iloc[-1]),
