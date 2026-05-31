@@ -154,16 +154,15 @@ def _draw(ax_loss, ax_grad):
 
 
 def _legend_in_line_order(ax) -> None:
-    """Draw the legend on `ax` with entries ordered by where each line
-    sits visually at the right edge of the loss plot — top entry is
-    the highest-loss line, bottom is the lowest. This means readers
-    can match labels to lines by left-to-right scanning rather than
-    color-hunting.
-
-    Order (highest → lowest terminal loss in the [0, 1.5T] window):
-      MuonClip, Muon, AdamW, ipex.FusedLamb, SophiaG
+    """Draw the legend on `ax` with entries ordered by line position
+    at the legend's anchor (upper-center, around 0.2-0.3T). The
+    crossover near token = 0.2T puts ipex.FusedLamb on top there,
+    Muon just below (it ends near 0.25T), then MuonClip, AdamW, and
+    SophiaG converging in the loss band. Matching the legend order
+    to that visual stack lets the reader pair label↔line by straight
+    top-to-bottom scanning under the legend.
     """
-    order = ['MuonClip', 'Muon', 'AdamW', 'ipex.FusedLamb', 'SophiaG']
+    order = ['ipex.FusedLamb', 'Muon', 'MuonClip', 'AdamW', 'SophiaG']
     handles, labels = ax.get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
     ordered = [(by_label[name], name) for name in order if name in by_label]
