@@ -201,11 +201,17 @@ def _draw_lines(ax, task: str, baseline: float, i: int, chains):
                 style='italic', va='top', ha='left')
 
 
-def render_panel(task: str, out_path: Path, chains, baseline: float, i: int) -> None:
+def render_panel(
+    task: str, out_path: Path, chains, baseline: float, i: int,
+    figsize: tuple[float, float] = (8, 6),
+) -> None:
+    """See 2b version for figsize rationale: desktop default is 8x6,
+    mobile passes a wider aspect so the panel fills its full-width
+    row instead of letterboxing horizontally."""
     import ambivalent  # noqa: F401
     plt.style.use(ambivalent.STYLES['ambivalent'])
     plt.rcParams.update(TALK_RCPARAMS_GRID)
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=figsize)
     fig.patch.set_alpha(0)
     ax.patch.set_alpha(0)
     _draw_lines(ax, task, baseline, i, chains)
@@ -254,5 +260,8 @@ if __name__ == '__main__':
     chains = _load_chains()
     for i, (task, baseline) in enumerate(zip(TASKS, RANDOM_BASELINE)):
         slug = TASK_SLUG[task]
-        render_panel(task, out / f'eval-20b-{slug}.svg', chains, baseline, i)
+        render_panel(task, out / f'eval-20b-{slug}.svg', chains, baseline, i,
+                     figsize=(8, 6))
+        render_panel(task, out / f'eval-20b-{slug}-mobile.svg', chains, baseline, i,
+                     figsize=(12, 5))
     render_legend(out / 'eval-20b-legend.svg')

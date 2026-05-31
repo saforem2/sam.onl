@@ -361,15 +361,24 @@ def _draw_lines(ax, task: str, baseline: float, i: int,
                 style='italic', va='top', ha='left')
 
 
-def render_panel(task: str, out_path: Path, chains, baseline: float, i: int) -> None:
+def render_panel(
+    task: str, out_path: Path, chains, baseline: float, i: int,
+    figsize: tuple[float, float] = (8, 6),
+) -> None:
+    """Render a single eval panel SVG.
+
+    Default figsize is 8x6 (~4:3) for the desktop 2x2 grid. Pass a
+    wider figsize (e.g. 12x4) for the mobile single-column variant —
+    when each panel stacks full-width on a phone, the row gets very
+    little vertical space; a wider intrinsic aspect lets the SVG
+    fill the row horizontally without object-fit:contain pillarboxing
+    huge whitespace on both sides.
+    """
     import ambivalent  # noqa: F401
     plt.style.use(ambivalent.STYLES['ambivalent'])
     plt.rcParams.update(TALK_RCPARAMS_GRID)
 
-    # Per-panel figsize: a 4:3 box renders nicely at any flex/grid cell
-    # size and gives each panel its own breathing room without forcing
-    # the CSS layout into a fixed aspect.
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=figsize)
     fig.patch.set_alpha(0)
     ax.patch.set_alpha(0)
     _draw_lines(ax, task, baseline, i, *chains)
@@ -426,5 +435,11 @@ if __name__ == '__main__':
     chains = _load_chains()
     for i, (task, baseline) in enumerate(zip(TASKS, RANDOM_BASELINE)):
         slug = TASK_SLUG[task]
-        render_panel(task, out / f'eval-2b-{slug}.svg', chains, baseline, i)
+        # Desktop: ~4:3, fits the 2x2 grid cells. Mobile: ~12:5
+        # landscape so each panel claims the full row width on a
+        # phone without leaving big whitespace strips on the sides.
+        render_panel(task, out / f'eval-2b-{slug}.svg', chains, baseline, i,
+                     figsize=(8, 6))
+        render_panel(task, out / f'eval-2b-{slug}-mobile.svg', chains, baseline, i,
+                     figsize=(12, 5))
     render_legend(out / 'eval-2b-legend.svg')
