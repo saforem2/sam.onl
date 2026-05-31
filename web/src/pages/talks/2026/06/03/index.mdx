@@ -29,8 +29,22 @@ export const ASSETS = 'https://samforeman.me/assets'
 &nbsp;  
 &nbsp;
 
-**Sam Foreman**[^anl], Nathan Nichols, Varuni Sastry, Samuel Wheeler, Khalid Hossain, Huihuo Zheng, Murali Emani, Filippo Simini, Marieme Ngom, Ethan Wong, Venkat Vishwanath  
+<p class="author-list">
+<strong>Sam&nbsp;Foreman</strong>[^anl], Nathan&nbsp;Nichols, Varuni&nbsp;Sastry, Samuel&nbsp;Wheeler, Khalid&nbsp;Hossain, Huihuo&nbsp;Zheng, Murali&nbsp;Emani, Filippo&nbsp;Simini, Marieme&nbsp;Ngom, Ethan&nbsp;Wong, Venkat&nbsp;Vishwanath
+</p>
+
 _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
+
+<style>{`
+  #title-slide .author-list {
+    /* Cap the line length so the author list wraps at a comfortable
+       width instead of stretching the full slide. NBSPs within each
+       name keep "Filippo Simini" together when a wrap point lands
+       between two authors. */
+    max-width: 70ch;
+    line-height: 1.6;
+  }
+`}</style>
 
 <img
     style="height:1lh;"
