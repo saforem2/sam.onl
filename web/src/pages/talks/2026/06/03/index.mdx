@@ -516,11 +516,13 @@ flowchart TB
     D -.->|❌️| F["<i>diff &ne; 0</i><br/><span style='font-weight:700'>bisect + fix</span>"]
     F -.-> B
 
-    classDef stage fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
-    classDef ship  fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
-    classDef gate  fill:#88888808,stroke:#888,color:#444,stroke-width:1.5px
-    classDef bad   fill:#e0556008,stroke:#e05560,color:#e05560,stroke-width:1.5px
-    class A,B stage
+    classDef source fill:#7c4ed508,stroke:#7c4ed5,color:#7c4ed5,stroke-width:1.5px
+    classDef stage  fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
+    classDef ship   fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    classDef gate   fill:#88888808,stroke:#888,color:#444,stroke-width:1.5px
+    classDef bad    fill:#e0556008,stroke:#e05560,color:#e05560,stroke-width:1.5px
+    class A source
+    class B stage
     class D gate
     class C ship
     class F bad
@@ -576,6 +578,11 @@ flowchart TB
      its classDef color so the boxes read as colored chips instead
      of plain outlines. Color overrides force the classDef hue onto
      the foreignObject span/p that mermaid otherwise paints black. */
+  #fork-tax .mermaid g.node.source .nodeLabel,
+  #fork-tax .mermaid g.node.source span,
+  #fork-tax .mermaid g.node.source p {
+    color: #7c4ed5 !important;
+  }
   #fork-tax .mermaid g.node.stage .nodeLabel,
   #fork-tax .mermaid g.node.stage span,
   #fork-tax .mermaid g.node.stage p {
@@ -614,6 +621,9 @@ flowchart TB
      off the slide background — matches the depth-cue treatment on the
      restart-cascade clusters (just lighter, since these aren't nested
      and don't need to read as "depth"). */
+  #fork-tax .mermaid g.node.source > rect {
+    filter: drop-shadow(0 2px 5px #7c4ed530);
+  }
   #fork-tax .mermaid g.node.stage > rect {
     filter: drop-shadow(0 2px 5px #118cc230);
   }
