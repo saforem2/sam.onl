@@ -32,17 +32,23 @@ DATA_DIR = (
 )
 OUT = Path.home() / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/figures'
 
-# (filename, label, color). Colors mirror the W&B report
+# (filename, label, color, marker). Colors mirror the W&B report
 # (https://api.wandb.ai/links/aurora_gpt/giy3swff) so the slide reads
-# 1:1 against the report: AdamW gold, Lamb blue, MuonClip orange,
-# SophiaG green, Muon red.
+# 1:1 against the report. Markers add a second visual channel so the
+# chart isn't color-only — important for print / colorblind viewers
+# and for matching legend ↔ line when curves bunch up in the same
+# band.
 RUNS = [
-    ('adamw.parquet',    'AdamW',          '#f5b800'),
-    ('lamb.parquet',     'ipex.FusedLamb', '#3b82f6'),
-    ('muonclip.parquet', 'MuonClip',       '#f97316'),
-    ('sophiag.parquet',  'SophiaG',        '#22c55e'),
-    ('muon.parquet',     'Muon',           '#ef4444'),
+    ('adamw.parquet',    'AdamW',          '#f5b800', 'o'),  # circle
+    ('lamb.parquet',     'ipex.FusedLamb', '#3b82f6', 's'),  # square
+    ('muonclip.parquet', 'MuonClip',       '#f97316', '^'),  # triangle
+    ('sophiag.parquet',  'SophiaG',        '#22c55e', 'D'),  # diamond
+    ('muon.parquet',     'Muon',           '#ef4444', 'X'),  # x
 ]
+
+# Drop a marker every N billion tokens. Coarse enough to avoid a
+# zipper-look on the smoothed lines, dense enough to be readable.
+MARKER_TOKENS_B = 100
 
 # Focus window — story is decided by ~1.5T tokens (AdamW dies in
 # warmup, Muon diverges ~250B, MuonClip spikes ~1.1T, SophiaG/Lamb
@@ -71,15 +77,63 @@ def _series(fname: str):
     # is a multi-MB SVG). 1,500 per chain is plenty at slide resolution.
     n_target = 1500
     stride = max(1, len(df) // n_target)
-    x = (df.tokens / 1e12).iloc[::stride]
-    return x, loss.iloc[::stride], gn.iloc[::stride]
+    x = (df.tokens / 1e12).iloc[::stride].reset_index(drop=True)
+    loss = loss.iloc[::stride].reset_index(drop=True)
+    gn = gn.iloc[::stride].reset_index(drop=True)
+    return x, loss, gn
+
+
+def _marker_indices(x_t: 'pd.Series') -> list[int]:
+    """Pick indices in x_t whose token-position lands closest to each
+    100B-token marker between the chain's first and last token.
+
+    x_t is in trillions, so step = MARKER_TOKENS_B / 1000.
+    """
+    if len(x_t) == 0:
+        return []
+    step = MARKER_TOKENS_B / 1000.0
+    x_min, x_max = float(x_t.iloc[0]), float(x_t.iloc[-1])
+    # Targets at step, 2·step, … up to and including the last marker
+    # below the chain max. Skip the 0-token mark (every chain starts
+    # there — would just stack 5 markers on top of each other).
+    targets = []
+    k = 1
+    while True:
+        t = k * step
+        if t > x_max:
+            break
+        if t >= x_min:
+            targets.append(t)
+        k += 1
+    if not targets:
+        return []
+    # For each target, find the nearest index in x_t.
+    import numpy as np
+    arr = x_t.to_numpy()
+    idxs = [int(np.argmin(np.abs(arr - t))) for t in targets]
+    # Dedup (a very short chain might have all targets snap to the
+    # same row).
+    return sorted(set(idxs))
 
 
 def _draw(ax_loss, ax_grad):
-    for fname, label, color in RUNS:
+    for fname, label, color, marker in RUNS:
         x, loss, gn = _series(fname)
-        ax_loss.plot(x, loss, color=color, label=label, linewidth=2.0, alpha=0.95)
-        ax_grad.plot(x, gn, color=color, label=label, linewidth=2.0, alpha=0.95)
+        idxs = _marker_indices(x)
+        ax_loss.plot(
+            x, loss,
+            color=color, label=label,
+            linewidth=2.0, alpha=0.95,
+            marker=marker, markevery=idxs,
+            markersize=8, markeredgewidth=0,
+        )
+        ax_grad.plot(
+            x, gn,
+            color=color, label=label,
+            linewidth=2.0, alpha=0.95,
+            marker=marker, markevery=idxs,
+            markersize=8, markeredgewidth=0,
+        )
 
     # Loss panel — log y so the AdamW crash + Muon explosion compress
     # without losing detail in the converged ~2.4–3 band. Cap at 8;
@@ -131,7 +185,7 @@ def render_stacked(out_name: str, figsize: tuple[float, float]) -> None:
         2, 1, figsize=figsize, sharex=True, gridspec_kw={'hspace': 0.08}
     )
     _draw(ax_loss, ax_grad)
-    _legend_in_line_order(ax_grad)
+    _legend_in_line_order(ax_loss)
     fig.suptitle(
         'AuroraGPT-2B  optimizer comparison  (GBS=6,144 · 50M tok/batch)',
         fontsize=22, fontweight=600, y=0.995,
@@ -148,7 +202,7 @@ def render_side_by_side(out_name: str, figsize: tuple[float, float]) -> None:
     _draw(ax_loss, ax_grad)
     # Both panels need x-labels now (no shared axis between rows).
     ax_loss.set_xlabel('consumed tokens (T)')
-    _legend_in_line_order(ax_grad)
+    _legend_in_line_order(ax_loss)
     fig.suptitle(
         'AuroraGPT-2B  optimizer comparison  (GBS=6,144 · 50M tok/batch)',
         fontsize=22, fontweight=600, y=0.995,
