@@ -170,11 +170,9 @@ def _legend_in_line_order(ax) -> None:
     ax.legend(
         [h for h, _ in ordered],
         [n for _, n in ordered],
-        # Anchor the legend in the middle of the panel — there's an
-        # empty triangular gap between MuonClip's high-token spike on
-        # the right and the converged lines on the bottom that fits
-        # five rows comfortably without overlapping any line.
-        loc='center',
+        # Top-center: gap above the converged-line knee where the
+        # legend doesn't overlap any line.
+        loc='upper center',
         frameon=False,
         ncol=1,
         handlelength=2,
