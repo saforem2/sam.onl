@@ -510,16 +510,16 @@ The fork tax
 
 ```mermaid
 flowchart TB
-    A["upstream @ HEAD"] --> B["resync + smoke<br/>(50 steps, deterministic)"]
+    A["<i>start</i><br/><span style='font-weight:700'>upstream @ HEAD</span>"] --> B["<i>resync · 50 steps · deterministic</i><br/><span style='font-weight:700'>smoke test</span>"]
     B --> D{"bit-exact?"}
-    D -->|✅| C["✓ ship"]
-    D -.->|❌️| F["bisect + fix"]
+    D -->|✅| C["<i>diff = 0</i><br/><span style='font-weight:700'>✓ ship</span>"]
+    D -.->|❌️| F["<i>diff &ne; 0</i><br/><span style='font-weight:700'>bisect + fix</span>"]
     F -.-> B
 
-    classDef stage fill:transparent,stroke:#118cc2,color:#118cc2,stroke-width:2px
-    classDef ship  fill:transparent,stroke:#1da811,color:#1da811,stroke-width:2px
-    classDef gate  fill:transparent,stroke:#888,color:#444,stroke-width:1.5px
-    classDef bad   fill:transparent,stroke:#e05560,color:#e05560,stroke-width:2px
+    classDef stage fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
+    classDef ship  fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    classDef gate  fill:#88888808,stroke:#888,color:#444,stroke-width:1.5px
+    classDef bad   fill:#e0556008,stroke:#e05560,color:#e05560,stroke-width:1.5px
     class A,B stage
     class D gate
     class C ship
@@ -568,6 +568,64 @@ flowchart TB
   #fork-tax .fork-tax-diagram pre.astro-code {
     width: 100%;
     max-width: 100%;
+  }
+
+  /* ---- Chip-badge styling for nodes (mirrors restart-cascade) ----
+     Each node's italic top line acts as the descriptor and the bold
+     bottom line as the action; the node fill gets a light tint of
+     its classDef color so the boxes read as colored chips instead
+     of plain outlines. Color overrides force the classDef hue onto
+     the foreignObject span/p that mermaid otherwise paints black. */
+  #fork-tax .mermaid g.node.stage .nodeLabel,
+  #fork-tax .mermaid g.node.stage span,
+  #fork-tax .mermaid g.node.stage p {
+    color: #118cc2 !important;
+  }
+  #fork-tax .mermaid g.node.ship .nodeLabel,
+  #fork-tax .mermaid g.node.ship span,
+  #fork-tax .mermaid g.node.ship p {
+    color: #1da811 !important;
+  }
+  #fork-tax .mermaid g.node.gate .nodeLabel,
+  #fork-tax .mermaid g.node.gate span,
+  #fork-tax .mermaid g.node.gate p {
+    color: #444 !important;
+  }
+  #fork-tax .mermaid g.node.bad .nodeLabel,
+  #fork-tax .mermaid g.node.bad span,
+  #fork-tax .mermaid g.node.bad p {
+    color: #e05560 !important;
+  }
+  /* Descender clip + tight line-height fix — same workaround as the
+     restart-cascade diagram so descenders (g, p, y, q) and the second
+     line of the two-line labels render fully. */
+  #fork-tax .mermaid g.node foreignObject { overflow: visible; }
+  #fork-tax .mermaid g.node p {
+    line-height: 1.35;
+    padding-bottom: 0.1em;
+  }
+  /* Slide-distance legible. Mermaid sets text via inline foreignObject
+     span/p — override both at once. */
+  #fork-tax .mermaid g.node span,
+  #fork-tax .mermaid g.node p {
+    font-size: 1.25em;
+  }
+  /* Subtle accent drop-shadow on each box so the colored chips lift
+     off the slide background — matches the depth-cue treatment on the
+     restart-cascade clusters (just lighter, since these aren't nested
+     and don't need to read as "depth"). */
+  #fork-tax .mermaid g.node.stage > rect {
+    filter: drop-shadow(0 2px 5px #118cc230);
+  }
+  #fork-tax .mermaid g.node.ship > rect {
+    filter: drop-shadow(0 2px 5px #1da81130);
+  }
+  #fork-tax .mermaid g.node.bad > rect {
+    filter: drop-shadow(0 2px 5px #e0556030);
+  }
+  /* Gate (the diamond) — mermaid emits a <polygon> not a <rect>. */
+  #fork-tax .mermaid g.node.gate > polygon {
+    filter: drop-shadow(0 2px 5px #88888830);
   }
 `}</style>
 
