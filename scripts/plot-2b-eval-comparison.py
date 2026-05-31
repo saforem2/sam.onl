@@ -14,7 +14,6 @@ Data source: 2026-05-27 canonical-table refresh in
   torchtitan/experiments/ezpz/docs/evals/agpt/2b/README.md
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -25,12 +24,6 @@ sys.path.insert(0, str(Path(__file__).parent))
 from _plot_style import TALK_RCPARAMS_GRID, register_iosevka25
 
 register_iosevka25()
-
-# Mobile portrait variant — swap the figsize so the 2x2 grid stacks
-# tall instead of wide. Triggered by env var so the desktop default
-# is unchanged; CI / scripts call MOBILE=1 python scripts/foo.py to
-# render the alternate.
-MOBILE = bool(os.environ.get('MOBILE'))
 
 # ----- DATA ------------------------------------------------------------------
 
@@ -290,204 +283,143 @@ PANEL_POS = {
 }
 
 
-def render(out_path: Path):
-    """Render the comparison chart with the ambivalent style.
+# Pin colors for cross-slide consistency. The loss-comparison slide
+# uses the same MDS=blue / TT-v2=red pair, so "blue=MDS, red=TT"
+# reads identically across both charts.
+MDS_COLOR = '#1976d2'
+TT_V2_256_COLOR = 'C1'
+TT_V2_512_COLOR = '#b71c1c'
 
-    The plot uses ambivalent's prop_cycle — no hand-picked colors. Calls
-    to `ax.plot()` consume successive 'C0', 'C1', ... from the cycle,
-    matching the rest of the AuroraGPT-2B figures rendered by
-    `Megatron-DeepSpeed/ALCF/AuroraGPT/2B/scripts/generate_report.py`.
+# Slug for per-task SVG filenames. Lowercase, dash-separated.
+TASK_SLUG = {
+    'HellaSwag':     'hellaswag',
+    'ARC-Easy':      'arc-easy',
+    'ARC-Challenge': 'arc-challenge',
+    'Winogrande':    'winogrande',
+}
 
-    The style ships with `bg=none`, so one SVG works on both light and
-    dark site themes — the slide background shows through.
-    """
-    import ambivalent  # required — no fallback; if missing, `uv run --with`
-    plt.style.use(ambivalent.STYLES['ambivalent'])
 
-    plt.rcParams.update(TALK_RCPARAMS_GRID)
-
-    # Aspect tuned for the slide layout. After the h2 heading and the
-    # figcaption eat their slice, the figure box is ~2.1:1 — wider than
-    # tall. A figure whose own aspect matches that fills the slot
-    # without empty bands on either axis under object-fit:contain.
-    # 15x7 = 2.14 just slightly width-constrained for a hair of vertical
-    # breathing room.
-    # MOBILE: portrait (9, 16) so the 2x2 grid stacks tall — each panel
-    # then has more vertical real estate on a phone in portrait, instead
-    # of getting crushed into a thin landscape band.
-    figsize = (9, 16) if MOBILE else (16, 12)
-    fig, axes = plt.subplots(2, 2, figsize=figsize, sharex=True)
-    fig.patch.set_alpha(0)
-
+def _load_chains():
+    """Materialize the three trajectories once; reused across all per-task
+    panels so we don't re-sort the merged 256N chain four times."""
     mds = np.array(MDS_DATA)
     mds_tokens = tokens(mds[:, 0], MDS_GBS)
-    # Merge measured 256N + offset-method gap-fill into one trajectory.
-    # The two are kept as separate constants at module top for
-    # auditability (so a reader can see which rows are inferred), but
-    # for plotting they collapse to a single sorted chain so the line
-    # reads as one continuous 256N curve.
     v2_256 = np.array(sorted(TTV2_256N_DATA + TTV2_256N_INTERP_DATA,
                              key=lambda r: r[0]))
     v2_256_tokens = tokens(v2_256[:, 0], TTV2_256N_GBS)
     v2_512 = np.array(sorted(TTV2_512N_DATA + TTV2_512N_INTERP_DATA,
                              key=lambda r: r[0]))
     v2_512_tokens = tokens(v2_512[:, 0], TTV2_512N_GBS)
+    return mds, mds_tokens, v2_256, v2_256_tokens, v2_512, v2_512_tokens
 
-    # Hand-picked checkpoints for marker placement. The raw chains have
-    # very uneven density — 256N has warmup (≤2K), mid cluster
-    # (14K-25K), then a big gap, then a late cluster (36K-49.5K); 512N
-    # is uniform 1-16K then a 5K gap then 21-27K. linspace-then-nearest
-    # collapses adjacent targets onto the same point in dense regions,
-    # so we pick explicit steps for clean ~150-300B spacing.
-    # Lines still draw through every datapoint — only markers are
-    # subsampled — so the trajectory shape is unchanged.
-    # Picked so the two chains overlay at matched tokens:
-    #   ~0.7T, ~1.0T, ~1.3T (first cluster)  +
-    #   ~1.9-2.1T, ~2.2-2.4T, ~2.5-2.7T (second cluster).
-    # 6 markers per chain gives clear breathing room (≥300B between
-    # adjacent markers) without losing the cluster-gap-cluster shape
-    # that's actually in the data.
-    # 256N markers: pulled across the full range now that the merged
-    # chain covers both former gaps (steps 4K-12K and 26K-32K from the
-    # offset-method gap-fill, mixed in with real evals at 14K/20K/25K
-    # in the mid range and 38K/44K/49.5K in the late range).
-    V2_256N_MARKER_STEPS = [8_000, 14_000, 20_000, 25_000, 30_000,
-                            38_000, 44_000, 49_500]
-    V2_512N_MARKER_STEPS = [7_000, 10_000, 13_000, 16_000, 19_000,
-                            21_000, 24_000, 27_000]
 
-    def _markers_at(arr, tok, steps):
-        idx = [int(np.where(arr[:, 0] == s)[0][0]) for s in steps]
-        return arr[idx], tok[idx]
+def _style_axes(ax, task: str):
+    """Apply all per-panel axis styling (limits, ticks, grid, labels)."""
+    from matplotlib.ticker import FuncFormatter, MaxNLocator, FormatStrFormatter
 
-    v2_256_m, v2_256_tokens_m = _markers_at(v2_256, v2_256_tokens,
-                                            V2_256N_MARKER_STEPS)
-    v2_512_m, v2_512_tokens_m = _markers_at(v2_512, v2_512_tokens,
-                                            V2_512N_MARKER_STEPS)
-    # (TTV1_DATA / TTV1_GBS still defined at module top in case we ever
-    #  want to bring the broken-baseline series back for a different
-    #  framing — currently unused since this slide focuses on the fix.)
-
-    # Pin colors for cross-slide consistency. The loss-comparison slide
-    # uses the same MDS=blue / TT-v2=red pair, so "blue=MDS, red=TT"
-    # reads identically across both charts.
-    #   C0     = MDS (blue)        — reference trajectory
-    #   C1     = TT v2 256N (red)  — async chain, primary new evidence
-    #   #b71c1c = TT v2 512N (dark red) — sync chain, secondary line so the
-    #            two v2 trajectories don't overlap as the same red marker
-    # Pinned to the same dark navy used for MDS in the loss-comparison
-    # and loss-reference slides, so "blue = MDS" reads identically
-    # across all three 2B-result slides.
-    MDS_COLOR = '#1976d2'
-    TT_V2_256_COLOR = 'C1'
-    TT_V2_512_COLOR = '#b71c1c'
-
-    for i, (task, baseline) in enumerate(zip(TASKS, RANDOM_BASELINE)):
-        row, col = PANEL_POS[task]
-        ax = axes[row][col]
-        ax.patch.set_alpha(0)
-
-        ax.axhline(baseline, ls=':', lw=1, color='gray',
-                   label=f'random ({baseline:.0%})', zorder=1)
-
-        # MDS stage-boundary annotations. The 2B MDS trajectory ran in
-        # 3 stages (per the model card): (1) pretrain on olmo-mix-1124,
-        # 0 → 4673B tokens; (2) continued-pretrain on dolmino-mix-1124,
-        # 4673B → 7064B; (3) math+code on Nvidia CC-Math + Nemotron Code,
-        # 7064B → 7770B. The eval table only covers stages 1 and 2 (last
-        # eval is at step 140K = ~7.04T tokens), so stage 3 isn't on the
-        # chart — but the (1)→(2) boundary at 4.67T is visible.
-        for x in (4673, 7064):
-            ax.axvline(x, ls='--', lw=0.7, color='gray', alpha=0.5, zorder=0)
-
-        ax.plot(mds_tokens, mds[:, i + 1], ':x', color=MDS_COLOR,
-                lw=1.8, ms=5, alpha=0.9, label='MDS', zorder=3)
-        # TT chains: line through every datapoint (warmup at 10-100B
-        # tokens visible) + small markers at every datapoint. Matches
-        # the upstream torchtitan plot_evals_combined.py style: thin
-        # lines + small markers play down per-checkpoint eval noise
-        # (especially the ARC-C wiggle from its 1172-question test set)
-        # vs our previous chunky markers which amplified it.
-        ax.plot(v2_256_tokens, v2_256[:, i + 1], '-s',
-                color=TT_V2_256_COLOR, lw=1.8, ms=5, alpha=0.9, zorder=4,
-                label='TT 256N')
-        ax.plot(v2_512_tokens, v2_512[:, i + 1], '-D',
-                color=TT_V2_512_COLOR, lw=1.8, ms=5, alpha=0.9, zorder=5,
-                label='TT 512N')
-
-        ax.set_title(task, pad=8)
-        # Linear x: at 500B → 7T the chart only spans ~1.15 decades,
-        # so log mostly compresses the right side where MDS pulls
-        # ahead. Linear shows "twice the tokens = twice the distance"
-        # and makes the v2-stops-at-2.7T vs MDS-runs-to-7T gap visually
-        # honest. The 500B floor still clears the noise-bound warmup.
-        # Same xlim as the 20B chart so panels lock visually when
-        # switching slides — see note on YLIM_PER_TASK above.
-        ax.set_xlim(0, 7_700)
-        # Tickformat: 1000B → 1T etc. Keep the underlying numbers in B
-        # (so xlim / data-coords math is unchanged), just relabel ticks.
-        from matplotlib.ticker import FuncFormatter
-        ax.xaxis.set_major_formatter(
-            FuncFormatter(lambda x_B, _pos: '0' if x_B == 0 else f'{x_B/1000:g}T')
-        )
-        # Tightened y from (0.15, 0.75) — at 500B+ tokens we've cleared
-        # the noise-bound warmup, so the empty band below 0.22 is just
-        # whitespace. Keep top at 0.72 (ARC-Easy peaks at 0.70 MDS).
-        # Random baselines at 0.25 (HellaSwag/ARC) and 0.50 (Winogrande)
-        # still fit comfortably.
-        # Per-task y-range — see YLIM_PER_TASK comment above.
-        # Defaults to a wide (0.22, 0.72) range if the task isn't listed.
-        ax.set_ylim(*YLIM_PER_TASK.get(task, (0.22, 0.72)))
-        # Consistent y-tick formatting: ~5 ticks per panel (adapts
-        # per-task ylim instead of a fixed 0.05 stride that crammed
-        # wide panels with 10+ ticks) + 2 decimal places (default
-        # ScalarFormatter strips trailing zeros).
-        from matplotlib.ticker import MaxNLocator, FormatStrFormatter
-        ax.yaxis.set_major_locator(MaxNLocator(nbins=5, steps=[1, 2, 5, 10]))
-        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-        ax.grid(True, which='both', alpha=0.3)
-
-        if col == 0:
-            ax.set_ylabel('Accuracy')
-        if row == 1:
-            ax.set_xlabel('Tokens consumed (T)')
-        # Stage callouts only on the top-left panel (now ARC-Challenge
-        # after the HellaSwag swap); legend is moved out of the panels
-        # (see below) so it never crashes the data lines. Use a
-        # blended transform: x in data coords (so it lines up with the
-        # 4673/7064 stage boundaries on the token axis), y in axes
-        # fraction (so it stays just below the top edge regardless of
-        # the panel's per-task ylim).
-        if (row, col) == (0, 0):
-            from matplotlib.transforms import blended_transform_factory
-            tf = blended_transform_factory(ax.transData, ax.transAxes)
-            ax.text(4673, 0.97, ' (2)', color='gray', transform=tf,
-                    style='italic', va='top', ha='left')
-            ax.text(7064, 0.97, ' (3)', color='gray', transform=tf,
-                    style='italic', va='top', ha='left')
-
-    # Figure-level legend, laid out vertically (1 col, N rows) and
-    # parked outside the right edge of the panel grid. Redundant
-    # 'AuroraGPT-2B — eval comparison' suptitle dropped since the
-    # slide title above already says it.
-    handles, labels = axes[-1][-1].get_legend_handles_labels()
-    fig.legend(
-        handles, labels,
-        loc='center left',
-        bbox_to_anchor=(1.0, 0.5),
-        ncol=1,
-        frameon=False,
-        fontsize=18,
+    ax.set_title(task, pad=8)
+    # Linear 0-7.7T x — matches the 20B chart for visual lock between
+    # slides. The 500B floor would only clear noise-bound warmup, but
+    # the TT chains' warmup matters for the story so keep it visible.
+    ax.set_xlim(0, 7_700)
+    ax.xaxis.set_major_formatter(
+        FuncFormatter(lambda x_B, _pos: '0' if x_B == 0 else f'{x_B/1000:g}T')
     )
+    ax.set_ylim(*YLIM_PER_TASK.get(task, (0.22, 0.72)))
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=5, steps=[1, 2, 5, 10]))
+    ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    ax.grid(True, which='both', alpha=0.3)
+    ax.set_xlabel('Tokens consumed (T)')
+    ax.set_ylabel('Accuracy')
 
-    fig.tight_layout(rect=(0, 0, 0.85, 1))
+
+def _draw_lines(ax, task: str, baseline: float, i: int,
+                mds, mds_tokens, v2_256, v2_256_tokens, v2_512, v2_512_tokens):
+    """Draw the random baseline, stage rules, and three trajectories.
+    `i` is the task index into the wide rows (1=HellaSwag col, …)."""
+    ax.axhline(baseline, ls=':', lw=1, color='gray',
+               label=f'random ({baseline:.0%})', zorder=1)
+    # MDS stage boundaries — pretrain → continued-pretrain → math+code.
+    for x in (4673, 7064):
+        ax.axvline(x, ls='--', lw=0.7, color='gray', alpha=0.5, zorder=0)
+    ax.plot(mds_tokens, mds[:, i + 1], ':x', color=MDS_COLOR,
+            lw=1.8, ms=5, alpha=0.9, label='MDS', zorder=3)
+    ax.plot(v2_256_tokens, v2_256[:, i + 1], '-s',
+            color=TT_V2_256_COLOR, lw=1.8, ms=5, alpha=0.9, zorder=4,
+            label='TT 256N')
+    ax.plot(v2_512_tokens, v2_512[:, i + 1], '-D',
+            color=TT_V2_512_COLOR, lw=1.8, ms=5, alpha=0.9, zorder=5,
+            label='TT 512N')
+    # Stage callouts on HellaSwag only — it's the eye-anchor panel
+    # and the labels would just repeat in every other panel.
+    if task == 'HellaSwag':
+        from matplotlib.transforms import blended_transform_factory
+        tf = blended_transform_factory(ax.transData, ax.transAxes)
+        ax.text(4673, 0.97, ' (2)', color='gray', transform=tf,
+                style='italic', va='top', ha='left')
+        ax.text(7064, 0.97, ' (3)', color='gray', transform=tf,
+                style='italic', va='top', ha='left')
+
+
+def render_panel(task: str, out_path: Path, chains, baseline: float, i: int) -> None:
+    import ambivalent  # noqa: F401
+    plt.style.use(ambivalent.STYLES['ambivalent'])
+    plt.rcParams.update(TALK_RCPARAMS_GRID)
+
+    # Per-panel figsize: a 4:3 box renders nicely at any flex/grid cell
+    # size and gives each panel its own breathing room without forcing
+    # the CSS layout into a fixed aspect.
+    fig, ax = plt.subplots(figsize=(8, 6))
+    fig.patch.set_alpha(0)
+    ax.patch.set_alpha(0)
+    _draw_lines(ax, task, baseline, i, *chains)
+    _style_axes(ax, task)
+    fig.tight_layout()
     fig.savefig(out_path, format='svg', transparent=True, bbox_inches='tight')
     plt.close(fig)
-    print(f'wrote {out_path}  ({out_path.stat().st_size // 1024} KB)')
+    print(f'wrote {out_path.name}  ({out_path.stat().st_size // 1024} KB)')
+
+
+def render_legend(out_path: Path) -> None:
+    """Standalone horizontal legend SVG. Sits below the 2x2 panel grid
+    in the slide layout; not embedded inside any single panel so each
+    panel keeps its full plot area for data."""
+    import ambivalent  # noqa: F401
+    plt.style.use(ambivalent.STYLES['ambivalent'])
+    plt.rcParams.update(TALK_RCPARAMS_GRID)
+
+    fig, ax = plt.subplots(figsize=(16, 1.2))
+    fig.patch.set_alpha(0)
+    ax.set_axis_off()
+    # Draw zero-length proxy lines at off-axes coordinates just to
+    # collect the right line styles for the legend handles. (Drawing
+    # invisible artists is the simplest way to seed a legend without
+    # data points.)
+    proxies = [
+        ax.plot([], [], ':', color='gray', lw=1, label='random (25% / 50%)')[0],
+        ax.plot([], [], ':x', color=MDS_COLOR, lw=1.8, ms=6, label='MDS')[0],
+        ax.plot([], [], '-s', color=TT_V2_256_COLOR, lw=1.8, ms=6, label='TT 256N')[0],
+        ax.plot([], [], '-D', color=TT_V2_512_COLOR, lw=1.8, ms=6, label='TT 512N')[0],
+    ]
+    ax.legend(
+        handles=proxies,
+        loc='center',
+        ncol=len(proxies),
+        frameon=False,
+        handlelength=2.5,
+        columnspacing=3,
+    )
+    fig.tight_layout(pad=0)
+    fig.savefig(out_path, format='svg', transparent=True, bbox_inches='tight')
+    plt.close(fig)
+    print(f'wrote {out_path.name}  ({out_path.stat().st_size // 1024} KB)')
 
 
 if __name__ == '__main__':
     out = Path('/Users/samforeman/projects/saforem2/sam.onl/web/public/talks/2026-06-03/figures')
     out.mkdir(parents=True, exist_ok=True)
-    fname = 'eval-2b-compare-mobile.svg' if MOBILE else 'eval-2b-compare.svg'
-    render(out / fname)
+    chains = _load_chains()
+    for i, (task, baseline) in enumerate(zip(TASKS, RANDOM_BASELINE)):
+        slug = TASK_SLUG[task]
+        render_panel(task, out / f'eval-2b-{slug}.svg', chains, baseline, i)
+    render_legend(out / 'eval-2b-legend.svg')

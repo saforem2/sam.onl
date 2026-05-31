@@ -428,17 +428,22 @@ is the "fork tax", the rest of this talk.
 
 ## 2B eval: MDS reference vs `torchtitan`
 
-<figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-06-03/figures/eval-2b-compare-mobile.svg"
-        />
-        <img
-            src="/talks/2026-06-03/figures/eval-2b-compare.svg"
-            alt="2B eval comparison: MDS vs TT v2"
-        />
-    </picture>
+<figure class="eval-grid eval-grid-2b">
+    <img class="eval-panel"
+        src="/talks/2026-06-03/figures/eval-2b-hellaswag.svg"
+        alt="HellaSwag accuracy vs tokens — MDS vs TT 256N vs TT 512N" />
+    <img class="eval-panel"
+        src="/talks/2026-06-03/figures/eval-2b-arc-easy.svg"
+        alt="ARC-Easy accuracy vs tokens — MDS vs TT 256N vs TT 512N" />
+    <img class="eval-panel"
+        src="/talks/2026-06-03/figures/eval-2b-arc-challenge.svg"
+        alt="ARC-Challenge accuracy vs tokens — MDS vs TT 256N vs TT 512N" />
+    <img class="eval-panel"
+        src="/talks/2026-06-03/figures/eval-2b-winogrande.svg"
+        alt="Winogrande accuracy vs tokens — MDS vs TT 256N vs TT 512N" />
+    <img class="eval-legend"
+        src="/talks/2026-06-03/figures/eval-2b-legend.svg"
+        alt="Legend: random baseline, MDS, TT 256N, TT 512N" />
     <figcaption>
         Data:
         [`docs/evals/agpt/2b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals/agpt/2b),
@@ -457,17 +462,22 @@ is the "fork tax", the rest of this talk.
 
 ## 20B eval: all-production overlay (2B + 20B)
 
-<figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-06-03/figures/eval-20b-compare-mobile.svg"
-        />
-        <img
-            src="/talks/2026-06-03/figures/eval-20b-compare.svg"
-            alt="All-production eval overlay: 2B MDS, 2B TT 256N, 2B TT 512N, 20B TT 512N"
-        />
-    </picture>
+<figure class="eval-grid eval-grid-20b">
+    <img class="eval-panel"
+        src="/talks/2026-06-03/figures/eval-20b-hellaswag.svg"
+        alt="HellaSwag accuracy vs tokens — 2B MDS, 2B TT 256N, 2B TT 512N, 20B TT 512N" />
+    <img class="eval-panel"
+        src="/talks/2026-06-03/figures/eval-20b-arc-easy.svg"
+        alt="ARC-Easy accuracy vs tokens — 2B MDS, 2B TT 256N, 2B TT 512N, 20B TT 512N" />
+    <img class="eval-panel"
+        src="/talks/2026-06-03/figures/eval-20b-arc-challenge.svg"
+        alt="ARC-Challenge accuracy vs tokens — 2B MDS, 2B TT 256N, 2B TT 512N, 20B TT 512N" />
+    <img class="eval-panel"
+        src="/talks/2026-06-03/figures/eval-20b-winogrande.svg"
+        alt="Winogrande accuracy vs tokens — 2B MDS, 2B TT 256N, 2B TT 512N, 20B TT 512N" />
+    <img class="eval-legend"
+        src="/talks/2026-06-03/figures/eval-20b-legend.svg"
+        alt="Legend: random baseline, 2B MDS, 2B TT 256N, 2B TT 512N, 20B TT 512N" />
     <figcaption>
         Data:
         [`docs/evals/agpt/20b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals/agpt/20b),
