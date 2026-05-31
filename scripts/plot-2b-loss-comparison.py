@@ -87,7 +87,7 @@ def render(out_path: Path):
     ax.plot(mds_x_B, mds_s1['y'].values,
             color=MDS_STAGE_COLOR, lw=1.8, label='Megatron-DeepSpeed',
             marker='x', markevery=log_marker_indices(mds_x_B, n_target=8),
-            ms=8, markeredgewidth=1.5,
+            ms=11, markeredgewidth=2,
             zorder=3)
 
     # --- TT v2 chains: pinned to TT_V2_COLOR so the series matches
@@ -106,7 +106,7 @@ def render(out_path: Path):
                         color=TT_V2_COLOR, lw=lw, ls=ls,
                         label=label,
                         marker='s', markevery=log_marker_indices(tt_tokens_B, n_target=8),
-                        ms=7, markeredgewidth=0,
+                        ms=11, markeredgewidth=0,
                         zorder=5, alpha=0.95)
         tt_endpoints.append((
             int(tt['step'].iloc[-1]),

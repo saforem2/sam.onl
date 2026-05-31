@@ -73,7 +73,7 @@ def render(out_path: Path):
         ax.plot(x_B, sub['y'].values,
                 color=color, lw=2.2, label=label,
                 marker=marker, markevery=linear_marker_indices(x_B, n_target=6),
-                ms=8, markeredgewidth=0,
+                ms=11, markeredgewidth=0,
                 zorder=3, alpha=0.95)
 
     for b in MDS_STAGE_BOUNDARIES:
@@ -92,7 +92,7 @@ def render(out_path: Path):
     ax.plot(tt_tokens_B, tt['loss'].values,
             color='C1', lw=2.0, label='TorchTitan (256N)',
             marker='^', markevery=linear_marker_indices(tt_tokens_B, n_target=6),
-            ms=8, markeredgewidth=0,
+            ms=11, markeredgewidth=0,
             zorder=4, alpha=0.95)
 
     # MDS endpoint annotation (kept from the reference plot).
