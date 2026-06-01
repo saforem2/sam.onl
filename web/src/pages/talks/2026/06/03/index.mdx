@@ -172,8 +172,10 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
   - AuroraGPT-2B reference (~7.77T tokens)
   - **pre**-`torchtitan`
 
-> [!NOTE]
-> **The claim:** same code, every vendor — no `cuda` in user code !
+<div class="repo-card repo-card-tip">
+    <div class="repo-card-title">Hardware agnostic</div>
+    **The claim:** same code, every vendor — no `cuda` in user code !
+</div>
 
 </Slide>
 
@@ -198,7 +200,7 @@ print(rank)
 ezpz launch python3 train.py
 ```
 
-Same code, same launch command, every site. No per-cluster `mpiexec` / `srun` invocations, CPU bindings, or tile-compact wrappers. Full docs: [ezpz.cool](https://ezpz.cool).
+**Same code, every site.** No per-cluster `mpiexec` / `srun`, CPU bindings, or tile-compact wrappers. → [ezpz.cool](https://ezpz.cool)
 
 </div>
 
