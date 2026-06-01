@@ -1453,7 +1453,7 @@ Appendix: Optimizer speedrun rounds — Mano / AdamW / Muon
 
 <figure>
     <img
-        src="/talks/2026-06-03/figures/optimizers-r5-loss-curves.png"
+        src="/talks/2026-06-03/figures/optimizers-r5-loss-curves.webp"
         alt="Mano LR sweep + WSM + Schedule-Free loss curves, 8 nodes, 10B tokens"
     />
     <figcaption>
@@ -1536,7 +1536,7 @@ fp32; forward/backward stay bf16. Extra ~1 GB master at 2B, ~10 GB at
 
 ### Silent bug #1 — the smoking gun
 
-![v1 (bf16-master) vs v2 (fp32-master) — 20B lm-eval](/talks/2026-06-03/figures/eval-20b-v1-vs-v2.png)
+![v1 (bf16-master) vs v2 (fp32-master) — 20B lm-eval](/talks/2026-06-03/figures/eval-20b-v1-vs-v2.webp)
 
 <figcaption>
     **v1** (bf16 master, 256N): ARC-Easy `0.27` flat across 2,500 steps · **v2**
