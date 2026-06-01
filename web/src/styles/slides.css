@@ -14,21 +14,28 @@
 
    `:has()` here scopes the lock to pages that actually contain the
    deck (any page rendered through SlideLayout) — non-deck routes
-   keep the normal body-scroll behavior. */
-html:has(main[is-~='presentation']),
-html:has(main[is-~='presentation']) body {
-    height: 100vh;
-    height: 100dvh;
-    max-height: 100vh;
-    max-height: 100dvh;
-    overflow: hidden;
-    overscroll-behavior: none;
-    /* iOS rubber-band / pull-to-refresh comes from the document
-       scroll context; pinning the body to the viewport stops it
-       from being a scroll target at all. */
-    position: fixed;
-    inset: 0;
-    width: 100%;
+   keep the normal body-scroll behavior.
+
+   `@media (not print)` is essential — without it, the height/overflow
+   clamp + position:fixed cuts every PDF to a single page. Print mode
+   has its own layout (.slides-print-mode below) that needs html + body
+   to be free-flowing so each slide gets its own `@page`. */
+@media not print {
+    html:has(main[is-~='presentation']),
+    html:has(main[is-~='presentation']) body {
+        height: 100vh;
+        height: 100dvh;
+        max-height: 100vh;
+        max-height: 100dvh;
+        overflow: hidden;
+        overscroll-behavior: none;
+        /* iOS rubber-band / pull-to-refresh comes from the document
+           scroll context; pinning the body to the viewport stops it
+           from being a scroll target at all. */
+        position: fixed;
+        inset: 0;
+        width: 100%;
+    }
 }
 
 [is-~='presentation'] {
