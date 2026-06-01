@@ -360,9 +360,26 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        /* Anchor the image + caption stack to the top of the figure
+           box so the caption sits directly under the image. Without
+           this, the figure inherits `safe center` from the
+           slide-inner and on portrait mobile (where the image is
+           width-bound and short) the whole image+caption pair floats
+           in the middle of the slide with a big empty band above. */
+        justify-content: flex-start;
         min-height: 0;
         flex: 1;
         margin-block: 0.5lh;
+        /* Half-line breathing room between the image and the
+           figcaption — without this the caption text kisses the
+           bottom edge of the chart at narrow viewports. */
+        gap: 0.5lh;
+    }
+    /* Caption never tries to grow; sits flush below whichever image
+       child precedes it. */
+    .slide-inner > figure > figcaption {
+        flex: none;
+        margin-block: 0;
     }
     /* <picture> is a layout-transparent wrapper for responsive <source>
        swapping — collapse it so the child <img> participates in the
