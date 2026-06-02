@@ -1089,7 +1089,11 @@ figcaption > p {
     display: inline;
     margin: 0;
 }
-figcaption::before {
+/* Scope the "Fig: " prefix to figures that actually contain a visual
+   (image / svg / responsive <picture>). Plain-content figures —
+   e.g. a <figure><table>...</table><figcaption>Table 3...</figcaption>
+   — should keep their own prefix and not get "Fig:" injected. */
+figure:has(:is(img, svg, picture)) > figcaption::before {
     content: 'Fig: ';
     color: var(--foreground0);
     font-style: normal;
