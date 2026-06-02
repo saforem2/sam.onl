@@ -382,8 +382,15 @@ const canonical = `sam.onl${url}`
             { passive: true },
         )
 
-        // Hash changes from external nav (e.g. clicking a deep link)
-        window.addEventListener('hashchange', () => render(indexFromHash()))
+        // Hash changes from external nav (e.g. clicking a deep link).
+        // Only react when the hash is a pure slide index (`#N`); other
+        // anchor targets (GFM footnote backrefs like
+        // `#user-content-fnref-N`, in-slide section ids, etc.) would
+        // otherwise fall through indexFromHash() → 0 and slam the deck
+        // back to the first slide.
+        window.addEventListener('hashchange', () => {
+            if (/^#\d+$/.test(location.hash)) render(indexFromHash())
+        })
 
         // Speaker popup receives index changes from the main window
         if (isSpeaker) {
@@ -408,6 +415,43 @@ const canonical = `sam.onl${url}`
             if (fnList) {
                 fnTarget.appendChild(fnList.cloneNode(true))
             }
+        }
+
+        // Wire up backref (`↩`) clicks on the cloned <ol>. The native
+        // href="#user-content-fnref-N" would normally either (a) slam
+        // hashchange → render(0), now neutered above, or (b) try to
+        // scroll to a hidden in-doc target. Neither lands on the
+        // slide the user actually wants. Intercept and navigate to
+        // the slide containing the original [^N] reference, then
+        // scroll the popover into view inside it.
+        if (fnTarget) {
+            fnTarget.addEventListener('click', (e) => {
+                const a = (e.target as HTMLElement | null)?.closest(
+                    'a[data-footnote-backref]',
+                ) as HTMLAnchorElement | null
+                if (!a) return
+                const href = a.getAttribute('href') || ''
+                const refId = href.startsWith('#') ? href.slice(1) : href
+                if (!refId) return
+                // After popover-build, the original <sup> is gone but
+                // its cloned inner <a id="user-content-fnref-N"> lives
+                // inside the popover trigger on the referencing slide.
+                const target = document.getElementById(refId)
+                if (!target) return
+                const targetSlide =
+                    target.closest<HTMLElement>('[is-~="slide"]')
+                if (!targetSlide) return
+                e.preventDefault()
+                const idx = slides.findIndex((s) => s === targetSlide)
+                if (idx < 0) return
+                render(idx)
+                requestAnimationFrame(() => {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                    })
+                })
+            })
         }
 
         // Footnote hover/click popover (mirrors Doc.astro behavior).
@@ -455,7 +499,7 @@ const canonical = `sam.onl${url}`
                 if (!fnSlide) return
                 const fnSlideIdx = slides.findIndex((s) => s === fnSlide)
                 if (fnSlideIdx >= 0) {
-                    go(fnSlideIdx)
+                    render(fnSlideIdx)
                     // Scroll the target footnote into view after the
                     // slide change finishes.
                     requestAnimationFrame(() => {
@@ -505,15 +549,19 @@ const canonical = `sam.onl${url}`
                 const next = (e as FocusEvent).relatedTarget as Node | null
                 if (!next || !dlg.contains(next)) setOpen(false)
             })
+            // `dlg` is a <span> (see comment above on the deliberate
+            // switch from <details>), so `.open` is always undefined —
+            // use the data-open attribute that setOpen() actually sets.
+            const isOpen = () => dlg.hasAttribute('data-open')
             window.addEventListener(
                 'scroll',
                 () => {
-                    if (dlg.open) reposition()
+                    if (isOpen()) reposition()
                 },
                 true,
             )
             window.addEventListener('resize', () => {
-                if (dlg.open) reposition()
+                if (isOpen()) reposition()
             })
         }
     }
