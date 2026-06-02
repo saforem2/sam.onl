@@ -340,7 +340,7 @@ Why MDS in the first place — the pre-torchtitan landscape
 
 <Slide id="mds-context">
 
-## Why MDS first: the only option at the time
+## Why MDS (Megatron-DeepSpeed) first: the only option at the time
 
 When AuroraGPT kicked off, MDS was the **only** LLM pre-training framework that ran:
 
@@ -355,6 +355,13 @@ Supporting context:
 - The fork was _ours_ — every Aurora-specific patch could land same-day
 
 MDS was the pragmatic choice. By mid-2026 the calculus changed — `torchtitan` + DTensor + FSDP2 closed the gap and the MDS fork's maintenance cost crossed over.
+
+<SpeakerNotes>
+
+MDS = our fork of NVIDIA's Megatron-LM + Microsoft's DeepSpeed,
+patched for Intel XPU.
+
+</SpeakerNotes>
 
 </Slide>
 
@@ -382,6 +389,17 @@ Why SophiaG — large-batch optimizer comparison
         that stays in the low-loss band with bounded grad norms.
     </figcaption>
 </figure>
+
+<SpeakerNotes>
+
+"Why 256 nodes for a 2B model?" — facility scheduling, not model
+need. Aurora's queue policy + node-class allotment makes 256N
+(2,048 XPU) the sweet spot for back-to-back debug-then-scale sweeps:
+short enough to land in a single 8–12h block, big enough to surface
+collective + dataloader behaviour we'll hit at 512N / 1024N. We
+re-tune at the target node count before the actual production run.
+
+</SpeakerNotes>
 
 </Slide>
 
@@ -533,6 +551,19 @@ is the "fork tax", the rest of this talk.
         [`docs/production/agpt/2b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/2b)
     </figcaption>
 </figure>
+
+<SpeakerNotes>
+
+"Why is 2B 512N (GBS=12,288) behind 256N (GBS=6,144) at matched
+tokens?" — classic large-batch tax. Same base LR across both runs,
+2× the per-step batch ≈ half the gradient-noise-scale signal per
+token. Critical batch size for a 2B model under olmo-mix is well
+under 12K; 512N is past the knee. Fix is an LR sweep at the larger
+batch (sqrt-scaling rule as a starting point) — we haven't done
+that sweep because 256N is the production node count and 512N was a
+throughput experiment.
+
+</SpeakerNotes>
 
 </Slide>
 
@@ -1240,8 +1271,9 @@ Full write-up: [sam.onl/posts/2026/05/01](https://sam.onl/posts/2026/05/01/#scal
 - **`torch.compile` at 1T scale** — defensible decision tree?
 - **Async-checkpoint Pareto frontier**: recovery time × frequency ×
   storage cost in production
-- **Optimizer failure at 80B+**: SophiaG + Muon both diverge —
-  algorithmic or numerical?
+- **Optimizer failure at 80B+**: SophiaG (Hessian-diagonal estimate
+  saturates) + Muon (Newton-Schulz iterations overflow bf16) both
+  diverge — algorithmic limit or fp-precision artifact?
 - **MoE EP↔FSDP** scaling boundaries at 16B / 64B / 100B
 - **Make `xccl` honor `train_timeout_seconds`** so we don't have to
   rely on an stdout-idle watchdog as the hang-detection ground truth
