@@ -432,7 +432,3 @@ function stubUnusedMermaidDiagrams() {
     }
 }
 
-
-
-import { appendFileSync as __af } from 'node:fs'
-
