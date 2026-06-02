@@ -1016,158 +1016,8 @@ flowchart TB
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-The heartbeat watchdog — ezpz launch --timeout / --retries
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="watchdog">
-
-## Silent-hang detection: `ezpz launch --timeout / --retries`
-
-**The problem.** `xccl` on XPU silently ignores
-`train_timeout_seconds`, so a torchtitan job stuck in a hung
-collective sits consuming the full PBS walltime instead of aborting.
-Every collective hang quiets stdout (every rank blocks in the same
-call, nothing reaches the log) — that's the signal we can act on.
-
-```bash
-ezpz launch --timeout 600 --retries 3 \
-    python -m torchtitan.train --config-file ./config.toml
-```
-
-- **`--timeout SECONDS`** — kill the launched process if its stdout
-  goes **idle** (not walltime) for this many consecutive seconds.
-  Returns exit code 124 (matches GNU `timeout(1)`).
-- **`--retries N`** — re-execute on any non-zero exit (including
-  the watchdog's 124) up to N times. Exponential backoff:
-  5s → 10s → 20s → 40s → 60s (capped).
-
-**Scope caveat.** Watches only the process `ezpz launch` spawns
-directly. If `qsub` runs a wrapper script that internally invokes
-`python train.py`, the watchdog needs to live inside that script (or
-you wrap the inner call with `ezpz launch` too).
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-Watchdog state machine — one cycle in detail
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="watchdog-fsm">
-
-## `ezpz launch --timeout`: one hang/recover cycle
-
-<div class="watchdog-desktop">
-
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> Running
-    Running --> Hung: no stdout for N seconds
-    Hung --> Killed: SIGTERM → SIGKILL
-    Killed --> Running: backoff, re-exec
-```
-
-</div>
-
-<div class="watchdog-mobile">
-
-```mermaid
-stateDiagram-v2
-    direction TB
-    [*] --> Running
-    Running --> Hung: no stdout for N seconds
-    Hung --> Killed: SIGTERM → SIGKILL
-    Killed --> Running: backoff, re-exec
-```
-
-</div>
-
-Every collective hang shows up as **silence on stdout** — the process is "alive" by `kill -0` but nothing is happening. The watchdog fires on the _absence_ of progress, not on a heartbeat ping.
-
-<style>{`
-  /* Desktop/mobile mermaid variant swap, same pattern as restart-cascade. */
-  #watchdog-fsm .watchdog-mobile { display: none; }
-  @media (max-width: 768px) {
-      #watchdog-fsm .watchdog-desktop { display: none; }
-      #watchdog-fsm .watchdog-mobile { display: block; }
-      #watchdog-fsm .mermaid svg {
-          width: 100%;
-          max-width: 100%;
-          height: auto;
-      }
-  }
-`}</style>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
 What generalizes / open questions / fin
 ───────────────────────────────────────────────────────────────*/}
-
-{/*───────────────────────────────────────────────────────────────
-ezpz launch --auto-retry — new failover wrapper (PR #144)
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="auto-retry">
-
-## `--auto-retry`: bad-node failover, on tap
-
-Allocate spares up front, swap them in on failure:
-
-```bash
-# 522 nodes allocated, train on 512, keep 10 as spares.
-# Loop until success, walltime, or spare exhaustion.
-ezpz launch --auto-retry --np 512 -- python -m torchtitan.train …
-```
-
-- Classifies each attempt's exit → `success` / `walltime` / `bad-node` / `stuck-pre-training`
-- On bad-node: scrapes the failing host from the log, swaps in a spare, re-execs
-- Guards against config bugs: 2 consecutive attempts with zero `step=` markers → stop (don't burn the whole spare pool on a broken run)
-
-Ships in [`saforem2/ezpz#144`](https://github.com/saforem2/ezpz/pull/144). Same scraper as the bash-lib path; pure-Python loop on top.
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-Failover wrapper validation — the silent hang it was built for
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="failover-validation">
-
-## Failover wrapper: caught a real silent hang in production
-
-**Job `8505298`, 2026-05-23.** Attempt 1 trains cleanly steps 1→37, then
-log goes **completely silent** at step 37. No traceback, no MPI error,
-no rank dying. Just dead.
-
-<div class="tight-table">
-
-| Time (CT) | Event                                                       |
-| --------- | ----------------------------------------------------------- |
-| 21:06:41  | step 37 logged · `loss 11.80 · tps 3,919`                   |
-| 21:36:41  | **30 min dead air** · `ezpz launch --timeout=1800` SIGTERMs |
-| 21:36:43  | wrapper classifies exit 124 → silent-hang (not walltime)    |
-| 21:36:43  | no traceback to scrape → **blind swap** of rank-0 host      |
-| 21:36:45  | attempt 2 launches on swapped node set                      |
-| 21:57:49  | walltime hit · step 296 · loss 5.68 · ckpts persisted       |
-
-</div>
-
-**Three new pieces had to fire in sequence on a real-world hang to
-prove production-readiness:** `--timeout=1800` watchdog · `exit 124`
-classification distinct from PBS `exit 143` · `failover_swap_one_blind()`
-when no specific bad node can be identified. They did.
-
-Full writeup: [`docs/experiments/agpt/aurora/20260523-failover-silent-hang-recovery-8505298.md`](https://github.com/saforem2/torchtitan/blob/ezpz/torchtitan/experiments/ezpz/docs/experiments/agpt/aurora/20260523-failover-silent-hang-recovery-8505298.md)
-
-<style>{`
-  #failover-validation table th:nth-child(1),
-  #failover-validation table td:nth-child(1) { width: 12ch; white-space: nowrap; }
-  #failover-validation table th:nth-child(2),
-  #failover-validation table td:nth-child(2) { width: auto; }
-`}</style>
-
-</Slide>
 
 <Slide id="generalizes">
 
@@ -1329,8 +1179,13 @@ something was wrong.
 weight-stable resumption; pain: upstream shard churn, dataloader skew
 across backends).
 
-**Operational reality — bad-node failover** — the production
-table + qsub wrapper that swaps spares in on crash.
+**Failover engineering deep-dive** — the production table + qsub
+wrapper, plus the four-piece system that swaps spares in on crash:
+
+- `ezpz launch --timeout / --retries` — stdout-idle watchdog
+- watchdog state machine — one hang/recover cycle
+- `--auto-retry` — bad-node failover, on tap
+- in-production catch — silent hang at step 37, recovered cleanly
 
 **Cross-version churn** — APIs shift faster than vendor support
 catches up. Example: `DeviceMesh` + AC + TP=2 + torch 2.13 →
@@ -1344,8 +1199,8 @@ Mano + QK-Norm; `yeet-env` tarball broadcast scaling.
 > [!TIP]
 > **`xccl` train-timeout fix incoming upstream.** An official fix
 > for `xccl` honoring `train_timeout_seconds` on XPU is landing in
-> a nightly PyTorch release — the stdout-idle watchdog (see main
-> path) won't stay load-bearing.
+> a nightly PyTorch release — the stdout-idle watchdog won't stay
+> load-bearing.
 
 </Slide>
 
@@ -1392,6 +1247,145 @@ those still need a heartbeat watchdog.
   /* Codeblock: span full slide width so the short qsub command has
      visual presence instead of shrinking to its tiny max-content box. */
   #restarts pre.astro-code { width: 100%; }
+`}</style>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Appendix: failover engineering deep-dive
+(watchdog → state machine → auto-retry → in-production catch)
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="watchdog">
+
+## Silent-hang detection: `ezpz launch --timeout / --retries`
+
+**The problem.** `xccl` on XPU silently ignores
+`train_timeout_seconds`, so a torchtitan job stuck in a hung
+collective sits consuming the full PBS walltime instead of aborting.
+Every collective hang quiets stdout (every rank blocks in the same
+call, nothing reaches the log) — that's the signal we can act on.
+
+```bash
+ezpz launch --timeout 600 --retries 3 \
+    python -m torchtitan.train --config-file ./config.toml
+```
+
+- **`--timeout SECONDS`** — kill the launched process if its stdout
+  goes **idle** (not walltime) for this many consecutive seconds.
+  Returns exit code 124 (matches GNU `timeout(1)`).
+- **`--retries N`** — re-execute on any non-zero exit (including
+  the watchdog's 124) up to N times. Exponential backoff:
+  5s → 10s → 20s → 40s → 60s (capped).
+
+**Scope caveat.** Watches only the process `ezpz launch` spawns
+directly. If `qsub` runs a wrapper script that internally invokes
+`python train.py`, the watchdog needs to live inside that script (or
+you wrap the inner call with `ezpz launch` too).
+
+</Slide>
+
+<Slide id="watchdog-fsm">
+
+## `ezpz launch --timeout`: one hang/recover cycle
+
+<div class="watchdog-desktop">
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Running
+    Running --> Hung: no stdout for N seconds
+    Hung --> Killed: SIGTERM → SIGKILL
+    Killed --> Running: backoff, re-exec
+```
+
+</div>
+
+<div class="watchdog-mobile">
+
+```mermaid
+stateDiagram-v2
+    direction TB
+    [*] --> Running
+    Running --> Hung: no stdout for N seconds
+    Hung --> Killed: SIGTERM → SIGKILL
+    Killed --> Running: backoff, re-exec
+```
+
+</div>
+
+Every collective hang shows up as **silence on stdout** — the process is "alive" by `kill -0` but nothing is happening. The watchdog fires on the _absence_ of progress, not on a heartbeat ping.
+
+<style>{`
+  /* Desktop/mobile mermaid variant swap, same pattern as restart-cascade. */
+  #watchdog-fsm .watchdog-mobile { display: none; }
+  @media (max-width: 768px) {
+      #watchdog-fsm .watchdog-desktop { display: none; }
+      #watchdog-fsm .watchdog-mobile { display: block; }
+      #watchdog-fsm .mermaid svg {
+          width: 100%;
+          max-width: 100%;
+          height: auto;
+      }
+  }
+`}</style>
+
+</Slide>
+
+<Slide id="auto-retry">
+
+## `--auto-retry`: bad-node failover, on tap
+
+Allocate spares up front, swap them in on failure:
+
+```bash
+# 522 nodes allocated, train on 512, keep 10 as spares.
+# Loop until success, walltime, or spare exhaustion.
+ezpz launch --auto-retry --np 512 -- python -m torchtitan.train …
+```
+
+- Classifies each attempt's exit → `success` / `walltime` / `bad-node` / `stuck-pre-training`
+- On bad-node: scrapes the failing host from the log, swaps in a spare, re-execs
+- Guards against config bugs: 2 consecutive attempts with zero `step=` markers → stop (don't burn the whole spare pool on a broken run)
+
+Ships in [`saforem2/ezpz#144`](https://github.com/saforem2/ezpz/pull/144). Same scraper as the bash-lib path; pure-Python loop on top.
+
+</Slide>
+
+<Slide id="failover-validation">
+
+## Failover wrapper: caught a real silent hang in production
+
+**Job `8505298`, 2026-05-23.** Attempt 1 trains cleanly steps 1→37, then
+log goes **completely silent** at step 37. No traceback, no MPI error,
+no rank dying. Just dead.
+
+<div class="tight-table">
+
+| Time (CT) | Event                                                       |
+| --------- | ----------------------------------------------------------- |
+| 21:06:41  | step 37 logged · `loss 11.80 · tps 3,919`                   |
+| 21:36:41  | **30 min dead air** · `ezpz launch --timeout=1800` SIGTERMs |
+| 21:36:43  | wrapper classifies exit 124 → silent-hang (not walltime)    |
+| 21:36:43  | no traceback to scrape → **blind swap** of rank-0 host      |
+| 21:36:45  | attempt 2 launches on swapped node set                      |
+| 21:57:49  | walltime hit · step 296 · loss 5.68 · ckpts persisted       |
+
+</div>
+
+**Three new pieces had to fire in sequence on a real-world hang to
+prove production-readiness:** `--timeout=1800` watchdog · `exit 124`
+classification distinct from PBS `exit 143` · `failover_swap_one_blind()`
+when no specific bad node can be identified. They did.
+
+Full writeup: [`docs/experiments/agpt/aurora/20260523-failover-silent-hang-recovery-8505298.md`](https://github.com/saforem2/torchtitan/blob/ezpz/torchtitan/experiments/ezpz/docs/experiments/agpt/aurora/20260523-failover-silent-hang-recovery-8505298.md)
+
+<style>{`
+  #failover-validation table th:nth-child(1),
+  #failover-validation table td:nth-child(1) { width: 12ch; white-space: nowrap; }
+  #failover-validation table th:nth-child(2),
+  #failover-validation table td:nth-child(2) { width: auto; }
 `}</style>
 
 </Slide>
