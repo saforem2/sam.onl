@@ -286,7 +286,7 @@ PANEL_POS = {
 # Pin colors for cross-slide consistency. The loss-comparison slide
 # uses the same MDS=blue / TT-v2=red pair, so "blue=MDS, red=TT"
 # reads identically across both charts.
-MDS_COLOR = '#1976d2'
+MDS_COLOR = '#42a5f5'
 TT_V2_256_COLOR = 'C1'
 TT_V2_512_COLOR = '#b71c1c'
 

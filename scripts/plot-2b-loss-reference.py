@@ -50,11 +50,11 @@ def render(out_path: Path):
     # the reader can map (1)/(2)/(3) → dark/medium/light intuitively.
     # Three blue shades, all dark enough to be visible on white
     # projector backgrounds in a presentation hall.
-    # Shifted one step lighter from the old [#0d2c6b, #1976d2, #42a5f5]
-    # ramp so stage (1) reads on dark backgrounds too (the old dark
-    # navy disappeared on mobile dark theme). Same Material blue ramp,
-    # just one rung up.
-    MDS_STAGE_SHADES = ['#1976d2', '#42a5f5', '#90caf9']
+    # Bumped one more rung lighter for projector legibility (the old
+    # ramp's stage-1 #1976d2 washed out on a dim hall projector). All
+    # three shades stay distinct + readable on white-background slides
+    # and on the site's dark themes.
+    MDS_STAGE_SHADES = ['#42a5f5', '#64b5f6', '#90caf9']
     mds = pd.read_parquet(MDS_PARQUET).sort_values('x').reset_index(drop=True)
     # Distinct marker per stage so the three blue shades have a second
     # visual channel (helpful on print + colorblind). The (1)/(2)/(3)
@@ -86,12 +86,9 @@ def render(out_path: Path):
     final = mds.iloc[-1]
     final_tokens_B = float(final['x']) / 1e9
     final_loss = float(final['y'])
-    # Annotation: pinned to the stage-1 mid blue (#1976d2) instead of
-    # the previous dark navy (#0d2c6b) — navy reads fine on white
-    # projector but disappears against the site's dark / catppuccin
-    # themes. Mid blue is the same color the stage-1 line already uses,
-    # which is theme-validated. fontsize stays at 18 for back-of-room.
-    annot_color = '#1976d2'
+    # Annotation tracks stage-1 line color. Was #1976d2; bumped to
+    # #42a5f5 to match the lighter projector-safe ramp above.
+    annot_color = '#42a5f5'
     ax.annotate(
         f'final: loss {final_loss:.2f}\n@ {final_tokens_B/1000:.2f}T tokens',
         xy=(final_tokens_B, final_loss),

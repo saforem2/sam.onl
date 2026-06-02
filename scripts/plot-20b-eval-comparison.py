@@ -131,7 +131,7 @@ PANEL_POS = {
 # Palette pinned to match the 2B-eval chart exactly. 20B 512N is
 # green so the size-class jump (2B → 20B) is visually distinct from
 # any within-2B comparison.
-MDS_COLOR = '#1976d2'         # mid blue
+MDS_COLOR = '#42a5f5'         # Material Blue 400 — lighter than 700 so it reads on dim projectors
 TT2B_256_COLOR = 'C1'         # red — matches 2B-eval chart's 256N
 TT2B_512_COLOR = '#b71c1c'    # dark red — matches 2B-eval chart's 512N
 TT20B_512_COLOR = '#1b8a3a'   # green — 20B = new model, new color
