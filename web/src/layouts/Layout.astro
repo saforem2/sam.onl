@@ -36,7 +36,6 @@ const ogImage = ogSlug
             gtag('config', 'G-RD883HJ1J2')
         </script>
 
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" />
         <script is:inline>
             const storedTheme = localStorage.getItem('webtui-theme')
             const migratedTheme =
@@ -109,21 +108,20 @@ const ogImage = ogSlug
         />
         <meta name="theme-color" content="#1c1c1c" />
 
-        <!-- Fonts -->
-        <link
-            rel="preconnect"
-            href="https://iosevka-webfonts.github.io"
-            crossorigin
-        />
+        <!-- Fonts: self-hosted, subset Iosevka WOFF2 (~668KB vs ~11MB
+             upstream). Preload only the Regular weight — the LCP-blocking
+             one; the rest swap in via font-display:swap as needed. See
+             web/public/fonts/iosevka/iosevka.css for the @font-face decls
+             and .claude/plans/velvety-twirling-glade.md for the
+             subsetting recipe. -->
         <link
             rel="preload"
-            href="https://iosevka-webfonts.github.io/iosevka/Iosevka.css"
-            as="style"
+            href="/fonts/iosevka/Iosevka-Regular.woff2"
+            as="font"
+            type="font/woff2"
+            crossorigin
         />
-        <link
-            href="https://iosevka-webfonts.github.io/iosevka/Iosevka.css"
-            rel="stylesheet"
-        />
+        <link href="/fonts/iosevka/iosevka.css" rel="stylesheet" />
         <style is:inline>
             svg[id^='mermaid-'] {
                 display: block;
@@ -144,6 +142,15 @@ const ogImage = ogSlug
                    crowd the surrounding text. */
                 margin-block: 1lh;
             }
+            /* On slides the slide-inner already provides the visual
+               container, and the diagram is the dominant content of
+               its column — the extra border + tinted background just
+               box it in unnecessarily. Strip both inside any <Slide>. */
+            [is-~='slide'] .mermaid.mermaid-interactive {
+                background-color: transparent;
+                border: none;
+                margin-block: 0;
+            }
             .mermaid.mermaid-interactive:focus-visible {
                 outline: 1px solid var(--blue);
                 outline-offset: -1px;
@@ -155,12 +162,12 @@ const ogImage = ogSlug
             }
             .mermaid-controls {
                 position: absolute;
-                bottom: 1ch;
-                right: 1ch;
+                bottom: 0.5ch;
+                right: 0.5ch;
                 display: flex;
                 flex-direction: column;
-                gap: 1ch;
-                padding: 1ch;
+                gap: 0.25ch;
+                padding: 0.25ch;
                 background-color: var(--background1);
                 border: 1px solid var(--background2);
                 z-index: 1;
@@ -208,10 +215,10 @@ const ogImage = ogSlug
                 background: var(--background2);
                 color: var(--foreground1);
                 border: none;
-                width: 2ch;
-                height: 1lh;
+                width: 1.6ch;
+                height: 0.85lh;
                 font-family: inherit;
-                font-size: 0.85em;
+                font-size: 0.7em;
                 line-height: 1;
                 cursor: pointer;
                 display: inline-flex;
@@ -285,6 +292,59 @@ const ogImage = ogSlug
                 max-height: 100% !important;
                 width: auto !important;
                 height: auto !important;
+            }
+            /* Descender clip fix for cloned SVG in the popout.
+               Same rule we apply in-deck (see #restart-cascade in
+               talks/2026-06-03/index.mdx). The popout clones the
+               SVG outside that scope, so we need a global rule too. */
+            .mermaid-modal-inner svg g.node foreignObject {
+                overflow: visible;
+            }
+            .mermaid-modal-inner svg g.node p {
+                line-height: 1.35;
+                padding-bottom: 0.1em;
+            }
+            /* Per-cluster text colors for restart-cascade clones.
+               classDef colors get serialized into the cluster <g>
+               class list (jobC/nodeC/procC/jobTxt/nodeTxt/procTxt),
+               so we can match on those even after the SVG is
+               cloned outside the talk's scoped <style> block. Keep
+               in sync with the in-deck rules. */
+            .mermaid-modal-inner svg g.node.jobTxt .nodeLabel,
+            .mermaid-modal-inner svg g.node.jobTxt span,
+            .mermaid-modal-inner svg g.node.jobTxt p {
+                color: #118cc2 !important;
+            }
+            .mermaid-modal-inner svg g.node.nodeTxt .nodeLabel,
+            .mermaid-modal-inner svg g.node.nodeTxt span,
+            .mermaid-modal-inner svg g.node.nodeTxt p {
+                color: #ee8f24 !important;
+            }
+            .mermaid-modal-inner svg g.node.procTxt .nodeLabel,
+            .mermaid-modal-inner svg g.node.procTxt span,
+            .mermaid-modal-inner svg g.node.procTxt p {
+                color: #1da811 !important;
+            }
+            /* Cluster-title chip badges + their per-cluster bg
+               tints. Same selectors as in-deck, just no
+               #restart-cascade prefix since the modal is outside it. */
+            .mermaid-modal-inner svg .cluster .cluster-label foreignObject {
+                overflow: visible;
+            }
+            .mermaid-modal-inner svg .cluster .cluster-label span {
+                display: inline-block;
+                padding: 0 1ch;
+                color: var(--foreground0, #222) !important;
+                font-weight: 600;
+            }
+            .mermaid-modal-inner svg .cluster.jobC .cluster-label span {
+                background: #118cc218;
+            }
+            .mermaid-modal-inner svg .cluster.nodeC .cluster-label span {
+                background: #ee8f2418;
+            }
+            .mermaid-modal-inner svg .cluster.procC .cluster-label span {
+                background: #1da81118;
             }
             .mermaid-modal-close {
                 position: absolute;
@@ -448,6 +508,63 @@ const ogImage = ogSlug
                 import('@/utils/mermaid-render').then(({ initMermaid }) =>
                     initMermaid(),
                 )
+            }
+        </script>
+        <script>
+            // GFM task-list checkboxes: persist checked state per page+task.
+            // The rehype plugin strips `disabled` so they're already clickable;
+            // we just need to wire up storage. Key = page path + task text.
+            {
+                const STORAGE_KEY = 'task-checks-v1'
+                const items = document.querySelectorAll(
+                    'li.task-list-item > input[type="checkbox"]',
+                )
+                if (items.length > 0) {
+                    let store = {}
+                    try {
+                        store =
+                            JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? {}
+                    } catch {
+                        store = {}
+                    }
+                    const pageKey = location.pathname.replace(/\/$/, '') || '/'
+                    const pageStore = store[pageKey] ?? {}
+
+                    // Storage key is derived from the rendered task
+                    // text, truncated to 200 chars. Two known fragility
+                    // modes — both intentional tradeoffs:
+                    //   1. Renaming an item drops its stored state.
+                    //      Acceptable: a renamed task is a new task.
+                    //   2. Two items whose first 200 chars match
+                    //      collide on the same key. Rare in practice;
+                    //      author can disambiguate by editing the
+                    //      prefix.
+                    // If either becomes a problem, switch to an
+                    // author-supplied `data-task-key` and key off that.
+                    const taskKey = (input) => {
+                        const li = input.closest('li.task-list-item')
+                        return li
+                            ? li.textContent.trim().slice(0, 200)
+                            : input.outerHTML
+                    }
+
+                    for (const input of items) {
+                        const key = taskKey(input)
+                        if (key in pageStore) input.checked = !!pageStore[key]
+                        input.addEventListener('change', () => {
+                            const updated = JSON.parse(
+                                localStorage.getItem(STORAGE_KEY) || '{}',
+                            )
+                            const page = updated[pageKey] ?? {}
+                            page[key] = input.checked
+                            updated[pageKey] = page
+                            localStorage.setItem(
+                                STORAGE_KEY,
+                                JSON.stringify(updated),
+                            )
+                        })
+                    }
+                }
             }
         </script>
     </body>

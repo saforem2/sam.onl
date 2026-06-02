@@ -3,6 +3,41 @@
    site. Layout is one full-viewport slide at a time, with the current
    slide selected by CSS attr [data-current]. */
 
+/* Lock the entire page down on slide-deck routes. Without these, iOS
+   mobile chains touch-scroll out of the slide-inner (despite its
+   `overscroll-behavior: contain`) all the way up to the document
+   scroll context — which manifests as the URL bar / address bar
+   pulling in and out and the whole page jiggling. The deck is
+   `position: fixed; inset: 0`, so html/body have no content to scroll
+   anyway; making that explicit prevents iOS from treating them as
+   eligible scroll targets.
+
+   `:has()` here scopes the lock to pages that actually contain the
+   deck (any page rendered through SlideLayout) — non-deck routes
+   keep the normal body-scroll behavior.
+
+   `@media (not print)` is essential — without it, the height/overflow
+   clamp + position:fixed cuts every PDF to a single page. Print mode
+   has its own layout (.slides-print-mode below) that needs html + body
+   to be free-flowing so each slide gets its own `@page`. */
+@media not print {
+    html:has(main[is-~='presentation']),
+    html:has(main[is-~='presentation']) body {
+        height: 100vh;
+        height: 100dvh;
+        max-height: 100vh;
+        max-height: 100dvh;
+        overflow: hidden;
+        overscroll-behavior: none;
+        /* iOS rubber-band / pull-to-refresh comes from the document
+           scroll context; pinning the body to the viewport stops it
+           from being a scroll target at all. */
+        position: fixed;
+        inset: 0;
+        width: 100%;
+    }
+}
+
 [is-~='presentation'] {
     position: fixed;
     inset: 0;
@@ -12,6 +47,14 @@
     background-color: var(--background0);
     color: var(--foreground1);
     z-index: 1;
+    /* Tell the browser: we own horizontal gestures (swipe nav), it owns
+       vertical (scroll inside .slide-inner) and pinch-zoom on images.
+       Without this, the browser waits ~300ms to disambiguate the gesture
+       before dispatching, which makes swipes feel laggy on mobile. */
+    touch-action: pan-y pinch-zoom;
+    /* Prevent iOS rubber-band / pull-to-refresh bouncing the whole deck
+       when a swipe overshoots a slide-inner scroll boundary. */
+    overscroll-behavior: contain;
 }
 
 [is-~='slides'] {
@@ -41,47 +84,96 @@
        deck mode; in overview it becomes a scaled fixed-size canvas. */
     .slide-inner {
         position: absolute;
-        inset: 0;
+        /* Reserve the bottom 1lh of the viewport for the fixed status
+           bar so figures, captions, and tables can't slide under it. */
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 1lh;
         display: flex;
         flex-direction: column;
         /* Anchor content to the top — `safe center` falls back to
            flex-start when content would overflow, preventing the top
            half from being clipped off-screen at large zooms. */
         justify-content: safe center;
-        padding: 2lh 6ch;
+        padding: 1lh 4ch;
         overflow: auto;
+        /* Match the deck-level touch-action: vertical scroll is the
+           browser's job here, horizontal gestures bubble to the deck
+           handler. pinch-zoom remains for images. */
+        touch-action: pan-y pinch-zoom;
+        /* Stop momentum scroll at the slide-inner boundary so it
+           doesn't propagate up to the (otherwise unscrollable) deck
+           and trigger iOS rubber-band frames. */
+        overscroll-behavior: contain;
+        /* Smooth iOS momentum scrolling inside long slides. */
+        -webkit-overflow-scrolling: touch;
         /* Responsive type scale: hard min so it stays readable on phones,
            viewport-relative middle so it grows with the canvas, hard max
            so it doesn't get cartoonish on 4K displays. */
-        font-size: clamp(0.95rem, 1.6vw + 0.5rem, 1.75rem);
-        line-height: 1.4;
+        font-size: clamp(1.05rem, 1.8vw + 0.55rem, 2rem);
+        line-height: 1.5;
     }
-    /* On narrow viewports give the slide more breathing room — the type
-       has to fit, the padding can give. */
-    @media (max-width: 768px) {
+    /* Tablet (≤ 1024px): slightly smaller type, tighter padding. */
+    @media (max-width: 1024px) {
         .slide-inner {
+            font-size: 1.25rem;
             padding: 1lh 3ch;
         }
     }
-    @media (max-width: 480px) {
+
+    /* Mobile (≤ 768px): tighter padding, top-anchor content. Codeblocks
+       keep their normal `white-space: pre` + horizontal scroll behavior;
+       no forced soft-wrap (which clobbers indentation and breaks lines
+       that would fit fine with a small horizontal scroll). Extra
+       bottom padding so the statusbar (~1lh tall + its own padding)
+       doesn't clip the last line of content. */
+    @media (max-width: 768px) {
         .slide-inner {
-            padding: 0.5lh 2ch;
+            font-size: 1.1rem;
+            /* Bottom padding has to clear the fixed statusbar (≈1lh
+               tall) PLUS enough cushion that the last line of content
+               isn't visually pinned to the bar's top edge. 4lh has
+               worked across the densest mobile slides; previous 2.5lh
+               wasn't enough (last line of body text was getting eaten
+               by the statusbar). */
+            padding: 1lh 2ch 4lh 2ch;
+            justify-content: flex-start;
+        }
+    }
+    /* <Slide size="sm"> — shrinks slide-inner font ~15% for dense
+       slides (big table + figure pairs) that don't fit at the default
+       size. Applied via data-size="sm" attribute on the <section>. */
+    &[data-size='sm'] .slide-inner {
+        font-size: clamp(0.9rem, 1.5vw + 0.45rem, 1.7rem);
+    }
+    @media (max-width: 1024px) {
+        &[data-size='sm'] .slide-inner {
+            font-size: 1.05rem;
+        }
+    }
+    @media (max-width: 768px) {
+        &[data-size='sm'] .slide-inner {
+            font-size: 0.95rem;
         }
     }
 
     h1,
     h2,
     h3 {
-        margin-block: 0 0.5lh;
+        margin-block: 0;
     }
     /* If the heading is the first thing in the slide, kill its top
        margin so the content doesn't get pushed off the top in
-       safe-center layout. */
+       safe-center layout. Give it a half-line gap below so it
+       doesn't visually fuse with the first paragraph/list/figure. */
     .slide-inner > :is(h1, h2, h3):first-child {
         margin-block-start: 0;
+        margin-block-end: 0.5lh;
     }
     /* Heads are only slightly bigger than body — keeps proportions
-       balanced and avoids "billboard title, mouse-print body" effect. */
+       balanced and avoids "billboard title, mouse-print body" effect.
+       Colors inherit from global.css (h1=red / h2=orange / h3=green). */
     h1 {
         font-size: 1.4em;
     }
@@ -112,9 +204,127 @@
     td {
         font-size: inherit;
     }
-    pre,
+    /* On slides, tables should always fit the slide width — wrap content
+       inside cells rather than overflow the slide. (Default browser table
+       layout is `auto`, which grows the table to fit its widest cell;
+       fine on a doc page with horizontal scroll, fatal on a projector.) */
+    table {
+        width: 100%;
+        table-layout: fixed;
+    }
+    th,
+    td {
+        white-space: normal;
+        /* Break only at word boundaries; don't slice through letters
+           mid-word ("Architectu" / "re"). `normal` keeps the browser's
+           default word-wrap; only force a break (anywhere/break-word)
+           if a single token is wider than the column. */
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        hyphens: none;
+        /* Body cells: top-anchor so multi-line content (long Value
+           cells) stays aligned with the row label. Header cells get
+           middle alignment below so they look anchored to the row,
+           not floating above it. */
+        vertical-align: top;
+        /* Extra vertical breathing room — default cells render at ~0
+           top/bottom padding which makes dense spec tables feel cramped
+           on slides. 0.3lh top + bottom adds ~half a line of air. */
+        padding-block: 0.3lh;
+    }
+    th {
+        vertical-align: middle;
+    }
+    /* Two-column tables (the common Spec/Value pattern): give the value
+       column ~3× the label column so the long cell wraps less. */
+    table:has(tr > td:nth-child(2):last-child) {
+        th:first-child,
+        td:first-child {
+            width: 22%;
+        }
+    }
+    /* Mobile: drop the fixed ratio (which forced 'Architecture' to
+       wrap mid-word and bleed into the Value column at 22%) and let
+       the browser size to content. table-layout: auto is the default
+       for HTML tables — overriding our 'fixed' rule above. */
+    @media (max-width: 768px) {
+        table {
+            table-layout: auto;
+        }
+        table:has(tr > td:nth-child(2):last-child) {
+            th:first-child,
+            td:first-child {
+                width: auto;
+                white-space: nowrap;
+            }
+        }
+    }
+    /* Compact table utility — for slides where a figure + table share
+       vertical space and the default 0.3lh per-side cell padding
+       crowds the chart out. Wrap the table in <div class="tight-table">
+       (or apply directly to a markdown table via a parent div).
+       Shrinks the table font ~10%; line-height stays at 1.5 (browser
+       default-ish) so rows still breathe — the savings come from
+       cell padding (0.3lh -> 0) + slightly smaller type, not from
+       cramped lines. */
+    .tight-table {
+        font-size: 0.9em;
+    }
+    .tight-table table,
+    table.tight-table {
+        th,
+        td {
+            padding-block: 0 !important;
+            line-height: 1.5;
+        }
+        /* Trim header bottom-border padding too so the head doesn't
+           visually disconnect from the first row at zero padding. */
+        thead th {
+            padding-block: 0.05lh !important;
+        }
+    }
+    pre {
+        font-size: 1em;
+    }
+    /* Inline <code> renders ~8% smaller so the chip's x-height matches
+       the surrounding prose. Iosevka's metrics give it a slightly
+       larger advance + cap-height than the body font at the same
+       computed size, which makes 1em inline-code chips visibly
+       taller than the line they sit in. */
     code {
-        font-size: 0.85em;
+        font-size: 0.92em;
+    }
+    /* Codeblocks on slides must never overflow past the slide right
+       edge — long shell commands (qsub lines, ezpz launch with
+       many args) extend past the natural slide width if shiki's
+       inner <code> is wider than its parent <pre>. Pin max-width to
+       100% + overflow-x: auto so long lines scroll inside the slide
+       instead of bleeding off the right edge invisibly.
+       NB: do NOT force `display: inline-block` on the inner <code>
+       here — it exposes a bg-color gap between shiki's line-number
+       gutter and the code body. The default `display: block` (with
+       its natural width) scrolls correctly under the pre's overflow.
+       NB2: flex-shrink: 0 + overflow-y: visible are required because
+       the slide-inner is a flex column — without flex-shrink: 0 the
+       <pre> gets squeezed below its content height when viewport is
+       short, and overflow-y defaults to auto once overflow-x is set,
+       which then clips the squeezed content invisibly. */
+    pre {
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: visible;
+        flex-shrink: 0;
+    }
+    /* Scoot codeblocks left ~2ch so the line-number gutter sits
+       flush against the slide-inner's left padding edge instead of
+       starting indented past it. Visually anchors the code block to
+       the same vertical guideline as the surrounding body text. */
+    pre.astro-code {
+        margin-inline-start: -2ch;
+    }
+    p code {
+        padding-block: 0.05em;
+        padding-inline: 0.2em;
     }
     /* Inline <code> chips inside list items render as inline-block by
        WebTUI base — which interacts badly with the negative `text-indent`
@@ -131,6 +341,216 @@
         height: auto;
         display: block;
     }
+
+    /* Figure-in-slide layout: explicit <figure>...<img>...</figure>
+       blocks (used for the loss / eval / lr-finder slides) claim
+       whatever vertical space is left after the heading + figcaption
+       render, via flex: 1 + min-height: 0. `object-fit: contain` keeps
+       aspect ratio while filling.
+
+       Scoped to `.slide-inner > figure` so we only catch *top-level*
+       figures the slide author wrote — not mermaid's wrapper figure
+       (`.mermaid`), not figures inside grid wrappers, not nested
+       containers. That avoids siblings (codeblocks, prose) getting
+       squished by a mermaid svg that erroneously claimed flex: 1.
+
+       Don't set inline `style="width:100%"` on slide figure images —
+       it overrides this flex sizing. */
+    .slide-inner > figure {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* Anchor the image + caption stack to the top of the figure
+           box so the caption sits directly under the image. Without
+           this, the figure inherits `safe center` from the
+           slide-inner and on portrait mobile (where the image is
+           width-bound and short) the whole image+caption pair floats
+           in the middle of the slide with a big empty band above. */
+        justify-content: flex-start;
+        min-height: 0;
+        flex: 1;
+        margin-block: 0.5lh;
+        /* Half-line breathing room between the image and the
+           figcaption — without this the caption text kisses the
+           bottom edge of the chart at narrow viewports. */
+        gap: 0.5lh;
+    }
+    /* Caption never tries to grow; sits flush below whichever image
+       child precedes it. */
+    .slide-inner > figure > figcaption {
+        flex: none;
+        margin-block: 0;
+    }
+    /* <picture> is a layout-transparent wrapper for responsive <source>
+       swapping — collapse it so the child <img> participates in the
+       figure's flex column directly (otherwise the picture box has no
+       flex sizing and the inner img falls back to intrinsic aspect,
+       producing the ~800px-tall overflows we saw on the eval slides). */
+    .slide-inner > figure > picture {
+        display: contents;
+    }
+    .slide-inner > figure > img,
+    .slide-inner > figure > svg,
+    .slide-inner > figure > picture > img {
+        flex: 1;
+        min-height: 0;
+        max-width: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+    }
+    /* Short-but-wide viewports (laptops in landscape with the browser
+       sized down, ~< 700px tall but still wide enough for the figure
+       aspect to be height-bound). object-fit: contain shrinks the
+       figure to fit the limiting axis (height) and leaves huge
+       horizontal margins. Switch to width-priority so the figure fills
+       the slide horizontally; slide-inner has overflow: auto so any
+       small vertical spill is recoverable via scroll. */
+    @media (max-aspect-ratio: 2/1) and (max-height: 700px) {
+        .slide-inner > figure > img,
+        .slide-inner > figure > svg,
+        .slide-inner > figure > picture > img {
+            width: 100%;
+            height: auto;
+            flex: none;
+            object-fit: initial;
+        }
+    }
+    @media (min-aspect-ratio: 2/1) {
+        .slide-inner > figure > img,
+        .slide-inner > figure > svg,
+        .slide-inner > figure > picture > img {
+            width: 100%;
+            height: auto;
+            flex: none;
+            object-fit: initial;
+        }
+    }
+    /* Multi-panel eval figure: a 2x2 grid of per-task SVGs plus a
+       full-width legend row beneath. Replaces the older single-SVG
+       2x2 figure so each panel scales to its grid cell and the CSS
+       layout switches to a single column on narrow screens — no
+       second matplotlib render needed. Override the generic
+       `.slide-inner > figure > img` rule above (which would otherwise
+       stretch each panel to flex: 1 / object-fit: contain and
+       collapse them all to identical heights). */
+    .slide-inner > figure.eval-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        /* Row 1: legend banner. Rows 2-3: 2x2 panels. Row 4: caption. */
+        grid-template-rows: auto 1fr 1fr auto;
+        column-gap: 1ch;
+        row-gap: 0.25lh;
+        align-content: stretch;
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        /* Override the generic figure margin so the grid hugs the
+           heading + caption tightly. */
+        margin-block: 0.5lh;
+    }
+    .slide-inner > figure.eval-grid > .eval-panel {
+        /* Each panel claims its own grid cell; min-height: 0 lets
+           the cell shrink so the row tracks distribute height. */
+        flex: none;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    /* <picture>-wrapped panels (used for the desktop/mobile srcset
+       swap). The picture wrapper IS the grid cell (do NOT use
+       `display: contents` here — grid placement on a display-contents
+       box is ignored, which silently collapses the placement and
+       drops the panel into auto-flow at row 1). Make the picture a
+       sized block, then have its inner <img> fill it. */
+    .slide-inner > figure.eval-grid > picture.eval-panel {
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+    }
+    .slide-inner > figure.eval-grid > picture.eval-panel > img {
+        flex: none;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    /* Pin each panel to an explicit grid cell. Without this, the four
+       panels auto-flow starting from row 1 — and the legend's
+       explicit `grid-row: 1` doesn't reserve that row from auto-flow,
+       so the first two panels (HellaSwag, ARC-Easy) end up stacked
+       *under* the legend and collapse to zero height. Anchoring each
+       panel to the right row + column avoids the overlap. */
+    .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(1) {
+        grid-row: 2;
+        grid-column: 1;
+    }
+    .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(2) {
+        grid-row: 2;
+        grid-column: 2;
+    }
+    .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(3) {
+        grid-row: 3;
+        grid-column: 1;
+    }
+    .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(4) {
+        grid-row: 3;
+        grid-column: 2;
+    }
+    @media (max-width: 768px) {
+        /* On mobile (single column) each panel takes its own row 2-5. */
+        .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(1) {
+            grid-row: 2;
+            grid-column: 1;
+        }
+        .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(2) {
+            grid-row: 3;
+            grid-column: 1;
+        }
+        .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(3) {
+            grid-row: 4;
+            grid-column: 1;
+        }
+        .slide-inner > figure.eval-grid > .eval-panel:nth-of-type(4) {
+            grid-row: 5;
+            grid-column: 1;
+        }
+    }
+    .slide-inner > figure.eval-grid > .eval-legend {
+        /* Explicit row 1, full width — pin above the panels. */
+        grid-row: 1;
+        grid-column: 1 / -1;
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        max-height: 1.5lh;
+        flex: none;
+        object-fit: contain;
+        justify-self: center;
+    }
+    .slide-inner > figure.eval-grid > figcaption {
+        grid-column: 1 / -1;
+    }
+    /* Narrow viewports (phones in portrait): collapse to one column.
+       `1fr` (not auto) on each panel row so the four panels distribute
+       the remaining slide height between them — otherwise each row
+       sizes to the SVG's intrinsic 4:3 box and leaves huge whitespace
+       below the figure. Each panel still scales with object-fit:contain
+       so the chart axes stay readable. */
+    @media (max-width: 768px) {
+        .slide-inner > figure.eval-grid {
+            grid-template-columns: 1fr;
+            grid-template-rows: auto repeat(4, 1fr) auto;
+        }
+    }
+
     /* Click-to-zoom signal */
     img {
         cursor: zoom-in;
@@ -145,9 +565,12 @@
        <img class="title-slide-logo"> inside the title slide. */
     .title-slide-logo {
         position: absolute;
-        bottom: 2lh;
-        right: 4ch;
-        height: 2.5lh;
+        /* Flush against the slide-inner's bottom edge — the slide-inner
+           itself already sits 1lh above the status bar, so the logo
+           lands just above the bar with no extra gap. */
+        bottom: 0;
+        right: 1ch;
+        height: 1lh;
         width: auto;
     }
 
@@ -157,6 +580,9 @@
         gap: 2ch;
         flex-wrap: wrap;
         margin-block: 0.5lh 1lh;
+        margin-inline: auto;
+        justify-content: center;
+        text-align: center;
     }
     .team-col {
         display: flex;
@@ -171,14 +597,13 @@
         gap: 0.25lh;
         font-size: 0.65em;
         line-height: 1.1;
-        text-align: center;
         min-width: 6ch;
     }
     .team-member img {
         width: 3lh;
         height: 3lh;
         object-fit: cover;
-        border-radius: 50%;
+        border-radius: 0%;
         border: 1px solid var(--background2);
         cursor: zoom-in;
     }
@@ -207,6 +632,31 @@
     a:not(.heading-anchor):focus-visible {
         background-color: var(--accent, var(--blue));
         color: var(--background0);
+        text-decoration: none;
+    }
+
+    /* Inline `code` inside a link: cue link-ness at rest, defer to parent's
+       accent flash on hover (otherwise the inner code chip's gray bg fights
+       with the outer accent). */
+    a:not(.heading-anchor) > code {
+        color: var(--url, var(--accent));
+        background-color: oklch(
+            from var(--url, var(--accent)) calc(l * var(--oklch-scale, 0.85)) c
+                h / 0.12
+        );
+        text-decoration: underline dotted;
+        text-decoration-color: oklch(
+            from var(--url, var(--accent)) l c h / 0.6
+        );
+        text-underline-offset: 0.15lh;
+        transition:
+            background-color 0.15s ease-out,
+            color 0.15s ease-out;
+    }
+    a:not(.heading-anchor):hover > code,
+    a:not(.heading-anchor):focus-visible > code {
+        background-color: transparent;
+        color: inherit;
         text-decoration: none;
     }
 
@@ -273,6 +723,13 @@
         color: var(--foreground0);
     }
 
+    blockquote {
+        --accent: var(--foreground2);
+        border-left: 3px solid var(--accent);
+        background-color: oklch(from var(--accent) calc(l * 1.15) c h / 0.08);
+        padding: 0.5lh 1.5ch;
+    }
+
     /* Repo-card chips — mimic Quarto callout-tip/note/important/warning
        styling. Use these in <Cols>/<Col> where blockquote callouts can't
        be authored due to MDX indentation rules. */
@@ -318,9 +775,9 @@ body[data-speaker-window] [is-~='notes'] {
     display: block;
 }
 
-/* Bottom status bar — left: title + help button, center: deep link,
-   right: current/total. Responsive: at narrow widths the title/link
-   truncate or hide so the bar stays at one line. */
+/* Bottom status bar — left: menu icon, center: deep link,
+   right: current/total. Responsive: at narrow widths the link
+   truncates so the bar stays at one line. */
 [is-~='slide-status'] {
     position: fixed;
     bottom: 0;
@@ -331,10 +788,13 @@ body[data-speaker-window] [is-~='notes'] {
     padding-inline: 2ch;
     background-color: var(--background1);
     color: var(--foreground3);
-    font-size: 0.85em;
+    /* Was 1.15em — bumped down to 1.12em so the link/page-chip glyphs
+       don't kiss the top + bottom edges of the 1lh-tall bar. Same
+       trick applied to the menu button below (1.1em → 1.07em). */
+    font-size: 1.12em;
     display: grid;
-    /* URL (left, ellipsis-truncated) + position+help (right) */
-    grid-template-columns: minmax(0, 1fr) auto;
+    /* menu (left, fixed) + link (center, ellipsis) + position (right) */
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 1ch;
     align-items: center;
     z-index: 10;
@@ -344,51 +804,64 @@ body[data-speaker-window] [is-~='notes'] {
     .ss-link {
         color: var(--foreground2);
         text-decoration: none;
-        justify-self: start;
+        justify-self: center;
         overflow: hidden;
         text-overflow: ellipsis;
         min-width: 0;
+        max-width: 100%;
         &:hover,
         &:focus-visible {
             color: var(--accent, var(--blue));
         }
     }
-    .ss-right {
-        display: flex;
-        align-items: center;
-        gap: 1ch;
-        justify-self: end;
-    }
-
-    /* Phone (< 480px): drop the link, just N/total + ? */
-    @media (max-width: 480px) {
-        grid-template-columns: auto;
-        justify-content: end;
-        .ss-link {
-            display: none;
-        }
-    }
     .ss-pos {
         color: var(--foreground2);
+        justify-self: end;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 3ch;
+        padding: 0 0.5ch;
+        height: calc(1lh - 0.2ch);
+        border: 1px solid var(--background3, var(--foreground3));
+        border-radius: 2px;
+        background: var(--background0);
+        font-variant-numeric: tabular-nums;
+        transition:
+            color 100ms linear,
+            border-color 100ms linear;
+        &:hover,
+        &:focus-visible {
+            color: var(--accent, var(--blue));
+            border-color: var(--accent, var(--blue));
+        }
     }
-    .ss-help {
+    /* Menu / help button — bottom-left, Font Awesome 'bars' glyph
+       (\f0c9). Pulled flush to the bar's left edge via negative
+       margin that cancels the statusbar's padding-inline: 2ch. */
+    .ss-menu {
         all: unset;
         cursor: pointer;
-        padding: 0 0.75ch;
-        color: var(--foreground2);
-        background-color: var(--background2);
-        border: 1px solid var(--foreground3);
-        border-radius: 3px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        justify-self: start;
+        height: 1lh;
+        padding: 0 1ch;
+        margin-inline-start: -1ch;
+        font-size: 1.07em;
         line-height: 1;
+        color: var(--foreground2);
         transition:
             color 100ms linear,
             background-color 100ms linear;
         &:hover,
         &:focus-visible {
-            color: var(--foreground0);
+            color: var(--accent, var(--blue));
             background-color: oklch(
                 from var(--accent, var(--blue))
-                    calc(l * var(--oklch-scale, 0.85)) c h / 0.2
+                    calc(l * var(--oklch-scale, 0.85)) c h / 0.1
             );
         }
     }
@@ -402,11 +875,10 @@ body[data-speaker-window] [is-~='notes'] {
 [is-~='presentation'][data-mode='overview'] {
     [is-~='slides'] {
         display: grid;
-        /* Each tile is at least 36ch wide, 16:9 ratio. Auto-rows match
-           the column height to keep tiles square-ish without aspect-ratio
-           drama (which collapses when children are position:absolute). */
-        grid-template-columns: repeat(auto-fit, minmax(36ch, 1fr));
-        grid-auto-rows: calc((36ch * 9) / 16);
+        /* Tighter minmax (24ch from 36ch) so 4-6 tiles fit per row at
+           normal viewport, matching Reveal's overview density. */
+        grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
+        grid-auto-rows: calc((24ch * 9) / 16);
         gap: 2ch;
         padding: 2lh 3ch calc(2lh + 1lh) 3ch;
         overflow-y: auto;
@@ -440,12 +912,26 @@ body[data-speaker-window] [is-~='notes'] {
         height: 720px;
         transform-origin: top left;
         transform: scale(var(--ov-scale, 0.32));
-        padding: 2lh 6ch;
+        padding: 1lh 4ch;
         font-size: 2em;
         line-height: 1.4;
         display: flex;
         flex-direction: column;
         justify-content: safe center;
+    }
+    /* Per-tile slide-number badge (top-right corner). Reveal puts the
+       slide index there so the audience can navigate by number. JS
+       sets data-slide-index on each <slide> when entering overview. */
+    [is-~='slide']::after {
+        content: attr(data-slide-index);
+        position: absolute;
+        top: 0.25lh;
+        right: 0.5ch;
+        font-size: 0.75em;
+        color: var(--foreground2);
+        font-variant-numeric: tabular-nums;
+        z-index: 2;
+        pointer-events: none;
     }
     [is-~='slide'] {
         transition:
@@ -458,10 +944,18 @@ body[data-speaker-window] [is-~='notes'] {
         border-color: var(--accent, var(--blue));
         box-shadow: 3px 3px 0 0 var(--foreground0);
     }
+    /* Stronger current-slide highlight — outline + larger shadow so
+       the eye snaps to where you are even in a dense grid. */
     [is-~='slide'][data-current] {
         opacity: 1 !important;
         border-color: var(--accent, var(--blue));
-        box-shadow: 2px 2px 0 0 var(--foreground0);
+        outline: 2px solid var(--accent, var(--blue));
+        outline-offset: 1px;
+        box-shadow: 4px 4px 0 0 var(--foreground0);
+    }
+    [is-~='slide'][data-current]::after {
+        color: var(--accent, var(--blue));
+        font-weight: var(--font-weight-bold);
     }
 }
 
@@ -535,6 +1029,9 @@ body[data-speaker-window] [is-~='notes'] {
         width: 100% !important;
         height: 100% !important;
         transform: none !important;
+        /* Same shrink + clip as the .slides-print-mode ruleset below. */
+        font-size: 0.95em !important;
+        overflow: hidden !important;
     }
 }
 body.slides-print-mode [is-~='presentation'] {
@@ -566,6 +1063,39 @@ body.slides-print-mode [is-~='slide'] .slide-inner {
     width: 100% !important;
     height: 100% !important;
     transform: none !important;
+    /* Re-assert the deck-mode flex column so figure { flex: 1 } can
+       still grow figures to fill the printed page. Without these, the
+       figure falls back to intrinsic size — matplotlib SVGs measure
+       in inches and the browser shrinks them to tiny thumbnails. */
+    display: flex !important;
+    flex-direction: column !important;
+    /* Shrink font ~15% so dense slides (timeline tables, supporting-
+       context bullet lists) have vertical room. Live deck scales to
+       viewport; print is fixed paper height, so content that fits
+       on screen can overflow paper without this. */
+    font-size: 0.95em !important;
+    /* Clip anything that still overflows rather than letting it
+       bleed visibly past the paper edge — better to lose half a
+       trailing line than show it sliced in two. */
+    overflow: hidden !important;
+}
+
+/* Print-mode per-slide footer: the position:fixed status bar doesn't
+   repeat across paginated pages, so each printed slide gets its own
+   URL stamp in the bottom-left corner via a ::after pseudo-element.
+   The URL is read from --slide-url, set on the presentation root by
+   the runtime (Presentation.astro). Falls back to an empty string if
+   unset so older sessions don't print a literal `var(...)`. */
+body.slides-print-mode [is-~='slide']::after {
+    content: var(--slide-url, '');
+    position: absolute;
+    bottom: 0.5lh;
+    left: 1ch;
+    font-size: 0.7em;
+    color: var(--foreground3, #888);
+    font-family: var(--font-family, monospace);
+    z-index: 100;
+    pointer-events: none;
 }
 
 /* Theme-aware title slide logo. Two SVG variants ship; show the one
@@ -584,6 +1114,21 @@ body.slides-print-mode [is-~='slide'] .slide-inner {
     display: block !important;
 }
 
+/* Generic theme-aware figure pair — usable in any slide content for
+   data plots that ship both a light and a dark variant. Same pattern
+   as the title-slide logo above, just classes you can spray anywhere. */
+.figure-dark {
+    display: none !important;
+}
+:root[data-webtui-theme='custom-dark'] .figure-light,
+:root[data-webtui-theme='catppuccin'] .figure-light {
+    display: none !important;
+}
+:root[data-webtui-theme='custom-dark'] .figure-dark,
+:root[data-webtui-theme='catppuccin'] .figure-dark {
+    display: block !important;
+}
+
 /* Persistent deck-corner logo: small, tight to the bottom-right corner
    above the status bar, on every slide. Theme-swapped same way as the
    title slide logo. */
@@ -593,7 +1138,9 @@ body.slides-print-mode [is-~='slide'] .slide-inner {
     right: 1ch;
     height: 1.25lh;
     width: auto;
-    opacity: 0.5;
+    /* No opacity dim — the black/white SVG variants already contrast
+       appropriately against their respective theme backgrounds. The
+       previous opacity:0.5 made both variants look washed-out grey. */
     z-index: 5;
     pointer-events: none;
 }
@@ -614,4 +1161,61 @@ body.slides-print-mode [is-~='slide'] .slide-inner {
    below lights up only when the title slide is the current one. */
 [is-~='presentation']:has(#title-slide[data-current]) .deck-corner-logo {
     display: none !important;
+}
+/* Hide the persistent logo on mobile — at narrow widths it overlaps
+   content rather than tucking into a corner (less horizontal slack
+   for content to flow around it). The title slide still shows its
+   own bigger logo via the title-specific block below. */
+@media (max-width: 768px) {
+    .deck-corner-logo {
+        display: none !important;
+    }
+}
+
+/* Footnotes on slides: hide the appended <section data-footnotes>
+   list (it would otherwise render as overflow on slide 1) and turn
+   the inline [^N] superscript into a small hover popover. These
+   selectors must live at the top level — the source <section> is a
+   child of <main is-="presentation">, not of [is-~='slide']. */
+[is-~='presentation'] section[data-footnotes],
+[is-~='presentation'] section.footnotes {
+    display: none !important;
+}
+.footnote-popover {
+    display: inline;
+    position: relative;
+    cursor: pointer;
+}
+.footnote-popover-trigger {
+    display: inline;
+}
+.footnote-popover-content {
+    display: none;
+    white-space: normal;
+}
+.footnote-popover[data-open] > .footnote-popover-content {
+    display: block;
+    position: fixed;
+    top: var(--popover-top, auto);
+    left: var(--popover-left, auto);
+    margin: 0;
+    background-color: var(--background1);
+    border: 1px solid var(--foreground2);
+    /* More horizontal breathing room than vertical — citation text
+       feels cramped against the border at 1-2ch but reads cleanly at
+       3ch+ inset. Reset any inherited text-indent so the first line
+       doesn't kiss the border while subsequent lines indent normally. */
+    padding: 0.5lh 3ch;
+    text-indent: 0;
+    max-width: min(60ch, calc(100vw - 6ch));
+    width: max-content;
+    /* Break long tokens (URLs, citation titles, etc) instead of
+       overflowing past the right border. */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    font-size: 0.85em;
+    line-height: 1.4;
+    z-index: 1000;
+    box-shadow: 2px 2px 0 0 var(--foreground0);
+    box-sizing: border-box;
 }

@@ -434,15 +434,29 @@
         /*         0.025 */
         /* ); */
     }
-    .callout blockquote {
-        margin-inline: unset;
-        padding-left: unset;
-        /* padding-inline-end: 2ch; */
-        padding-inline-start: 0pt;
-        margin-inline: 0pt;
+    /* Blockquote styling — replaces upstream WebTUI's ::before bar with a
+       simple border-left + tinted background. Cleaner, single declaration. */
+    blockquote {
+        --blockquote-accent: var(--foreground2);
+        border-left: 3px solid var(--blockquote-accent);
+        background-color: oklch(
+            from var(--blockquote-accent) calc(l * 1.15) c h / 0.08
+        );
+        padding: 0.5lh 1.5ch;
+        margin-block: 0.5lh;
     }
-    .callout blockquote::before {
-        display: none;
+    /* Kill the upstream pseudo bar — we use border-left instead. */
+    blockquote::before {
+        display: none !important;
+    }
+    /* Inside callouts: blockquotes are structural (every callout wraps its
+       body in a <blockquote>), so strip the bar/background to avoid a
+       double border with the callout's own left edge. */
+    .callout blockquote {
+        margin-inline: 0;
+        padding-inline-start: 0;
+        background: none;
+        border-left: none;
     }
 
     .callout p {
@@ -561,19 +575,81 @@
         margin-left: 3ch;
     }
 
-    input[type='checkbox']:not([is-='switch'])::before {
-        content: '';
+    /* GFM task-list checkboxes — `- [ ] item` / `- [x] item`. Render as
+       a TUI "[ ]" / "[x]" chip in monospace. Browsers also accept clicks
+       on these (a rehype plugin strips the `disabled` attribute that GFM
+       adds, and a tiny script persists state per page+task in localStorage). */
+    .task-list-item {
+        list-style: none;
+        /* No negative margin — task items should share a left edge
+           with regular bullet items. The "- " bullet glyph is replaced
+           by the rendered `[ ]` / `[x]` chip, so visual alignment
+           lands at the same indent as normal `<li>`s. */
+    }
+    .task-list-item input[type='checkbox'] {
+        appearance: none;
+        -webkit-appearance: none;
+        display: inline-block;
+        position: relative;
+        /* Width sized for "[x]" in monospace; the bracket-checkmark
+           "[✓]" combo widens because U+2713 falls back to a non-mono
+           font with wider advance — chars rendered side-by-side
+           naturally pick up that width without needing extra. */
+        width: 3ch;
+        height: 1lh;
+        margin: 0 0.5ch 0 0;
+        padding: 0;
+        vertical-align: text-bottom;
+        background: transparent;
+        color: var(--foreground2);
+        cursor: pointer;
+        font: inherit;
+        line-height: inherit;
+    }
+    .task-list-item input[type='checkbox']::before {
+        content: '[ ]';
         position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
+        inset: 0;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 3ch;
-        height: 1lh;
-        background: var(--foreground2);
+        background: transparent;
+        color: var(--foreground2);
+        font: inherit;
+        line-height: inherit;
+        /* `[ ]` contains a literal space, which is a valid line-break
+           opportunity — without nowrap the closing `]` can wrap to the
+           next line when the input box width is constrained. */
+        white-space: nowrap;
+        /* Force the checkbox glyph string to stay in the monospace
+           font even if individual chars (like ✓) would fall back to
+           a proportional font. */
+        font-family: var(--font-family, monospace);
+        font-variant-numeric: tabular-nums;
+    }
+    .task-list-item input[type='checkbox']:checked::before {
+        /* Nerd Font check glyph (U+F00C, Font Awesome 'check') instead
+           of the literal 'x' character — reads more like a real
+           checkbox without the wider advance issues of U+2713 ✓.
+           Requires a Nerd-Font-patched mono (Iosevka Nerd Font etc).
+           Falls back to '[x]' on unpatched fonts (won't render the
+           glyph, just the brackets — better than a missing tofu). */
+        content: '[\f00c]';
+        color: var(--green, #4caf50);
+        font-weight: var(--font-weight-bold);
+    }
+    .task-list-item input[type='checkbox']:focus-visible::before {
+        text-decoration: underline;
+    }
+    .task-list-item input[type='checkbox']:hover::before {
+        color: var(--accent, var(--green, var(--blue)));
+    }
+    /* Checked task items keep full color/weight — no strike-through.
+       The `[x]` chip itself is the completion signal. */
+    /* Disabled-style override (when JS hasn't enabled them yet): keep the
+       same look but show not-allowed cursor. No solid-block fallback. */
+    .task-list-item input[type='checkbox']:disabled {
+        cursor: default;
     }
 }
 
@@ -614,8 +690,14 @@
 
     pre.astro-code,
     pre.astro-code code {
-        font-size: clamp(0.7rem, 2.5vw, 0.875rem);
-        line-height: 1.4;
+        /* Inherit from parent context so code stays at body-text size
+           everywhere it appears. Bumped a hair past 1em because the
+           monospace font is optically narrower per char than the
+           proportional body font, so at the same em-size it reads
+           slightly smaller. Line-height matches body (1.5) so the
+           codeblock doesn't look cramped against surrounding prose. */
+        font-size: 1.05em;
+        line-height: 1.5;
     }
 }
 
@@ -712,24 +794,29 @@ html[data-webtui-theme='catppuccin-latte'] .astro-code span {
 }
 
 /* Code-block container: hugs content, no internal padding band.
-   Half-line gap above so code blocks don't crowd preceding text. */
+   Half-line gap above and below so code blocks don't crowd
+   surrounding text. (Was asymmetric 0.5lh top / 1lh bottom for
+   no good reason — equalized.) */
 pre.astro-code {
     padding: 0;
-    margin-block: 0.5lh 1lh;
+    margin-block: 0.5lh;
     align-self: start;
     background-color: var(--pre-background, var(--background1)) !important;
-    max-height: round(calc(0.4 * 100vh), 1lh);
-    /* Vertical scroll when a block exceeds max-height; otherwise the bar
-       is hidden by the browser since content fits. */
-    overflow-y: auto;
-    /* Cap at column width and let the `pre`'s own overflow-x: auto (set in
-       @layer components above) handle long lines with a horizontal
-       scrollbar. `min-width: 0` is the magic incantation for flex children:
-       without it, the `pre` would expand to its content's max-content width
-       and get clipped by #main-content's overflow-x: hidden. */
+    /* No max-height cap here — the surrounding container (slide-inner,
+       article body) handles its own overflow. Capping the pre forces
+       internal scrolling which clips visible content and makes users
+       think the codeblock is broken (especially on slides). */
+    overflow-y: visible;
+    /* Hug content by default; only grow up to the column width. Long
+       lines still get capped at 100% and the `pre`'s own overflow-x:
+       auto (set in @layer components above) provides horizontal scroll
+       when needed. `min-width: 0` is the magic incantation for flex
+       children — without it, a long-line `pre` would expand to its
+       content's max-content width and get clipped by #main-content's
+       overflow-x: hidden instead of scrolling internally. */
     min-width: 0;
     max-width: 100%;
-    width: 100%;
+    width: max-content;
     padding-inline-end: 0;
 }
 
@@ -750,6 +837,10 @@ pre.astro-code > code {
     counter-reset: line;
     line-height: initial;
     /* background-color: var(--background1, var(--pre-background)) !important; */
+    /* Trailing padding so the last char of the longest line doesn't kiss the
+       block edge — without this, lines that exactly hit max-content get clipped
+       at the right when the `pre`'s own padding-inline-end is 0. */
+    padding-inline-end: 4ch;
 }
 
 pre.astro-code span.line[tabindex='0'] {
@@ -981,6 +1072,34 @@ pre.astro-code:focus-within .code-copy-btn,
     content: ']';
 }
 
+/* Figure captions — centered under the image, italic prose body,
+   "Fig: " prefix in the strongest foreground for emphasis. Targets
+   <figcaption> directly so it works whether the markdown gave us a
+   wrapping <p> or bare inline text. */
+figcaption {
+    text-align: center;
+    color: var(--foreground1);
+    font-style: italic;
+    font-size: 0.875em;
+}
+/* Markdown often wraps caption text in a <p> — flatten that so the
+   "Fig: " ::before stays inline with the caption text instead of
+   getting bumped to its own line by the <p>'s block-level layout. */
+figcaption > p {
+    display: inline;
+    margin: 0;
+}
+/* Scope the "Fig: " prefix to figures that actually contain a visual
+   (image / svg / responsive <picture>). Plain-content figures —
+   e.g. a <figure><table>...</table><figcaption>Table 3...</figcaption>
+   — should keep their own prefix and not get "Fig:" injected. */
+figure:has(:is(img, svg, picture)) > figcaption::before {
+    content: 'Fig: ';
+    color: var(--foreground0);
+    font-style: normal;
+    font-weight: var(--font-weight-bold);
+}
+
 p:has(> img) {
     /* display: flow-root; */
 
@@ -1060,6 +1179,21 @@ html[data-webtui-theme='catppuccin'] {
     --base: oklch(from #1e1e2e l c h);
     --mantle: oklch(from #181825 l c h);
     --crust: oklch(from #11111b l c h);
+
+    /* Dark-theme heading swap: h2 reads blue, h3 reads green.
+       Overrides the shared [data-webtui-theme|='catppuccin'] block
+       above (which keeps peach/yellow for the latte/light variant). */
+    --h2: var(--blue);
+    --h3: var(--green);
+}
+
+/* Same dark-theme heading swap on the custom-dark theme. The
+   `[data-webtui-theme|='catppuccin']` block doesn't reach here, so
+   we set --h2 and --h3 explicitly. Other heading levels inherit
+   the global fallback (orange/green/etc.). */
+html[data-webtui-theme='custom-dark'] {
+    --h2: var(--blue);
+    --h3: var(--green);
 }
 
 html[data-webtui-theme='catppuccin-latte'] {
@@ -1204,14 +1338,17 @@ html[data-webtui-theme='catppuccin-latte'] {
     table:not([data-table-style='terminal']) tr:first-child :is(th) {
         background-color: var(--background1);
     }
-    /* Zebra striping for body rows. Tint = --background1 (header tone) at
-       a noticeable alpha. The :is(tbody, :scope) makes it work whether or
-       not there's an explicit <tbody>. */
+    /* Zebra striping for body rows. Soft tint = --background1 at low
+       opacity so the stripe is "barely there" — visible as a row
+       separator without dominating the table. Was full --background1
+       which read as a hard alternation; this is ~3-4× subtler.
+       The :is(tbody, :scope) makes it work whether or not there's
+       an explicit <tbody>. */
     table:not([data-table-style='terminal'])
         :is(tbody, :scope)
         > tr:nth-child(even):not(:has(th))
         > :is(td, th) {
-        background-color: var(--background1);
+        background-color: oklch(from var(--background1) l c h / 0.4);
     }
     /* Row hover — subtle tint so the user can track their reading row
        across wide tables. Wins over the zebra-stripe rule via specificity
@@ -1300,5 +1437,42 @@ html[data-webtui-theme='catppuccin-latte'] {
     #main-content :is(p, blockquote, li, [is-~='typography-block']) code {
         color: var(--code-fg, var(--foreground2));
         background-color: var(--code-bg, var(--background1));
+    }
+
+    /* Inline `code` wrapped in a link: signal link-ness at rest, and let
+       the parent <a>'s accent-flash hover paint cleanly through the chip
+       (otherwise the inner gray code-bg fights with the outer accent bg). */
+    #main-content
+        :is(p, blockquote, li, [is-~='typography-block'])
+        a:not(.heading-anchor):not([data-footnote-ref]):not(
+            [data-footnote-backref]
+        )
+        > code {
+        color: var(--url);
+        background-color: oklch(
+            from var(--url) calc(l * var(--oklch-scale, 0.85)) c h / 0.12
+        );
+        text-decoration: underline dotted;
+        text-decoration-color: oklch(from var(--url) l c h / 0.6);
+        text-underline-offset: 0.15lh;
+        transition:
+            background-color 0.15s ease-out,
+            color 0.15s ease-out;
+    }
+    #main-content
+        :is(p, blockquote, li, [is-~='typography-block'])
+        a:not(.heading-anchor):not([data-footnote-ref]):not(
+            [data-footnote-backref]
+        ):hover
+        > code,
+    #main-content
+        :is(p, blockquote, li, [is-~='typography-block'])
+        a:not(.heading-anchor):not([data-footnote-ref]):not(
+            [data-footnote-backref]
+        ):focus-visible
+        > code {
+        background-color: transparent;
+        color: inherit;
+        text-decoration: none;
     }
 }

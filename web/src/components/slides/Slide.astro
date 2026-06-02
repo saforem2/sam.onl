@@ -5,16 +5,20 @@
  * Props:
  * - bg: optional background color (CSS color or var ref)
  * - id: optional explicit fragment id for deep-linking
+ * - size: 'sm' shrinks slide-inner font by ~15% so dense slides (big
+ *   tables next to figures) fit without cropping. Defaults to base size.
  */
 interface Props {
     bg?: string
     id?: string
+    size?: 'sm' | 'base'
 }
-const { bg, id } = Astro.props
+const { bg, id, size = 'base' } = Astro.props
 const style = bg ? `background-color: ${bg};` : undefined
+const dataSize = size !== 'base' ? size : undefined
 ---
 
-<section is-="slide" {id} {style}>
+<section is-="slide" {id} {style} data-size={dataSize}>
     <div class="slide-inner">
         <slot />
     </div>

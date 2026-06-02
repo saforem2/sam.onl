@@ -85,7 +85,7 @@ const fontOptions = {
         </section>
 
         <section class="slide-help-section">
-            <span is-="badge" class="shs-title shs-title-blue"
+            <span is-="badge" class="shs-title shs-title-purple"
                 >&#xf03a; Table of Contents</span
             >
             <ol id="slide-help-toc" class="slide-help-toc"></ol>
@@ -100,7 +100,7 @@ const fontOptions = {
                 <code>k / ←</code><span>Previous slide / fragment</span>
                 <code>Space</code><span>Advance (fragments first)</span>
                 <code>g / G</code><span>First / last slide</span>
-                <code>s</code><span>Open speaker window</span>
+                <code>Ctrl+.</code><span>Open speaker notes window</span>
                 <code>Esc</code><span>Toggle overview / close dialog</span>
                 <code>f</code><span>Fullscreen</span>
                 <code>p</code><span>Print / export to PDF</span>
@@ -130,11 +130,47 @@ const fontOptions = {
         display: flex;
         flex-direction: column;
         gap: 0.5lh;
-        padding: 1ch;
+        /* WebTUI `box-=` reserves 1lh / 1ch for the border; the extra
+           padding here gives content breathing room from that border. */
+        padding: 1lh 2ch;
         background-color: var(--background0);
         max-height: 86vh;
         overflow-y: auto;
         scrollbar-width: thin;
+    }
+
+    /* Mobile (≤ 768px): take more of the viewport, shrink TOC entries
+       so long slide titles don't wrap into towering 4-line blocks
+       that hog vertical space, and tuck the navbar icons under the
+       Slides badge in a tighter row. */
+    @media (max-width: 768px) {
+        .slide-help-dialog {
+            /* <dialog> default is shrink-to-fit. Force the full width
+               so the panel actually fills the viewport instead of
+               sitting at the intrinsic width of the inner content
+               (which was ~50vw because the navbar + TOC items are
+               narrow on their own). */
+            width: 95vw;
+            max-width: 95vw;
+            max-height: 92vh;
+        }
+        .slide-help-content {
+            padding: 0.5lh 1ch;
+            gap: 0.25lh;
+            max-height: 92vh;
+            font-size: 0.95em;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        /* Tighter TOC entries on mobile: smaller font + tighter
+           line-height so each item is a single line where possible. */
+        .slide-help-toc {
+            font-size: 0.85em;
+            line-height: 1.25;
+        }
+        .slide-help-toc li {
+            margin-block: 0.1lh;
+        }
     }
 
     .slide-help-navbar {
@@ -199,6 +235,9 @@ const fontOptions = {
     }
     .shs-title-orange {
         --color: var(--orange);
+    }
+    .shs-title-purple {
+        --color: var(--purple, var(--pink));
     }
 
     .shn-theme-buttons {

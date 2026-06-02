@@ -10,7 +10,7 @@ interface Props {
     title?: string
 }
 const url = Astro.url.pathname
-const canonical = `https://sam.onl${url}`
+const canonical = `sam.onl${url}`
 ---
 
 <main is-="presentation" data-mode="deck">
@@ -18,30 +18,28 @@ const canonical = `https://sam.onl${url}`
         <slot />
     </div>
     <img
-        src="/anl-logos/anl-wireframe-light.svg"
+        src="/anl-logos/anl-color-light.svg"
         alt=""
         aria-hidden="true"
         class="deck-corner-logo deck-corner-logo-light"
     />
     <img
-        src="/anl-logos/anl-wireframe-dark.svg"
+        src="/anl-logos/anl-color-dark.svg"
         alt=""
         aria-hidden="true"
         class="deck-corner-logo deck-corner-logo-dark"
     />
     <div is-="slide-status">
+        <button
+            type="button"
+            id="ss-help-btn"
+            class="ss-menu"
+            aria-label="Show keybinds and navigation">&#xf0c9;</button
+        >
         <a class="ss-link" href={url}>{canonical}</a>
-        <span class="ss-right">
-            <span class="ss-pos">
-                <span id="ss-current">1</span>/<span id="ss-total">1</span>
-            </span>
-            <button
-                type="button"
-                id="ss-help-btn"
-                class="ss-help"
-                aria-label="Show keybinds and navigation">?</button
-            >
-        </span>
+        <a id="ss-pos-link" class="ss-pos" href="#1">
+            <span id="ss-current">1</span>
+        </a>
     </div>
     <SlideHelpDialog />
 </main>
@@ -63,9 +61,13 @@ const canonical = `https://sam.onl${url}`
             deck.querySelectorAll<HTMLElement>('[is-~="slide"]'),
         )
         const total = slides.length
-        const totalEl = document.getElementById('ss-total')
         const currentEl = document.getElementById('ss-current')
-        if (totalEl) totalEl.textContent = String(total)
+        const posLinkEl = document.getElementById('ss-pos-link')
+        // Tag each slide with its 1-based index for the overview-mode
+        // corner badge (CSS ::after reads data-slide-index via attr()).
+        slides.forEach((s, i) => {
+            s.dataset.slideIndex = String(i + 1)
+        })
 
         const channel = new BroadcastChannel('slides-sync')
         const isSpeaker =
@@ -97,6 +99,7 @@ const canonical = `https://sam.onl${url}`
             })
             if (currentEl) currentEl.textContent = String(current + 1)
             const expected = `#${current + 1}`
+            if (posLinkEl) posLinkEl.setAttribute('href', expected)
             if (location.hash !== expected) {
                 history.replaceState(null, '', expected)
             }
@@ -187,7 +190,11 @@ const canonical = `https://sam.onl${url}`
                     e.preventDefault()
                     render(total - 1)
                     break
-                case 's':
+                case '.':
+                    // Ctrl+. opens the speaker-notes popup. Avoids the
+                    // global vim `s`-key sidebar focus on doc pages, and
+                    // Ctrl+. is not reserved by any major browser.
+                    if (!e.ctrlKey) break
                     e.preventDefault()
                     if (!isSpeaker) openSpeakerWindow()
                     break
@@ -203,6 +210,8 @@ const canonical = `https://sam.onl${url}`
                     else document.exitFullscreen()
                     break
                 case '?':
+                case ':':
+                case 'm':
                     e.preventDefault()
                     openHelp()
                     break
@@ -272,8 +281,116 @@ const canonical = `https://sam.onl${url}`
             })
         })
 
-        // Hash changes from external nav (e.g. clicking a deep link)
-        window.addEventListener('hashchange', () => render(indexFromHash()))
+        // Touch / swipe navigation: phones have no keyboard. Horizontal
+        // swipes advance/retreat slides; vertical swipes are ignored so
+        // pinch-zooming an image or scrolling a long slide's content
+        // still works. Threshold prevents jitter from being treated as
+        // a swipe.
+        //
+        // The handlers are intentionally `passive: true` — we never
+        // preventDefault on touchmove, because the slide-inner has
+        // `overflow: auto` and the user must be able to scroll long
+        // slides vertically while we observe their horizontal intent.
+        // CSS `touch-action: pan-y` on the deck (see slides.css) is
+        // what actually tells the browser to skip its 300ms gesture-
+        // disambiguation wait — without that, swipes feel laggy even
+        // with perfect JS handlers.
+        let touchStartX = 0
+        let touchStartY = 0
+        let touchActive = false
+        // Once we observe enough vertical movement to commit to a
+        // scroll, lock this gesture out of the swipe handler. Prevents
+        // accidental slide changes when the user scrolls a long slide
+        // and lifts their finger with a small horizontal component.
+        let verticalLock = false
+        const SWIPE_MIN = 50 // px
+        const SWIPE_RATIO = 1.5 // |dx| must be at least this × |dy|
+        // If vertical movement exceeds this before any horizontal
+        // intent is clear, treat the gesture as a scroll and ignore it.
+        const VERT_LOCK = 12 // px
+        deck.addEventListener(
+            'touchstart',
+            (e) => {
+                if (e.touches.length !== 1) return // ignore multi-touch (pinch)
+                if (anyDialogOpen()) return
+                if (deck.dataset.mode === 'overview') return
+                // Don't even start tracking if the touch began on an
+                // interactive element — tap targets get to be tap
+                // targets. (Previously we only filtered on touchend,
+                // which still meant the gesture competed with the tap.)
+                const target = e.target as HTMLElement | null
+                if (
+                    target?.closest(
+                        'a, button, summary, input, textarea, img, .footnote-popover',
+                    )
+                ) {
+                    touchActive = false
+                    return
+                }
+                touchStartX = e.touches[0].clientX
+                touchStartY = e.touches[0].clientY
+                touchActive = true
+                verticalLock = false
+            },
+            { passive: true },
+        )
+        deck.addEventListener(
+            'touchmove',
+            (e) => {
+                if (!touchActive || verticalLock) return
+                const t = e.touches[0]
+                if (!t) return
+                const dx = t.clientX - touchStartX
+                const dy = t.clientY - touchStartY
+                // If vertical motion clearly dominates before we hit
+                // the swipe threshold, abandon this gesture so a brief
+                // horizontal jitter at the end of the scroll doesn't
+                // fire a slide change.
+                if (Math.abs(dy) > VERT_LOCK && Math.abs(dy) > Math.abs(dx)) {
+                    verticalLock = true
+                }
+            },
+            { passive: true },
+        )
+        deck.addEventListener(
+            'touchend',
+            (e) => {
+                if (!touchActive) return
+                touchActive = false
+                if (verticalLock) return
+                const t = e.changedTouches[0]
+                if (!t) return
+                const dx = t.clientX - touchStartX
+                const dy = t.clientY - touchStartY
+                // Reject if it wasn't a horizontal swipe
+                if (Math.abs(dx) < SWIPE_MIN) return
+                if (Math.abs(dx) < SWIPE_RATIO * Math.abs(dy)) return
+                // Right swipe → previous; left swipe → next. Matches
+                // iOS/Android book-page convention.
+                advance(dx < 0 ? 1 : -1)
+            },
+            { passive: true },
+        )
+        // Cancel — fires when the system (e.g. notification, browser
+        // gesture) takes over the touch. Treat as no-swipe.
+        deck.addEventListener(
+            'touchcancel',
+            () => {
+                touchActive = false
+                verticalLock = false
+            },
+            { passive: true },
+        )
+
+        // Hash changes from external nav (e.g. clicking a deep link).
+        // Only react when the hash is a pure slide index (`#N`); other
+        // anchor targets (GFM footnote backrefs like
+        // `#user-content-fnref-N`, in-slide section ids, etc.) would
+        // otherwise fall through indexFromHash() → 0 and slam the deck
+        // back to the first slide.
+        window.addEventListener('hashchange', () => {
+            if (/^#\d+$/.test(location.hash)) render(indexFromHash())
+        })
 
         // Speaker popup receives index changes from the main window
         if (isSpeaker) {
@@ -284,5 +401,168 @@ const canonical = `https://sam.onl${url}`
         }
 
         render(current, { broadcast: false })
+
+        // Populate the Footnotes slide with content cloned from the
+        // GFM-generated <section data-footnotes>. The source <section>
+        // stays hidden (slides.css); the cloned <ol> lives inside the
+        // #footnotes-target div on the dedicated Footnotes slide.
+        const fnSection = document.querySelector<HTMLElement>(
+            'section[data-footnotes], section.footnotes',
+        )
+        const fnTarget = document.getElementById('footnotes-target')
+        if (fnSection && fnTarget) {
+            const fnList = fnSection.querySelector('ol')
+            if (fnList) {
+                fnTarget.appendChild(fnList.cloneNode(true))
+            }
+        }
+
+        // Wire up backref (`↩`) clicks on the cloned <ol>. The native
+        // href="#user-content-fnref-N" would normally either (a) slam
+        // hashchange → render(0), now neutered above, or (b) try to
+        // scroll to a hidden in-doc target. Neither lands on the
+        // slide the user actually wants. Intercept and navigate to
+        // the slide containing the original [^N] reference, then
+        // scroll the popover into view inside it.
+        if (fnTarget) {
+            fnTarget.addEventListener('click', (e) => {
+                const a = (e.target as HTMLElement | null)?.closest(
+                    'a[data-footnote-backref]',
+                ) as HTMLAnchorElement | null
+                if (!a) return
+                const href = a.getAttribute('href') || ''
+                const refId = href.startsWith('#') ? href.slice(1) : href
+                if (!refId) return
+                // After popover-build, the original <sup> is gone but
+                // its cloned inner <a id="user-content-fnref-N"> lives
+                // inside the popover trigger on the referencing slide.
+                const target = document.getElementById(refId)
+                if (!target) return
+                const targetSlide =
+                    target.closest<HTMLElement>('[is-~="slide"]')
+                if (!targetSlide) return
+                e.preventDefault()
+                const idx = slides.findIndex((s) => s === targetSlide)
+                if (idx < 0) return
+                render(idx)
+                requestAnimationFrame(() => {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                    })
+                })
+            })
+        }
+
+        // Footnote hover/click popover (mirrors Doc.astro behavior).
+        // Source `<section data-footnotes>` is hidden via slides.css;
+        // the inline `[^N]` superscript becomes a hover popover whose
+        // content is cloned from the matching footnote list-item.
+        // The trigger is *also* a real anchor link that jumps to the
+        // matching <li> inside the Footnotes slide on click — so users
+        // who want to see all footnotes in context can click through.
+        const footnoteRefs = deck.querySelectorAll<HTMLAnchorElement>(
+            'a[data-footnote-ref]',
+        )
+        for (const ref of footnoteRefs) {
+            const id = ref.getAttribute('href')?.replace('#', '')
+            if (!id) continue
+            const li = document.getElementById(id)
+            if (!li) continue
+            const clone = li.cloneNode(true) as HTMLElement
+            clone
+                .querySelectorAll('a[data-footnote-backref]')
+                .forEach((a) => a.remove())
+            const sup = ref.parentElement
+            if (!sup || sup.tagName !== 'SUP') continue
+            const parent = sup.parentElement
+            if (!parent) continue
+            // Use <span> instead of <details> so the popover never
+            // forces a line break — <details> has block-ish flow even
+            // with display:inline in some renderers.
+            const dlg = document.createElement('span')
+            dlg.classList.add('footnote-popover')
+            dlg.setAttribute('tabindex', '0')
+            // Trigger doubles as a clickable link to the footnote on
+            // the Footnotes slide. The footnote-ref's href already
+            // points to "#user-content-fn-N" — that ID exists inside
+            // the cloned <ol> we appended to #footnotes-target. We
+            // intercept the click to jump to the footnotes slide
+            // first, then scroll into view.
+            const trigger = document.createElement('a')
+            trigger.classList.add('footnote-popover-trigger')
+            trigger.setAttribute('href', `#${id}`)
+            trigger.appendChild(sup.cloneNode(true))
+            trigger.addEventListener('click', (e) => {
+                e.preventDefault()
+                const fnSlide = document.getElementById('footnotes')
+                if (!fnSlide) return
+                const fnSlideIdx = slides.findIndex((s) => s === fnSlide)
+                if (fnSlideIdx >= 0) {
+                    render(fnSlideIdx)
+                    // Scroll the target footnote into view after the
+                    // slide change finishes.
+                    requestAnimationFrame(() => {
+                        const target = document.getElementById(id)
+                        target?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center',
+                        })
+                    })
+                }
+            })
+            const content = document.createElement('span')
+            content.classList.add('footnote-popover-content')
+            const tmp = clone.cloneNode(true) as HTMLElement
+            tmp.querySelectorAll('p').forEach((p) => {
+                while (p.firstChild) p.parentNode!.insertBefore(p.firstChild, p)
+                p.remove()
+            })
+            content.innerHTML = tmp.innerHTML.trim()
+            dlg.appendChild(trigger)
+            dlg.appendChild(content)
+            parent.insertBefore(dlg, sup)
+            sup.remove()
+            const setOpen = (v: boolean) => {
+                if (v) dlg.setAttribute('data-open', '')
+                else dlg.removeAttribute('data-open')
+            }
+            const reposition = () => {
+                const r = dlg.getBoundingClientRect()
+                const w = content.offsetWidth
+                let left = r.left
+                const maxLeft = window.innerWidth - w - 8
+                if (left > maxLeft) left = Math.max(8, maxLeft)
+                dlg.style.setProperty('--popover-left', `${left}px`)
+                dlg.style.setProperty('--popover-top', `${r.bottom}px`)
+            }
+            dlg.addEventListener('mouseenter', () => {
+                setOpen(true)
+                requestAnimationFrame(reposition)
+            })
+            dlg.addEventListener('mouseleave', () => setOpen(false))
+            dlg.addEventListener('focusin', () => {
+                setOpen(true)
+                requestAnimationFrame(reposition)
+            })
+            dlg.addEventListener('focusout', (e) => {
+                const next = (e as FocusEvent).relatedTarget as Node | null
+                if (!next || !dlg.contains(next)) setOpen(false)
+            })
+            // `dlg` is a <span> (see comment above on the deliberate
+            // switch from <details>), so `.open` is always undefined —
+            // use the data-open attribute that setOpen() actually sets.
+            const isOpen = () => dlg.hasAttribute('data-open')
+            window.addEventListener(
+                'scroll',
+                () => {
+                    if (isOpen()) reposition()
+                },
+                true,
+            )
+            window.addEventListener('resize', () => {
+                if (isOpen()) reposition()
+            })
+        }
     }
 </script>
