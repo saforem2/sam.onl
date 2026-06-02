@@ -50,11 +50,11 @@ def render(out_path: Path):
     # the reader can map (1)/(2)/(3) → dark/medium/light intuitively.
     # Three blue shades, all dark enough to be visible on white
     # projector backgrounds in a presentation hall.
-    # Bumped one more rung lighter for projector legibility (the old
-    # ramp's stage-1 #1976d2 washed out on a dim hall projector). All
-    # three shades stay distinct + readable on white-background slides
-    # and on the site's dark themes.
-    MDS_STAGE_SHADES = ['#42a5f5', '#64b5f6', '#90caf9']
+    # Stage-1 bumped DARKER (Blue 500 #2196f3) after the lighter Blue
+    # 400 stage-1 still washed out at the back of the hall in dry-run.
+    # Stages 2/3 stay light to preserve the dark→light progression
+    # that lets the audience map (1)/(2)/(3) → darker/lighter.
+    MDS_STAGE_SHADES = ['#2196f3', '#64b5f6', '#90caf9']
     mds = pd.read_parquet(MDS_PARQUET).sort_values('x').reset_index(drop=True)
     # Distinct marker per stage so the three blue shades have a second
     # visual channel (helpful on print + colorblind). The (1)/(2)/(3)
@@ -86,9 +86,8 @@ def render(out_path: Path):
     final = mds.iloc[-1]
     final_tokens_B = float(final['x']) / 1e9
     final_loss = float(final['y'])
-    # Annotation tracks stage-1 line color. Was #1976d2; bumped to
-    # #42a5f5 to match the lighter projector-safe ramp above.
-    annot_color = '#42a5f5'
+    # Annotation tracks stage-1 line color (Material Blue 500).
+    annot_color = '#2196f3'
     ax.annotate(
         f'final: loss {final_loss:.2f}\n@ {final_tokens_B/1000:.2f}T tokens',
         xy=(final_tokens_B, final_loss),

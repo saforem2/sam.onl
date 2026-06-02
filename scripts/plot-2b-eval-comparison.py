@@ -285,8 +285,11 @@ PANEL_POS = {
 
 # Pin colors for cross-slide consistency. The loss-comparison slide
 # uses the same MDS=blue / TT-v2=red pair, so "blue=MDS, red=TT"
-# reads identically across both charts.
-MDS_COLOR = '#42a5f5'
+# reads identically across both charts. Material Blue 500 — sits
+# between the wash-out Blue 400 and the projector-dim Blue 700;
+# dry-run dialed in this rung after the audience couldn't see the
+# MDS line at the back of the room.
+MDS_COLOR = '#2196f3'
 TT_V2_256_COLOR = 'C1'
 TT_V2_512_COLOR = '#b71c1c'
 
@@ -364,13 +367,20 @@ def _draw_lines(ax, task: str, baseline: float, i: int,
     # MDS stage boundaries — pretrain → continued-pretrain → math+code.
     for x in (4673, 7064):
         ax.axvline(x, ls='--', lw=0.7, color='gray', alpha=0.5, zorder=0)
+    # Marker + line weights bumped (ms 5 → 8, lw 1.8 → 2.2,
+    # markeredgewidth 2.0 on MDS specifically) — at projector
+    # distance the prior render's x-glyphs were near-invisible and
+    # the line itself was a thin dotted thread. The MDS series
+    # carries explicit markeredgewidth because 'x' has no fill, so
+    # its weight is set entirely by stroke width.
     ax.plot(mds_tokens, mds[:, i + 1], ':x', color=MDS_COLOR,
-            lw=1.8, ms=5, alpha=0.9, label='MDS', zorder=3)
+            lw=2.2, ms=8, markeredgewidth=2.0,
+            label='MDS', zorder=3)
     ax.plot(v2_256_tokens, v2_256[:, i + 1], '-s',
-            color=TT_V2_256_COLOR, lw=1.8, ms=5, alpha=0.9, zorder=4,
+            color=TT_V2_256_COLOR, lw=2.2, ms=8, zorder=4,
             label='TT 256N')
     ax.plot(v2_512_tokens, v2_512[:, i + 1], '-D',
-            color=TT_V2_512_COLOR, lw=1.8, ms=5, alpha=0.9, zorder=5,
+            color=TT_V2_512_COLOR, lw=2.2, ms=8, zorder=5,
             label='TT 512N')
     # Overlay hollow markers on the interpolated points so they read
     # as "estimated" — same shape/color, white face. Doesn't appear in
@@ -380,16 +390,16 @@ def _draw_lines(ax, task: str, baseline: float, i: int,
         ax.scatter(
             v2_256_tokens[v2_256_interp_mask],
             v2_256[v2_256_interp_mask, i + 1],
-            marker='s', s=42, facecolors='white',
-            edgecolors=TT_V2_256_COLOR, linewidths=1.5,
+            marker='s', s=80, facecolors='white',
+            edgecolors=TT_V2_256_COLOR, linewidths=1.8,
             zorder=6,
         )
     if v2_512_interp_mask.any():
         ax.scatter(
             v2_512_tokens[v2_512_interp_mask],
             v2_512[v2_512_interp_mask, i + 1],
-            marker='D', s=42, facecolors='white',
-            edgecolors=TT_V2_512_COLOR, linewidths=1.5,
+            marker='D', s=80, facecolors='white',
+            edgecolors=TT_V2_512_COLOR, linewidths=1.8,
             zorder=7,
         )
     # Stage callouts on HellaSwag only — it's the eye-anchor panel
@@ -452,7 +462,8 @@ def render_legend(out_path: Path) -> None:
     ax.set_axis_off()
     proxies = [
         ax.plot([], [], ':', color='gray', lw=1.5, label='random (25% / 50%)')[0],
-        ax.plot([], [], ':x', color=MDS_COLOR, lw=2.2, ms=10, label='MDS')[0],
+        ax.plot([], [], ':x', color=MDS_COLOR, lw=2.2, ms=10,
+                markeredgewidth=2.5, label='MDS')[0],
         ax.plot([], [], '-s', color=TT_V2_256_COLOR, lw=2.2, ms=10, label='TT 256N')[0],
         ax.plot([], [], '-D', color=TT_V2_512_COLOR, lw=2.2, ms=10, label='TT 512N')[0],
     ]

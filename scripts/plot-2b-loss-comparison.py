@@ -78,9 +78,11 @@ def render(out_path: Path):
     # Same mid blue as stage-1 in plot-2b-loss-reference.py and the
     # MDS series in plot-2b-eval-comparison.py — keeps the audience
     # mapping "this blue = MDS" stable across all three slides.
-    # Material Blue 400; bumped up from Blue 700 (#1976d2) because the
-    # darker shade washed out on the conference projector during dry-runs.
-    MDS_STAGE_COLOR = '#42a5f5'
+    # Material Blue 500. Bumped from 400 after a second dry-run round
+    # showed the lighter shade still washing out at the back of the
+    # hall (Blue 700 originally washed out too — 500 is the goldilocks
+    # rung on this projector).
+    MDS_STAGE_COLOR = '#2196f3'
     mds = pd.read_parquet(MDS_PARQUET).sort_values('x').reset_index(drop=True)
     mds_s1 = mds[mds['group_data_file'] == 'olmo-mix-1124.txt']
     mds_x_B = mds_s1['x'].values / 1e9
