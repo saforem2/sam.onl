@@ -39,18 +39,9 @@ _p2b = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_p2b)
 
 MDS_DATA = _p2b.MDS_DATA
-# Merge measured + interpolated 2B series so the 20B chart shows the
-# same continuous lines as the 2B-eval slide. Interp values come from
-# the offset-method gap-fill in the 2B script (see TTV2_256N_INTERP_DATA
-# / TTV2_512N_INTERP_DATA there for method + caveats). Track which
-# rows came from the interp set so the panel can overlay hollow
-# markers on those points (same visual idiom as the 2B chart).
-_TT2B_256N_INTERP_STEPS = {r[0] for r in _p2b.TTV2_256N_INTERP_DATA}
-_TT2B_512N_INTERP_STEPS = {r[0] for r in _p2b.TTV2_512N_INTERP_DATA}
-TT2B_256N_DATA = sorted(_p2b.TTV2_256N_DATA + _p2b.TTV2_256N_INTERP_DATA,
-                        key=lambda r: r[0])
-TT2B_512N_DATA = sorted(_p2b.TTV2_512N_DATA + _p2b.TTV2_512N_INTERP_DATA,
-                        key=lambda r: r[0])
+# Measured 2B points only — natural gaps in 256N are the truth of the data.
+TT2B_256N_DATA = sorted(_p2b.TTV2_256N_DATA, key=lambda r: r[0])
+TT2B_512N_DATA = sorted(_p2b.TTV2_512N_DATA, key=lambda r: r[0])
 MDS_GBS = _p2b.MDS_GBS              # 6144
 TT2B_256N_GBS = _p2b.TTV2_256N_GBS  # 6144
 TT2B_512N_GBS = _p2b.TTV2_512N_GBS  # 12_288
@@ -149,19 +140,13 @@ def _load_chains():
     mds_tokens = tokens(mds[:, 0], MDS_GBS)
     tt2b_256 = np.array(TT2B_256N_DATA)
     tt2b_256_tokens = tokens(tt2b_256[:, 0], TT2B_256N_GBS)
-    tt2b_256_interp_mask = np.array(
-        [int(s) in _TT2B_256N_INTERP_STEPS for s in tt2b_256[:, 0]]
-    )
     tt2b_512 = np.array(TT2B_512N_DATA)
     tt2b_512_tokens = tokens(tt2b_512[:, 0], TT2B_512N_GBS)
-    tt2b_512_interp_mask = np.array(
-        [int(s) in _TT2B_512N_INTERP_STEPS for s in tt2b_512[:, 0]]
-    )
     tt20b_512 = np.array(TT20B_512N_DATA)
     tt20b_512_tokens = tokens(tt20b_512[:, 0], TT20B_512N_GBS)
     return (mds, mds_tokens,
-            tt2b_256, tt2b_256_tokens, tt2b_256_interp_mask,
-            tt2b_512, tt2b_512_tokens, tt2b_512_interp_mask,
+            tt2b_256, tt2b_256_tokens,
+            tt2b_512, tt2b_512_tokens,
             tt20b_512, tt20b_512_tokens)
 
 
@@ -188,8 +173,8 @@ def _style_axes(ax, task: str):
 
 def _draw_lines(ax, task: str, baseline: float, i: int, chains):
     (mds, mds_tokens,
-     tt2b_256, tt2b_256_tokens, tt2b_256_interp_mask,
-     tt2b_512, tt2b_512_tokens, tt2b_512_interp_mask,
+     tt2b_256, tt2b_256_tokens,
+     tt2b_512, tt2b_512_tokens,
      tt20b_512, tt20b_512_tokens) = chains
     ax.axhline(baseline, ls=':', lw=1, color='gray',
                label=f'random ({baseline:.0%})', zorder=1)
@@ -211,25 +196,6 @@ def _draw_lines(ax, task: str, baseline: float, i: int, chains):
     ax.plot(tt20b_512_tokens, tt20b_512[:, i + 1], '-^',
             color=TT20B_512_COLOR, lw=2.2, ms=8, zorder=5,
             label='20B TT 512N')
-    # Hollow markers on the 2B interpolated points — same idiom as the
-    # 2B-eval chart so the audience reads "open marker = estimated"
-    # consistently across both slides. 20B is all measured, no overlay.
-    if tt2b_256_interp_mask.any():
-        ax.scatter(
-            tt2b_256_tokens[tt2b_256_interp_mask],
-            tt2b_256[tt2b_256_interp_mask, i + 1],
-            marker='s', s=80, facecolors='white',
-            edgecolors=TT2B_256_COLOR, linewidths=1.8,
-            zorder=6,
-        )
-    if tt2b_512_interp_mask.any():
-        ax.scatter(
-            tt2b_512_tokens[tt2b_512_interp_mask],
-            tt2b_512[tt2b_512_interp_mask, i + 1],
-            marker='D', s=80, facecolors='white',
-            edgecolors=TT2B_512_COLOR, linewidths=1.8,
-            zorder=7,
-        )
     if task == 'HellaSwag':
         from matplotlib.transforms import blended_transform_factory
         tf = blended_transform_factory(ax.transData, ax.transAxes)
