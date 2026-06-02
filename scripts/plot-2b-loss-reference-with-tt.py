@@ -53,10 +53,10 @@ def render(out_path: Path):
 
     # MDS 3-stage trajectory — same palette as plot-2b-loss-reference
     # for cross-slide consistency.
-    # Shifted one step lighter so stage (1) reads on dark backgrounds
-    # too. Same Material blue ramp, just one rung up. Matches
-    # plot-2b-loss-reference.py.
-    MDS_STAGE_SHADES = ['#1976d2', '#42a5f5', '#90caf9']
+    # Stage-1 bumped to Blue 500 after the lighter Blue 400 still
+    # washed out at the back of the hall in dry-run. Matches the
+    # palette in plot-2b-loss-reference.py.
+    MDS_STAGE_SHADES = ['#2196f3', '#64b5f6', '#90caf9']
     mds = pd.read_parquet(MDS_PARQUET).sort_values('x').reset_index(drop=True)
     # Distinct marker per MDS stage so the three blue shades have a
     # second visual channel — matches plot-2b-loss-reference.py.
@@ -104,9 +104,8 @@ def render(out_path: Path):
     # deep red) read well on a white projector but disappeared against
     # the site's dark / catppuccin themes — the SVG ships once for all
     # themes via `transparent=True`, so the annotation color has to
-    # work on both. #1976d2 + #b71c1c switched to the chart's already-
-    # theme-validated mid blue + Material red (C1, #ef4444).
-    mds_annot_color = '#1976d2'
+    # work on both. Annotation tracks stage-1 line color (Material Blue 500).
+    mds_annot_color = '#2196f3'
     tt_annot_color = '#ef4444'
     ax.annotate(
         f'MDS final: loss {final_loss:.2f}\n@ {final_tokens_B/1000:.2f}T tokens',
