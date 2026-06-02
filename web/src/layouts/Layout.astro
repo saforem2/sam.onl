@@ -530,6 +530,17 @@ const ogImage = ogSlug
                     const pageKey = location.pathname.replace(/\/$/, '') || '/'
                     const pageStore = store[pageKey] ?? {}
 
+                    // Storage key is derived from the rendered task
+                    // text, truncated to 200 chars. Two known fragility
+                    // modes — both intentional tradeoffs:
+                    //   1. Renaming an item drops its stored state.
+                    //      Acceptable: a renamed task is a new task.
+                    //   2. Two items whose first 200 chars match
+                    //      collide on the same key. Rare in practice;
+                    //      author can disambiguate by editing the
+                    //      prefix.
+                    // If either becomes a problem, switch to an
+                    // author-supplied `data-task-key` and key off that.
                     const taskKey = (input) => {
                         const li = input.closest('li.task-list-item')
                         return li

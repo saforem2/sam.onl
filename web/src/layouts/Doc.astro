@@ -9,13 +9,20 @@ import ShareButtons from '@/components/ShareButtons.astro'
 import { getCollection } from 'astro:content'
 import { execSync } from 'node:child_process'
 
-let currentBranch = 'main'
-try {
-    const out = execSync('git rev-parse --abbrev-ref HEAD', {
-        encoding: 'utf8',
-    }).trim()
-    if (out && out !== 'HEAD') currentBranch = out
-} catch {}
+// Prefer Netlify's BRANCH env var so preview deploys point at the
+// preview's source branch instead of the build host's checked-out
+// ref. (Netlify also exposes HEAD, but that's the commit SHA, not a
+// branch name.) Falls back to git rev-parse for local `astro build`.
+let currentBranch = process.env.BRANCH ?? ''
+if (!currentBranch) {
+    try {
+        const out = execSync('git rev-parse --abbrev-ref HEAD', {
+            encoding: 'utf8',
+        }).trim()
+        if (out && out !== 'HEAD') currentBranch = out
+    } catch {}
+}
+if (!currentBranch) currentBranch = 'main'
 
 type DocHeading = {
     depth: number
