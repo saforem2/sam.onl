@@ -301,16 +301,31 @@ TASK_SLUG = {
 
 def _load_chains():
     """Materialize the three trajectories once; reused across all per-task
-    panels so we don't re-sort the merged 256N chain four times."""
+    panels so we don't re-sort the merged 256N chain four times.
+
+    Also returns boolean `is_interp` masks aligned with the merged 256N
+    and 512N arrays — used to overlay hollow markers on gap-filled
+    points so they read visually distinct from the real evals while
+    keeping the line continuous."""
     mds = np.array(MDS_DATA)
     mds_tokens = tokens(mds[:, 0], MDS_GBS)
+    interp_steps_256 = {r[0] for r in TTV2_256N_INTERP_DATA}
     v2_256 = np.array(sorted(TTV2_256N_DATA + TTV2_256N_INTERP_DATA,
                              key=lambda r: r[0]))
     v2_256_tokens = tokens(v2_256[:, 0], TTV2_256N_GBS)
+    v2_256_interp_mask = np.array(
+        [int(s) in interp_steps_256 for s in v2_256[:, 0]]
+    )
+    interp_steps_512 = {r[0] for r in TTV2_512N_INTERP_DATA}
     v2_512 = np.array(sorted(TTV2_512N_DATA + TTV2_512N_INTERP_DATA,
                              key=lambda r: r[0]))
     v2_512_tokens = tokens(v2_512[:, 0], TTV2_512N_GBS)
-    return mds, mds_tokens, v2_256, v2_256_tokens, v2_512, v2_512_tokens
+    v2_512_interp_mask = np.array(
+        [int(s) in interp_steps_512 for s in v2_512[:, 0]]
+    )
+    return (mds, mds_tokens,
+            v2_256, v2_256_tokens, v2_256_interp_mask,
+            v2_512, v2_512_tokens, v2_512_interp_mask)
 
 
 def _style_axes(ax, task: str):
@@ -334,9 +349,16 @@ def _style_axes(ax, task: str):
 
 
 def _draw_lines(ax, task: str, baseline: float, i: int,
-                mds, mds_tokens, v2_256, v2_256_tokens, v2_512, v2_512_tokens):
+                mds, mds_tokens,
+                v2_256, v2_256_tokens, v2_256_interp_mask,
+                v2_512, v2_512_tokens, v2_512_interp_mask):
     """Draw the random baseline, stage rules, and three trajectories.
-    `i` is the task index into the wide rows (1=HellaSwag col, …)."""
+    `i` is the task index into the wide rows (1=HellaSwag col, …).
+
+    Interpolated points (gap-fill via 512N-offset method, see
+    TTV2_*_INTERP_DATA comments) are overlaid with hollow markers
+    on top of the filled series so the audience can tell measured
+    from estimated evals without breaking the line."""
     ax.axhline(baseline, ls=':', lw=1, color='gray',
                label=f'random ({baseline:.0%})', zorder=1)
     # MDS stage boundaries — pretrain → continued-pretrain → math+code.
@@ -350,6 +372,26 @@ def _draw_lines(ax, task: str, baseline: float, i: int,
     ax.plot(v2_512_tokens, v2_512[:, i + 1], '-D',
             color=TT_V2_512_COLOR, lw=1.8, ms=5, alpha=0.9, zorder=5,
             label='TT 512N')
+    # Overlay hollow markers on the interpolated points so they read
+    # as "estimated" — same shape/color, white face. Doesn't appear in
+    # the legend (the legend is in a separate strip and shows real
+    # trajectories only); the slide caption notes the gap-fill.
+    if v2_256_interp_mask.any():
+        ax.scatter(
+            v2_256_tokens[v2_256_interp_mask],
+            v2_256[v2_256_interp_mask, i + 1],
+            marker='s', s=42, facecolors='white',
+            edgecolors=TT_V2_256_COLOR, linewidths=1.5,
+            zorder=6,
+        )
+    if v2_512_interp_mask.any():
+        ax.scatter(
+            v2_512_tokens[v2_512_interp_mask],
+            v2_512[v2_512_interp_mask, i + 1],
+            marker='D', s=42, facecolors='white',
+            edgecolors=TT_V2_512_COLOR, linewidths=1.5,
+            zorder=7,
+        )
     # Stage callouts on HellaSwag only — it's the eye-anchor panel
     # and the labels would just repeat in every other panel.
     if task == 'HellaSwag':

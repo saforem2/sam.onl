@@ -181,8 +181,7 @@ def render(out_path: Path):
     from matplotlib.ticker import FuncFormatter
 
     def _b_to_t(x_B, _pos):
-        t = x_B / 1000.0
-        return f'{t:g}T' if t >= 1 else f'{t:g}T'
+        return f'{x_B / 1000.0:g}T'
     ax.xaxis.set_major_formatter(FuncFormatter(_b_to_t))
     ax.set_xlabel('Tokens consumed (T)')
     ax.set_ylabel('LM training loss')
