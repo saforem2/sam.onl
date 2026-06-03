@@ -42,7 +42,13 @@
     position: fixed;
     inset: 0;
     width: 100vw;
+    /* dvh, not vh — on iOS Safari `100vh` is the layout viewport
+       (URL bar fully retracted), so the deck root spills behind the
+       URL bar and the slide-inner's bottom content lands off-screen.
+       `100dvh` tracks the visible viewport and resizes as the URL
+       bar shows/hides. Fallback to vh for browsers without dvh. */
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     background-color: var(--background0);
     color: var(--foreground1);
@@ -125,19 +131,16 @@
     /* Mobile (≤ 768px): tighter padding, top-anchor content. Codeblocks
        keep their normal `white-space: pre` + horizontal scroll behavior;
        no forced soft-wrap (which clobbers indentation and breaks lines
-       that would fit fine with a small horizontal scroll). Extra
-       bottom padding so the statusbar (~1lh tall + its own padding)
-       doesn't clip the last line of content. */
+       that would fit fine with a small horizontal scroll). */
     @media (max-width: 768px) {
         .slide-inner {
             font-size: 1.1rem;
-            /* Bottom padding has to clear the fixed statusbar (≈1lh
-               tall) PLUS enough cushion that the last line of content
-               isn't visually pinned to the bar's top edge. 4lh has
-               worked across the densest mobile slides; previous 2.5lh
-               wasn't enough (last line of body text was getting eaten
-               by the statusbar). */
-            padding: 1lh 2ch 4lh 2ch;
+            /* Bottom padding clears the fixed statusbar (≈1lh) plus
+               a small cushion so the last line doesn't visually kiss
+               the bar's top edge. 2.5lh is enough now that the deck
+               root uses 100dvh — was 4lh when 100vh was spilling
+               content behind the iOS URL bar. */
+            padding: 1lh 2ch 2.5lh 2ch;
             justify-content: flex-start;
         }
     }
