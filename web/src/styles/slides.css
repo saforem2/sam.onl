@@ -359,6 +359,16 @@
             display: flex;
             flex-direction: column;
         }
+        /* Inside the flex column, each <span class="line"> was an
+           inline-block flex item — baseline-aligned with half-leading
+           rendered above + below, which manifests as a visible row gap.
+           Switching to block-level flex items kills the leading
+           overhang; line-height: 1.35 on the parent still controls
+           inter-line spacing without doubling it on each child. */
+        pre.astro-code span.line {
+            display: block;
+            line-height: 1.35;
+        }
     }
     p code {
         padding-block: 0.05em;
