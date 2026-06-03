@@ -193,7 +193,7 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 <Slide id="stack">
 
-## The stack in one slide
+## The stack
 
 **Current stack:**
 
@@ -1109,6 +1109,13 @@ What generalizes / open questions / fin
 
 <Slide id="thanks">
 
+<a class="thanks-qr" href="https://sam.onl/talks/2026/06/03"
+   aria-label="QR code linking to these slides">
+  <img src="/talks/2026-06-03/figures/qr-slides.svg"
+       alt="QR code linking to sam.onl/talks/2026/06/03" />
+  <span>sam.onl/talks/2026/06/03</span>
+</a>
+
 ## Thanks
 
 **AuroraGPT team**: Venkat Vishwanath, the AI/ML Group at ALCF,
@@ -1129,6 +1136,36 @@ staging.
 > under Contract DE-AC02-06CH11357.
 
 Questions?
+
+<style>{`
+  /* Same QR pattern as the title slide so the audience can scan
+     the deck during Q&A. Mirrors the title-slide-qr block but
+     scoped to #thanks. */
+  #thanks .thanks-qr {
+    position: absolute;
+    top: 2lh;
+    right: 4ch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25lh;
+    text-decoration: none;
+    color: var(--foreground0);
+  }
+  #thanks .thanks-qr img {
+    width: 11ch;
+    height: 11ch;
+    display: block;
+  }
+  #thanks .thanks-qr span {
+    font-size: 0.75em;
+    color: var(--foreground1);
+    white-space: nowrap;
+  }
+  @media (max-width: 768px) {
+    #thanks .thanks-qr { display: none; }
+  }
+`}</style>
 
 </Slide>
 
