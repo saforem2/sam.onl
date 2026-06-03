@@ -32,18 +32,18 @@ DATA_DIR = (
 )
 OUT = Path.home() / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/figures'
 
-# (filename, label, color, marker). Colors mirror the W&B report
-# (https://api.wandb.ai/links/aurora_gpt/giy3swff) so the slide reads
-# 1:1 against the report. Markers add a second visual channel so the
-# chart isn't color-only — important for print / colorblind viewers
-# and for matching legend ↔ line when curves bunch up in the same
-# band.
+# (filename, label, color, marker). Rainbow ordering (R/O/Y/G/B) by
+# label so the legend reads top→bottom as a familiar spectrum — easier
+# for the audience to map label ↔ line than the W&B report's palette.
+# Markers add a second visual channel so the chart isn't color-only —
+# important for print / colorblind viewers and for matching
+# legend ↔ line when curves bunch up in the same band.
 RUNS = [
-    ('adamw.parquet',    'AdamW',          '#f5b800', 'o'),  # circle
-    ('lamb.parquet',     'ipex.FusedLamb', '#3b82f6', 's'),  # square
-    ('muonclip.parquet', 'MuonClip',       '#f97316', '^'),  # triangle
-    ('sophiag.parquet',  'SophiaG',        '#22c55e', 'D'),  # diamond
-    ('muon.parquet',     'Muon',           '#ef4444', 'X'),  # x
+    ('adamw.parquet',    'AdamW',          '#22c55e', 'o'),  # green   · circle
+    ('lamb.parquet',     'ipex.FusedLamb', '#e53935', 's'),  # red     · square
+    ('muonclip.parquet', 'MuonClip',       '#facc15', '^'),  # yellow  · triangle
+    ('sophiag.parquet',  'SophiaG',        '#2196f3', 'D'),  # blue    · diamond
+    ('muon.parquet',     'Muon',           '#f97316', 'X'),  # orange  · x
 ]
 
 # Drop a marker every N billion tokens. Coarse enough to avoid a
@@ -141,7 +141,7 @@ def _draw(ax_loss, ax_grad):
     # matters (which optimizer ends up where) lives in [2.4, 6].
     ax_loss.set_yscale('log')
     ax_loss.set_ylim(2.3, 8)
-    ax_loss.set_ylabel('LM training loss  (log)')
+    ax_loss.set_ylabel('Training loss  (log)')
     ax_loss.grid(True, alpha=0.2, which='both')
 
     ax_grad.set_yscale('log')
@@ -188,7 +188,7 @@ def render_stacked(out_name: str, figsize: tuple[float, float]) -> None:
     _draw(ax_loss, ax_grad)
     _legend_in_line_order(ax_loss)
     fig.suptitle(
-        'AuroraGPT-2B  optimizer comparison  (GBS=6,144 · 50M tok/batch)',
+        'AuroraGPT-2B Optimizer Comparison (50M tok/batch @ 256N)',
         fontsize=22, fontweight=600, y=0.995,
     )
     _save(fig, out_name)
@@ -205,7 +205,7 @@ def render_side_by_side(out_name: str, figsize: tuple[float, float]) -> None:
     ax_loss.set_xlabel('consumed tokens (T)')
     _legend_in_line_order(ax_loss)
     fig.suptitle(
-        'AuroraGPT-2B  optimizer comparison  (GBS=6,144 · 50M tok/batch)',
+        'AuroraGPT-2B Optimizer Comparison (50M tok/batch @ 256N)',
         fontsize=22, fontweight=600, y=0.995,
     )
     _save(fig, out_name)
