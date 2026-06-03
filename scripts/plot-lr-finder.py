@@ -1,19 +1,18 @@
 """
-Render the 2B cross-optimizer LR-finder chart for the TPC'26 talk.
+Render the LR-finder chart for the TPC'26 talk from the canonical
+Aurora CSV outputs (scp'd from
+  /lus/flare/projects/AuroraGPT/foremans/projects/saforem2/torchtitan-ezpz/
+  outputs/lr_finder/ezpz/ezpz.agpt/<size>/<opt>/lr_finder_data.csv
+into web/public/talks/2026-06-03/data/lr-finder/aurora/).
 
-Layout: single panel overlaying LR-vs-loss curves for AdamW · Muon ·
-SophiaG on the 2B model. Log x (LR), log y (loss). A vertical dashed
-marker on each curve indicates the suggested LR (steepest-descent
-heuristic — Smith 2015 / Gugger).
+Each CSV has two columns: learning_rate, loss — one point per
+LR-finder step. Layout: 2 panels (2B + 20B) overlaying AdamW · Muon
+· SophiaG curves. Log x (LR), log y (loss). Palette matches the
+optimizer-comparison chart so the audience reads the same color → same
+optimizer across slides.
 
-Data: web/public/talks/2026-06-03/data/lr-finder/sunspot__2b__<opt>.parquet
-      (fetched by scripts/fetch-lr-finder.py from W&B)
-
-Output: web/public/talks/2026-06-03/figures/lr-finder-sunspot.svg
-        web/public/talks/2026-06-03/figures/lr-finder-sunspot-mobile.svg
-
-Palette matches the optimizer-comparison chart so the audience reads
-the same color → same optimizer across the two slides.
+Output: web/public/talks/2026-06-03/figures/lr-finder-aurora.svg
+        web/public/talks/2026-06-03/figures/lr-finder-aurora-mobile.svg
 """
 
 import os
@@ -34,116 +33,101 @@ MOBILE = bool(os.environ.get('MOBILE'))
 
 DATA_DIR = (
     Path.home()
-    / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/data/lr-finder'
+    / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/data/lr-finder/aurora'
 )
 OUT_DIR = (
     Path.home() / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/figures'
 )
 
-# (label, color, marker) — matches the optimizer-comparison chart's
-# rainbow palette. AdamW=green, Muon=yellow, SophiaG=blue.
+# (label, slug, color, marker) — matches the optimizer-comparison palette.
 OPTIMIZERS = [
-    ('AdamW',   'adamw',   '#43a047', 'o'),
-    ('Muon',    'muon',    '#eab308', '^'),
-    ('SophiaG', 'sophiag', '#2196f3', 'D'),
+    ('AdamW',   'adamw',   '#43a047', 'o'),  # green
+    ('Muon',    'muon',    '#eab308', '^'),  # yellow
+    ('SophiaG', 'sophiag', '#2196f3', 'D'),  # blue
 ]
 
-# 2B only for the main-path slide — the 20B and 80B sweeps live in
-# the docs/experiments/lr-finder README that the figcaption links to.
 MODELS = [
-    ('2B', '2b'),
+    ('2B',  '2b'),
+    ('20B', '20b'),
 ]
+
+
+def _load(size_slug: str, opt_slug: str) -> pd.DataFrame | None:
+    p = DATA_DIR / f'aurora__{size_slug}__{opt_slug}.csv'
+    if not p.exists():
+        return None
+    return pd.read_csv(p).sort_values('learning_rate').reset_index(drop=True)
 
 
 def _smooth(loss: pd.Series, window: int = 5) -> pd.Series:
-    """Light rolling-mean smoothing to make the descent + blow-up
-    structure readable through per-step noise. 5-step window is
-    short enough to preserve the knee position."""
     return loss.rolling(window=window, min_periods=1, center=True).mean()
 
 
 def _suggested_lr(lr: np.ndarray, loss: np.ndarray) -> float | None:
-    """Heuristic 'suggested LR': steepest descent point.
-
-    Compute dloss/d(log lr) (since LR is exponential) and pick the
-    LR where it's most negative. Restrict to the descending region
-    (before the blow-up) so post-divergence noise doesn't win.
-    Returns None if data is too short or no clear descent.
-    """
+    """Steepest-descent suggested LR (Smith 2015 / Gugger): pick the
+    LR where dloss/d(log lr) is most negative, restricted to the
+    descending region (within 1.5× of running min so post-blow-up
+    noise doesn't win)."""
     if len(lr) < 5:
         return None
     log_lr = np.log(lr)
-    # Smooth before differencing — raw 1-step gradient is too noisy
     smoothed = pd.Series(loss).rolling(7, min_periods=1, center=True).mean().values
     dl = np.gradient(smoothed, log_lr)
-    # Restrict to the section before loss starts climbing significantly
-    # (within 1.5× of the running minimum).
     running_min = np.minimum.accumulate(smoothed)
     in_descent = smoothed <= running_min * 1.5
     if not in_descent.any():
         return None
-    candidates = np.where(in_descent)[0]
-    idx = candidates[np.argmin(dl[candidates])]
+    cands = np.where(in_descent)[0]
+    idx = cands[np.argmin(dl[cands])]
     return float(lr[idx])
 
 
-def _load(flavor_slug: str, opt_slug: str) -> pd.DataFrame | None:
-    p = DATA_DIR / f'sunspot__{flavor_slug}__{opt_slug}.parquet'
-    if not p.exists():
-        return None
-    df = pd.read_parquet(p).sort_values('lr').reset_index(drop=True)
-    # NaN losses (post-blow-up) get clipped at the y-cap so they're
-    # still visible as the curve flattening at the ceiling.
-    return df
-
-
-def _draw_panel(ax, flavor_label: str, flavor_slug: str, y_cap: float):
+def _draw_panel(ax, size_label: str, size_slug: str, y_cap: float):
     for opt_label, opt_slug, color, marker in OPTIMIZERS:
-        df = _load(flavor_slug, opt_slug)
+        df = _load(size_slug, opt_slug)
         if df is None or df.empty:
             continue
-        lr = df['lr'].to_numpy()
+        lr = df['learning_rate'].to_numpy()
         loss = df['loss'].to_numpy()
-        # Replace NaN losses (post-blow-up) with the y-cap so the
-        # divergence is visible as a ceiling line, not a gap.
-        loss_plot = np.where(np.isnan(loss), y_cap, loss)
-        loss_plot = np.clip(loss_plot, None, y_cap)
+        # Clip post-blow-up spikes at the y-cap so they show as a
+        # ceiling instead of blowing out the y-axis.
+        loss_plot = np.clip(np.where(np.isnan(loss), y_cap, loss), None, y_cap)
         smoothed = _smooth(pd.Series(loss_plot), window=5).to_numpy()
         ax.plot(lr, smoothed, color=color, lw=2.0,
-                marker=marker, ms=4, markevery=max(1, len(lr) // 12),
+                marker=marker, ms=5, markevery=max(1, len(lr) // 12),
                 alpha=0.95, label=opt_label, zorder=3)
-        # Suggested-LR marker — vertical dashed at the steepest-descent LR.
         sug = _suggested_lr(lr, loss)
         if sug is not None:
-            ax.axvline(sug, ls='--', lw=1.0, color=color, alpha=0.5, zorder=2)
+            ax.axvline(sug, ls='--', lw=1.0, color=color, alpha=0.55, zorder=2)
     ax.set_xscale('log')
     ax.set_yscale('log')
-    ax.set_title(flavor_label, pad=6)
+    ax.set_title(size_label, pad=6)
     ax.set_xlabel('learning rate (log)')
     ax.grid(True, alpha=0.25, which='both')
     ax.yaxis.set_major_locator(LogLocator(base=10.0, subs=(1.0,)))
     ax.yaxis.set_major_formatter(FormatStrFormatter('%g'))
 
 
-def render(out_path: Path, figsize: tuple[float, float]) -> None:
+def render(out_path: Path, figsize: tuple[float, float], mobile: bool) -> None:
     import ambivalent  # noqa: F401
     plt.style.use(ambivalent.STYLES['ambivalent'])
     plt.rcParams.update(TALK_RCPARAMS_GRID)
 
-    fig, ax = plt.subplots(1, 1, figsize=figsize)
+    if mobile:
+        fig, axes = plt.subplots(2, 1, figsize=figsize, sharey=True)
+    else:
+        fig, axes = plt.subplots(1, 2, figsize=figsize, sharey=True)
     fig.patch.set_alpha(0)
-    ax.patch.set_alpha(0)
-    # Cap loss at ~60 — covers the SophiaG blow-up tail (max ~459 in
-    # the raw data) without letting one outlier flatten the descent
-    # region we actually want to read. Smoothing + clipping in
-    # _draw_panel handles the rest.
+    # Cap covers SophiaG's late-blow-up spike (max ~459) without
+    # flattening the descent region. 60 reads on log y as "this is
+    # where it diverged" without dominating the panel.
     Y_CAP = 60.0
-    flavor_label, flavor_slug = MODELS[0]
-    _draw_panel(ax, flavor_label, flavor_slug, Y_CAP)
-    ax.set_title('')  # Title would duplicate the slide heading
-    ax.set_ylim(4.0, Y_CAP)
-    ax.set_ylabel('training loss (log)')
-    ax.legend(loc='upper left', framealpha=0)
+    for ax, (size_label, size_slug) in zip(axes, MODELS):
+        ax.patch.set_alpha(0)
+        _draw_panel(ax, size_label, size_slug, Y_CAP)
+        ax.set_ylim(4.0, Y_CAP)
+    axes[0].set_ylabel('training loss (log)')
+    axes[0].legend(loc='upper left', framealpha=0)
     fig.tight_layout()
     fig.savefig(out_path, format='svg', transparent=True, bbox_inches='tight')
     plt.close(fig)
@@ -154,6 +138,8 @@ def render(out_path: Path, figsize: tuple[float, float]) -> None:
 if __name__ == '__main__':
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     if MOBILE:
-        render(OUT_DIR / 'lr-finder-sunspot-mobile.svg', figsize=(8, 10))
+        render(OUT_DIR / 'lr-finder-aurora-mobile.svg',
+               figsize=(8, 12), mobile=True)
     else:
-        render(OUT_DIR / 'lr-finder-sunspot.svg', figsize=(14, 7))
+        render(OUT_DIR / 'lr-finder-aurora.svg',
+               figsize=(16, 6), mobile=False)
