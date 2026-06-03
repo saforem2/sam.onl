@@ -450,6 +450,35 @@ re-tune at the target node count before the actual production run.
 
 </Slide>
 
+{/*───────────────────────────────────────────────────────────────
+How we picked the LR for SophiaG (and every other optimizer): the
+LR-finder sweep. Lives between "we picked the optimizer" and
+"here's the loss curve" so the audience sees both halves of the
+hyperparameter decision before the production-run plots.
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="lr-finder">
+
+## LR-finder — exponential sweep, blow-up / 10
+
+Smith 2015 / Gugger: exponentially ramp LR over ~10% of training,
+record EMA-smoothed loss, pick LR at the steepest descent (or
+blow-up point / 10 as a conservative default).
+
+<figure>
+    <img
+        src="/talks/2026-06-03/figures/optimizers-lr-finder.svg"
+        alt="LR-vs-loss sweeps for AdamW, Muon, SophiaG across 2B and 20B configs on Aurora"
+    />
+    <figcaption>
+        Cross-optimizer sweep on Aurora (Intel Max 1550, 2 nodes / 24 XPUs).
+        Full report:
+        [`docs/experiments/lr-finder/README.md`](https://github.com/saforem2/torchtitan/blob/ezpz/torchtitan/experiments/ezpz/docs/experiments/lr-finder/README.md)
+    </figcaption>
+</figure>
+
+</Slide>
+
 <Slide id="agpt-2b-loss">
 
 ## 2B reference: training loss
@@ -1330,33 +1359,9 @@ Full writeup: [`docs/experiments/agpt/aurora/20260523-failover-silent-hang-recov
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-Appendix: LR-finder methodology + cross-optimizer sweep
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="lr-finder">
-
-### LR-finder — exponential sweep, blow-up / 10
-
-Smith 2015 / Gugger: exponentially ramp LR over ~10% of training,
-record EMA-smoothed loss, pick LR at the steepest descent (or
-blow-up point / 10 as a conservative default).
-
-<figure>
-    <img
-        src="/talks/2026-06-03/figures/optimizers-lr-finder.svg"
-        alt="LR-vs-loss sweeps for AdamW, Muon, SophiaG across 2B and 20B configs on Aurora"
-    />
-    <figcaption>
-        Cross-optimizer sweep on Aurora (Intel Max 1550, 2 nodes / 24 XPUs).
-        Full report:
-        [`docs/experiments/lr-finder/README.md`](https://github.com/saforem2/torchtitan/blob/ezpz/torchtitan/experiments/ezpz/docs/experiments/lr-finder/README.md)
-    </figcaption>
-</figure>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
 Appendix: LR-finder 2B detail + optimal-LR bars
+(lr-finder methodology slide moved to main path after
+optimizer-comparison)
 ───────────────────────────────────────────────────────────────*/}
 
 <Slide id="lr-finder-results">
