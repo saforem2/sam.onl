@@ -20,6 +20,13 @@ export const ASSETS = 'https://samforeman.me/assets'
 
 <Slide id="title-slide">
 
+<a class="title-slide-qr" href="https://sam.onl/talks/2026/06/03"
+   aria-label="QR code linking to these slides">
+  <img src="/talks/2026-06-03/figures/qr-slides.svg"
+       alt="QR code linking to sam.onl/talks/2026/06/03" />
+  <span>sam.onl/talks/2026/06/03</span>
+</a>
+
 # <span style="color:var(--foreground0);">Production Pre-Training at Scale:</span>
 
 ## <span style="color:var(--foreground1);">The Good, the Bad, and the Restarts</span>
@@ -43,6 +50,37 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
        between two authors. */
     max-width: 70ch;
     line-height: 1.6;
+  }
+  /* QR code top-right of the title slide. Big enough to scan from
+     the back of the hall (~8lh ≈ 11ch square), with the canonical
+     URL underneath for anyone who'd rather type it. currentColor on
+     the SVG paths makes it follow the active theme without needing
+     a light/dark variant pair. */
+  #title-slide .title-slide-qr {
+    position: absolute;
+    top: 2lh;
+    right: 4ch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25lh;
+    text-decoration: none;
+    color: var(--foreground0);
+  }
+  #title-slide .title-slide-qr img {
+    width: 11ch;
+    height: 11ch;
+    display: block;
+  }
+  #title-slide .title-slide-qr span {
+    font-size: 0.75em;
+    color: var(--foreground1);
+    white-space: nowrap;
+  }
+  /* On phones the QR would crowd the title; hide it there — the
+     deck URL is already in the bottom status bar on mobile. */
+  @media (max-width: 768px) {
+    #title-slide .title-slide-qr { display: none; }
   }
 `}</style>
 
@@ -84,10 +122,9 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
       - **CODING AGENTS** !!
 
 2. **The Bad**:
+    - Rapidly evolving software (_and hardware_!)
+      - Fork tax (fast-moving upstream!)
     - At scale, *failure is the default*
-    - Fork tax (fast-moving upstream!)
-    - Rapidly evolving software
-      - _and hardware_
 
 [^mds]: And *away* from [argonne-lcf/Megatron-DeepSpeed](https://github.com/argonne-lcf/Megatron-DeepSpeed)!
 
@@ -129,21 +166,24 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 <Slide id="notes">
 
-## Notes
+## Motivation
 
 - How to do _production training_ on a _rapidly evolving_ software
   stack?
-    - across \{Intel, NVIDIA, AMD\} hardware?
-    - **while also mitigating hardware and system failures** ?
+    - across \{Intel, NVIDIA, AMD, ...\} hardware?
+    - **while also mitigating failures** ?
+      - \{hardware, system, network, lustre, ...\} 
 
 - Tension between:
-    - long running continuous (weeks/months+) pre-training jobs
-    - typical facility scheduling policies (e.g. 8-12 hours per day)
-- In addition to:
-    - node failures
-    - file system instabilities
-    - (silent!) HW failures
-    - _frequent checkpointing and restarting to mitigate_
+    - long running pre-training jobs
+    - typical facility scheduling policies
+      - INCITE (>= 20% of machine, 2k nodes on Aurora)  
+        -\> _very_ large batches  
+        -\> bad model, unstable training[^openai18][^zhang25][^zhou25]
+
+  [^openai18]: [An Empirical Model of Large-Batch Training](https://arxiv.org/abs/1812.06162)
+  [^zhang25]: [How Does Critical Batch Size Scale in Pre-training?](https://arxiv.org/abs/2410.21676v4)
+  [^zhou25]: [How to Set the Batch Size for Large-Scale Pre-training?](https://arxiv.org/abs/2601.05034v1)
 
 </Slide>
 
@@ -153,7 +193,7 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 <Slide id="stack">
 
-## The stack in one slide
+## The stack
 
 **Current stack:**
 
@@ -171,7 +211,7 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 <div class="repo-card repo-card-tip">
     <div class="repo-card-title">Hardware agnostic</div>
-    **The claim:** same code, every vendor — no `cuda` in user code !
+    Same code, every vendor; no `cuda` in user code !
 </div>
 
 </Slide>
@@ -182,7 +222,7 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 <div class="ezpz-text">
 
-## 🍋 `ezpz`: write once, launch anywhere
+## 🍋 `ezpz`: write once, run anywhere
 
 ```python
 # train.py
@@ -315,13 +355,15 @@ AuroraGPT-2B (Megatron-DeepSpeed reference baseline)
 | Spec            | Value                                                       |
 | --------------- | ----------------------------------------------------------- |
 | Architecture    | 1.986B params, 12 layers, GQA (16h / 4 kv)                  |
-| Tokenizer       | SentencePiece, vocab=256K                                   |
 | Hardware        | **256 Aurora nodes × 12 Intel Max GPUs = 3,072 GPUs**, BF16 |
 | Framework       | Megatron-DeepSpeed (ZeRO Stage 0)                           |
-| Optimizer       | SophiaG (β=0.9/0.95, ρ=0.01, wd=0.1, LR=2.28e-5)            |
+| Optimizer       | SophiaG[^sophiag] (β=0.9/0.95, ρ=0.01, wd=0.1, LR=2.28e-5)  |
 | Training Config | **50M tok/batch** (8192 ctx · LBS=2)                        |
+| Tokenizer       | SentencePiece, vocab=256K                                   |
 | Stages          | 3 (pretrain · continued-pretrain · math+code)               |
 | Tokens          | **~7.77T total**                                            |
+
+[^sophiag]: [Sophia: A Scalable Stochastic Second-order Optimizer for Language Model Pre-training](https://arxiv.org/abs/2305.14342)
 
 </div>
 
@@ -339,19 +381,21 @@ Why MDS in the first place — the pre-torchtitan landscape
 
 ## Why MDS (Megatron-DeepSpeed) first: the only option at the time
 
-When AuroraGPT kicked off, MDS was the **only** LLM pre-training framework that ran:
+When AuroraGPT kicked off, MDS was the **only** LLM pre-training framework
+that ran at scale and supported:
 
-- [x] at scale
-- [x] on Intel XPU
+- [x] Intel XPU
+- [x] Model, pipeline parallelism
+- [x] DeepSpeed ZeRO Offloading
 
 Supporting context:
 
-- **PyTorch FSDP1** had Intel XPU gaps — collectives, AC patterns, optimizer-state sharding
-- **torchtitan** existed as a research project but not yet on XPU / not yet usable for our config
-- **blendcorpus** had a stable MDS integration; the data pipeline was already a known quantity
-- The fork was _ours_ — every Aurora-specific patch could land same-day
+- PyTorch FSDP1 had Intel XPU gaps (collectives, AC patterns, optimizer-state sharding)
+- `torchtitan` existed as a research project (not tested)  
+- MDS was the pragmatic choice
 
-MDS was the pragmatic choice. By mid-2026 the calculus changed — `torchtitan` + DTensor + FSDP2 closed the gap and the MDS fork's maintenance cost crossed over.
+By early 2026, the calculus changed: `torchtitan` + DTensor + FSDP2 closed the gap
+and the MDS fork's maintenance cost crossed over.
 
 <SpeakerNotes>
 
@@ -368,7 +412,13 @@ Why SophiaG — large-batch optimizer comparison
 
 <Slide id="optimizer-comparison">
 
-## Why SophiaG: large-batch stability at 50M tok/batch
+## Why SophiaG: large-batch stability at 50M tok/batch (256N)
+
+[W\&B Report: AuroraGPT-2B Pre-Training](https://api.wandb.ai/links/aurora_gpt/giy3swff)[^all-runs]
+
+[^all-runs]: See the 📊 All Runs section.
+
+
 
 <figure>
     <picture>
@@ -382,8 +432,8 @@ Why SophiaG — large-batch optimizer comparison
         />
     </picture>
     <figcaption>
-        256N · GBS=6,144 · 50M tok/batch. **SophiaG** is the only one
-        that stays in the low-loss band with bounded grad norms.
+        **SophiaG** is the only one that stays in the low-loss band with
+        bounded grad norms. 
     </figcaption>
 </figure>
 
@@ -397,6 +447,40 @@ collective + dataloader behaviour we'll hit at 512N / 1024N. We
 re-tune at the target node count before the actual production run.
 
 </SpeakerNotes>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+How we picked the LR for SophiaG (and every other optimizer): the
+LR-finder sweep. Lives between "we picked the optimizer" and
+"here's the loss curve" so the audience sees both halves of the
+hyperparameter decision before the production-run plots.
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="lr-finder">
+
+## LR-finder — exponential sweep, blow-up / 10
+
+Smith 2015[^smith-2015] / Gugger[^gugger-2017]: exponentially ramp LR over ~10% of training,
+record EMA-smoothed loss, pick LR at the steepest descent (or
+blow-up point / 10 as a conservative default).
+
+[^smith-2015]: [Cyclical Learning Rates for Training Neural Networks](https://arxiv.org/abs/1506.01186) (Smith 2015)
+
+[^gugger-2017]: [How do you find a good learning rate](https://sgugger.github.io/how-do-you-find-a-good-learning-rate.html) (Gugger 2017)
+
+<figure>
+    <picture>
+        <source media="(max-width: 768px)"
+                srcset="/talks/2026-06-03/figures/lr-finder-aurora-mobile.svg" />
+        <img src="/talks/2026-06-03/figures/lr-finder-aurora.svg"
+             alt="LR-vs-loss sweeps for AdamW, Muon, SophiaG across 2B and 20B configs on Aurora" />
+    </picture>
+    <figcaption>
+        Cross-optimizer sweep on Aurora. Full report:
+        [`docs/experiments/lr-finder/README.md`](https://github.com/saforem2/torchtitan/blob/ezpz/torchtitan/experiments/ezpz/docs/experiments/lr-finder/README.md)
+    </figcaption>
+</figure>
 
 </Slide>
 
@@ -424,6 +508,37 @@ re-tune at the target node count before the actual production run.
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
+Why move off MDS — and what broke
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="why-titan">
+
+## Why we moved to `torchtitan`
+
+|                                          | MDS | TT  |
+| :--------------------------------------- | :-: | :-: |
+| Actively maintained                      | ❌️  | ✅  |
+| Declarative parallelism (DTensor, FSDP2) | ❌️  | ✅  |
+| FSDP+TP / EP / CP without plumbing       | ❌️  | ✅  |
+| MoE support                              | ❌️  | ✅  |
+| Easy to extend, debug, maintain          | ❌️  | ✅  |
+
+**The trade-off we accepted:** living on a fast-moving upstream
+  [pytorch/torchtitan@main](https://github.com/pytorch/torchtitan); the "fork tax"
+
+<style>{`
+  #why-titan table { table-layout: fixed; width: 100%; max-width: 70ch; }
+  #why-titan table th:nth-child(1), #why-titan table td:nth-child(1) { width: auto; }
+  #why-titan table th:nth-child(2), #why-titan table td:nth-child(2),
+  #why-titan table th:nth-child(3), #why-titan table td:nth-child(3) {
+    width: 6ch; text-align: center;
+  }
+`}</style>
+
+</Slide>
+
+
+{/*───────────────────────────────────────────────────────────────
 2B reference + TT overlay — MDS 3-stage chart with TT v2 256N drawn on top
 ───────────────────────────────────────────────────────────────*/}
 
@@ -443,42 +558,9 @@ re-tune at the target node count before the actual production run.
         />
     </picture>
     <figcaption>
-        Same MDS trajectory as the reference chart, with the `torchtitan` 256N
-        production run drawn on the same axes: starts inside the MDS pretrain
-        region and tracks the same loss-vs-tokens curve.
+        Training loss comparison for AuroraGPT-2B trained with MDS vs. TT.
     </figcaption>
 </figure>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-Why move off MDS — and what broke
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="why-titan">
-
-## Why we moved to `torchtitan`
-
-|                                          | MDS | TT  |
-| :--------------------------------------- | :-: | :-: |
-| Actively maintained upstream             | ❌️  | ✅  |
-| Declarative parallelism (DTensor, FSDP2) | ❌️  | ✅  |
-| FSDP+TP / EP / CP without plumbing       | ❌️  | ✅  |
-| MoE support                              | ❌️  | ✅  |
-| Cross-vendor from one launcher           | ❌️  | ✅  |
-
-**The trade-off we accepted:** living on a fast-moving upstream
-(`pytorch/torchtitan main`) instead of a tagged release. That trade
-is the "fork tax", the rest of this talk.
-
-<style>{`
-  #why-titan table { table-layout: fixed; width: 100%; max-width: 70ch; }
-  #why-titan table th:nth-child(1), #why-titan table td:nth-child(1) { width: auto; }
-  #why-titan table th:nth-child(2), #why-titan table td:nth-child(2),
-  #why-titan table th:nth-child(3), #why-titan table td:nth-child(3) {
-    width: 6ch; text-align: center;
-  }
-`}</style>
 
 </Slide>
 
@@ -618,9 +700,9 @@ The fork tax
 
 ## The fork tax: upstream-sync as a workflow
 
-- ~6× weekly resyncs over 6 weeks
-- Smoke gate: bit-exact loss + grad-norm + peak memory at `--debug.deterministic --debug.seed=42`
-- Every "did upstream change something?" question gets a numeric answer in ≤30 min
+- [46 Upstream Syncs in 7 Weeks](https://github.com/saforem2/torchtitan/blob/ezpz/torchtitan/experiments/ezpz/docs/upstream-sync.md)
+- Smoke test: bit-exact loss + grad-norm + peak memory
+  - Verify changes from upstream haven't broken anything
 
 </div>
 
@@ -789,8 +871,6 @@ flowchart TB
 
 ## The Restarts: At Scale, Failure is the Default
 
-Production pre-training is long, large, and routinely interrupted:
-
 - **Llama 3 405B** — 16K H100s · 54 days · **419** failures (≈ **1 every 3h**); 99% recovered via automation[^llama3]
 - **OPT-175B** — 35 manual restarts + 100+ cycled hosts in 2 mo on ~1K A100s[^opt]
 - **BLOOM-176B** — frequent loss spikes; embedding-norm + checkpoint cadence on 384 A100s × 3.5 mo[^bloom]
@@ -815,8 +895,7 @@ Production pre-training is long, large, and routinely interrupted:
 ## "The Restarts": three layers of recovery
 
 Bad-node failover, hang-watchdog, and PBS resubmit each operate at a
-different scope. Together they turn "lost a 12 h walltime" into
-"lost a 10 min sub-step."
+different scope.
 
 <div class="cascade-desktop">
 
@@ -1034,25 +1113,14 @@ What generalizes / open questions / fin
 
 </Slide>
 
-<Slide id="ask">
-
-## Open questions: the ask
-
-- A **portable bit-exact regression suite** across vendors — does
-  anyone have one?
-- **`torch.compile` at 1T scale** — defensible decision tree?
-- **Async-checkpoint Pareto frontier**: recovery time × frequency ×
-  storage cost in production
-- **Optimizer failure at 80B+**: SophiaG (Hessian-diagonal estimate
-  saturates) + Muon (Newton-Schulz iterations overflow bf16) both
-  diverge — algorithmic limit or fp-precision artifact?
-- **MoE EP↔FSDP** scaling boundaries at 16B / 64B / 100B
-- **Make `xccl` honor `train_timeout_seconds`** so we don't have to
-  rely on an stdout-idle watchdog as the hang-detection ground truth
-
-</Slide>
-
 <Slide id="thanks">
+
+<a class="thanks-qr" href="https://sam.onl/talks/2026/06/03"
+   aria-label="QR code linking to these slides">
+  <img src="/talks/2026-06-03/figures/qr-slides.svg"
+       alt="QR code linking to sam.onl/talks/2026/06/03" />
+  <span>sam.onl/talks/2026/06/03</span>
+</a>
 
 ## Thanks
 
@@ -1075,6 +1143,36 @@ staging.
 
 Questions?
 
+<style>{`
+  /* Same QR pattern as the title slide so the audience can scan
+     the deck during Q&A. Mirrors the title-slide-qr block but
+     scoped to #thanks. */
+  #thanks .thanks-qr {
+    position: absolute;
+    top: 2lh;
+    right: 4ch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25lh;
+    text-decoration: none;
+    color: var(--foreground0);
+  }
+  #thanks .thanks-qr img {
+    width: 11ch;
+    height: 11ch;
+    display: block;
+  }
+  #thanks .thanks-qr span {
+    font-size: 0.75em;
+    color: var(--foreground1);
+    white-space: nowrap;
+  }
+  @media (max-width: 768px) {
+    #thanks .thanks-qr { display: none; }
+  }
+`}</style>
+
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
@@ -1087,48 +1185,38 @@ APPENDIX — silent-correctness bugs (deep-dive backup slides)
 
 Material that didn't make the main path but is here for Q&A.
 
-**Silent-correctness bugs** — the two bugs that almost killed the v1
-production runs. Loss looked fine, training kept going, and only an
-external eval gate (or a bit-exact smoke comparison) flagged that
-something was wrong.
-
-- **Bug #1**: bf16 master ⇒ RMSNorm frozen — every update rounds to
-  zero at scale 1.0
-- **Bug #2**: TP loss reported as `true_loss / dp_world_size` —
-  looked reasonable on plots, caught only by smoke comparison
-
-**`blendcorpus`** — the data layer (deterministic shard indexing,
-weight-stable resumption; pain: upstream shard churn, dataloader skew
-across backends).
-
-**Failover engineering deep-dive** — the production table + qsub
-wrapper, plus the four-piece system that swaps spares in on crash:
-
-- `ezpz launch --timeout / --retries` — stdout-idle watchdog
-- watchdog state machine — one hang/recover cycle
-- `--auto-retry` — bad-node failover, on tap
-- in-production catch — silent hang at step 37, recovered cleanly
-
-**Cross-version churn** — APIs shift faster than vendor support
-catches up. Example: `DeviceMesh` + AC + TP=2 + torch 2.13 →
-AOT-autograd assertion on every 80B config; pin torch 2.10 until
-the upstream fix lands.
-
-**Optimizer + LR-finder** — AdamW · Muon · SophiaG sweep across
-\{2B, 20B, 80B\} on Aurora / Sunspot / Polaris; speedrun rounds with
-Mano + QK-Norm; `yeet-env` tarball broadcast scaling.
-
-> [!TIP]
-> **`xccl` train-timeout fix incoming upstream.** An official fix
-> for `xccl` honoring `train_timeout_seconds` on XPU is landing in
-> a nightly PyTorch release — the stdout-idle watchdog won't stay
-> load-bearing.
+- Open questions
+- Silent-correctness bugs
+- Failover engineering deep-dive
+- LR-finder
+- `yeet-env` tarball broadcast scaling
 
 </Slide>
+
 
 {/*───────────────────────────────────────────────────────────────
 Appendix: Operational reality — failover wrapper
 ───────────────────────────────────────────────────────────────*/}
+
+<Slide id="ask">
+
+  ### Open questions: the ask
+
+- A **portable bit-exact regression suite** across vendors — does
+  anyone have one?
+- **`torch.compile` at 1T scale** — defensible decision tree?
+- **Async-checkpoint Pareto frontier**: recovery time × frequency ×
+  storage cost in production
+- **Optimizer failure at 80B+**: SophiaG (Hessian-diagonal estimate
+  saturates) + Muon (Newton-Schulz iterations overflow bf16) both
+  diverge — algorithmic limit or fp-precision artifact?
+- **MoE EP↔FSDP** scaling boundaries at 16B / 64B / 100B
+- **Make `xccl` honor `train_timeout_seconds`** so we don't have to
+  rely on an stdout-idle watchdog as the hang-detection ground truth
+
+</Slide>
+
+
 
 <Slide id="restarts">
 
@@ -1180,7 +1268,7 @@ Appendix: failover engineering deep-dive
 
 <Slide id="watchdog">
 
-## Silent-hang detection: `ezpz launch --timeout / --retries`
+### Silent-hang detection: `ezpz launch --timeout / --retries`
 
 **The problem.** `xccl` on XPU silently ignores
 `train_timeout_seconds`, so a torchtitan job stuck in a hung
@@ -1209,7 +1297,7 @@ you wrap the inner call with `ezpz launch` too).
 
 <Slide id="watchdog-fsm">
 
-## `ezpz launch --timeout`: one hang/recover cycle
+### `ezpz launch --timeout`: one hang/recover cycle
 
 <div class="watchdog-desktop">
 
@@ -1257,7 +1345,7 @@ Every collective hang shows up as **silence on stdout** — the process is "aliv
 
 <Slide id="auto-retry">
 
-## `--auto-retry`: bad-node failover, on tap
+### `--auto-retry`: bad-node failover, on tap
 
 Allocate spares up front, swap them in on failure:
 
@@ -1277,7 +1365,7 @@ Ships in [`saforem2/ezpz#144`](https://github.com/saforem2/ezpz/pull/144). Same 
 
 <Slide id="failover-validation">
 
-## Failover wrapper: caught a real silent hang in production
+### Failover wrapper: caught a real silent hang in production
 
 **Job `8505298`, 2026-05-23.** Attempt 1 trains cleanly steps 1→37, then
 log goes **completely silent** at step 37. No traceback, no MPI error,
@@ -1313,33 +1401,9 @@ Full writeup: [`docs/experiments/agpt/aurora/20260523-failover-silent-hang-recov
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-Appendix: LR-finder methodology + cross-optimizer sweep
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="lr-finder">
-
-### LR-finder — exponential sweep, blow-up / 10
-
-Smith 2015 / Gugger: exponentially ramp LR over ~10% of training,
-record EMA-smoothed loss, pick LR at the steepest descent (or
-blow-up point / 10 as a conservative default).
-
-<figure>
-    <img
-        src="/talks/2026-06-03/figures/optimizers-lr-finder.svg"
-        alt="LR-vs-loss sweeps for AdamW, Muon, SophiaG across 2B and 20B configs on Aurora"
-    />
-    <figcaption>
-        Cross-optimizer sweep on Aurora (Intel Max 1550, 2 nodes / 24 XPUs).
-        Source:
-        [`docs/experiments/lr-finder`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/experiments/lr-finder)
-    </figcaption>
-</figure>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
 Appendix: LR-finder 2B detail + optimal-LR bars
+(lr-finder methodology slide moved to main path after
+optimizer-comparison)
 ───────────────────────────────────────────────────────────────*/}
 
 <Slide id="lr-finder-results">
@@ -1384,70 +1448,6 @@ Hessian estimate on 9216-dim matrices).
   }
   @media (max-width: 768px) {
       #lr-finder-results .lr-finder-grid {
-          grid-template-columns: 1fr;
-      }
-  }
-`}</style>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-Appendix: Optimizer speedrun rounds — Mano / AdamW / Muon
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="optimizer-speedrun">
-
-### Optimizer speedrun — Mano LR sweep, WSM, Schedule-Free
-
-<div class="opt-speedrun-grid">
-
-<figure>
-    <img
-        src="/talks/2026-06-03/figures/optimizers-r5-loss-curves.webp"
-        alt="Mano LR sweep + WSM + Schedule-Free loss curves, 8 nodes, 10B tokens"
-    />
-    <figcaption>
-        Round 5 speedrun: 8 nodes, GBS=384, 10B tokens. Dual view — by step and
-        by tokens consumed.
-    </figcaption>
-</figure>
-
-<div class="opt-speedrun-text">
-
-**Headline numbers (Round 3, 10B tokens / 8N / GBS=384):**
-
-<div class="tight-table">
-
-| Rank | Config          | Loss      | TPS/GPU |
-| ---: | :-------------- | :-------- | ------: |
-|    1 | AdamW           | **2.711** |   7,354 |
-|    2 | AdamW + QK-Norm | 2.720     |   7,480 |
-|    3 | Mano + QK-Norm  | 2.854     |   7,346 |
-|    4 | Mano            | 2.875     |   7,429 |
-|    5 | Muon            | DNF       |       — |
-
-</div>
-
-**AdamW wins at GBS=384.** Mano lands ~0.16 behind — LR finder was
-tuned at GBS=48 and the manifold update under-shoots at large batch.
-
-</div>
-
-</div>
-
-<style>{`
-  #optimizer-speedrun .opt-speedrun-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-      gap: 2ch;
-      align-items: start;
-  }
-  #optimizer-speedrun .opt-speedrun-grid > figure { margin: 0; }
-  #optimizer-speedrun .opt-speedrun-grid > figure > img {
-      width: 100%; height: auto;
-  }
-  @media (max-width: 768px) {
-      #optimizer-speedrun .opt-speedrun-grid {
           grid-template-columns: 1fr;
       }
   }
@@ -1528,43 +1528,12 @@ Appendix: Silent killer #2 — TP loss reporting
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-Appendix: blendcorpus deep-dive (parked for possible future revisit)
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="blendcorpus">
-
-### `blendcorpus` — the boring layer that breaks first
-
-**What it does**
-
-- Weighted blending across N scientific corpora; deterministic shard
-  indexing so a given `(global_step, dp_rank)` always sees the same
-  bytes
-- Weight-stable resumption: changing per-corpus weights mid-run doesn't
-  re-shuffle history
-
-**Where it bites**
-
-- **Upstream shard churn** — corpus owners re-emit shards (dedup,
-  re-tokenization). Same logical corpus, different bytes → silent
-  history drift unless you pin shard SHAs in the manifest.
-- **Cross-backend dataloader skew** — `num_workers`, prefetch, NUMA
-  pinning behave differently on XPU vs CUDA hosts. Same seed, different
-  arrival order on the GPU → not reproducible across vendors.
-
-> Smoke test catches this: bit-exact first-step loss requires the
-> dataloader to deliver identical batches across runs, vendors, and
-> resumptions.
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
 Appendix: ezpz yeet — env broadcast scaling at 8–4096 nodes
 ───────────────────────────────────────────────────────────────*/}
 
 <Slide id="yeet-env" size="sm">
 
-## `ezpz yeet`: Efficiently Running 50k Python Processes
+### `ezpz yeet`: Efficiently Running 50k Python Processes
 
 <div class="yeet-env-grid">
 

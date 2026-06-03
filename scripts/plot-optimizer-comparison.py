@@ -3,7 +3,7 @@ Optimizer comparison @ 50M tokens/batch — large-batch stability.
 
 Plots loss/lm_loss and loss/grad_norm vs training/consumed_tokens for
 the 5 optimizer-comparison runs pulled by fetch-optimizer-comparison.py
-(AdamW, ipex.FusedLamb, Muon, MuonClip, SophiaG). The slide thesis:
+(AdamW, Lamb, Muon, SophiaG). The slide thesis:
 SophiaG was the only optimizer to reach a lower loss + maintain
 bounded grad norms at GBS=6,144 (50M tok/batch, 8192 ctx), which is
 why it became the 2B production choice.
@@ -32,18 +32,22 @@ DATA_DIR = (
 )
 OUT = Path.home() / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/figures'
 
-# (filename, label, color, marker). Colors mirror the W&B report
-# (https://api.wandb.ai/links/aurora_gpt/giy3swff) so the slide reads
-# 1:1 against the report. Markers add a second visual channel so the
-# chart isn't color-only — important for print / colorblind viewers
-# and for matching legend ↔ line when curves bunch up in the same
-# band.
+# (filename, label, color, marker). Rainbow ordering (R/O/G/B) by
+# label so the legend reads top→bottom as a familiar spectrum — easier
+# for the audience to map label ↔ line than the W&B report's palette.
+# Markers add a second visual channel so the chart isn't color-only —
+# important for print / colorblind viewers and for matching
+# legend ↔ line when curves bunch up in the same band.
+#
+# Vanilla Muon (no clip) is dropped from this comparison — it
+# diverges by ~0.25T and the stub adds noise without carrying any
+# additional story. MuonClip is relabeled 'Muon' since the audience
+# knows the category, not the variant distinction.
 RUNS = [
-    ('adamw.parquet',    'AdamW',          '#f5b800', 'o'),  # circle
-    ('lamb.parquet',     'ipex.FusedLamb', '#3b82f6', 's'),  # square
-    ('muonclip.parquet', 'MuonClip',       '#f97316', '^'),  # triangle
-    ('sophiag.parquet',  'SophiaG',        '#22c55e', 'D'),  # diamond
-    ('muon.parquet',     'Muon',           '#ef4444', 'X'),  # x
+    ('adamw.parquet',    'AdamW',          '#43a047', 'o'),  # green   · circle  (Material green 600 — toned down from the brighter #22c55e that was bleaching against white)
+    ('lamb.parquet',     'Lamb',           '#e53935', 's'),  # red     · square  (Material red 600 — IPEX FusedLamb under the hood)
+    ('muonclip.parquet', 'Muon',           '#eab308', '^'),  # yellow  · triangle (Tailwind yellow 500 — saturated enough to hold on a white projector, unlike the lighter #facc15 yellow 400)
+    ('sophiag.parquet',  'SophiaG',        '#2196f3', 'D'),  # blue    · diamond (Material blue 500)
 ]
 
 # Drop a marker every N billion tokens. Coarse enough to avoid a
@@ -51,9 +55,8 @@ RUNS = [
 MARKER_TOKENS_B = 100
 
 # Focus window — story is decided by ~1.5T tokens (AdamW dies in
-# warmup, Muon diverges ~250B, MuonClip spikes ~1.1T, SophiaG/Lamb
-# separate by ~1T). Lamb + SophiaG continue past 6T but that's
-# redundant.
+# warmup, Muon spikes ~1.1T, SophiaG/Lamb separate by ~1T).
+# Lamb + SophiaG continue past 6T but that's redundant.
 X_MAX_T = 1.5
 
 
@@ -135,13 +138,13 @@ def _draw(ax_loss, ax_grad):
             markersize=8, markeredgewidth=0,
         )
 
-    # Loss panel — log y so the AdamW crash + Muon explosion compress
+    # Loss panel — log y so the AdamW crash + Muon spike compress
     # without losing detail in the converged ~2.4–3 band. Cap at 8;
-    # the brief MuonClip spike past 8 clips, but the structure that
-    # matters (which optimizer ends up where) lives in [2.4, 6].
+    # the brief Muon (clipped) spike past 8 clips, but the structure
+    # that matters (which optimizer ends up where) lives in [2.4, 6].
     ax_loss.set_yscale('log')
     ax_loss.set_ylim(2.3, 8)
-    ax_loss.set_ylabel('LM training loss  (log)')
+    ax_loss.set_ylabel('Training loss  (log)')
     ax_loss.grid(True, alpha=0.2, which='both')
 
     ax_grad.set_yscale('log')
@@ -155,14 +158,14 @@ def _draw(ax_loss, ax_grad):
 
 def _legend_in_line_order(ax) -> None:
     """Draw the legend on `ax` with entries ordered by line position
-    at the legend's anchor (upper-center, around 0.2-0.3T). The
-    crossover near token = 0.2T puts ipex.FusedLamb on top there,
-    Muon just below (it ends near 0.25T), then MuonClip, AdamW, and
-    SophiaG converging in the loss band. Matching the legend order
-    to that visual stack lets the reader pair label↔line by straight
-    top-to-bottom scanning under the legend.
+    at the legend's anchor (upper-center, around 0.2-0.3T). Near
+    that anchor Lamb sits on top, Muon next (it spikes
+    around 1.1T but starts in the upper band), then AdamW and
+    SophiaG converging into the low-loss band. Matching the legend
+    order to that visual stack lets the reader pair label↔line by
+    straight top-to-bottom scanning under the legend.
     """
-    order = ['ipex.FusedLamb', 'Muon', 'MuonClip', 'AdamW', 'SophiaG']
+    order = ['Lamb', 'Muon', 'AdamW', 'SophiaG']
     handles, labels = ax.get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
     ordered = [(by_label[name], name) for name in order if name in by_label]
@@ -188,7 +191,7 @@ def render_stacked(out_name: str, figsize: tuple[float, float]) -> None:
     _draw(ax_loss, ax_grad)
     _legend_in_line_order(ax_loss)
     fig.suptitle(
-        'AuroraGPT-2B  optimizer comparison  (GBS=6,144 · 50M tok/batch)',
+        'AuroraGPT-2B Optimizer Comparison (50M tok/batch @ 256N)',
         fontsize=22, fontweight=600, y=0.995,
     )
     _save(fig, out_name)
@@ -205,7 +208,7 @@ def render_side_by_side(out_name: str, figsize: tuple[float, float]) -> None:
     ax_loss.set_xlabel('consumed tokens (T)')
     _legend_in_line_order(ax_loss)
     fig.suptitle(
-        'AuroraGPT-2B  optimizer comparison  (GBS=6,144 · 50M tok/batch)',
+        'AuroraGPT-2B Optimizer Comparison (50M tok/batch @ 256N)',
         fontsize=22, fontweight=600, y=0.995,
     )
     _save(fig, out_name)

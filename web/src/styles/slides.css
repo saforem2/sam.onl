@@ -42,7 +42,13 @@
     position: fixed;
     inset: 0;
     width: 100vw;
+    /* dvh, not vh — on iOS Safari `100vh` is the layout viewport
+       (URL bar fully retracted), so the deck root spills behind the
+       URL bar and the slide-inner's bottom content lands off-screen.
+       `100dvh` tracks the visible viewport and resizes as the URL
+       bar shows/hides. Fallback to vh for browsers without dvh. */
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     background-color: var(--background0);
     color: var(--foreground1);
@@ -125,19 +131,16 @@
     /* Mobile (≤ 768px): tighter padding, top-anchor content. Codeblocks
        keep their normal `white-space: pre` + horizontal scroll behavior;
        no forced soft-wrap (which clobbers indentation and breaks lines
-       that would fit fine with a small horizontal scroll). Extra
-       bottom padding so the statusbar (~1lh tall + its own padding)
-       doesn't clip the last line of content. */
+       that would fit fine with a small horizontal scroll). */
     @media (max-width: 768px) {
         .slide-inner {
             font-size: 1.1rem;
-            /* Bottom padding has to clear the fixed statusbar (≈1lh
-               tall) PLUS enough cushion that the last line of content
-               isn't visually pinned to the bar's top edge. 4lh has
-               worked across the densest mobile slides; previous 2.5lh
-               wasn't enough (last line of body text was getting eaten
-               by the statusbar). */
-            padding: 1lh 2ch 4lh 2ch;
+            /* Bottom padding clears the fixed statusbar (≈1lh) plus
+               a small cushion so the last line doesn't visually kiss
+               the bar's top edge. 2.5lh is enough now that the deck
+               root uses 100dvh — was 4lh when 100vh was spilling
+               content behind the iOS URL bar. */
+            padding: 1lh 2ch 2.5lh 2ch;
             justify-content: flex-start;
         }
     }
@@ -321,6 +324,51 @@
        the same vertical guideline as the surrounding body text. */
     pre.astro-code {
         margin-inline-start: -2ch;
+    }
+    /* Mobile: drop the negative offset (otherwise the codeblock can
+       extend `100% + 2ch` past the right edge, since max-width is
+       relative to the parent's content box, not the offset block).
+       Also tighten the top + bottom margin — the default 0.5lh per
+       side adds up to a visible empty band on mobile where the flex
+       column layout can't margin-collapse. */
+    @media (max-width: 768px) {
+        pre.astro-code {
+            margin-inline-start: 0;
+            margin-block: 0.25lh;
+        }
+        /* Mobile codeblock sizing inside slides. The global rule
+           sets font-size: 1.05em on BOTH .astro-code and its inner
+           <code>, which compounds (1.05em × 1.05em ≈ 1.10em of
+           slide-inner ≈ 19px on a phone — too chunky). Set the
+           size on the outer .astro-code only and reset the inner
+           <code> to 1em so nothing compounds.
+
+           Inter-row whitespace fix: shiki emits literal `\n` between
+           inline-block <span class="line"> children, which renders
+           as a visible row-height gap. `display: flex; flex-direction:
+           column` on the <code> element makes whitespace text nodes
+           between flex siblings vanish — cleaner than the font-size:0
+           hack. */
+        pre.astro-code {
+            font-size: 0.92em;
+            line-height: 1.35;
+        }
+        pre.astro-code > code {
+            font-size: 1em;
+            line-height: 1.35;
+            display: flex;
+            flex-direction: column;
+        }
+        /* Inside the flex column, each <span class="line"> was an
+           inline-block flex item — baseline-aligned with half-leading
+           rendered above + below, which manifests as a visible row gap.
+           Switching to block-level flex items kills the leading
+           overhang; line-height: 1.35 on the parent still controls
+           inter-line spacing without doubling it on each child. */
+        pre.astro-code span.line {
+            display: block;
+            line-height: 1.35;
+        }
     }
     p code {
         padding-block: 0.05em;
