@@ -46,7 +46,7 @@ OUT = Path.home() / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/figur
 RUNS = [
     ('adamw.parquet',    'AdamW',          '#43a047', 'o'),  # green   · circle  (Material green 600 — toned down from the brighter #22c55e that was bleaching against white)
     ('lamb.parquet',     'Lamb',           '#e53935', 's'),  # red     · square  (Material red 600 — IPEX FusedLamb under the hood)
-    ('muonclip.parquet', 'Muon',           '#8e24aa', '^'),  # purple  · triangle (Material purple 600 — was orange, too close to red)
+    ('muonclip.parquet', 'Muon',           '#eab308', '^'),  # yellow  · triangle (Tailwind yellow 500 — saturated enough to hold on a white projector, unlike the lighter #facc15 yellow 400)
     ('sophiag.parquet',  'SophiaG',        '#2196f3', 'D'),  # blue    · diamond (Material blue 500)
 ]
 
