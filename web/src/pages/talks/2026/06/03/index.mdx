@@ -466,14 +466,12 @@ record EMA-smoothed loss, pick LR at the steepest descent (or
 blow-up point / 10 as a conservative default).
 
 <figure>
-    <picture>
-        <source media="(max-width: 768px)"
-                srcset="/talks/2026-06-03/figures/lr-finder-sunspot-mobile.svg" />
-        <img src="/talks/2026-06-03/figures/lr-finder-sunspot.svg"
-             alt="LR-vs-loss sweeps for AdamW, Muon, SophiaG across 2B/20B/80B configs on Sunspot" />
-    </picture>
+    <img
+        src="/talks/2026-06-03/figures/lr-finder-aurora-comparison.svg"
+        alt="LR-vs-loss sweeps for AdamW, Muon, SophiaG across 2B and 20B configs on Aurora"
+    />
     <figcaption>
-        Cross-optimizer sweep on Sunspot (Intel Max 1550). Full report:
+        Cross-optimizer sweep on Aurora. Full report:
         [`docs/experiments/lr-finder/README.md`](https://github.com/saforem2/torchtitan/blob/ezpz/torchtitan/experiments/ezpz/docs/experiments/lr-finder/README.md)
     </figcaption>
 </figure>
