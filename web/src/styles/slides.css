@@ -336,6 +336,17 @@
             margin-inline-start: 0;
             margin-block: 0.25lh;
         }
+        /* On mobile the global rule (font-size: 1.05em, line-height:
+           1.5) renders code at ~18px with a half-em row gap — too big
+           on a phone, and the 1.5 line-height bakes visible space
+           between adjacent lines that reads as broken rendering.
+           Shrink to 0.85em and tighten line-height to 1.25 inside
+           slides only (doc pages keep the comfortable defaults). */
+        pre.astro-code,
+        pre.astro-code code {
+            font-size: 0.85em;
+            line-height: 1.25;
+        }
     }
     p code {
         padding-block: 0.05em;
