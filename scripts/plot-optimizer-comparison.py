@@ -3,7 +3,7 @@ Optimizer comparison @ 50M tokens/batch — large-batch stability.
 
 Plots loss/lm_loss and loss/grad_norm vs training/consumed_tokens for
 the 5 optimizer-comparison runs pulled by fetch-optimizer-comparison.py
-(AdamW, ipex.FusedLamb, Muon, SophiaG). The slide thesis:
+(AdamW, Lamb, Muon, SophiaG). The slide thesis:
 SophiaG was the only optimizer to reach a lower loss + maintain
 bounded grad norms at GBS=6,144 (50M tok/batch, 8192 ctx), which is
 why it became the 2B production choice.
@@ -44,10 +44,10 @@ OUT = Path.home() / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/figur
 # additional story. MuonClip is relabeled 'Muon' since the audience
 # knows the category, not the variant distinction.
 RUNS = [
-    ('adamw.parquet',    'AdamW',          '#22c55e', 'o'),  # green   · circle
-    ('lamb.parquet',     'ipex.FusedLamb', '#e53935', 's'),  # red     · square
-    ('muonclip.parquet', 'Muon',           '#f97316', '^'),  # orange  · triangle
-    ('sophiag.parquet',  'SophiaG',        '#2196f3', 'D'),  # blue    · diamond
+    ('adamw.parquet',    'AdamW',          '#43a047', 'o'),  # green   · circle  (Material green 600 — toned down from the brighter #22c55e that was bleaching against white)
+    ('lamb.parquet',     'Lamb',           '#e53935', 's'),  # red     · square  (Material red 600 — IPEX FusedLamb under the hood)
+    ('muonclip.parquet', 'Muon',           '#8e24aa', '^'),  # purple  · triangle (Material purple 600 — was orange, too close to red)
+    ('sophiag.parquet',  'SophiaG',        '#2196f3', 'D'),  # blue    · diamond (Material blue 500)
 ]
 
 # Drop a marker every N billion tokens. Coarse enough to avoid a
@@ -159,13 +159,13 @@ def _draw(ax_loss, ax_grad):
 def _legend_in_line_order(ax) -> None:
     """Draw the legend on `ax` with entries ordered by line position
     at the legend's anchor (upper-center, around 0.2-0.3T). Near
-    that anchor ipex.FusedLamb sits on top, Muon next (it spikes
+    that anchor Lamb sits on top, Muon next (it spikes
     around 1.1T but starts in the upper band), then AdamW and
     SophiaG converging into the low-loss band. Matching the legend
     order to that visual stack lets the reader pair label↔line by
     straight top-to-bottom scanning under the legend.
     """
-    order = ['ipex.FusedLamb', 'Muon', 'AdamW', 'SophiaG']
+    order = ['Lamb', 'Muon', 'AdamW', 'SophiaG']
     handles, labels = ax.get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
     ordered = [(by_label[name], name) for name in order if name in by_label]
