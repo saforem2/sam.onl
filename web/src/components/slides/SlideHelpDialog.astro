@@ -356,7 +356,13 @@ const fontOptions = {
             overflow-wrap: break-word;
         }
     }
-    @media (max-width: 600px) {
+    /* Collapse the 4-column desktop grid (two (key, description) pairs
+       side by side) to a single 2-column stack on mobile. Breakpoint
+       matches the dialog's own mobile breakpoint (768px) — at 600-768px
+       the dialog was already in mobile mode while the keybind grid
+       still tried to fit 4 columns, pushing the second pair past the
+       right edge. */
+    @media (max-width: 768px) {
         .slide-help-keybinds {
             grid-template-columns: max-content minmax(0, 1fr);
         }

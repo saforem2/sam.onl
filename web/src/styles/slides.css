@@ -325,6 +325,18 @@
     pre.astro-code {
         margin-inline-start: -2ch;
     }
+    /* Mobile: drop the negative offset (otherwise the codeblock can
+       extend `100% + 2ch` past the right edge, since max-width is
+       relative to the parent's content box, not the offset block).
+       Also tighten the top + bottom margin — the default 0.5lh per
+       side adds up to a visible empty band on mobile where the flex
+       column layout can't margin-collapse. */
+    @media (max-width: 768px) {
+        pre.astro-code {
+            margin-inline-start: 0;
+            margin-block: 0.25lh;
+        }
+    }
     p code {
         padding-block: 0.05em;
         padding-inline: 0.2em;
