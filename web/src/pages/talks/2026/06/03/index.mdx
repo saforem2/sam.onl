@@ -319,11 +319,13 @@ AuroraGPT-2B (Megatron-DeepSpeed reference baseline)
 | Architecture    | 1.986B params, 12 layers, GQA (16h / 4 kv)                  |
 | Hardware        | **256 Aurora nodes × 12 Intel Max GPUs = 3,072 GPUs**, BF16 |
 | Framework       | Megatron-DeepSpeed (ZeRO Stage 0)                           |
-| Optimizer       | SophiaG (β=0.9/0.95, ρ=0.01, wd=0.1, LR=2.28e-5)            |
+| Optimizer       | SophiaG[^sophiag] (β=0.9/0.95, ρ=0.01, wd=0.1, LR=2.28e-5)  |
 | Training Config | **50M tok/batch** (8192 ctx · LBS=2)                        |
 | Tokenizer       | SentencePiece, vocab=256K                                   |
 | Stages          | 3 (pretrain · continued-pretrain · math+code)               |
 | Tokens          | **~7.77T total**                                            |
+
+[^sophiag]: [Sophia: A Scalable Stochastic Second-order Optimizer for Language Model Pre-training](https://arxiv.org/abs/2305.14342)
 
 </div>
 
