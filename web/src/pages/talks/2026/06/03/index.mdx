@@ -20,6 +20,13 @@ export const ASSETS = 'https://samforeman.me/assets'
 
 <Slide id="title-slide">
 
+<a class="title-slide-qr" href="https://sam.onl/talks/2026/06/03"
+   aria-label="QR code linking to these slides">
+  <img src="/talks/2026-06-03/figures/qr-slides.svg"
+       alt="QR code linking to sam.onl/talks/2026/06/03" />
+  <span>sam.onl/talks/2026/06/03</span>
+</a>
+
 # <span style="color:var(--foreground0);">Production Pre-Training at Scale:</span>
 
 ## <span style="color:var(--foreground1);">The Good, the Bad, and the Restarts</span>
@@ -43,6 +50,37 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
        between two authors. */
     max-width: 70ch;
     line-height: 1.6;
+  }
+  /* QR code top-right of the title slide. Big enough to scan from
+     the back of the hall (~8lh ≈ 11ch square), with the canonical
+     URL underneath for anyone who'd rather type it. currentColor on
+     the SVG paths makes it follow the active theme without needing
+     a light/dark variant pair. */
+  #title-slide .title-slide-qr {
+    position: absolute;
+    top: 2lh;
+    right: 4ch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25lh;
+    text-decoration: none;
+    color: var(--foreground0);
+  }
+  #title-slide .title-slide-qr img {
+    width: 11ch;
+    height: 11ch;
+    display: block;
+  }
+  #title-slide .title-slide-qr span {
+    font-size: 0.75em;
+    color: var(--foreground1);
+    white-space: nowrap;
+  }
+  /* On phones the QR would crowd the title; hide it there — the
+     deck URL is already in the bottom status bar on mobile. */
+  @media (max-width: 768px) {
+    #title-slide .title-slide-qr { display: none; }
   }
 `}</style>
 
