@@ -157,14 +157,23 @@ def _draw_panel(ax, size_label: str, size_slug: str, y_cap: float):
         ax.plot(lr, mean, color=color, lw=2.0,
                 marker=marker, ms=5, markevery=every,
                 alpha=0.95, label=opt_label, zorder=3)
-        # Suggested-LR vertical dotted line — use the pooled mean
-        # curve as the input so the marker reflects both machines.
-        # lw bumped (was 1.2 → 2.0) and alpha up (0.6 → 0.85) since
-        # the dotted line was too faint on the projector. zorder 4
-        # so it draws OVER the fill_between band.
+        # Suggested-LR vertical dotted line. AdamW + SophiaG can
+        # share the same suggested LR (both descend through the
+        # same knee); without per-line offset, the last-drawn line
+        # covers the first. Tiny per-optimizer log-x nudge spreads
+        # them so all three are visible even when they coincide.
         sug = _suggested_lr(lr, mean)
         if sug is not None:
-            ax.axvline(sug, ls=':', lw=2.0, color=color, alpha=0.85, zorder=4)
+            # Map (AdamW, Muon, SophiaG) index → −1/0/+1 nudge
+            opt_idx = next(
+                (i for i, (_, slug, *_rest) in enumerate(OPTIMIZERS)
+                 if slug == opt_slug),
+                1,
+            )
+            nudge_log = (opt_idx - 1) * 0.04   # ±9% in log space
+            sug_n = sug * (10 ** nudge_log)
+            ax.axvline(sug_n, ls=':', lw=2.5, color=color,
+                       alpha=0.9, zorder=4)
     ax.set_xscale('log')
     ax.set_yscale('log')
     ax.set_title(size_label, pad=6)
@@ -186,14 +195,17 @@ def render(out_path: Path, figsize: tuple[float, float]) -> None:
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     fig.patch.set_alpha(0)
     ax.patch.set_alpha(0)
-    # Cap covers SophiaG's late-blow-up spike (max ~459) without
-    # flattening the descent region. 60 reads on log y as "this is
-    # where it diverged" without dominating the panel.
+    # y-cap for clipping post-blow-up NaN spikes before pooling.
+    # 60 was generous; data's actual max post-cap is ~52 (SophiaG
+    # at lr≈0.44).
     Y_CAP = 60.0
     size_label, size_slug = MODELS[0]
     _draw_panel(ax, size_label, size_slug, Y_CAP)
     ax.set_title('')  # slide heading already says "LR-finder — 2B"
-    ax.set_ylim(4.0, Y_CAP)
+    # Tightened y-axis: pooled curves bottom out at ~9.5 and the
+    # interesting blow-up shape lives in [9, 30]. Was (4, 60), which
+    # wasted half the panel on empty band below 8 and above 30.
+    ax.set_ylim(8.0, 30.0)
     ax.set_ylabel('training loss (log)')
     ax.legend(loc='upper left', framealpha=0)
     fig.tight_layout()
