@@ -799,8 +799,6 @@ flowchart TB
 
 ## The Restarts: At Scale, Failure is the Default
 
-Production pre-training is long, large, and routinely interrupted:
-
 - **Llama 3 405B** — 16K H100s · 54 days · **419** failures (≈ **1 every 3h**); 99% recovered via automation[^llama3]
 - **OPT-175B** — 35 manual restarts + 100+ cycled hosts in 2 mo on ~1K A100s[^opt]
 - **BLOOM-176B** — frequent loss spikes; embedding-norm + checkpoint cadence on 384 A100s × 3.5 mo[^bloom]
