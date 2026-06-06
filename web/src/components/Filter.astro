@@ -2,6 +2,19 @@
 import { docPages } from '@/utils/content'
 import type { MarkdownHeading } from 'astro'
 
+// MarkdownHeading.text preserves inline markup from the source — a
+// heading like `### \`<style>\` tag` lands here with the literal
+// `<style>` substring intact. That string then flowed into
+// data-value="…" below as `<style> tag`; the browser parser saw
+// the literal `<style>` and opened a real <style> element inside
+// the attribute, eating everything through the next </style> as
+// CSS. The visible result on pages that render Filter (e.g.
+// /posts/) is "no styles applied" for the entire downstream tree.
+//
+// Strip inline tags before the string lands in the attribute. JSX
+// interpolation handles the &/< escaping for us after that.
+const stripInlineTags = (s: string) => s.replace(/<\/?[a-zA-Z][^>]*>/g, '')
+
 const docHeadings = docPages
     .map((page) => ({
         headings:
@@ -193,8 +206,14 @@ const fontOptions = {
             <div id="search-results-container">
                 {
                     docHeadings.map(([id, header], i) => {
-                        const headerText =
+                        const headerTextRaw =
                             typeof header === 'string' ? header : header.text
+                        // Inline tags must be stripped before this
+                        // string lands in the page — otherwise a
+                        // heading like `### \`<style>\` tag` opens a
+                        // rogue <style> element inside data-value=…
+                        // and eats half the doc tree.
+                        const headerText = stripInlineTags(headerTextRaw)
 
                         return (
                             <a
