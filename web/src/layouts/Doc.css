@@ -21,14 +21,18 @@
     overflow-x: auto;
 }
 
-/* WebTUI's box-= utility sets `isolation: isolate` on every box element,
-   which creates a stacking context. That traps the footnote tooltip
-   (position: fixed, z-index: 1000) inside #doc-article so the sidebar's
-   own stacking context paints over it. Disable isolation here so the
-   tooltip can stack against the viewport. The article's box border
-   doesn't need its own context. */
+/* Keep WebTUI's `isolation: isolate` on #doc-article — the box
+   border's ::before draws at z-index: -1 and needs the article's
+   own stacking context to paint against. Without isolation, the
+   negative-z layer falls through to <html>, where html's opaque
+   background covers it and the article frame disappears.
+   The earlier "isolation: auto" hack (to free the footnote popover
+   from the article's stacking context) had to go. The popover
+   problem is solved instead by lifting the whole article above
+   the sidebar via a positive z-index. */
 #doc-article {
-    isolation: auto;
+    position: relative;
+    z-index: 1;
 }
 
 #doc-columns {
