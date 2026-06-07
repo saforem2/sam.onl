@@ -2022,7 +2022,18 @@ const articleSchema =
                 // page (Music / Projects / More). Strip any leading
                 // emoji-icon-+-space before comparing so e.g.
                 // "📓 Projects" still matches "projects".
-                const headingText = heading.textContent?.trim() ?? ''
+                //
+                // Ignore the `<a class="heading-anchor">` that rehype
+                // injects (renders as a literal "##"/"###"/etc.) — its
+                // textContent otherwise prefixes the heading and breaks
+                // the exact-label match.
+                const headingClone = heading.cloneNode(true) as HTMLElement
+                for (const a of headingClone.querySelectorAll(
+                    '.heading-anchor',
+                )) {
+                    a.remove()
+                }
+                const headingText = headingClone.textContent?.trim() ?? ''
                 const headingBare = headingText
                     .replace(
                         /^[\p{Emoji_Presentation}\p{Extended_Pictographic}️‍]+\s*/gu,

@@ -42,6 +42,10 @@ import Filter from '@/components/Filter.astro'
         white-space: nowrap;
         max-width: 100%;
         overflow: hidden;
+        /* Slightly smaller than body type — the nerd-font icons
+           render larger at the same em-size than text glyphs, so a
+           one-step shrink reads as proportional to the body. */
+        font-size: 0.85em;
         /* Float in the top-right corner of the page, like the old vim
            island. Anchored to the #intro container (which is
            position: relative) so it stays inside the page bounds. */
