@@ -510,13 +510,6 @@ const articleSchema =
         </row>
         <div id="vim-statusline">
             <!-- <span class="vsl-vim-icon">&#xe62b; </span> -->
-            <button
-                type="button"
-                id="vsl-menu-btn"
-                class="vsl-menu"
-                aria-label="Open command menu"
-                title="Open command menu">&#xf0c9;</button
-            >
             <span class="vsl-mode">NORMAL</span>
             <a
                 class="vsl-branch"
@@ -548,7 +541,12 @@ const articleSchema =
             <span class="vsl-spacer"></span>
             <span class="vsl-keys">
                 <span id="vsl-last-key"></span>
-                <button id="vsl-btn-q" tabindex="-1">?</button>
+                <button
+                    type="button"
+                    id="vsl-btn-q"
+                    aria-label="Open command menu"
+                    title="Open command menu (?)">?</button
+                >
             </span>
             <span class="vsl-clock">
                 <span id="vsl-clock-date"></span>
@@ -2007,9 +2005,9 @@ const articleSchema =
         if (btn) btn.style.color = ''
     })
 
-    // Statusline hamburger → command palette. Same surface as `?` / `:` /
-    // `Cmd+P`; the dialog itself lives in <Filter />.
-    document.getElementById('vsl-menu-btn')?.addEventListener('click', () => {
+    // Statusline `?` button → command palette. Same surface as `?` /
+    // `:` / `Cmd+P` keypresses; the dialog itself lives in <Filter />.
+    document.getElementById('vsl-btn-q')?.addEventListener('click', () => {
         const dlg = document.getElementById(
             'command-dialog',
         ) as HTMLDialogElement | null
