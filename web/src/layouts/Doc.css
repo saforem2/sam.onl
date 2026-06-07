@@ -56,6 +56,16 @@
         max-height: none !important;
         overflow: visible !important;
     }
+    /* WebTUI's box-= decoration draws a frame anchored to the article's
+       box. On mobile the article is allowed to be tall (`height: auto`
+       above) and the *page* scrolls, so only random slices of the frame
+       cross the viewport at any time — reads as the box "moving" as you
+       scroll. Hide the decoration on phones; desktop keeps the border
+       because the article scrolls internally there. */
+    #doc-article::before,
+    #doc-article::after {
+        display: none !important;
+    }
 }
 
 .figure-row {
