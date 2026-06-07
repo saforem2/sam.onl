@@ -73,6 +73,16 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
     height: 11ch;
     display: block;
   }
+  /* QR SVG ships with stroke="currentColor" but loaded as an <img> it
+     resolves to canvastext (black). Invert the pixels on dark themes
+     so the dark ink reads as white-on-dark. Applies to both QRs on
+     this deck (title + thanks). */
+  html[data-webtui-theme='custom-dark']
+    :is(.title-slide-qr, .thanks-qr) img,
+  html[data-webtui-theme='catppuccin']
+    :is(.title-slide-qr, .thanks-qr) img {
+    filter: invert(1);
+  }
   #title-slide .title-slide-qr span {
     font-size: 0.75em;
     color: var(--foreground1);
