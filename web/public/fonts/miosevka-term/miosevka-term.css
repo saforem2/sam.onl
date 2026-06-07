@@ -1,10 +1,11 @@
 /* Self-hosted mIosevka-Term WOFF2 — mirrored from samforeman.me on
- * 2026-06-07. Personal Iosevka build by Sam Foreman; "Term" variant
- * has tighter metrics suited to code/prose alike.
+ * 2026-06-07, then subset with pyftsubset against the site's glyph
+ * inventory + safety unicode ranges (same recipe as Iosevka).
  *
- * Not subset — upstream is already a personal build, and these only
- * load when the user picks "mIosevka-Term" in the command palette
- * (or selects "mIosevka-QP", which overlays Term onto code blocks).
+ * Total: ~488 KB across 4 weights, down from ~2 MB upstream.
+ * Layout features kept: calt, ccmp, locl, mark, mkmk, liga, kern,
+ * dlig, rclt, rlig. ss01-ss20 / cv01-cv99 stylistic variants and
+ * Iosevka's per-character toggles (VAAA, VSAA, etc.) dropped.
  */
 
 @font-face {

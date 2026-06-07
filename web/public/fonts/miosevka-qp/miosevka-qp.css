@@ -1,7 +1,12 @@
 /* Self-hosted mIosevka-QP WOFF2 — mirrored from samforeman.me on
- * 2026-06-07. Personal Iosevka "QP" (quasi-proportional) build by
- * Sam Foreman — proportional glyph widths for body text, with a
- * SemiCondensed variant for narrower passages.
+ * 2026-06-07, then subset with pyftsubset against the site's glyph
+ * inventory + safety unicode ranges (same recipe as Iosevka). The
+ * unsubsetted upstream is ~7.8 MB across 5 weights; this trim brings
+ * it down to ~616 KB.
+ *
+ * Layout features kept: calt, ccmp, locl, mark, mkmk, liga, kern,
+ * dlig, rclt, rlig. ss01-ss20 / cv01-cv99 stylistic variants and
+ * Iosevka's per-character toggles dropped.
  *
  * When selected as the site font, code/pre/kbd elements override to
  * mIosevka-Term so monospaced layout (codeblocks, ASCII art, tables)
