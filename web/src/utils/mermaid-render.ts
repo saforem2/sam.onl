@@ -537,15 +537,11 @@ export function initMermaid() {
             // FontFaceSet missing or rejected — render anyway.
         }
 
-        try {
-            await mermaid.run({ nodes })
-            stabilizeMermaidSvgLayout()
-        } catch (error) {
-            // Mermaid throws plain objects in some failure modes, so a
-            // bare `console.error(error)` logs `[object Object]` and
-            // hides which diagram broke. Surface the actual message
-            // (or JSON-stringify as a last resort) so the offending
-            // diagram is identifiable from the browser console.
+        // Render each node independently so one failure doesn't poison
+        // the batch — if e.g. stateDiagram-v2 dynamic-chunk fetch fails
+        // (vite "Outdated Optimize Dep" in dev), the flowcharts on the
+        // same page still render *and* get their post-process pass.
+        const logError = (error: unknown, node: HTMLElement) => {
             const err = error as { message?: string; str?: string } | undefined
             const detail =
                 err?.message ??
@@ -559,12 +555,23 @@ export function initMermaid() {
                     return String(error)
                 }
             })()
-            console.error(
-                'Mermaid rendering failed:',
-                detail || fallback,
+            console.error('Mermaid rendering failed:', detail || fallback, {
+                node,
                 error,
-            )
+            })
         }
+        await Promise.allSettled(
+            nodes.map(async (node) => {
+                try {
+                    await mermaid.run({ nodes: [node] })
+                } catch (error) {
+                    logError(error, node)
+                }
+            }),
+        )
+        // Always run the post-render pass — partial successes still need
+        // their inline-style overrides and interactive viewport wiring.
+        stabilizeMermaidSvgLayout()
     }
 
     render()
