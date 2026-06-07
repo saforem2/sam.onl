@@ -492,7 +492,21 @@ const canonical = `sam.onl${url}`
             const trigger = document.createElement('a')
             trigger.classList.add('footnote-popover-trigger')
             trigger.setAttribute('href', `#${id}`)
-            trigger.appendChild(sup.cloneNode(true))
+            // Clone the <sup>, then unwrap any inner <a> (the original GFM
+            // footnote ref). Leaving it produces nested anchors (outer
+            // trigger + inner ref), which both pick up the page's `a:hover`
+            // background — two overlapping rectangles where one should be.
+            const supClone = sup.cloneNode(true) as HTMLElement
+            supClone.querySelectorAll('a').forEach((innerAnchor) => {
+                while (innerAnchor.firstChild) {
+                    innerAnchor.parentNode!.insertBefore(
+                        innerAnchor.firstChild,
+                        innerAnchor,
+                    )
+                }
+                innerAnchor.remove()
+            })
+            trigger.appendChild(supClone)
             trigger.addEventListener('click', (e) => {
                 e.preventDefault()
                 const fnSlide = document.getElementById('footnotes')
