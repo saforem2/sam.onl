@@ -1176,8 +1176,24 @@ Questions?
     color: var(--foreground1);
     white-space: nowrap;
   }
+  /* Reserve horizontal space so the QR (top-right, position: absolute,
+     ~11ch wide + 4ch right offset) never overlaps the text that sits
+     at the same vertical range. Only the heading + the three thanks
+     paragraphs share QR rows; bullets and blockquote start below. */
+  #thanks .slide-inner > h2,
+  #thanks .slide-inner > h2 + p,
+  #thanks .slide-inner > h2 + p + p,
+  #thanks .slide-inner > h2 + p + p + p {
+    padding-inline-end: 18ch;
+  }
   @media (max-width: 768px) {
     #thanks .thanks-qr { display: none; }
+    #thanks .slide-inner > h2,
+    #thanks .slide-inner > h2 + p,
+    #thanks .slide-inner > h2 + p + p,
+    #thanks .slide-inner > h2 + p + p + p {
+      padding-inline-end: 0;
+    }
   }
 `}</style>
 
