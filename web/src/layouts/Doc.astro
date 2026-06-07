@@ -541,12 +541,6 @@ const articleSchema =
             <span class="vsl-spacer"></span>
             <span class="vsl-keys">
                 <span id="vsl-last-key"></span>
-                <button
-                    type="button"
-                    id="vsl-btn-q"
-                    aria-label="Open command menu"
-                    title="Open command menu (?)">?</button
-                >
             </span>
             <span class="vsl-clock">
                 <span id="vsl-clock-date"></span>
@@ -1981,17 +1975,12 @@ const articleSchema =
         setInterval(tick, 10_000)
     }
 
-    // Visual feedback for statusline keys + last-key indicator
-    const vslBtnQ = document.getElementById('vsl-btn-q')
+    // Last-key indicator in the statusline — show the last pressed
+    // single-char key for ~2 seconds. Helps signal which key triggered
+    // a navigation when the action isn't otherwise visible.
     const lastKeyEl = document.getElementById('vsl-last-key')
     let lastKeyTimer: ReturnType<typeof setTimeout> | null = null
-    const keyMap: Record<string, HTMLElement | null> = {
-        '?': vslBtnQ,
-    }
     window.addEventListener('keydown', (e) => {
-        const btn = keyMap[e.key]
-        if (btn) btn.style.color = 'var(--foreground0)'
-        // Show last pressed key
         if (lastKeyEl && e.key.length === 1) {
             lastKeyEl.textContent = e.key
             if (lastKeyTimer) clearTimeout(lastKeyTimer)
@@ -1999,19 +1988,6 @@ const articleSchema =
                 lastKeyEl.textContent = ''
             }, 2000)
         }
-    })
-    window.addEventListener('keyup', (e) => {
-        const btn = keyMap[e.key]
-        if (btn) btn.style.color = ''
-    })
-
-    // Statusline `?` button → command palette. Same surface as `?` /
-    // `:` / `Cmd+P` keypresses; the dialog itself lives in <Filter />.
-    document.getElementById('vsl-btn-q')?.addEventListener('click', () => {
-        const dlg = document.getElementById(
-            'command-dialog',
-        ) as HTMLDialogElement | null
-        dlg?.showModal()
     })
 </script>
 

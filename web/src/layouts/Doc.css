@@ -357,39 +357,6 @@ a.vsl-file:focus-visible {
             border-right: none;
         }
     }
-    /* Help button — opens the command palette. Styled as a kbd-style
-       keycap chip: subtle background + 1px border + small radius, the
-       same language as the keybind grid inside the palette itself.
-       Brightens on hover/focus to signal it's a real control. */
-    #vsl-btn-q {
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        box-sizing: border-box;
-        margin: 0 0.5ch;
-        padding: 0 0.75ch;
-        min-width: 2.5ch;
-        height: calc(1lh - 4px);
-        color: var(--foreground0);
-        background-color: var(--background2);
-        border: 1px solid var(--foreground2);
-        border-radius: 3px;
-        font-family: var(--font-family);
-        font-size: 0.9em;
-        font-weight: bold;
-        text-align: center;
-        transition:
-            color 100ms linear,
-            background-color 100ms linear,
-            border-color 100ms linear;
-        &:hover,
-        &:focus-visible {
-            color: var(--foreground0);
-            background-color: oklch(from var(--pink) l c h / 0.2);
-            border-color: var(--pink);
-        }
-    }
 }
 
 h1::before {
