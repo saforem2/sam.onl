@@ -298,9 +298,6 @@ const ICON_FILE = '\uf0f6'
 <nav box-="square" shear-="top" id="sidebar">
     <div id="sidebar-actions">
         <a href="/" class="sidebar-action" title="Home">&#xef85;</a>
-        <button id="theme-button-sidebar" class="sidebar-action" title="Theme"
-            >&#xe22b;</button
-        >
         <a
             href="https://github.com/saforem2/sam.onl"
             target="_blank"
@@ -1225,14 +1222,6 @@ const ICON_FILE = '\uf0f6'
                 ) !important;
             }
 
-            &#theme-button-sidebar:hover,
-            &#theme-button-sidebar:focus-visible {
-                color: var(--blue);
-                background-color: oklch(
-                    from var(--blue) l c h / 0.1
-                ) !important;
-            }
-
             &[href*='github']:hover,
             &[href*='github']:focus-visible {
                 color: var(--purple);
@@ -1491,15 +1480,6 @@ const ICON_FILE = '\uf0f6'
 
     // Sidebar action buttons
     document
-        .getElementById('theme-button-sidebar')
-        ?.addEventListener('click', () => {
-            const dialog = document.getElementById(
-                'theme-dialog',
-            ) as HTMLDialogElement | null
-            dialog?.showModal()
-        })
-
-    document
         .getElementById('search-button-sidebar')
         ?.addEventListener('click', () => {
             const dialog = document.getElementById(
@@ -1632,23 +1612,6 @@ const ICON_FILE = '\uf0f6'
             themeDialog?.close()
         })
     })
-
-    const themeDialog = document.getElementById(
-        'theme-dialog',
-    ) as HTMLDialogElement | null
-    document
-        .getElementById('theme-button-sidebar')
-        ?.addEventListener('click', () => {
-            themeDialog?.showModal()
-            requestAnimationFrame(() => {
-                const active = themeDialog?.querySelector(
-                    '.theme-option[aria-selected="true"]',
-                ) as HTMLElement | null
-                ;(
-                    active ?? themeDialog?.querySelector('.theme-option')
-                )?.focus()
-            })
-        })
 
     document
         .getElementById('search-button-sidebar')
