@@ -3,10 +3,14 @@ import Filter from '@/components/Filter.astro'
 ---
 
 <nav id="top-navbar">
+    <button
+        id="menu-button"
+        aria-label="Open command menu"
+        title="Open command menu"></button
+    >
     <a href="/" id="home-link"></a>
     <span id="nav-spacer"></span>
     <span id="nav-right">
-        <button id="theme-button"></button>
         <a
             id="github-button"
             href="https://github.com/saforem2/sam.onl"
@@ -18,6 +22,7 @@ import Filter from '@/components/Filter.astro'
     <details id="nav-dropdown">
         <summary></summary>
         <div class="nav-dropdown-content">
+            <button id="menu-button-mobile"> menu</button>
             <a href="/"> home</a>
             <a href="/posts"> posts</a>
             <a href="/talks">8 talks</a>
@@ -26,7 +31,6 @@ import Filter from '@/components/Filter.astro'
                 > github</a
             >
             <a href="/rss.xml" target="_blank"> rss</a>
-            <button id="theme-button-mobile"> theme</button>
         </div>
     </details>
 </nav>
@@ -84,6 +88,28 @@ import Filter from '@/components/Filter.astro'
         }
     }
 
+    #menu-button {
+        all: unset;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 1ch;
+        color: var(--foreground3);
+        cursor: pointer;
+        font-family: var(--font-family);
+        font-size: inherit;
+        line-height: inherit;
+        border-right: 1px solid var(--background2);
+        transition:
+            background-color 100ms linear,
+            color 100ms linear;
+
+        &:hover,
+        &:focus-visible {
+            background-color: oklch(from var(--pink) l c h / 0.15);
+            color: var(--pink);
+        }
+    }
+
     #home-link {
         all: unset;
         display: inline-flex;
@@ -124,12 +150,6 @@ import Filter from '@/components/Filter.astro'
             border-left: 1px solid var(--background2);
         }
 
-        #theme-button:hover,
-        #theme-button:focus-visible {
-            background-color: oklch(from var(--blue) l c h / 0.15);
-            color: var(--blue);
-        }
-
         #github-button:hover,
         #github-button:focus-visible {
             background-color: oklch(from var(--purple) l c h / 0.15);
@@ -155,6 +175,12 @@ import Filter from '@/components/Filter.astro'
 
     @media (max-width: 768px) {
         #nav-right {
+            display: none;
+        }
+
+        /* Desktop menu-button collapses into the mobile dropdown so the
+           bar doesn't have two ways to reach the command palette. */
+        #menu-button {
             display: none;
         }
 
@@ -214,6 +240,9 @@ import Filter from '@/components/Filter.astro'
     ) as HTMLDialogElement
     const themeDialog = document.getElementById(
         'theme-dialog',
+    ) as HTMLDialogElement
+    const commandDialog = document.getElementById(
+        'command-dialog',
     ) as HTMLDialogElement
 
     const root = document.documentElement
@@ -279,28 +308,13 @@ import Filter from '@/components/Filter.astro'
         })
     })
 
-    const focusThemeOption = () => {
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                const active = themeDialog.querySelector(
-                    '.theme-option[aria-selected="true"]',
-                ) as HTMLElement | null
-                ;(active ?? themeDialog.querySelector('.theme-option'))?.focus()
-            })
-        })
+    const openMenu = () => {
+        commandDialog?.showModal()
     }
-
-    document.getElementById('theme-button')?.addEventListener('click', () => {
-        themeDialog.showModal()
-        focusThemeOption()
-    })
-
+    document.getElementById('menu-button')?.addEventListener('click', openMenu)
     document
-        .getElementById('theme-button-mobile')
-        ?.addEventListener('click', () => {
-            themeDialog.showModal()
-            focusThemeOption()
-        })
+        .getElementById('menu-button-mobile')
+        ?.addEventListener('click', openMenu)
 
     document.getElementById('search-button')?.addEventListener('click', () => {
         searchDialog.showModal()
