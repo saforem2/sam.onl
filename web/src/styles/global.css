@@ -133,6 +133,16 @@
             'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace;
         --font-stack-victor-mono:
             'Victor Mono', 'JetBrains Mono', Menlo, Monaco, monospace;
+        /* Personal Iosevka builds from samforeman.me. Term is mono-
+           metrics for everything; QP is quasi-proportional for body
+           with Term overlaid on code blocks (see [data-mono-font]
+           rules below). */
+        --font-stack-miosevka-term:
+            'mIosevka-Term Web', 'Iosevka Web', 'JetBrains Mono', Menlo, Monaco,
+            monospace;
+        --font-stack-miosevka-qp:
+            'mIosevka-QP Web', 'Iosevka Web', 'JetBrains Mono', Menlo, Monaco,
+            monospace;
         --font-stack-system:
             ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas,
             'Liberation Mono', 'Courier New', monospace;
@@ -177,6 +187,19 @@
     }
     :root[data-mono-font='victor-mono'] {
         --font-stack: var(--font-stack-victor-mono);
+    }
+    :root[data-mono-font='miosevka-term'] {
+        --font-stack: var(--font-stack-miosevka-term);
+    }
+    :root[data-mono-font='miosevka-qp'] {
+        --font-stack: var(--font-stack-miosevka-qp);
+    }
+    /* mIosevka-QP is quasi-proportional — beautiful for prose, but
+       monospace alignment matters in codeblocks, kbd glyphs, and
+       inline `code`. Overlay Term (mono-metrics) onto those. */
+    :root[data-mono-font='miosevka-qp']
+        :is(pre, code, kbd, samp, var, .astro-code) {
+        font-family: var(--font-stack-miosevka-term), 'Symbols Nerd Font';
     }
     :root[data-mono-font='system'] {
         --font-stack: var(--font-stack-system);

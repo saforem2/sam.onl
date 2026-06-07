@@ -127,6 +127,13 @@ const ogImage = ogSlug
              "Victor Mono" in the font chip and the browser resolves
              font-family to it. Default Iosevka path pays no cost. -->
         <link href="/fonts/victor-mono/victor-mono.css" rel="stylesheet" />
+        <!-- mIosevka-Term / mIosevka-QP: personal Iosevka builds from
+             samforeman.me. Same lazy-load behavior as Victor Mono — the
+             @font-face decls cost ~2 KB up-front; the WOFF2 weights
+             only download when an element resolves to the family
+             (i.e. when the user picks them in the palette). -->
+        <link href="/fonts/miosevka-term/miosevka-term.css" rel="stylesheet" />
+        <link href="/fonts/miosevka-qp/miosevka-qp.css" rel="stylesheet" />
         <style is:inline>
             svg[id^='mermaid-'] {
                 display: block;
