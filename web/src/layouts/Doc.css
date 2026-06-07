@@ -231,14 +231,21 @@
 
 /* Hamburger menu button at the start of the statusline — mirrors the
    slide-deck `ss-menu` pattern. Opens the command palette
-   (#command-dialog); the same dialog reachable via `?` / `:` / `Cmd+P`. */
+   (#command-dialog); the same dialog reachable via `?` / `:` / `Cmd+P`.
+   Styled as a sibling chip to the NORMAL/branch indicators: tinted
+   pink at rest so it reads as a deliberate control (not a stray
+   glyph), and brightens on hover/focus. The 1ch right border carves
+   it visually away from the adjacent NORMAL chip so the two don't
+   read as one merged element. */
 .vsl-menu {
     all: unset;
     display: inline-flex;
     align-items: center;
-    padding: 0 1ch;
+    padding: 0 1.25ch;
     height: 1lh;
-    color: var(--foreground3);
+    color: oklch(from var(--pink) calc(l * var(--oklch-scale, 0.95)) c h);
+    background-color: oklch(from var(--pink) l c h / 0.15);
+    border-right: 1px solid var(--background0);
     cursor: pointer;
     font-family: var(--font-family);
     font-size: inherit;
@@ -249,8 +256,8 @@
 
     &:hover,
     &:focus-visible {
-        background-color: oklch(from var(--pink) l c h / 0.18);
-        color: var(--pink);
+        background-color: oklch(from var(--pink) l c h / 0.35);
+        color: var(--foreground0);
     }
 }
 
