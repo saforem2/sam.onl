@@ -3,11 +3,6 @@ import Filter from '@/components/Filter.astro'
 ---
 
 <nav id="top-navbar">
-    <button
-        id="menu-button"
-        aria-label="Open command menu"
-        title="Open command menu"></button
-    >
     <a href="/" id="home-link"></a>
     <span id="nav-spacer"></span>
     <span id="nav-right">
@@ -22,7 +17,6 @@ import Filter from '@/components/Filter.astro'
     <details id="nav-dropdown">
         <summary></summary>
         <div class="nav-dropdown-content">
-            <button id="menu-button-mobile"> menu</button>
             <a href="/"> home</a>
             <a href="/posts"> posts</a>
             <a href="/talks">8 talks</a>
@@ -85,28 +79,6 @@ import Filter from '@/components/Filter.astro'
             background-color: var(--focus-bg-strong);
             color: var(--focus-fg);
             text-decoration: none;
-        }
-    }
-
-    #menu-button {
-        all: unset;
-        display: inline-flex;
-        align-items: center;
-        padding: 0 1ch;
-        color: var(--foreground3);
-        cursor: pointer;
-        font-family: var(--font-family);
-        font-size: inherit;
-        line-height: inherit;
-        border-right: 1px solid var(--background2);
-        transition:
-            background-color 100ms linear,
-            color 100ms linear;
-
-        &:hover,
-        &:focus-visible {
-            background-color: oklch(from var(--pink) l c h / 0.15);
-            color: var(--pink);
         }
     }
 
@@ -178,12 +150,6 @@ import Filter from '@/components/Filter.astro'
             display: none;
         }
 
-        /* Desktop menu-button collapses into the mobile dropdown so the
-           bar doesn't have two ways to reach the command palette. */
-        #menu-button {
-            display: none;
-        }
-
         #nav-dropdown {
             display: block;
 
@@ -240,9 +206,6 @@ import Filter from '@/components/Filter.astro'
     ) as HTMLDialogElement
     const themeDialog = document.getElementById(
         'theme-dialog',
-    ) as HTMLDialogElement
-    const commandDialog = document.getElementById(
-        'command-dialog',
     ) as HTMLDialogElement
 
     const root = document.documentElement
@@ -307,14 +270,6 @@ import Filter from '@/components/Filter.astro'
             themeDialog.close()
         })
     })
-
-    const openMenu = () => {
-        commandDialog?.showModal()
-    }
-    document.getElementById('menu-button')?.addEventListener('click', openMenu)
-    document
-        .getElementById('menu-button-mobile')
-        ?.addEventListener('click', openMenu)
 
     document.getElementById('search-button')?.addEventListener('click', () => {
         searchDialog.showModal()

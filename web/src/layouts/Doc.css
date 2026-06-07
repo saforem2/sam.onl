@@ -219,6 +219,31 @@
     padding: 0 1ch;
 }
 
+/* Hamburger menu button at the start of the statusline — mirrors the
+   slide-deck `ss-menu` pattern. Opens the command palette
+   (#command-dialog); the same dialog reachable via `?` / `:` / `Cmd+P`. */
+.vsl-menu {
+    all: unset;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 1ch;
+    height: 1lh;
+    color: var(--foreground3);
+    cursor: pointer;
+    font-family: var(--font-family);
+    font-size: inherit;
+    line-height: inherit;
+    transition:
+        background-color 100ms linear,
+        color 100ms linear;
+
+    &:hover,
+    &:focus-visible {
+        background-color: oklch(from var(--pink) l c h / 0.18);
+        color: var(--pink);
+    }
+}
+
 .vsl-mode {
     background-color: oklch(
         from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.5
