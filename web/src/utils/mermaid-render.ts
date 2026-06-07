@@ -560,15 +560,18 @@ export function initMermaid() {
                 error,
             })
         }
-        await Promise.allSettled(
-            nodes.map(async (node) => {
-                try {
-                    await mermaid.run({ nodes: [node] })
-                } catch (error) {
-                    logError(error, node)
-                }
-            }),
-        )
+        // Serial, not parallel — mermaid 11.x generates SVG IDs from a
+        // per-run() counter snapshotted at call start. Two parallel run()s
+        // grab the same counter value and emit colliding SVG ids, which
+        // breaks downstream querySelector('svg[id^="mermaid-"]') lookups
+        // (only the first match wins, the rest never get viewport/controls).
+        for (const node of nodes) {
+            try {
+                await mermaid.run({ nodes: [node] })
+            } catch (error) {
+                logError(error, node)
+            }
+        }
         // Always run the post-render pass — partial successes still need
         // their inline-style overrides and interactive viewport wiring.
         stabilizeMermaidSvgLayout()
