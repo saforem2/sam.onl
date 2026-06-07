@@ -298,6 +298,12 @@ const ICON_FILE = '\uf0f6'
 <nav box-="square" shear-="top" id="sidebar">
     <div id="sidebar-actions">
         <a href="/" class="sidebar-action" title="Home">&#xef85;</a>
+        <button
+            id="command-button-sidebar"
+            class="sidebar-action"
+            title="Open command menu (?)"
+            aria-label="Open command menu">&#xf120;</button
+        >
         <a
             href="https://github.com/saforem2/sam.onl"
             target="_blank"
@@ -1245,6 +1251,14 @@ const ICON_FILE = '\uf0f6'
                     from var(--green) l c h / 0.1
                 ) !important;
             }
+
+            &#command-button-sidebar:hover,
+            &#command-button-sidebar:focus-visible {
+                color: var(--pink);
+                background-color: oklch(
+                    from var(--pink) l c h / 0.1
+                ) !important;
+            }
         }
     }
 
@@ -1484,6 +1498,15 @@ const ICON_FILE = '\uf0f6'
         ?.addEventListener('click', () => {
             const dialog = document.getElementById(
                 'search-dialog',
+            ) as HTMLDialogElement | null
+            dialog?.showModal()
+        })
+
+    document
+        .getElementById('command-button-sidebar')
+        ?.addEventListener('click', () => {
+            const dialog = document.getElementById(
+                'command-dialog',
             ) as HTMLDialogElement | null
             dialog?.showModal()
         })
