@@ -90,8 +90,16 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
 const rawBody = await Astro.slots.render('default')
 const readingTime = getReadingTime(rawBody.replace(/<[^>]*>/g, ''))
 
-// Find related posts (same parent directory)
-const currentPath = Astro.url.pathname
+// Find related posts (same parent directory).
+// Normalize a trailing slash before the startsWith checks so the
+// bare collection-index path ('/posts', '/talks') matches the same
+// branch as nested entries ('/posts/foo/'). Production normalizes
+// to '/posts/' via Netlify; Astro dev sometimes serves '/posts'
+// unredirected, which previously fell through and hid the
+// Related-posts block.
+const currentPath = Astro.url.pathname.endsWith('/')
+    ? Astro.url.pathname
+    : `${Astro.url.pathname}/`
 const isPost = currentPath.startsWith('/posts/')
 const isTalk = currentPath.startsWith('/talks/')
 
