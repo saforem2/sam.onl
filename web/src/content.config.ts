@@ -5,6 +5,10 @@ const docs = defineCollection({
     loader: glob({ pattern: '**/*.{md,mdx}', base: './src/pages' }),
     schema: z.object({
         title: z.string(),
+        // Shorter variant for tight contexts (e.g. the talks table on
+        // /about) where the canonical title overflows. Falls back to
+        // `title` when unset.
+        shortTitle: z.string().optional(),
         order: z.number().nullish(),
         date: z.coerce.date().optional(),
         description: z.string().optional(),

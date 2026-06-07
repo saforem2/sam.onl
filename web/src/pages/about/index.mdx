@@ -227,7 +227,7 @@ Pre-Training group] for the [AuroraGPT] project.
 {recentTalks.map((talk) => (
 <tr>
 <td>{(() => { const d = new Date(talk.data.date); return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`; })()}</td>
-<td><a href={`/${talk.id.replace(/\/index\.(mdx?|md)$/, '/')}`}>{talk.data.title}</a></td>
+<td><a href={`/${talk.id.replace(/\/index\.(mdx?|md)$/, '/')}`}>{talk.data.shortTitle ?? talk.data.title}</a></td>
 <td>{talk.data.location ?? ''}</td>
 </tr>
 ))}
