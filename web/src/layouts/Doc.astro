@@ -2049,7 +2049,12 @@ const articleSchema =
                     )
                     .trim()
                     .toLowerCase()
-                const collapseExact = new Set(['music', 'projects', 'more'])
+                const collapseExact = new Set([
+                    'music',
+                    'projects',
+                    'more',
+                    'detailed list',
+                ])
                 const collapseByDefault =
                     /\b(19|20)\d{2}\s*$/.test(headingText) ||
                     collapseExact.has(headingBare)
