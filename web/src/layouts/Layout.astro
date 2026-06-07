@@ -58,8 +58,12 @@ const ogImage = ogSlug
                 localStorage.setItem('webtui-theme', migratedTheme)
             }
 
-            // Mono-font preference (default: iosevka)
-            const storedMono = localStorage.getItem('mono-font') ?? 'iosevka'
+            // Mono-font preference (default: mIosevka-QP — quasi-
+            // proportional for prose; mIosevka-Term overlays onto code
+            // blocks via the [data-mono-font='miosevka-qp'] rule in
+            // global.css).
+            const storedMono =
+                localStorage.getItem('mono-font') ?? 'miosevka-qp'
             document.documentElement.setAttribute('data-mono-font', storedMono)
         </script>
         <meta name="generator" content={Astro.generator} />
@@ -108,32 +112,33 @@ const ogImage = ogSlug
         />
         <meta name="theme-color" content="#1c1c1c" />
 
-        <!-- Fonts: self-hosted, subset Iosevka WOFF2 (~668KB vs ~11MB
-             upstream). Preload only the Regular weight — the LCP-blocking
-             one; the rest swap in via font-display:swap as needed. See
-             web/public/fonts/iosevka/iosevka.css for the @font-face decls
-             and .claude/plans/velvety-twirling-glade.md for the
-             subsetting recipe. -->
+        <!-- Default font: mIosevka-QP (body prose) + mIosevka-Term
+             (code blocks, via the [data-mono-font='miosevka-qp']
+             override in global.css). Preload the Regular weight of
+             each so first paint doesn't FOUT through Iosevka or a
+             system fallback. -->
         <link
             rel="preload"
-            href="/fonts/iosevka/Iosevka-Regular.woff2"
+            href="/fonts/miosevka-qp/MIosevkaQp-Regular.woff2"
             as="font"
             type="font/woff2"
             crossorigin
         />
-        <link href="/fonts/iosevka/iosevka.css" rel="stylesheet" />
-        <!-- Victor Mono: alternate mono font selectable from the command
-             palette. NOT preloaded — only fetched when the user picks
-             "Victor Mono" in the font chip and the browser resolves
-             font-family to it. Default Iosevka path pays no cost. -->
-        <link href="/fonts/victor-mono/victor-mono.css" rel="stylesheet" />
-        <!-- mIosevka-Term / mIosevka-QP: personal Iosevka builds from
-             samforeman.me. Same lazy-load behavior as Victor Mono — the
-             @font-face decls cost ~2 KB up-front; the WOFF2 weights
-             only download when an element resolves to the family
-             (i.e. when the user picks them in the palette). -->
-        <link href="/fonts/miosevka-term/miosevka-term.css" rel="stylesheet" />
+        <link
+            rel="preload"
+            href="/fonts/miosevka-term/MIosevkaTerm-Regular.woff2"
+            as="font"
+            type="font/woff2"
+            crossorigin
+        />
         <link href="/fonts/miosevka-qp/miosevka-qp.css" rel="stylesheet" />
+        <link href="/fonts/miosevka-term/miosevka-term.css" rel="stylesheet" />
+        <!-- Alternate font CSS files — @font-face decls only, ~1-2 KB
+             each. Browsers fetch the actual WOFF2 weights only when an
+             element resolves to one of these families (i.e. only when
+             the user picks the font in the command palette). -->
+        <link href="/fonts/iosevka/iosevka.css" rel="stylesheet" />
+        <link href="/fonts/victor-mono/victor-mono.css" rel="stylesheet" />
         <style is:inline>
             svg[id^='mermaid-'] {
                 display: block;
