@@ -4,8 +4,9 @@ title: 🎙️ Talks
 ---
 
 import { getCollection } from 'astro:content'
+import { legacyTalks } from '@/legacy-talks'
 
-export const talks = (await getCollection('docs'))
+export const collected = (await getCollection('docs'))
     .filter(
         (doc) =>
             doc.id.startsWith('talks/') &&
@@ -14,11 +15,26 @@ export const talks = (await getCollection('docs'))
             doc.data.title &&
             !doc.data.draft,
     )
-    .sort(
-        (a, b) =>
-            new Date(b.data.date).getTime() -
-            new Date(a.data.date).getTime(),
-    )
+    .map((doc) => ({
+        date: new Date(doc.data.date),
+        title: doc.data.shortTitle ?? doc.data.title,
+        url: `/${doc.id.replace(/\/index\.(mdx?|md)$/, '/')}`,
+        location: doc.data.location ?? '',
+        locationUrl: doc.data.locationUrl ?? '',
+    }))
+
+export const legacy = legacyTalks.map((t) => ({
+    date: new Date(t.date),
+    title: t.title,
+    url: t.url,
+    location: t.location ?? '',
+    locationUrl: t.locationUrl ?? '',
+}))
+
+export const talks = [...collected, ...legacy].sort(
+    (a, b) => b.date.getTime() - a.date.getTime(),
+)
+
 
 Sam Foreman
 
@@ -31,11 +47,11 @@ Sam Foreman
 <table class="talks-table">
 <thead><tr><th>Date</th><th>Title</th><th>Location</th></tr></thead>
 <tbody>
-{talks.map((talk) => (
+{talks.map((t) => (
 <tr>
-<td>{(() => { const d = new Date(talk.data.date); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })()}</td>
-<td><a href={`/${talk.id.replace(/\/index\.(mdx?|md)$/, '/')}`}>{talk.data.shortTitle ?? talk.data.title}</a></td>
-<td>{talk.data.location ?? ''}</td>
+<td>{(() => { const d = t.date; return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`; })()}</td>
+<td><a href={t.url}>{t.title}</a></td>
+<td>{t.locationUrl ? (<a href={t.locationUrl} target="_blank" rel="noopener">{t.location}</a>) : t.location}</td>
 </tr>
 ))}
 </tbody>

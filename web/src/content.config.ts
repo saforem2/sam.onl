@@ -13,6 +13,9 @@ const docs = defineCollection({
         date: z.coerce.date().optional(),
         description: z.string().optional(),
         location: z.string().optional(),
+        /* Optional URL for the venue/event named in `location`. Renders
+           the location column on /talks/ as a link when set. */
+        locationUrl: z.string().url().optional(),
         draft: z.boolean().optional(),
     }),
 })
