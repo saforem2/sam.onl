@@ -1,0 +1,41 @@
+/* Self-hosted Victor Mono WOFF2 — upstream dist files from npm
+ * (victormono@1.5.6). Not subset because the upstream is already
+ * compact (~318KB across all 4 weights) and the savings from a
+ * site-specific subset would not justify the maintenance overhead.
+ *
+ * Browsers fetch these lazily only when an element resolves
+ * font-family to "Victor Mono" — i.e. only after a user picks it
+ * via the command palette. The default Iosevka path is unaffected.
+ */
+
+@font-face {
+    font-family: 'Victor Mono';
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    src: url('/fonts/victor-mono/VictorMono-Regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Victor Mono';
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+    src: url('/fonts/victor-mono/VictorMono-Bold.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Victor Mono';
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+    src: url('/fonts/victor-mono/VictorMono-Italic.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Victor Mono';
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+    src: url('/fonts/victor-mono/VictorMono-BoldItalic.woff2') format('woff2');
+}

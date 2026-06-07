@@ -131,6 +131,8 @@
            Switch the user-visible body font via [data-mono-font]. */
         --font-stack-iosevka:
             'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace;
+        --font-stack-victor-mono:
+            'Victor Mono', 'JetBrains Mono', Menlo, Monaco, monospace;
         --font-stack-system:
             ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas,
             'Liberation Mono', 'Courier New', monospace;
@@ -172,6 +174,9 @@
        keep rendering regardless of which mono font is chosen. */
     :root[data-mono-font='iosevka'] {
         --font-stack: var(--font-stack-iosevka);
+    }
+    :root[data-mono-font='victor-mono'] {
+        --font-stack: var(--font-stack-victor-mono);
     }
     :root[data-mono-font='system'] {
         --font-stack: var(--font-stack-system);
