@@ -338,12 +338,22 @@ import Filter from '@/components/Filter.astro'
         const gridRect = grid.getBoundingClientRect()
         const navHeight = navbar.getBoundingClientRect().height || 20
         const intro = document.getElementById('intro')
-        const introTop = intro ? intro.getBoundingClientRect().top : 0
+        const introRect = intro
+            ? intro.getBoundingClientRect()
+            : { top: 0, left: 0 }
+        // Both --navbar-top and --navbar-left are interpreted relative
+        // to the navbar's offsetParent (which is #intro — the closest
+        // positioned ancestor). Subtract #intro's own top-left so the
+        // numbers we hand back are local to that frame, not viewport-
+        // absolute. Critical when the page has a sidebar pushing
+        // #intro right of the viewport origin — without the subtract,
+        // the navbar overshoots by exactly the sidebar's width.
+        const left = gridRect.left - introRect.left
         // Sit 1lh above the grid top. nav's own height is 1lh, so the
         // navbar's bottom edge ends up exactly at gridTop - 1lh, and its
         // top edge at gridTop - 2lh. (1lh ≈ navHeight on this page.)
-        const top = gridRect.top - introTop - navHeight * 2
-        navbar.style.setProperty('--navbar-left', `${gridRect.left}px`)
+        const top = gridRect.top - introRect.top - navHeight * 2
+        navbar.style.setProperty('--navbar-left', `${left}px`)
         navbar.style.setProperty('--navbar-top', `${top}px`)
     }
     if (document.readyState === 'loading') {
