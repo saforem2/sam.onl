@@ -103,6 +103,14 @@ const payload = {
 
     .scaling-chart {
         margin-block: 1lh;
+        /* Inside a flex/grid parent (.figure-row uses flex) the
+           default min-content sizing collapses the chart to its
+           narrowest child (~legend pill width). Force a flexible
+           basis and zero min-width so the chart fills the column it
+           lives in and sits side-by-side with siblings. */
+        flex: 1 1 0;
+        min-width: 0;
+        width: 100%;
     }
     .scaling-chart-title {
         text-align: center;
