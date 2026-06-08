@@ -44,14 +44,32 @@ type ChartPayload = {
 
 function initChart(uPlot: any, mount: HTMLElement, payload: ChartPayload) {
     // CSS vars don't work inside canvas contexts; resolve to concrete
-    // colors via a hidden probe element whose `color` we then read off
-    // via getComputedStyle.
+    // colors and font strings via a hidden probe whose computed style
+    // we read off via getComputedStyle.
     const probe = document.createElement('span')
     probe.style.cssText = 'position:absolute;visibility:hidden;'
     document.body.appendChild(probe)
     function cssColor(varName: string, fallback = '#888') {
         probe.style.color = `var(--${varName}, ${fallback})`
         return getComputedStyle(probe).color
+    }
+    // Resolve --font-family into a concrete font-family string the
+    // canvas font shorthand can use. uPlot writes ctx.font directly,
+    // so passing the CSS var literally silently falls back to sans.
+    function bodyFontFamily(): string {
+        probe.style.fontFamily = ''
+        probe.style.fontFamily = 'var(--font-family)'
+        const resolved = getComputedStyle(probe).fontFamily
+        return resolved || 'monospace'
+    }
+    function fontStr(sizeEm: number, bold = false): string {
+        // Convert em to px against the body's current font-size so the
+        // canvas font shorthand gets an absolute size it can parse.
+        const bodyPx =
+            parseFloat(getComputedStyle(document.body).fontSize) || 16
+        const px = Math.round(sizeEm * bodyPx)
+        const weight = bold ? 'bold ' : ''
+        return `${weight}${px}px ${bodyFontFamily()}`
     }
 
     function formatValue(v: number, axisLabel?: string) {
@@ -108,21 +126,23 @@ function initChart(uPlot: any, mount: HTMLElement, payload: ChartPayload) {
             axes: [
                 {
                     label: payload.xLabel,
-                    labelSize: 24,
-                    labelFont: `bold 0.85em var(--font-family)`,
+                    labelSize: 32,
+                    labelFont: fontStr(1.0, true),
                     stroke: fg2,
                     grid: { stroke: bg2, width: 1 },
                     ticks: { stroke: fg3, width: 1 },
-                    font: `0.75em var(--font-family)`,
+                    font: fontStr(0.95),
+                    size: 40,
                 },
                 {
                     label: payload.yLabel,
-                    labelSize: 32,
-                    labelFont: `bold 0.85em var(--font-family)`,
+                    labelSize: 40,
+                    labelFont: fontStr(1.0, true),
                     stroke: fg2,
                     grid: { stroke: bg2, width: 1 },
                     ticks: { stroke: fg3, width: 1 },
-                    font: `0.75em var(--font-family)`,
+                    font: fontStr(0.95),
+                    size: 70,
                 },
             ],
             series: uSeries,
@@ -138,7 +158,7 @@ function initChart(uPlot: any, mount: HTMLElement, payload: ChartPayload) {
                     (u) => {
                         const ctx = u.ctx
                         ctx.save()
-                        ctx.font = `0.7em var(--font-family)`
+                        ctx.font = fontStr(0.85)
                         ctx.textAlign = 'center'
                         ctx.textBaseline = 'bottom'
                         for (const s of payload.series) {
