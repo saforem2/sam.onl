@@ -120,7 +120,12 @@ function initChart(uPlot: any, mount: HTMLElement, payload: ChartPayload) {
             width: mount.clientWidth || 600,
             height: payload.height,
             scales: {
-                x: payload.xLog ? { distr: 3, log: 10 } : {},
+                /* time: false on x — uPlot's default treats x values as
+                   Unix timestamps and formats axis labels as dates; our
+                   x is node count (8, 16, 32, …), so opt out. */
+                x: payload.xLog
+                    ? { time: false, distr: 3, log: 10 }
+                    : { time: false },
                 y: payload.yLog ? { distr: 3, log: 10 } : {},
             },
             axes: [
