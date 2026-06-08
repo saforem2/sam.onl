@@ -1208,11 +1208,16 @@ html[data-webtui-theme='catppuccin'] {
     --mantle: oklch(from #181825 l c h);
     --crust: oklch(from #11111b l c h);
 
-    /* Dark-theme heading swap: h2 reads blue, h3 reads green.
-       Overrides the shared [data-webtui-theme|='catppuccin'] block
-       above (which keeps peach/yellow for the latte/light variant). */
+    /* Heading palette. webtui's catppuccin pack assigns each h-level
+       a different palette color (h1=red, h2=peach, …); we deviate
+       for h2/h3 because blue/green read better on the mocha dark
+       background than peach/yellow. Other levels match the pack. */
+    --h1: var(--red);
     --h2: var(--blue);
     --h3: var(--green);
+    --h4: var(--green);
+    --h5: var(--blue);
+    --h6: var(--lavender);
 }
 
 /* Same dark-theme heading swap on the custom-dark theme. The
@@ -1222,6 +1227,32 @@ html[data-webtui-theme='catppuccin'] {
 html[data-webtui-theme='custom-dark'] {
     --h2: var(--blue);
     --h3: var(--green);
+}
+
+/* webtui's catppuccin pack paints h1-h6 with hardcoded palette refs
+   (h1=red, h2=peach, …) which makes the heading text disagree with
+   our `##`/`###` ::before prefixes (those use --h1..--h6 and pick up
+   the dark-theme overrides above — e.g. --h2=blue under catppuccin).
+   Force the heading text to follow --hN too so prefix + label match. */
+html[data-webtui-theme|='catppuccin'] {
+    h1 {
+        color: var(--h1);
+    }
+    h2 {
+        color: var(--h2);
+    }
+    h3 {
+        color: var(--h3);
+    }
+    h4 {
+        color: var(--h4);
+    }
+    h5 {
+        color: var(--h5);
+    }
+    h6 {
+        color: var(--h6);
+    }
 }
 
 html[data-webtui-theme='catppuccin-latte'] {
