@@ -576,6 +576,11 @@ const articleSchema =
         isUserTyping,
         vimFocusElement,
     } from '@/utils/vim'
+    /* Side-effect import. The runtime no-ops if no .scaling-chart-mount
+       elements exist; on pages that DO mount a chart, the uPlot library
+       is dynamically imported from inside that runtime so other doc
+       pages pay nothing beyond the small selector check. */
+    import '@/utils/scaling-chart'
 
     const mainItemQuery = '[tabindex="0"], a[href], summary'
     const queryString = `#main-content ${mainItemQuery}`
