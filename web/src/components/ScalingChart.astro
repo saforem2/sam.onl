@@ -68,9 +68,11 @@ const {
     height = 360,
 } = Astro.props as Props
 
-/* Serialize chart payload as JSON for the client script. Astro
-   re-serializes via the `define:vars` directive on the inline
-   <script>, which lets the script read it as a constant. */
+/* Serialize chart payload as JSON for the client runtime to read off
+   the mount element via `data-chart-payload`. Kept as a JSON-encoded
+   attribute (vs. define:vars on an inline script tag) so the runtime
+   can pick it up from any number of mounts without per-mount script
+   blocks. */
 const payload = {
     title,
     xLabel,
@@ -146,10 +148,10 @@ const payload = {
 </style>
 
 <script>
-    /* The client-side runtime lives in @/utils/scaling-chart so it can
-       be imported from MDX pages directly. Astro doesn't reliably
-       hoist component-level <script> tags into MDX-consuming pages
-       (only the CSS module survives), so the MDX page must include
-       both the component AND a side-effect import of the script. */
+    /* The client-side runtime lives in @/utils/scaling-chart so it
+       can be imported from MDX pages directly. Astro doesn't reliably
+       hoist this component's own script into MDX-consuming pages
+       (only the CSS module survives), so the layout-level
+       Doc.astro imports the runtime once for side-effects. */
     import '@/utils/scaling-chart'
 </script>
