@@ -50,6 +50,16 @@
         height: auto !important;
         max-height: none !important;
         overflow: visible !important;
+        /* CRITICAL: unset position on #main-content. On desktop it's
+           absolutely-positioned to fill the scroll-container. On mobile
+           an absolutely-positioned <main> is out of flow — its
+           children's heights don't contribute to its parent (#doc-
+           article), so the article collapses to ~700px and any content
+           past that (the prev/next chips, footnotes, etc.) overflows
+           past the viewport end, getting clipped behind the fixed
+           #mobile-nav at bottom: 0. Restore static positioning so the
+           document flow accounts for main's children. */
+        position: static !important;
     }
     #scroll-container {
         height: auto !important;
@@ -684,8 +694,20 @@ h6::before {
         content: none;
     }
 
+    /* `##`/`###` prefix — wiggles on direct heading hover. Pivot from
+       the right edge so the rotation tucks INTO the 1ch gap between
+       the prefix and the heading text instead of overflowing left and
+       getting clipped against the page margin. */
     .heading-anchor {
         text-decoration: none;
+        display: inline-block;
+        transform-origin: right center;
+        transition:
+            transform 180ms ease-out,
+            color 100ms linear;
+    }
+    &:hover > .heading-anchor {
+        transform: rotate(-6deg);
     }
 }
 
@@ -1186,6 +1208,18 @@ article {
 
     #mobile-nav {
         display: flex;
+    }
+
+    /* The fixed #mobile-nav at bottom: 0 overlays the last ~2lh of
+       the scroll area. Body is the scroll container on mobile but
+       its padding-bottom doesn't extend scrollHeight (well-known
+       browser quirk on body as scroll root) — so use margin-bottom
+       on the *last article child* instead. Margin extends scrollable
+       height; padding on body doesn't. 5lh = ~85px, clears the
+       nav (≈40px) + the [n]ext chip's box-shear bottom border + a
+       multi-line title wrap. */
+    #doc-pagination {
+        margin-block-end: 5lh;
     }
 
     #vim-statusline {
