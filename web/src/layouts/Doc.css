@@ -49,7 +49,17 @@
         display: block !important;
         height: auto !important;
         max-height: none !important;
-        overflow: visible !important;
+        /* Vertical: visible so the page (not the article) scrolls.
+           Horizontal: clip — caps the article + main at viewport
+           width so an unbreakable child (long <pre> line with
+           white-space: pre, a chunky inline-code chip with no wrap
+           point) can't push the parent past viewport and clip every
+           paragraph's right edge. With max-width: 100vw + overflow-x:
+           clip, code-blocks resolve their `max-width: 100%` against
+           viewport and their own `overflow-x: auto` kicks in (scroll
+           inside the pre, not the page). */
+        overflow-y: visible !important;
+        overflow-x: clip !important;
         /* CRITICAL: unset position on #main-content. On desktop it's
            absolutely-positioned to fill the scroll-container. On mobile
            an absolutely-positioned <main> is out of flow — its
@@ -60,11 +70,16 @@
            #mobile-nav at bottom: 0. Restore static positioning so the
            document flow accounts for main's children. */
         position: static !important;
+        max-width: 100vw !important;
+        min-width: 0 !important;
     }
     #scroll-container {
         height: auto !important;
         max-height: none !important;
-        overflow: visible !important;
+        overflow-y: visible !important;
+        overflow-x: clip !important;
+        max-width: 100vw !important;
+        min-width: 0 !important;
     }
     /* WebTUI's box-= decoration draws a frame anchored to the article's
        box. On mobile the article is allowed to be tall (`height: auto`
