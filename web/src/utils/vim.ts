@@ -99,10 +99,69 @@ export function applyVimCursorHighlight(element: HTMLElement) {
     range.setStart(textNode, firstNonWhitespace)
     range.setEnd(textNode, firstNonWhitespace + 1)
 
+    /* Match the cursor block's background to the focused element's
+       own color (link tint, etc.) instead of always painting it
+       foreground0. ::highlight(vim) can't inherit per-range so we
+       publish the values as CSS vars on :root and let the highlight
+       pseudo-rule read them. */
+    setVimCursorColorsFromElement(element)
+
     vimHighlightRange = range
     vimHighlightVisible = true
     renderVimHighlight()
     startVimCursorBlink()
+}
+
+function setVimCursorColorsFromElement(element: HTMLElement) {
+    const cs = getComputedStyle(element)
+    const root = getComputedStyle(document.documentElement)
+    const isLink = element.tagName === 'A'
+
+    // Walk up the DOM to find the nearest non-transparent rendered
+    // background. The focused element is often a link/image chip
+    // inside a widget that paints a tinted background on the parent
+    // (green now-playing widget, callout, etc.); using page-bg as the
+    // cursor's text color (`fg`) would make the cursor character
+    // invisible against that tint. The actual rendered backdrop is
+    // what we need to contrast against.
+    const effectiveBg =
+        resolveEffectiveBackground(element) ||
+        root.getPropertyValue('--background0').trim() ||
+        '#fff'
+
+    // Body links use a "reverse video" focus style: bg = var(--url)
+    // (pink in dark theme). If we set the cursor bg to the link's
+    // *current* text color we'd get a faint page-bg block — invisible
+    // against the link's pink fill. Resolve --url (the link's at-rest
+    // color) instead. For non-links, invert the element's own text
+    // color against its effective background.
+    let bg: string
+    if (isLink) {
+        bg =
+            root.getPropertyValue('--url').trim() ||
+            root.getPropertyValue('--accent').trim() ||
+            cs.color
+    } else {
+        bg = cs.color || 'var(--foreground0)'
+    }
+    document.documentElement.style.setProperty('--vim-cursor-bg', bg)
+    document.documentElement.style.setProperty('--vim-cursor-fg', effectiveBg)
+}
+
+/** Walk parents until we find a background-color that's actually
+ *  rendered (non-transparent, non-zero alpha). Returns the css color
+ *  string or null if everything up to <html> is transparent. */
+function resolveEffectiveBackground(element: HTMLElement): string | null {
+    let cur: HTMLElement | null = element
+    while (cur && cur !== document.documentElement) {
+        const bg = getComputedStyle(cur).backgroundColor
+        // Match `rgba(…, 0)` and `transparent`; everything else counts.
+        if (bg && bg !== 'transparent' && !/rgba?\(.*,\s*0\)/.test(bg)) {
+            return bg
+        }
+        cur = cur.parentElement
+    }
+    return null
 }
 
 export function vimFocusElement(element: HTMLElement) {
