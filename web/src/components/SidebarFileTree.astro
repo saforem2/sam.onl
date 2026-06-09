@@ -1253,8 +1253,18 @@ const ICON_FILE = '\uf0f6'
                against background0 (opaque, ~18% accent) so the box-=
                border on the parent nav doesn't bleed through on
                hover/focus the way an alpha overlay would. */
+            /* Per-button accent rules: extend each selector to also
+               match vim-focused state ([data-vim-focused='true']:focus)
+               so j/k navigation gets the same color treatment as
+               mouse hover or keyboard tab-focus. Without the vim
+               selector, vim-focus fires the base hover rule (gets
+               foreground0 + shadow) but the per-button color override
+               doesn't apply — the chip shows the wrong color and the
+               vim-cursor (which reads cs.color) inherits the default
+               --chip-accent (pink) instead of the chip's family. */
             &[href='/']:hover,
-            &[href='/']:focus-visible {
+            &[href='/']:focus-visible,
+            &[href='/'][data-vim-focused='true']:focus {
                 --chip-accent: var(--blue);
                 /* Pin to --blue (not --accent) so the icon matches
                    the blue-mixed background. The other buttons all
@@ -1271,7 +1281,8 @@ const ICON_FILE = '\uf0f6'
             }
 
             &[href*='github']:hover,
-            &[href*='github']:focus-visible {
+            &[href*='github']:focus-visible,
+            &[href*='github'][data-vim-focused='true']:focus {
                 --chip-accent: var(--purple);
                 color: var(--purple);
                 background-color: color-mix(
@@ -1283,7 +1294,8 @@ const ICON_FILE = '\uf0f6'
             }
 
             &[href*='rss']:hover,
-            &[href*='rss']:focus-visible {
+            &[href*='rss']:focus-visible,
+            &[href*='rss'][data-vim-focused='true']:focus {
                 --chip-accent: var(--orange);
                 color: var(--orange);
                 background-color: color-mix(
@@ -1295,7 +1307,8 @@ const ICON_FILE = '\uf0f6'
             }
 
             &#search-button-sidebar:hover,
-            &#search-button-sidebar:focus-visible {
+            &#search-button-sidebar:focus-visible,
+            &#search-button-sidebar[data-vim-focused='true']:focus {
                 --chip-accent: var(--green);
                 color: var(--green);
                 background-color: color-mix(
@@ -1307,7 +1320,8 @@ const ICON_FILE = '\uf0f6'
             }
 
             &#command-button-sidebar:hover,
-            &#command-button-sidebar:focus-visible {
+            &#command-button-sidebar:focus-visible,
+            &#command-button-sidebar[data-vim-focused='true']:focus {
                 --chip-accent: var(--pink);
                 color: var(--pink);
                 background-color: color-mix(
