@@ -261,11 +261,8 @@
         --font-stack: var(--font-stack-system);
     }
     ::highlight(vim) {
-        background-color: color-mix(
-            in oklab,
-            var(--foreground0) 40%,
-            transparent
-        );
+        background-color: var(--foreground0);
+        color: var(--background0);
     }
 
     /* Native text selection — match the active theme accent so the
