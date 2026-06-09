@@ -115,37 +115,28 @@ export function applyVimCursorHighlight(element: HTMLElement) {
 function setVimCursorColorsFromElement(element: HTMLElement) {
     const cs = getComputedStyle(element)
     const root = getComputedStyle(document.documentElement)
-    const isLink = element.tagName === 'A'
 
-    // Walk up the DOM to find the nearest non-transparent rendered
-    // background. The focused element is often a link/image chip
-    // inside a widget that paints a tinted background on the parent
-    // (green now-playing widget, callout, etc.); using page-bg as the
-    // cursor's text color (`fg`) would make the cursor character
-    // invisible against that tint. The actual rendered backdrop is
-    // what we need to contrast against.
-    const effectiveBg =
+    // Terminal reverse-video. The cursor block bg is whatever color
+    // the focused element's text/icon is currently painted in
+    // (`cs.color`) — that color already contrasts against its own
+    // backdrop (the hover/focus rule made sure of it), so the cursor
+    // automatically adopts the right family per chip: github → purple,
+    // home → blue, email → red, etc. The cursor's character color
+    // is the rendered backdrop the chip sits on, walked up parents to
+    // find the first non-transparent ancestor (so chips inside a
+    // tinted widget — green now-playing, callouts — contrast against
+    // the widget's bg, not the page bg). The previous link-only
+    // `--url` pin made every link's cursor blue regardless of chip
+    // accent — wrong for tinted chip rows.
+    const bg =
+        cs.color || root.getPropertyValue('--foreground0').trim() || '#000'
+    const fg =
         resolveEffectiveBackground(element) ||
         root.getPropertyValue('--background0').trim() ||
         '#fff'
 
-    // Body links use a "reverse video" focus style: bg = var(--url)
-    // (pink in dark theme). If we set the cursor bg to the link's
-    // *current* text color we'd get a faint page-bg block — invisible
-    // against the link's pink fill. Resolve --url (the link's at-rest
-    // color) instead. For non-links, invert the element's own text
-    // color against its effective background.
-    let bg: string
-    if (isLink) {
-        bg =
-            root.getPropertyValue('--url').trim() ||
-            root.getPropertyValue('--accent').trim() ||
-            cs.color
-    } else {
-        bg = cs.color || 'var(--foreground0)'
-    }
     document.documentElement.style.setProperty('--vim-cursor-bg', bg)
-    document.documentElement.style.setProperty('--vim-cursor-fg', effectiveBg)
+    document.documentElement.style.setProperty('--vim-cursor-fg', fg)
 }
 
 /** Walk parents until we find a background-color that's actually
