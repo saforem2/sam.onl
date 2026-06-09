@@ -113,48 +113,48 @@ export function applyVimCursorHighlight(element: HTMLElement) {
 }
 
 function setVimCursorColorsFromElement(element: HTMLElement) {
-    const root = getComputedStyle(document.documentElement)
+    // Defer the read by two animation frames. We're called synchronously
+    // right after element.focus() + setAttribute('data-vim-focused',…),
+    // but at that moment getComputedStyle still returns the AT-REST
+    // values — the browser hasn't run a style recompute for the new
+    // :focus / data-vim-focused state yet. One rAF flushes the recompute;
+    // a second guarantees the computed values reflect it. Without this,
+    // we'd cache the pre-focus color (gray) instead of the focus-state
+    // accent.
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            const root = getComputedStyle(document.documentElement)
+            const cs = getComputedStyle(element)
+            const pageBg =
+                root.getPropertyValue('--background0').trim() || '#fff'
+            const text =
+                cs.color ||
+                root.getPropertyValue('--foreground0').trim() ||
+                '#000'
 
-    // Terminal reverse-video — but read both colors STRAIGHT FROM
-    // the browser's computed styles rather than tracking CSS-variable
-    // cascades. Whatever the focused element is *actually painted in*
-    // (after all the hover/focus/inherited rules resolve) is exactly
-    // what we want to invert for the cursor block.
-    //
-    // The cursor block paints in the element's effective background
-    // color (so when the user hovers a green-tinted spotify chip,
-    // the cursor block goes green; when a purple github chip, purple;
-    // etc.). The cursor character is the element's text color (which
-    // already contrasts against that background by definition — the
-    // chip's hover rule made it so).
-    //
-    // This sidesteps every CSS-variable / @layer / specificity puzzle
-    // we'd otherwise have to thread — the browser already did the
-    // work, we just read the answer.
-    const cs = getComputedStyle(element)
-    const pageBg = root.getPropertyValue('--background0').trim() || '#fff'
-    const text =
-        cs.color || root.getPropertyValue('--foreground0').trim() || '#000'
+            // Two cases:
+            //  1. Element has its OWN painted background (a chip with a
+            //     hover tint, a callout, etc.) — cursor block = chip's
+            //     bg, character = chip's text color. Reads as a
+            //     translucent flash on the chip's own surface.
+            //  2. Element has NO own bg (a plain prose link inside a
+            //     <p>) — cursor block in the element's bg would be
+            //     invisible against the resolved page bg. Flip: cursor
+            //     block = element's text color (which DOES contrast),
+            //     character = page bg. Reads as inverted text.
+            const ownBg = cs.backgroundColor
+            const hasOwnBg =
+                ownBg &&
+                ownBg !== 'transparent' &&
+                !/rgba?\(.*,\s*0\s*\)/.test(ownBg)
 
-    // Two cases:
-    //  1. Element has its OWN painted background (a chip with a hover
-    //     tint, a callout, etc.) — cursor block = chip's bg, character
-    //     = chip's text color. Reads as a translucent flash on the
-    //     chip's own surface.
-    //  2. Element has NO own bg (a plain prose link inside a <p>) —
-    //     cursor block in the element's bg would be invisible against
-    //     the (resolved) page bg. Flip: cursor block = element's text
-    //     color (which DOES contrast with the page), character = page
-    //     bg. Reads as inverted text.
-    const ownBg = cs.backgroundColor
-    const hasOwnBg =
-        ownBg && ownBg !== 'transparent' && !/rgba?\(.*,\s*0\s*\)/.test(ownBg)
+            const bg = hasOwnBg ? ownBg : text
+            const fg = hasOwnBg ? text : pageBg
 
-    const bg = hasOwnBg ? ownBg : text
-    const fg = hasOwnBg ? text : pageBg
-
-    document.documentElement.style.setProperty('--vim-cursor-bg', bg)
-    document.documentElement.style.setProperty('--vim-cursor-fg', fg)
+            document.documentElement.style.setProperty('--vim-cursor-bg', bg)
+            document.documentElement.style.setProperty('--vim-cursor-fg', fg)
+        })
+    })
 }
 
 /** Walk parents until we find a background-color that's actually
