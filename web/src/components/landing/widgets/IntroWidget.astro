@@ -309,11 +309,67 @@ const { variant, total, home = false } = Astro.props
         a {
             text-decoration: none !important;
             padding-inline: 1ch;
+            color: var(--foreground1);
             background-color: oklch(
                 from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
                     0.1
             );
+            transition:
+                color 0.12s linear,
+                background-color 0.12s linear;
         }
+    }
+
+    /* Per-button accent: each social link gets a brand-family color on
+       hover / focus / vim-focus. The vim cursor reads
+       getComputedStyle(focused).color as its background, so making each
+       link paint in its accent color here is what drives the cursor's
+       per-button color match (purple on github, sky on bluesky, etc.).
+       Kept OUTSIDE the .iw-social-links {} nesting block because
+       Lightning CSS's nesting parser silently drops attribute+
+       pseudo-class compound selectors when they're nested without an
+       explicit `&` — using top-level descendant selectors gets them
+       into the build reliably.
+       `!important` because there's an upstream `body a` rule in the
+       base layer using relative-color syntax that — even though it
+       SHOULD lose to a higher-specificity unlayered rule — appears
+       to silently invalidate the entire color cascade for these
+       anchors. !important sidesteps the cascade mystery entirely. */
+    .iw-social-links a[href*='github']:hover,
+    .iw-social-links a[href*='github']:focus-visible,
+    .iw-social-links a[href*='github'][data-vim-focused='true'] {
+        color: var(--purple) !important;
+        background-color: oklch(from var(--purple) l c h / 0.12);
+    }
+    .iw-social-links a[href*='bsky']:hover,
+    .iw-social-links a[href*='bsky']:focus-visible,
+    .iw-social-links a[href*='bsky'][data-vim-focused='true'] {
+        color: var(--sky, var(--blue)) !important;
+        background-color: oklch(from var(--sky, var(--blue)) l c h / 0.12);
+    }
+    .iw-social-links a[href*='twitter']:hover,
+    .iw-social-links a[href*='twitter']:focus-visible,
+    .iw-social-links a[href*='twitter'][data-vim-focused='true'] {
+        color: var(--blue) !important;
+        background-color: oklch(from var(--blue) l c h / 0.12);
+    }
+    .iw-social-links a[href*='scholar.google']:hover,
+    .iw-social-links a[href*='scholar.google']:focus-visible,
+    .iw-social-links a[href*='scholar.google'][data-vim-focused='true'] {
+        color: var(--red) !important;
+        background-color: oklch(from var(--red) l c h / 0.12);
+    }
+    .iw-social-links a[href*='linkedin']:hover,
+    .iw-social-links a[href*='linkedin']:focus-visible,
+    .iw-social-links a[href*='linkedin'][data-vim-focused='true'] {
+        color: var(--sapphire, var(--blue)) !important;
+        background-color: oklch(from var(--sapphire, var(--blue)) l c h / 0.12);
+    }
+    .iw-social-links a[href^='mailto']:hover,
+    .iw-social-links a[href^='mailto']:focus-visible,
+    .iw-social-links a[href^='mailto'][data-vim-focused='true'] {
+        color: var(--orange) !important;
+        background-color: oklch(from var(--orange) l c h / 0.12);
     }
 
     [is-='separator'] {
