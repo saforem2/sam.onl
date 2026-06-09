@@ -260,24 +260,9 @@
     :root[data-mono-font='system'] {
         --font-stack: var(--font-stack-system);
     }
-    /* Vim cursor block. ::highlight() can't inherit per-range, so the
-       vim.ts runtime publishes the focused element's *effective*
-       background color as --vim-cursor-bg on :root just before the
-       highlight is applied — cursor over a green spotify chip reads
-       green, over a purple github chip reads purple, etc. The
-       cursor character paints in the element's own text color
-       (--vim-cursor-fg), so the cursor block is essentially a
-       translucent reverse-video flash of whatever the user is
-       hovering. Falls back to a neutral pair until the runtime
-       writes the vars.
-
-       0.9 opacity gives the block a slight see-through quality so
-       the underlying text glyph remains readable through it on
-       narrow chips (icon buttons especially). */
     ::highlight(vim) {
-        background-color: var(--vim-cursor-bg, var(--foreground0));
-        color: var(--vim-cursor-fg, var(--background0));
-        opacity: 0.9;
+        background-color: var(--foreground0);
+        color: var(--background0);
     }
 
     /* Native text selection — match the active theme accent so the

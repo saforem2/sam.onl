@@ -99,78 +99,10 @@ export function applyVimCursorHighlight(element: HTMLElement) {
     range.setStart(textNode, firstNonWhitespace)
     range.setEnd(textNode, firstNonWhitespace + 1)
 
-    /* Match the cursor block's background to the focused element's
-       own color (link tint, etc.) instead of always painting it
-       foreground0. ::highlight(vim) can't inherit per-range so we
-       publish the values as CSS vars on :root and let the highlight
-       pseudo-rule read them. */
-    setVimCursorColorsFromElement(element)
-
     vimHighlightRange = range
     vimHighlightVisible = true
     renderVimHighlight()
     startVimCursorBlink()
-}
-
-function setVimCursorColorsFromElement(element: HTMLElement) {
-    // Defer the read by two animation frames. We're called synchronously
-    // right after element.focus() + setAttribute('data-vim-focused',…),
-    // but at that moment getComputedStyle still returns the AT-REST
-    // values — the browser hasn't run a style recompute for the new
-    // :focus / data-vim-focused state yet. One rAF flushes the recompute;
-    // a second guarantees the computed values reflect it. Without this,
-    // we'd cache the pre-focus color (gray) instead of the focus-state
-    // accent.
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            const root = getComputedStyle(document.documentElement)
-            const cs = getComputedStyle(element)
-            const pageBg =
-                root.getPropertyValue('--background0').trim() || '#fff'
-            const text =
-                cs.color ||
-                root.getPropertyValue('--foreground0').trim() ||
-                '#000'
-
-            // Two cases:
-            //  1. Element has its OWN painted background (a chip with a
-            //     hover tint, a callout, etc.) — cursor block = chip's
-            //     bg, character = chip's text color. Reads as a
-            //     translucent flash on the chip's own surface.
-            //  2. Element has NO own bg (a plain prose link inside a
-            //     <p>) — cursor block in the element's bg would be
-            //     invisible against the resolved page bg. Flip: cursor
-            //     block = element's text color (which DOES contrast),
-            //     character = page bg. Reads as inverted text.
-            const ownBg = cs.backgroundColor
-            const hasOwnBg =
-                ownBg &&
-                ownBg !== 'transparent' &&
-                !/rgba?\(.*,\s*0\s*\)/.test(ownBg)
-
-            const bg = hasOwnBg ? ownBg : text
-            const fg = hasOwnBg ? text : pageBg
-
-            document.documentElement.style.setProperty('--vim-cursor-bg', bg)
-            document.documentElement.style.setProperty('--vim-cursor-fg', fg)
-        })
-    })
-}
-
-/** Walk parents until we find a background-color that's actually
- *  rendered (non-transparent, non-zero alpha). Returns the css color
- *  string or null if everything up to <html> is transparent. */
-function resolveEffectiveBackground(element: HTMLElement): string | null {
-    let cur: HTMLElement | null = element
-    while (cur && cur !== document.documentElement) {
-        const bg = getComputedStyle(cur).backgroundColor
-        // Match `rgba(…, 0)` and `transparent`; everything else counts.
-        if (bg && bg !== 'transparent' && !/rgba?\(.*,\s*0\)/.test(bg)) {
-            return bg
-        }
-        cur = cur.parentElement
-    }
-    return null
 }
 
 export function vimFocusElement(element: HTMLElement) {
