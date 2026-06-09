@@ -113,29 +113,33 @@ export function applyVimCursorHighlight(element: HTMLElement) {
 }
 
 function setVimCursorColorsFromElement(element: HTMLElement) {
-    const cs = getComputedStyle(element)
     const root = getComputedStyle(document.documentElement)
 
-    // Terminal reverse-video. The cursor block bg is whatever color
-    // the focused element's text/icon is currently painted in
-    // (`cs.color`) — that color already contrasts against its own
-    // backdrop (the hover/focus rule made sure of it), so the cursor
-    // automatically adopts the right family per chip: github → purple,
-    // home → blue, email → red, etc. The cursor's character color
-    // is the rendered backdrop the chip sits on, walked up parents to
-    // find the first non-transparent ancestor (so chips inside a
-    // tinted widget — green now-playing, callouts — contrast against
-    // the widget's bg, not the page bg). The previous link-only
-    // `--url` pin made every link's cursor blue regardless of chip
-    // accent — wrong for tinted chip rows.
-    const bg =
-        cs.color || root.getPropertyValue('--foreground0').trim() || '#000'
-    const fg =
+    // Terminal reverse-video — but read both colors STRAIGHT FROM
+    // the browser's computed styles rather than tracking CSS-variable
+    // cascades. Whatever the focused element is *actually painted in*
+    // (after all the hover/focus/inherited rules resolve) is exactly
+    // what we want to invert for the cursor block.
+    //
+    // The cursor block paints in the element's effective background
+    // color (so when the user hovers a green-tinted spotify chip,
+    // the cursor block goes green; when a purple github chip, purple;
+    // etc.). The cursor character is the element's text color (which
+    // already contrasts against that background by definition — the
+    // chip's hover rule made it so).
+    //
+    // This sidesteps every CSS-variable / @layer / specificity puzzle
+    // we'd otherwise have to thread — the browser already did the
+    // work, we just read the answer.
+    const effectiveBg =
         resolveEffectiveBackground(element) ||
         root.getPropertyValue('--background0').trim() ||
         '#fff'
+    const cs = getComputedStyle(element)
+    const fg =
+        cs.color || root.getPropertyValue('--foreground0').trim() || '#000'
 
-    document.documentElement.style.setProperty('--vim-cursor-bg', bg)
+    document.documentElement.style.setProperty('--vim-cursor-bg', effectiveBg)
     document.documentElement.style.setProperty('--vim-cursor-fg', fg)
 }
 
