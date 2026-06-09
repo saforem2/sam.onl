@@ -131,15 +131,29 @@ function setVimCursorColorsFromElement(element: HTMLElement) {
     // This sidesteps every CSS-variable / @layer / specificity puzzle
     // we'd otherwise have to thread — the browser already did the
     // work, we just read the answer.
-    const effectiveBg =
-        resolveEffectiveBackground(element) ||
-        root.getPropertyValue('--background0').trim() ||
-        '#fff'
     const cs = getComputedStyle(element)
-    const fg =
+    const pageBg = root.getPropertyValue('--background0').trim() || '#fff'
+    const text =
         cs.color || root.getPropertyValue('--foreground0').trim() || '#000'
 
-    document.documentElement.style.setProperty('--vim-cursor-bg', effectiveBg)
+    // Two cases:
+    //  1. Element has its OWN painted background (a chip with a hover
+    //     tint, a callout, etc.) — cursor block = chip's bg, character
+    //     = chip's text color. Reads as a translucent flash on the
+    //     chip's own surface.
+    //  2. Element has NO own bg (a plain prose link inside a <p>) —
+    //     cursor block in the element's bg would be invisible against
+    //     the (resolved) page bg. Flip: cursor block = element's text
+    //     color (which DOES contrast with the page), character = page
+    //     bg. Reads as inverted text.
+    const ownBg = cs.backgroundColor
+    const hasOwnBg =
+        ownBg && ownBg !== 'transparent' && !/rgba?\(.*,\s*0\s*\)/.test(ownBg)
+
+    const bg = hasOwnBg ? ownBg : text
+    const fg = hasOwnBg ? text : pageBg
+
+    document.documentElement.style.setProperty('--vim-cursor-bg', bg)
     document.documentElement.style.setProperty('--vim-cursor-fg', fg)
 }
 
