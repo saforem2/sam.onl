@@ -302,7 +302,7 @@ const ICON_FILE = '\uf0f6'
             id="command-button-sidebar"
             class="sidebar-action"
             title="Open command menu (?)"
-            aria-label="Open command menu">&#xf120;</button
+            aria-label="Open command menu">&#xf0e7;</button
         >
         <a
             href="https://github.com/saforem2/sam.onl"
@@ -1142,9 +1142,17 @@ const ICON_FILE = '\uf0f6'
         position: relative;
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        /* overflow:visible (not hidden) so the action-row chips can
+           lift on hover without getting clipped against the box-=
+           border. The scrolling category list has its own
+           overflow-y:auto, so removing the outer clip is safe. */
+        overflow: visible;
         flex-grow: 1;
         padding-inline: 1ch;
+        /* Tiny top inset so the chips clear the box-= top border
+           when they lift on hover (translate -1px + 2px shadow needs
+           ~3-4px headroom). */
+        padding-block-start: 4px;
         color: var(--foreground2);
         font-family: var(--font-family);
         line-height: 1.25;
@@ -1168,96 +1176,146 @@ const ICON_FILE = '\uf0f6'
 
     #sidebar-actions {
         display: flex;
-        gap: 0;
-        /* Slightly smaller than sidebar body type — the nerd-font icons
-           render visibly larger than text at the same em-size, so a
-           one-step shrink reads as proportional. Matches the floating
-           navbar on the landing page (NavbarMinimal.astro). */
-        font-size: 0.92em;
-        /* Subtle TUI "key bar" frame: faint background + 1px outer border
-           with hairline dividers between buttons. Background is an opaque
-           mix of bg0 + foreground0 so the WebTUI box-= border behind the
-           sidebar doesn't bleed through. */
-        background-color: color-mix(
-            in oklch,
-            var(--background0),
-            var(--foreground0) 5%
-        );
-        border: 1px solid
-            color-mix(in oklch, var(--background0), var(--foreground0) 18%);
+        /* Hairline gap between chips so each reads as its own cell
+           without going full TUI-vacuum. */
+        gap: 1px;
+        /* Match the sidebar body type — earlier I shrunk this 0.85em on
+           the theory that nerd-font glyphs look bigger than text at the
+           same em-size, but with the keycap chips around them the icons
+           read as a bit cramped. Letting them sit at full body size. */
+        font-size: 1em;
         position: relative;
         z-index: 10;
         width: fit-content;
+        /* Bottom-only margin — top headroom comes from #sidebar's
+           padding-block-start so the chip's lift + shadow have room
+           to render without crossing the box-= border. */
+        margin-block-end: 0.25lh;
 
         .sidebar-action {
             all: unset;
             display: inline-flex;
             align-items: center;
-            padding: 0 1ch;
-            color: var(--foreground3);
+            justify-content: center;
+            box-sizing: border-box;
+            /* Square keycap, tight padding. Hairline border + opaque
+               fill (color-mix, not alpha) so the WebTUI box-= border
+               on the parent nav doesn't bleed through. No border-radius
+               — matches the TUI box-drawing language used elsewhere. */
+            padding: 0 0.5ch;
+            min-width: 2.5ch;
+            height: 1lh;
+            color: var(--foreground2);
+            background-color: color-mix(
+                in oklch,
+                var(--background0),
+                var(--foreground0) 5%
+            );
+            border: 1px solid
+                color-mix(in oklch, var(--background0), var(--foreground0) 18%);
             cursor: pointer;
             font-family: var(--font-family);
             font-size: inherit;
             line-height: inherit;
             text-decoration: none;
-            /* Hairline divider between adjacent buttons; suppressed on the
-               last button so the trailing edge meets the outer border
-               cleanly. */
-            border-right: 1px solid oklch(from var(--foreground0) l c h / 0.1);
+            /* Default hover-shadow tint — overridden per-button below.
+               Setting the CSS var here lets the shared `:hover/:focus`
+               transform/shadow rules below resolve to the right hue
+               without duplicating the box-shadow line in every button
+               selector. */
+            --chip-accent: var(--foreground2);
             transition:
-                color 0.15s,
-                background-color 0.15s;
+                color 0.1s linear,
+                background-color 0.1s linear,
+                border-color 0.1s linear,
+                transform 0.1s ease-out,
+                box-shadow 0.1s ease-out;
 
-            &:last-child {
-                border-right: none;
-            }
-
+            /* Tactile hover: nudge 1px up-left and drop a hard-offset
+               TUI-style shadow in the per-button accent color so the
+               chip reads as a physical key being lifted. */
             &:hover,
             &:focus-visible,
             &[data-vim-focused='true']:focus {
                 color: var(--foreground0);
-                background-color: var(--background1) !important;
-                box-shadow: none !important;
+                transform: translate(-1px, -1px);
+                box-shadow: 2px 2px 0 0 var(--chip-accent);
             }
 
+            /* Pressed: snap back to flat with a smaller shadow so the
+               click reads as a key bottoming out. */
+            &:active {
+                transform: translate(0, 0);
+                box-shadow: 1px 1px 0 0 var(--chip-accent);
+            }
+
+            /* Per-button accent tints. Background uses color-mix
+               against background0 (opaque, ~18% accent) so the box-=
+               border on the parent nav doesn't bleed through on
+               hover/focus the way an alpha overlay would. */
             &[href='/']:hover,
             &[href='/']:focus-visible {
-                color: var(--accent, var(--blue));
-                background-color: oklch(
-                    from var(--blue) l c h / 0.1
+                --chip-accent: var(--blue);
+                /* Pin to --blue (not --accent) so the icon matches
+                   the blue-mixed background. The other buttons all
+                   use their named color for icon + bg + border as
+                   one family; --accent floats per-theme (e.g. red on
+                   catppuccin) and was clashing with the blue tint. */
+                color: var(--blue);
+                background-color: color-mix(
+                    in srgb,
+                    var(--background0),
+                    var(--blue) 18%
                 ) !important;
+                border-color: var(--blue) !important;
             }
 
             &[href*='github']:hover,
             &[href*='github']:focus-visible {
+                --chip-accent: var(--purple);
                 color: var(--purple);
-                background-color: oklch(
-                    from var(--purple) l c h / 0.1
+                background-color: color-mix(
+                    in srgb,
+                    var(--background0),
+                    var(--purple) 18%
                 ) !important;
+                border-color: var(--purple) !important;
             }
 
             &[href*='rss']:hover,
             &[href*='rss']:focus-visible {
+                --chip-accent: var(--orange);
                 color: var(--orange);
-                background-color: oklch(
-                    from var(--orange) l c h / 0.1
+                background-color: color-mix(
+                    in srgb,
+                    var(--background0),
+                    var(--orange) 18%
                 ) !important;
+                border-color: var(--orange) !important;
             }
 
             &#search-button-sidebar:hover,
             &#search-button-sidebar:focus-visible {
+                --chip-accent: var(--green);
                 color: var(--green);
-                background-color: oklch(
-                    from var(--green) l c h / 0.1
+                background-color: color-mix(
+                    in srgb,
+                    var(--background0),
+                    var(--green) 18%
                 ) !important;
+                border-color: var(--green) !important;
             }
 
             &#command-button-sidebar:hover,
             &#command-button-sidebar:focus-visible {
+                --chip-accent: var(--pink);
                 color: var(--pink);
-                background-color: oklch(
-                    from var(--pink) l c h / 0.1
+                background-color: color-mix(
+                    in srgb,
+                    var(--background0),
+                    var(--pink) 18%
                 ) !important;
+                border-color: var(--pink) !important;
             }
         }
     }
