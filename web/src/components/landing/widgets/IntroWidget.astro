@@ -314,21 +314,59 @@ const { variant, total, home = false } = Astro.props
     .iw-social-links {
         display: flex;
         flex-wrap: wrap;
-        gap: 2ch;
+        /* Tighter gap — chips read as a key row instead of a sparse
+           list. Matches the .flex-container.icon-flex pattern on
+           /about/. */
+        gap: 1ch;
         margin-top: auto;
 
         a,
         button {
             text-decoration: none !important;
-            padding-inline: 1ch;
-            color: var(--foreground1);
-            background-color: oklch(
-                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
-                    0.1
+            box-sizing: border-box;
+            padding: 0 1ch;
+            line-height: 1lh;
+            height: 1lh;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.5ch;
+            /* Keycap chip — opaque color-mix bg + hairline border, no
+               radius. Matches .flex-container.icon-flex on /about/. */
+            background-color: color-mix(
+                in srgb,
+                var(--background0),
+                var(--foreground0) 5%
             );
+            border: 1px solid
+                color-mix(in srgb, var(--background0), var(--foreground0) 18%);
+            color: var(--foreground1);
+            /* Per-platform hover rules below override --chip-accent so
+               the shared lift+shadow declaration resolves to the right
+               hue without duplicating box-shadow lines. */
+            --chip-accent: var(--foreground2);
             transition:
-                color 0.12s linear,
-                background-color 0.12s linear;
+                background-color 0.1s linear,
+                color 0.1s linear,
+                border-color 0.1s linear,
+                transform 0.1s ease-out,
+                box-shadow 0.1s ease-out;
+        }
+
+        a:hover,
+        a:focus-visible,
+        a[data-vim-focused='true'],
+        button:hover,
+        button:focus-visible,
+        button[data-vim-focused='true'] {
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0 0 var(--chip-accent);
+        }
+
+        a:active,
+        button:active {
+            transform: translate(0, 0);
+            box-shadow: 1px 1px 0 0 var(--chip-accent);
         }
     }
 
@@ -347,63 +385,118 @@ const { variant, total, home = false } = Astro.props
        SHOULD lose to a higher-specificity unlayered rule — appears
        to silently invalidate the entire color cascade for these
        anchors. !important sidesteps the cascade mystery entirely. */
+    .iw-social-links a[href='/']:hover,
+    .iw-social-links a[href='/']:focus-visible,
+    .iw-social-links a[href='/'][data-vim-focused='true'] {
+        --chip-accent: var(--accent, var(--blue));
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--accent, var(--blue)) 18%
+        ) !important;
+        border-color: var(--accent, var(--blue)) !important;
+        color: var(--accent, var(--blue)) !important;
+    }
     .iw-social-links a[href*='github']:hover,
     .iw-social-links a[href*='github']:focus-visible,
     .iw-social-links a[href*='github'][data-vim-focused='true'] {
-        color: var(--purple) !important;
-        background-color: oklch(from var(--purple) l c h / 0.12);
+        --chip-accent: #6e5494;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            #6e5494 18%
+        ) !important;
+        border-color: #6e5494 !important;
+        color: #6e5494 !important;
     }
     .iw-social-links a[href*='bsky']:hover,
     .iw-social-links a[href*='bsky']:focus-visible,
     .iw-social-links a[href*='bsky'][data-vim-focused='true'] {
-        color: var(--sky, var(--blue)) !important;
-        background-color: oklch(from var(--sky, var(--blue)) l c h / 0.12);
+        --chip-accent: #0085ff;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            #0085ff 18%
+        ) !important;
+        border-color: #0085ff !important;
+        color: #0085ff !important;
     }
     .iw-social-links a[href*='twitter']:hover,
     .iw-social-links a[href*='twitter']:focus-visible,
     .iw-social-links a[href*='twitter'][data-vim-focused='true'] {
-        color: var(--blue) !important;
-        background-color: oklch(from var(--blue) l c h / 0.12);
+        --chip-accent: #1da1f2;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            #1da1f2 18%
+        ) !important;
+        border-color: #1da1f2 !important;
+        color: #1da1f2 !important;
     }
     .iw-social-links a[href*='scholar.google']:hover,
     .iw-social-links a[href*='scholar.google']:focus-visible,
     .iw-social-links a[href*='scholar.google'][data-vim-focused='true'] {
-        color: var(--red) !important;
-        background-color: oklch(from var(--red) l c h / 0.12);
+        --chip-accent: #4285f4;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            #4285f4 18%
+        ) !important;
+        border-color: #4285f4 !important;
+        color: #4285f4 !important;
     }
     .iw-social-links a[href*='linkedin']:hover,
     .iw-social-links a[href*='linkedin']:focus-visible,
     .iw-social-links a[href*='linkedin'][data-vim-focused='true'] {
-        color: var(--sapphire, var(--blue)) !important;
-        background-color: oklch(from var(--sapphire, var(--blue)) l c h / 0.12);
+        --chip-accent: #0077b5;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            #0077b5 18%
+        ) !important;
+        border-color: #0077b5 !important;
+        color: #0077b5 !important;
     }
     .iw-social-links a[href^='mailto']:hover,
     .iw-social-links a[href^='mailto']:focus-visible,
     .iw-social-links a[href^='mailto'][data-vim-focused='true'] {
-        color: var(--orange) !important;
-        background-color: oklch(from var(--orange) l c h / 0.12);
-    }
-    .iw-social-links a[href='/']:hover,
-    .iw-social-links a[href='/']:focus-visible,
-    .iw-social-links a[href='/'][data-vim-focused='true'] {
-        color: var(--blue) !important;
-        background-color: oklch(from var(--blue) l c h / 0.12);
+        --chip-accent: #ea4335;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            #ea4335 18%
+        ) !important;
+        border-color: #ea4335 !important;
+        color: #ea4335 !important;
     }
     .iw-social-links a[href='/rss.xml']:hover,
     .iw-social-links a[href='/rss.xml']:focus-visible,
     .iw-social-links a[href='/rss.xml'][data-vim-focused='true'] {
+        --chip-accent: var(--orange);
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--orange) 18%
+        ) !important;
+        border-color: var(--orange) !important;
         color: var(--orange) !important;
-        background-color: oklch(from var(--orange) l c h / 0.12);
     }
     .iw-social-links button.iw-social-search-btn {
-        all: unset;
         cursor: pointer;
+        font-family: var(--font-family);
+        font-size: inherit;
     }
     .iw-social-links button.iw-social-search-btn:hover,
     .iw-social-links button.iw-social-search-btn:focus-visible,
     .iw-social-links button.iw-social-search-btn[data-vim-focused='true'] {
+        --chip-accent: var(--green);
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--green) 18%
+        ) !important;
+        border-color: var(--green) !important;
         color: var(--green) !important;
-        background-color: oklch(from var(--green) l c h / 0.12);
     }
 
     [is-='separator'] {
