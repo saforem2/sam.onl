@@ -351,13 +351,14 @@ import Filter from '@/components/Filter.astro'
         // from the grid edge so the chips don't kiss the corner glyph
         // of the intro-widget's box-= border.
         const left = gridRect.left - introRect.left + 16
-        // Position so navbar's vertical midline lands on the intro-
-        // widget's box-= top border. The widget's getBoundingClientRect
-        // top IS the outer border edge — pull navbar up by half its
-        // own height so its center sits on that line.
+        // Sit the navbar so its top edge lands on the intro-widget's
+        // box-= top border line, then nudge up 1px so the chip border
+        // visually merges with the widget border (matches the sidebar-
+        // action chip behavior). The chips' opaque backgrounds will
+        // visually cut the border line where they overlay it.
         const targetEl = introWidget ?? grid
         const targetRect = targetEl.getBoundingClientRect()
-        const top = targetRect.top - introRect.top - navHeight / 2
+        const top = targetRect.top - introRect.top - 1
         navbar.style.setProperty('--navbar-left', `${left}px`)
         navbar.style.setProperty('--navbar-top', `${top}px`)
     }
