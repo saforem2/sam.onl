@@ -604,6 +604,13 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
                 grid-row: auto;
                 max-height: none;
                 flex-shrink: 0;
+                /* Snap each widget into focus as the user scrolls
+                   (restores the older multi-section home behavior).
+                   scroll-snap-type is set on <html> below — putting
+                   it on the grid wouldn't fire because the grid
+                   isn't the scrolling element here, the page is. */
+                scroll-snap-align: start;
+                scroll-margin-block-start: 1lh;
             }
 
             #intro-widget {
@@ -677,6 +684,17 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
             grid-column: 3 / 5;
             grid-row: 3;
             max-height: 20lh;
+        }
+    }
+
+    /* Mobile snap-scroll for the home page (v21). Apply to <html>
+       because the page is what actually scrolls — putting it on the
+       grid doesn't fire since the grid isn't the scroll container in
+       mobile mode. Scoped to pages that render the v21 grid via :has()
+       so it doesn't leak to other landing variants. */
+    @media (max-width: 1024px) {
+        html:has(#widgets-grid.intro-v21) {
+            scroll-snap-type: y proximity;
         }
     }
 </style>
