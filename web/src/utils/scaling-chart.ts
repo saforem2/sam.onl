@@ -183,23 +183,23 @@ function initChart(uPlot: any, mount: HTMLElement, payload: ChartPayload) {
             axes: [
                 {
                     label: payload.xLabel,
-                    labelSize: 32,
-                    labelFont: fontStr(1.0, true),
+                    labelSize: 28,
+                    labelFont: fontStr(0.85, true),
                     stroke: fg2,
                     grid: { stroke: gridColor, width: 1 },
                     ticks: { stroke: gridColor, width: 1 },
-                    font: fontStr(0.95),
-                    size: 40,
+                    font: fontStr(0.8),
+                    size: 36,
                 },
                 {
                     label: payload.yLabel,
-                    labelSize: 40,
-                    labelFont: fontStr(1.0, true),
+                    labelSize: 32,
+                    labelFont: fontStr(0.85, true),
                     stroke: fg2,
                     grid: { stroke: gridColor, width: 1 },
                     ticks: { stroke: gridColor, width: 1 },
-                    font: fontStr(0.95),
-                    size: 70,
+                    font: fontStr(0.8),
+                    size: 60,
                 },
             ],
             series: uSeries,
@@ -215,7 +215,7 @@ function initChart(uPlot: any, mount: HTMLElement, payload: ChartPayload) {
                     (u) => {
                         const ctx = u.ctx
                         ctx.save()
-                        ctx.font = fontStr(1.0, true)
+                        ctx.font = fontStr(0.85, true)
                         ctx.textAlign = 'center'
                         ctx.textBaseline = 'bottom'
                         for (const s of payload.series) {
