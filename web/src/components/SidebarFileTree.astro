@@ -1150,10 +1150,12 @@ const ICON_ABOUT = '\u{f1028}'
         overflow: visible;
         flex-grow: 1;
         padding-inline: 1ch;
-        /* Tiny top inset so the chips clear the box-= top border
-           when they lift on hover (translate -1px + 2px shadow needs
-           ~3-4px headroom). */
-        padding-block-start: 4px;
+        /* shear-="top" on the nav already zeroes the top padding so
+           the action chips can sit on the box-= border line (like the
+           "top-left" label in webtui box examples). overflow:visible
+           above lets the chips overhang above the border without
+           getting clipped on hover. */
+        padding-block-start: 0;
         color: var(--foreground2);
         font-family: var(--font-family);
         line-height: 1.25;
@@ -1180,21 +1182,17 @@ const ICON_ABOUT = '\u{f1028}'
         /* Flush — chip borders touch so the action bar reads as a
            continuous key row, not five separate buttons. */
         gap: 0;
-        /* Nerd-font glyphs render visibly larger than text at the same
-           em-size, but a one-step shrink here over-corrects. 0.95em
-           leaves room inside the keycap while keeping the icons big
-           enough to recognize at a glance. */
         font-size: 0.95em;
         position: relative;
         z-index: 10;
         width: fit-content;
-        /* Pull the chip row up so its vertical midline bisects the
-           parent nav's box-= top border (overflow:visible on #sidebar
-           keeps the overhang from being clipped). 4px counteracts the
-           padding-block-start: 4px on #sidebar that gives the lift +
-           shadow headroom; 0.75lh is half the chip height (1lh content
-           + 0.5lh block padding). */
-        margin-block-start: calc(-0.75lh - 4px);
+        /* Anchor the chip row to the top-left corner of the parent
+           nav's box-= border (just like the "top-left" label in webtui
+           box examples). shear-="top" on the nav kills top padding, so
+           a 0 top-margin sits the chips' top edge on the border line.
+           Slight inline nudge so they don't touch the corner. */
+        margin-block-start: 0;
+        margin-inline-start: 1ch;
         margin-block-end: 0.25lh;
 
         .sidebar-action {
@@ -1211,14 +1209,8 @@ const ICON_ABOUT = '\u{f1028}'
                border on the parent nav doesn't bleed through. No
                border-radius — matches the TUI box-drawing language
                used elsewhere. */
-            padding: 0.25lh 0.75ch;
+            padding: 0.2lh 0.75ch;
             min-width: 3ch;
-            /* MD nerd-font glyphs have descender-heavy metrics that
-               make line-height: 1 hang them low in the line-box. Add a
-               nudge up so the ink center sits at the chip's geometric
-               middle. */
-            padding-block-start: 0.3lh;
-            padding-block-end: 0.2lh;
             color: var(--foreground2);
             background-color: color-mix(
                 in oklch,
