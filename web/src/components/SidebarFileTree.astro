@@ -1199,12 +1199,16 @@ const ICON_ABOUT = '\u{f1028}'
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
-            /* Square keycap, tight padding. Hairline border + opaque
-               fill (color-mix, not alpha) so the WebTUI box-= border
-               on the parent nav doesn't bleed through. No border-radius
-               — matches the TUI box-drawing language used elsewhere. */
-            padding: 0 0.5ch;
-            min-width: 2.5ch;
+            /* Square keycap. Padding and min-width are sized for the
+               Material-Design nerd-font glyphs, which are visibly wider
+               than the Font-Awesome line-art icons we used before — too
+               tight and they touch the chip border. Hairline border +
+               opaque fill (color-mix, not alpha) so the WebTUI box-=
+               border on the parent nav doesn't bleed through. No
+               border-radius — matches the TUI box-drawing language
+               used elsewhere. */
+            padding: 0 0.75ch;
+            min-width: 3ch;
             height: 1lh;
             color: var(--foreground2);
             background-color: color-mix(
