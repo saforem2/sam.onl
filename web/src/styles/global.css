@@ -505,14 +505,6 @@
 @layer components {
     p {
         color: var(--text);
-        /* Blank line between paragraphs — without it, consecutive <p>
-           elements stack flush which reads as a wall of text. Matches
-           the vim-style "blank line after each section" spacing used
-           elsewhere on doc pages. */
-        margin-block: 0 1lh;
-    }
-    p:last-child {
-        margin-block-end: 0;
     }
 
     details[is-~='accordion'] > summary {
