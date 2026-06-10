@@ -982,6 +982,28 @@ html[data-webtui-theme='catppuccin-latte'] .astro-code span {
     background-color: var(--pre-background) !important;
 }
 
+/* sam.onl Light/Dark Shiki themes — palette-matched syntax highlighting.
+   Activates --shiki-sam-light-* / --shiki-sam-dark-* CSS vars baked into
+   the rendered code blocks at build time by shikiConfig.themes. */
+html[data-webtui-theme='sam-light'] .astro-code,
+html[data-webtui-theme='sam-light'] .astro-code span {
+    color: var(--shiki-sam-light) !important;
+    font-style: var(--shiki-sam-light-font-style) !important;
+    font-weight: var(--shiki-sam-light-font-weight) !important;
+    text-decoration: var(--shiki-sam-light-text-decoration) !important;
+    --pre-background: var(--shiki-sam-light-bg, #f8f8f8);
+    background-color: var(--pre-background) !important;
+}
+html[data-webtui-theme='sam-dark'] .astro-code,
+html[data-webtui-theme='sam-dark'] .astro-code span {
+    color: var(--shiki-sam-dark) !important;
+    font-style: var(--shiki-sam-dark-font-style) !important;
+    font-weight: var(--shiki-sam-dark-font-weight) !important;
+    text-decoration: var(--shiki-sam-dark-text-decoration) !important;
+    --pre-background: var(--shiki-sam-dark-bg, #282828);
+    background-color: var(--pre-background) !important;
+}
+
 /* Code-block container: hugs content, no internal padding band.
    Half-line gap above and below so code blocks don't crowd
    surrounding text. (Was asymmetric 0.5lh top / 1lh bottom for

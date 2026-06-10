@@ -1,5 +1,6 @@
 @layer base {
-    [data-webtui-theme='custom-light'] {
+    [data-webtui-theme='custom-light'],
+    [data-webtui-theme='sam-light'] {
         --oklch-scale: 0.85;
         --pre-line-height: 1.3;
         --text: #666666;
@@ -91,7 +92,8 @@
         /* --blue: #8aadf4; */
     }
 
-    [data-webtui-theme='custom-dark'] {
+    [data-webtui-theme='custom-dark'],
+    [data-webtui-theme='sam-dark'] {
         --oklch-scale: 1.15;
         --pre-background: transparent;
         --pre-line-height: 1.3;
@@ -360,7 +362,8 @@
         --ansi-bright-cyan-bg: var(--ansi0);
     }
 
-    [data-webtui-theme|='custom'] {
+    [data-webtui-theme|='custom'],
+    [data-webtui-theme|='sam'] {
         scrollbar-color: oklch(from var(--accent) l c h / 0.4) transparent;
         scrollbar-width: thin;
 

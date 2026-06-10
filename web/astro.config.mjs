@@ -44,6 +44,13 @@ import rehypeTaskListInteractive from './src/utils/rehype-task-list-interactive.
 import { createHighlighter } from 'shiki'
 import { createCssVariablesTheme } from 'shiki'
 
+// In-house Shiki themes generated from the project palette. Live alongside
+// the prepackaged themes (min-light, one-dark-pro, catppuccin-*) — see the
+// shikiConfig.themes block below. JSON imports use Node's import-attributes
+// proposal, which Vite/Node 22+ support.
+import samLight from './src/shiki-themes/sam-light.json' with { type: 'json' }
+import samDark from './src/shiki-themes/sam-dark.json' with { type: 'json' }
+
 const oneLight = createCssVariablesTheme({
     name: 'one-light',
     variablePrefix: '--shiki',
@@ -58,7 +65,7 @@ const catpuccinMocha = createCssVariablesTheme({
     fontStyle: true,
 })
 const highlighter = await createHighlighter({
-    themes: [oneLight, catpuccinMocha],
+    themes: [oneLight, catpuccinMocha, samLight, samDark],
 })
 
 // import oneLight from 'shiki/themes/one-light.json'
@@ -313,6 +320,10 @@ export default defineConfig({
                 'custom-dark': 'one-dark-pro',
                 catppuccin: 'catppuccin-mocha',
                 'catppuccin-latte': 'catppuccin-latte',
+                // In-house themes generated from the project palette.
+                // Toggle via the theme picker → "sam-light" / "sam-dark".
+                'sam-light': samLight,
+                'sam-dark': samDark,
             },
             colorReplacements: {
                 'one-light': {
