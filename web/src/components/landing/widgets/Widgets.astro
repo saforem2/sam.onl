@@ -712,12 +712,12 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
 </style>
 
 <script>
-    /* Mark the most-visible v21 widget as data-scroll-active so it
-       picks up the active-state styling (accent border + foreground
-       color shift) above. Active = the widget whose top crossed the
-       viewport's 50% mark most recently but is still on screen.
-       Runs on every scroll; cheap because it's just a 5-element
-       reduce. */
+    /* Mark the most-visible v21 widget as data-scroll-active. Active =
+       the widget with the largest pixel overlap against a "focus band"
+       running from the top of the viewport to 60% down. This naturally
+       handles tall widgets like lastfm that fill the band but never
+       have a top in (-tinyrange, midline) — they still own the band
+       because they overlap it fully. */
     function markActiveWidget() {
         const grid = document.querySelector(
             '#widgets-grid.intro-v21',
@@ -728,21 +728,21 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
         )
         if (!widgets.length) return
 
-        const midline = window.innerHeight / 2
+        const bandTop = 0
+        const bandBottom = window.innerHeight * 0.6
         let best: HTMLElement | null = null
-        let bestTop = -Infinity
+        let bestOverlap = -1
         for (const w of widgets) {
-            const top = w.getBoundingClientRect().top
-            // Pick the widget whose top is highest (= most-scrolled)
-            // but still above the viewport midline. That widget owns
-            // the upper half of the viewport.
-            if (top <= midline && top > bestTop) {
-                bestTop = top
+            const r = w.getBoundingClientRect()
+            const overlap = Math.max(
+                0,
+                Math.min(r.bottom, bandBottom) - Math.max(r.top, bandTop),
+            )
+            if (overlap > bestOverlap) {
+                bestOverlap = overlap
                 best = w
             }
         }
-        // Fallback: if every widget is below the midline (very top of
-        // page), the first widget is active.
         if (!best) best = widgets[0] ?? null
 
         for (const w of widgets) {
