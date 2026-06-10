@@ -1046,6 +1046,35 @@ pre.astro-code span.line[tabindex='0']:focus-visible {
 pre.astro-code span.line {
     display: inline-block;
     width: 100%;
+    /* Pin line height so emoji glyphs (🍋, ⚠️, 🚧, …) can't stretch
+       individual lines taller than the rest. Without this the emoji's
+       intrinsic line-box pushes the code line up, the line-number
+       gutter follows, and the side-by-side height mismatch shows as
+       faint grey bands between line numbers. */
+    line-height: var(--pre-line-height, var(--line-height, 1.5));
+}
+
+/* Shrink emoji + color-emoji glyphs slightly inside code blocks so
+   their oversized intrinsic metrics don't force the line taller than
+   the surrounding monospace. unicode-range covers the major emoji
+   ranges (Misc Symbols, Pictographs, Emoticons, Symbols & Pictographs
+   ext, Transport, Supplemental Symbols & Pictographs). */
+@font-face {
+    font-family: 'inline-emoji-shrink';
+    src:
+        local('Apple Color Emoji'), local('Segoe UI Emoji'),
+        local('Noto Color Emoji');
+    size-adjust: 85%;
+    unicode-range:
+        U+1F300-1F5FF, U+1F600-1F64F, U+1F680-1F6FF, U+2600-26FF, U+2700-27BF,
+        U+1F900-1F9FF, U+1FA70-1FAFF;
+}
+pre.astro-code,
+pre.astro-code code,
+pre.astro-code .line {
+    font-family:
+        var(--font-family), 'inline-emoji-shrink', 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Noto Color Emoji';
 }
 
 pre.astro-code span.line::before {
