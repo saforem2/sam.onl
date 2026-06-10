@@ -49,7 +49,15 @@ const ogImage = ogSlug
             ).matches
                 ? 'custom-dark'
                 : 'custom-light'
-            const resolvedTheme = migratedTheme ?? systemTheme
+            // "auto" follows the OS prefers-color-scheme — stored as
+            // 'auto' in localStorage so the picker can show "Auto
+            // (system)" as the selected entry, but the DOM attribute
+            // is always the resolved theme name so existing CSS
+            // selectors keep matching.
+            const resolvedTheme =
+                migratedTheme === 'auto'
+                    ? systemTheme
+                    : (migratedTheme ?? systemTheme)
             document.documentElement.setAttribute(
                 'data-webtui-theme',
                 resolvedTheme,

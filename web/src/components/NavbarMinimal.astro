@@ -58,10 +58,23 @@ import Filter from '@/components/Filter.astro'
     const themeButtons = Array.from(
         document.querySelectorAll('[data-theme-option]'),
     ) as HTMLButtonElement[]
+    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+    const resolveTheme = (theme: string) =>
+        theme === 'auto'
+            ? colorSchemeQuery.matches
+                ? 'custom-dark'
+                : 'custom-light'
+            : theme
 
     const setTheme = (theme: string) => {
-        if (root.getAttribute('data-webtui-theme') !== theme) {
-            root.setAttribute('data-webtui-theme', theme)
+        // Apply the resolved theme to the DOM (so CSS selectors keep
+        // working) but remember the user's literal choice in storage —
+        // including 'auto' — so the picker can show the right active
+        // pill and live-follow OS preference flips.
+        const resolved = resolveTheme(theme)
+        if (root.getAttribute('data-webtui-theme') !== resolved) {
+            root.setAttribute('data-webtui-theme', resolved)
         }
 
         themeDropdowns.forEach((dropdown) => {
@@ -91,6 +104,13 @@ import Filter from '@/components/Filter.astro'
             : 'custom-light'
         setTheme(systemTheme)
     }
+
+    // Live-follow OS preference flips when the user chose 'auto'.
+    colorSchemeQuery.addEventListener('change', () => {
+        if (localStorage.getItem(themeStorageKey) === 'auto') {
+            setTheme('auto')
+        }
+    })
 
     themeDropdowns.forEach((dropdown) => {
         new MutationObserver(() => {

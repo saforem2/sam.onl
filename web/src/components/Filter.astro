@@ -40,6 +40,7 @@ const docHeadings = docPages
     )
 
 const themeOptions = {
+    auto: 'Auto (system)',
     'custom-light': 'Light',
     'custom-dark': 'Dark',
     catppuccin: 'Catppuccin Mocha',
@@ -589,6 +590,7 @@ const fontOptions = {
     ) as HTMLElement | null
     const focusableLinks = document.querySelectorAll('.search-result')
     const themeLabels: Record<string, string> = {
+        auto: 'Auto (system)',
         'custom-light': 'Light',
         'custom-dark': 'Dark',
         catppuccin: 'Catppuccin Mocha',
@@ -617,8 +619,15 @@ const fontOptions = {
     const updateThemeCurrentValue = () => {
         if (!themeCurrentValue) return
 
+        // When the user picked "auto", localStorage holds 'auto' but the
+        // DOM attribute is the resolved system theme (custom-light /
+        // custom-dark). Surface the stored choice so the picker label
+        // reads "Auto (system)" instead of jumping between Light/Dark
+        // every time the OS preference flips.
+        const storedTheme = localStorage.getItem('webtui-theme')
         const activeTheme =
-            document.documentElement.getAttribute('data-webtui-theme') ??
+            storedTheme ||
+            document.documentElement.getAttribute('data-webtui-theme') ||
             'custom-light'
         const label = themeLabels[activeTheme] ?? activeTheme
         themeCurrentValue.textContent = label

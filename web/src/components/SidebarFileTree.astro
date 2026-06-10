@@ -1687,10 +1687,23 @@ const ICON_ABOUT = '\u{f1028}'
     const themeButtons = Array.from(
         document.querySelectorAll('[data-theme-option]'),
     ) as HTMLButtonElement[]
+    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+    const resolveTheme = (theme: string) =>
+        theme === 'auto'
+            ? colorSchemeQuery.matches
+                ? 'custom-dark'
+                : 'custom-light'
+            : theme
 
     const setTheme = (theme: string) => {
-        if (root.getAttribute('data-webtui-theme') !== theme) {
-            root.setAttribute('data-webtui-theme', theme)
+        // Apply the resolved theme to the DOM (so CSS selectors keep
+        // working) but remember the user's literal choice in storage —
+        // including 'auto' — so the picker can show the right active
+        // pill and live-follow OS preference flips.
+        const resolved = resolveTheme(theme)
+        if (root.getAttribute('data-webtui-theme') !== resolved) {
+            root.setAttribute('data-webtui-theme', resolved)
         }
         themeButtons.forEach((button) => {
             const value = button.getAttribute('data-theme-option')
@@ -1706,6 +1719,13 @@ const ICON_ABOUT = '\u{f1028}'
     if (storedTheme) {
         setTheme(storedTheme)
     }
+
+    // If the user is on 'auto', re-resolve when the OS preference flips.
+    colorSchemeQuery.addEventListener('change', () => {
+        if (localStorage.getItem(themeStorageKey) === 'auto') {
+            setTheme('auto')
+        }
+    })
 
     themeButtons.forEach((button) => {
         button.addEventListener('click', () => {
