@@ -324,14 +324,57 @@ const { variant, total, home = false } = Astro.props
         gap: 0.5lh 1ch;
         margin-top: auto;
     }
+    /* [a]bout → CTA chip. Same keycap-chip language as the icon row,
+       with a wider tap target and the accent blue palette. */
     .iw-social-wrap > .iw-nav-home {
         margin-left: auto;
+        text-decoration: none !important;
+        box-sizing: border-box;
+        padding: 0 1ch;
+        line-height: 1lh;
+        height: 1lh;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--foreground0) 5%
+        );
+        border: 1px solid
+            color-mix(in srgb, var(--background0), var(--foreground0) 18%);
+        color: var(--foreground1);
+        font-weight: bold;
+        --chip-accent: var(--accent, var(--blue));
+        transition:
+            background-color 0.1s linear,
+            color 0.1s linear,
+            border-color 0.1s linear,
+            transform 0.1s ease-out,
+            box-shadow 0.1s ease-out;
+
+        &:hover,
+        &:focus-visible,
+        &[data-vim-focused='true'] {
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0 0 var(--chip-accent);
+            background-color: color-mix(
+                in srgb,
+                var(--background0),
+                var(--chip-accent) 18%
+            );
+            border-color: var(--chip-accent);
+            color: var(--chip-accent);
+        }
+        &:active {
+            transform: translate(0, 0);
+            box-shadow: 1px 1px 0 0 var(--chip-accent);
+        }
     }
     @media (max-width: 480px) {
         .iw-social-wrap > .iw-nav-home {
             margin-left: 0;
             width: 100%;
-            text-align: center;
         }
     }
 
