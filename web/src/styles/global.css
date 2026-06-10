@@ -725,18 +725,14 @@
     .callout p {
         margin-block-end: 0 !important;
     }
-    details[is-~='accordion']:not(.footnote-popover):not(.callout) {
-        /* only apply background-color to the summary element. Excludes
-           .footnote-popover, which wraps inline footnote refs in a
-           <details><summary><sup>...</sup></summary>...</details>
-           structure — painting that summary's bg leaves a gray box
-           wrapped around the superscript ¹/²/³ ref inline with prose.
-           Also excludes .callout — callout summaries get their own
-           accent-tinted summary bg from the .callout rule above, and
-           a generic --background1 here would clobber that with grey. */
-        summary {
-            background-color: var(--background1);
-        }
+    /* Written as a flat descendant selector — Lightning CSS's nested
+       compiler emits BOTH the nested form AND a bare `summary {…}`
+       global when the parent selector uses attribute + :not() compounds
+       (see git log for prior occurrences of the same bug in this
+       codebase). The bare global was painting every callout summary
+       grey, including .callout ones that should inherit the accent. */
+    details[is-~='accordion']:not(.footnote-popover):not(.callout) > summary {
+        background-color: var(--background1);
     }
     details[is-~='accordion'] {
         &[variant-='directory'] {
