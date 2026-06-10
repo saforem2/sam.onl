@@ -1177,15 +1177,14 @@ const ICON_ABOUT = '\u{f1028}'
 
     #sidebar-actions {
         display: flex;
-        /* Hairline gap between chips so each reads as its own cell
-           without going full TUI-vacuum. */
-        gap: 1px;
+        /* Flush — chip borders touch so the action bar reads as a
+           continuous key row, not five separate buttons. */
+        gap: 0;
         /* Nerd-font glyphs render visibly larger than text at the same
-           em-size — they don't share the same x-height / cap-height
-           metrics as the body font. Shrink one step so the icons sit
-           inside their keycap chips instead of spilling outside.
-           Matches the floating navbar on the landing page. */
-        font-size: 0.85em;
+           em-size, but a one-step shrink here over-corrects. 0.95em
+           leaves room inside the keycap while keeping the icons big
+           enough to recognize at a glance. */
+        font-size: 0.95em;
         position: relative;
         z-index: 10;
         width: fit-content;
