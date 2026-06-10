@@ -1188,9 +1188,13 @@ const ICON_ABOUT = '\u{f1028}'
         position: relative;
         z-index: 10;
         width: fit-content;
-        /* Bottom-only margin — top headroom comes from #sidebar's
-           padding-block-start so the chip's lift + shadow have room
-           to render without crossing the box-= border. */
+        /* Pull the chip row up so its vertical midline bisects the
+           parent nav's box-= top border (overflow:visible on #sidebar
+           keeps the overhang from being clipped). 4px counteracts the
+           padding-block-start: 4px on #sidebar that gives the lift +
+           shadow headroom; 0.75lh is half the chip height (1lh content
+           + 0.5lh block padding). */
+        margin-block-start: calc(-0.75lh - 4px);
         margin-block-end: 0.25lh;
 
         .sidebar-action {
@@ -1209,6 +1213,12 @@ const ICON_ABOUT = '\u{f1028}'
                used elsewhere. */
             padding: 0.25lh 0.75ch;
             min-width: 3ch;
+            /* MD nerd-font glyphs have descender-heavy metrics that
+               make line-height: 1 hang them low in the line-box. Add a
+               nudge up so the ink center sits at the chip's geometric
+               middle. */
+            padding-block-start: 0.3lh;
+            padding-block-end: 0.2lh;
             color: var(--foreground2);
             background-color: color-mix(
                 in oklch,
