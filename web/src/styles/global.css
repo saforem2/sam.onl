@@ -726,9 +726,17 @@
             content: 'x';
             vertical-align: top;
         }
-        p {
-            margin-block-end: 0pt !important;
-        }
+    }
+    /* Kept OUTSIDE the .callout nesting block — Lightning CSS's nesting
+       parser silently dropped the parent compound selector when this
+       lived inside `details[is~='accordion'].callout { … & p { … } }`,
+       letting a global `p { margin-block-end: 0 !important }` leak into
+       the stylesheet and break the blank-line-between-paragraphs spacing
+       in the body. Drop the [is-~='accordion'] attribute too — Lightning
+       CSS appears to strip the whole compound when emitting; .callout
+       alone is unique enough. */
+    .callout p {
+        margin-block-end: 0 !important;
     }
     details[is-~='accordion']:not(.footnote-popover) {
         /* only apply background-color to the summary element. Excludes
