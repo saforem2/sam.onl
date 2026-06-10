@@ -83,57 +83,60 @@ const { variant, total, home = false } = Astro.props
         <!--     > project. -->
         <!-- </p> -->
     </div>
-    <row class="iw-social-links">
-        <a href="/" title="Home" size-="small">&#xef85;</a>
-        <a
-            href="https://github.com/saforem2"
-            target="_blank"
-            title="GitHub"
-            size-="small">&#xe65b;</a
-        >
-        <a
-            href="https://bsky.app/profile/samforeman.bsky.social"
-            target="_blank"
-            title="Bluesky"
-            size-="small">&#xe28e;</a
-        >
-        <a
-            href="https://twitter.com/saforem2"
-            target="_blank"
-            title="Twitter"
-            size-="small">&#xeb72;</a
-        >
-        <a
-            href="https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en"
-            target="_blank"
-            title="Google Scholar"
-            size-="small">&#xf19d;</a
-        >
-        <a
-            href="https://www.linkedin.com/in/samforem2"
-            target="_blank"
-            title="LinkedIn"
-            size-="small">&#xe820;</a
-        >
-        <a href="mailto:sf@omg.lol" title="Email" size-="small">&#xf0e0;</a>
-        <a href="/rss.xml" target="_blank" title="RSS" size-="small">&#xf09e;</a
-        >
-        <button
-            type="button"
-            class="iw-social-search-btn"
-            title="Search"
-            size-="small"
-            aria-label="Open search"
-            data-iw-search>&#xf002;</button
-        >
+    <div class="iw-social-wrap">
+        <row class="iw-social-links">
+            <a href="/" title="Home" size-="small">&#xef85;</a>
+            <a
+                href="https://github.com/saforem2"
+                target="_blank"
+                title="GitHub"
+                size-="small">&#xe65b;</a
+            >
+            <a
+                href="https://bsky.app/profile/samforeman.bsky.social"
+                target="_blank"
+                title="Bluesky"
+                size-="small">&#xe28e;</a
+            >
+            <a
+                href="https://twitter.com/saforem2"
+                target="_blank"
+                title="Twitter"
+                size-="small">&#xeb72;</a
+            >
+            <a
+                href="https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en"
+                target="_blank"
+                title="Google Scholar"
+                size-="small">&#xf19d;</a
+            >
+            <a
+                href="https://www.linkedin.com/in/samforem2"
+                target="_blank"
+                title="LinkedIn"
+                size-="small">&#xe820;</a
+            >
+            <a href="mailto:sf@omg.lol" title="Email" size-="small">&#xf0e0;</a>
+            <a href="/rss.xml" target="_blank" title="RSS" size-="small"
+                >&#xf09e;</a
+            >
+            <button
+                type="button"
+                class="iw-social-search-btn"
+                title="Search"
+                size-="small"
+                aria-label="Open search"
+                data-iw-search>&#xf002;</button
+            >
+        </row>
         {
             home && (
-                <a href="/about" class="iw-nav-home" style="margin-left: auto;">
+                <a href="/about" class="iw-nav-home">
                     [a]bout &rarr;
                 </a>
             )
         }
-    </row>
+    </div>
     {
         variant === 16 && (
             <column class="iw-highlights" gap-="0">
@@ -311,26 +314,49 @@ const { variant, total, home = false } = Astro.props
         }
     }
 
-    .iw-social-links {
+    /* Wrap: icon row + [a]bout CTA. On wide containers they sit
+       side-by-side (about pinned right); on narrow (mobile) the
+       about chip drops to its own row, full-width. */
+    .iw-social-wrap {
         display: flex;
         flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5lh 1ch;
+        margin-top: auto;
+    }
+    .iw-social-wrap > .iw-nav-home {
+        margin-left: auto;
+    }
+    @media (max-width: 480px) {
+        .iw-social-wrap > .iw-nav-home {
+            margin-left: 0;
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    .iw-social-links {
+        display: flex;
+        flex-wrap: nowrap;
         /* Tighter gap — chips read as a key row instead of a sparse
            list. Matches the .flex-container.icon-flex pattern on
            /about/. */
-        gap: 1ch;
-        margin-top: auto;
+        gap: 0.5ch;
+        flex: 1 1 auto;
+        min-width: 0;
 
         a,
         button {
             text-decoration: none !important;
             box-sizing: border-box;
-            padding: 0 1ch;
+            padding: 0 0.5ch;
             line-height: 1lh;
             height: 1lh;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 2.5ch;
+            min-width: 0;
+            flex: 1 1 0;
             /* Keycap chip — opaque color-mix bg + hairline border, no
                radius. Matches .flex-container.icon-flex on /about/. */
             background-color: color-mix(
