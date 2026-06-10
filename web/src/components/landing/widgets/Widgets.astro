@@ -713,11 +713,15 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
 
 <script>
     /* Mark the most-visible v21 widget as data-scroll-active. Active =
-       the widget with the largest pixel overlap against a "focus band"
-       running from the top of the viewport to 60% down. This naturally
-       handles tall widgets like lastfm that fill the band but never
-       have a top in (-tinyrange, midline) — they still own the band
-       because they overlap it fully. */
+       the widget whose visual CENTER is closest to a focus line at
+       33% of the viewport height (a third down from the top).
+       Why "center to focus line" and not "max overlap with a band":
+       overlap-based heuristics inherently favor tall widgets (lastfm,
+       work) — when scrolling between two short neighbors of a giant,
+       the giant's overlap-with-band stays larger than either short
+       widget's, so the short one never wins focus.
+       Closest-center fixes that: tall widgets only win while their
+       midline is actually near the focus point. */
     function markActiveWidget() {
         const grid = document.querySelector(
             '#widgets-grid.intro-v21',
@@ -728,18 +732,19 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
         )
         if (!widgets.length) return
 
-        const bandTop = 0
-        const bandBottom = window.innerHeight * 0.6
+        const focusY = window.innerHeight * 0.33
         let best: HTMLElement | null = null
-        let bestOverlap = -1
+        let bestDist = Infinity
         for (const w of widgets) {
             const r = w.getBoundingClientRect()
-            const overlap = Math.max(
-                0,
-                Math.min(r.bottom, bandBottom) - Math.max(r.top, bandTop),
-            )
-            if (overlap > bestOverlap) {
-                bestOverlap = overlap
+            // Only consider widgets that actually intersect the
+            // viewport at all — fully-offscreen widgets shouldn't
+            // compete for focus.
+            if (r.bottom < 0 || r.top > window.innerHeight) continue
+            const center = (r.top + r.bottom) / 2
+            const dist = Math.abs(center - focusY)
+            if (dist < bestDist) {
+                bestDist = dist
                 best = w
             }
         }
