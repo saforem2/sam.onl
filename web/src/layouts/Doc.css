@@ -21,6 +21,16 @@
     overflow-x: auto;
 }
 
+/* Page-title h1 sits inside an is-="badge" wrapper for the colored
+   background — but WebTUI's badge adds inline padding that shifted
+   the `#` prefix away from the page-edge alignment shared by every
+   ##/### heading below. Zero the badge's left padding so the h1
+   prefix lines up with the h2+ prefixes; keep the right padding
+   intact so the badge background still extends past the title text. */
+#doc-article > header [is-~='badge'] {
+    padding-inline-start: 0;
+}
+
 /* Keep WebTUI's `isolation: isolate` on #doc-article — the box
    border's ::before draws at z-index: -1 and needs the article's
    own stacking context to paint against. Without isolation, the
