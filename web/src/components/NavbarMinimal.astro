@@ -34,69 +34,91 @@ import Filter from '@/components/Filter.astro'
     nav {
         display: flex;
         align-items: stretch;
+        /* Flush — chip borders touch so the bar reads as a continuous
+           key row, matching the sidebar action chips on doc pages. */
         gap: 0;
-        height: 1lh;
-        line-height: 1lh;
         white-space: nowrap;
         max-width: 100%;
-        overflow: hidden;
-        /* Slightly smaller than body type — the nerd-font icons
-           render larger at the same em-size than text glyphs, so a
-           one-step shrink reads as proportional to the body. */
-        font-size: 0.92em;
-        /* Float in the top-right corner of the page, like the old vim
-           island. Anchored to the #intro container (which is
-           position: relative) so it stays inside the page bounds. */
+        font-size: 0.95em;
+        /* Float and overlap the intro-widget's box-= top border. JS
+           writes --navbar-top to land the bar's vertical midline on the
+           border line. */
         position: absolute;
-        /* JS sets --navbar-left and --navbar-top to align with the
-           #widgets-grid's left edge and roughly halfway between the
-           top of the page and the grid's top. */
         top: var(--navbar-top, 2lh);
         left: var(--navbar-left, 1ch);
         z-index: 20;
         min-width: 0;
         width: max-content;
-        background-color: var(--background1);
-        border: 1px solid var(--foreground2);
-        /* TUI hard-offset shadow only when the navbar is being interacted
-           with — keeps the resting state minimal but signals focus. */
-        transition: box-shadow 100ms linear;
-        &:hover,
-        &:focus-within {
-            box-shadow: 2px 2px 0 0 var(--foreground0, #000);
-        }
-
-        :is(a[href], button:not([disabled])) {
-            position: relative;
-            outline: none;
-            transition:
-                background-color 100ms linear,
-                color 100ms linear;
-        }
-
-        :is(a[href], button:not([disabled])):focus-visible,
-        :is(a[href], button:not([disabled]))[data-vim-focused='true']:focus {
-            background-color: var(--focus-bg-strong);
-            color: var(--focus-fg);
-            text-decoration: none;
-        }
+        background-color: transparent;
+        border: none;
     }
 
-    #home-link {
+    /* Shared keycap chip — mirrors .sidebar-action on doc pages so the
+       two surfaces speak the same language. Opaque fill (color-mix, not
+       alpha) so the intro-widget's box-= border behind the chip is
+       visually cut where the chip overlays it. */
+    nav :is(a[href], button:not([disabled])) {
         all: unset;
         display: inline-flex;
         align-items: center;
-        padding: 0 1ch;
-        color: var(--foreground1);
-        font-weight: bold;
+        justify-content: center;
+        box-sizing: border-box;
+        padding: 0.2lh 0.75ch;
+        min-width: 3ch;
+        color: var(--foreground2);
+        background-color: color-mix(
+            in oklch,
+            var(--background0),
+            var(--foreground0) 5%
+        );
+        border: 1px solid
+            color-mix(in oklch, var(--background0), var(--foreground0) 18%);
         cursor: pointer;
         font-family: var(--font-family);
+        font-size: inherit;
+        line-height: 1;
         text-decoration: none;
-        border-right: 1px solid var(--background2);
+        --chip-accent: var(--foreground2);
+        transition:
+            color 0.1s linear,
+            background-color 0.1s linear,
+            border-color 0.1s linear,
+            transform 0.1s ease-out,
+            box-shadow 0.1s ease-out;
+        position: relative;
+    }
 
-        &:hover {
-            background-color: var(--background2);
-        }
+    /* Tactile lift on hover — match sidebar chip language. */
+    nav :is(a[href], button:not([disabled])):hover,
+    nav :is(a[href], button:not([disabled])):focus-visible,
+    nav :is(a[href], button:not([disabled]))[data-vim-focused='true'] {
+        color: var(--foreground0);
+        transform: translate(-1px, -1px);
+        box-shadow: 2px 2px 0 0 var(--chip-accent);
+    }
+
+    nav :is(a[href], button:not([disabled])):active {
+        transform: translate(0, 0);
+        box-shadow: 1px 1px 0 0 var(--chip-accent);
+    }
+
+    /* Per-button accent tint. */
+    #home-link:hover,
+    #home-link:focus-visible,
+    #home-link[data-vim-focused='true'] {
+        --chip-accent: var(--blue);
+        background-color: color-mix(
+            in oklch,
+            var(--background0),
+            var(--blue) 18%
+        );
+        border-color: var(--blue);
+        color: var(--blue);
+    }
+
+    #home-link {
+        font-weight: bold;
+        color: var(--foreground1);
     }
 
     #nav-spacer {
@@ -108,35 +130,42 @@ import Filter from '@/components/Filter.astro'
         align-items: stretch;
         gap: 0;
 
-        :is(a, button) {
-            all: unset;
-            display: inline-flex;
-            align-items: center;
-            padding: 0 1ch;
-            color: var(--foreground3);
-            cursor: pointer;
-            font-family: var(--font-family);
-            font-size: inherit;
-            line-height: inherit;
-            text-decoration: none;
-            border-left: 1px solid var(--background2);
-        }
-
         #github-button:hover,
-        #github-button:focus-visible {
-            background-color: oklch(from var(--purple) l c h / 0.15);
-            color: var(--purple);
+        #github-button:focus-visible,
+        #github-button[data-vim-focused='true'] {
+            --chip-accent: #6e5494;
+            background-color: color-mix(
+                in oklch,
+                var(--background0),
+                #6e5494 18%
+            );
+            border-color: #6e5494;
+            color: #6e5494;
         }
 
         #rss-button:hover,
-        #rss-button:focus-visible {
-            background-color: oklch(from var(--orange) l c h / 0.15);
+        #rss-button:focus-visible,
+        #rss-button[data-vim-focused='true'] {
+            --chip-accent: var(--orange);
+            background-color: color-mix(
+                in oklch,
+                var(--background0),
+                var(--orange) 18%
+            );
+            border-color: var(--orange);
             color: var(--orange);
         }
 
         #search-button:hover,
-        #search-button:focus-visible {
-            background-color: oklch(from var(--green) l c h / 0.15);
+        #search-button:focus-visible,
+        #search-button[data-vim-focused='true'] {
+            --chip-accent: var(--green);
+            background-color: color-mix(
+                in oklch,
+                var(--background0),
+                var(--green) 18%
+            );
+            border-color: var(--green);
             color: var(--green);
         }
     }
@@ -300,13 +329,15 @@ import Filter from '@/components/Filter.astro'
 </script>
 
 <script>
-    /* Pin the floating navbar's left edge to #widgets-grid's left edge.
-       The grid uses translate-based centering; matching that exactly in
-       pure CSS is fragile across viewports, so we measure on load + on
-       resize and write the value to --navbar-left. */
+    /* Pin the floating navbar so its chips overlap the intro-widget's
+       box-= top border (matches the sidebar-action chip behavior on
+       doc pages). Measured on load + resize because the widgets-grid
+       uses translate-based centering that's fragile to recompute in
+       pure CSS. */
     function alignNavbar() {
         const navbar = document.getElementById('top-navbar')
         const grid = document.getElementById('widgets-grid')
+        const introWidget = document.getElementById('intro-widget')
         if (!navbar || !grid) return
         const gridRect = grid.getBoundingClientRect()
         const navHeight = navbar.getBoundingClientRect().height || 20
@@ -314,18 +345,19 @@ import Filter from '@/components/Filter.astro'
         const introRect = intro
             ? intro.getBoundingClientRect()
             : { top: 0, left: 0 }
-        // Both --navbar-top and --navbar-left are interpreted relative
-        // to the navbar's offsetParent (which is #intro — the closest
-        // positioned ancestor). Subtract #intro's own top-left so the
-        // numbers we hand back are local to that frame, not viewport-
-        // absolute. Critical when the page has a sidebar pushing
-        // #intro right of the viewport origin — without the subtract,
-        // the navbar overshoots by exactly the sidebar's width.
-        const left = gridRect.left - introRect.left
-        // Sit 1lh above the grid top. nav's own height is 1lh, so the
-        // navbar's bottom edge ends up exactly at gridTop - 1lh, and its
-        // top edge at gridTop - 2lh. (1lh ≈ navHeight on this page.)
-        const top = gridRect.top - introRect.top - navHeight * 2
+        // --navbar-top / --navbar-left are interpreted relative to the
+        // navbar's offsetParent (#intro), so subtract #intro's own
+        // origin to get local coordinates. Slight inline inset (1ch)
+        // from the grid edge so the chips don't kiss the corner glyph
+        // of the intro-widget's box-= border.
+        const left = gridRect.left - introRect.left + 16
+        // Position so navbar's vertical midline lands on the intro-
+        // widget's box-= top border. The widget's getBoundingClientRect
+        // top IS the outer border edge — pull navbar up by half its
+        // own height so its center sits on that line.
+        const targetEl = introWidget ?? grid
+        const targetRect = targetEl.getBoundingClientRect()
+        const top = targetRect.top - introRect.top - navHeight / 2
         navbar.style.setProperty('--navbar-left', `${left}px`)
         navbar.style.setProperty('--navbar-top', `${top}px`)
     }
