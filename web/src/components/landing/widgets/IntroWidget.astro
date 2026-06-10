@@ -84,6 +84,7 @@ const { variant, total, home = false } = Astro.props
         <!-- </p> -->
     </div>
     <row class="iw-social-links">
+        <a href="/" title="Home" size-="small">&#xef85;</a>
         <a
             href="https://github.com/saforem2"
             target="_blank"
@@ -115,6 +116,16 @@ const { variant, total, home = false } = Astro.props
             size-="small">&#xe820;</a
         >
         <a href="mailto:sf@omg.lol" title="Email" size-="small">&#xf0e0;</a>
+        <a href="/rss.xml" target="_blank" title="RSS" size-="small">&#xf09e;</a
+        >
+        <button
+            type="button"
+            class="iw-social-search-btn"
+            title="Search"
+            size-="small"
+            aria-label="Open search"
+            data-iw-search>&#xf002;</button
+        >
         {
             home && (
                 <a href="/about" class="iw-nav-home" style="margin-left: auto;">
@@ -306,7 +317,8 @@ const { variant, total, home = false } = Astro.props
         gap: 2ch;
         margin-top: auto;
 
-        a {
+        a,
+        button {
             text-decoration: none !important;
             padding-inline: 1ch;
             color: var(--foreground1);
@@ -370,6 +382,28 @@ const { variant, total, home = false } = Astro.props
     .iw-social-links a[href^='mailto'][data-vim-focused='true'] {
         color: var(--orange) !important;
         background-color: oklch(from var(--orange) l c h / 0.12);
+    }
+    .iw-social-links a[href='/']:hover,
+    .iw-social-links a[href='/']:focus-visible,
+    .iw-social-links a[href='/'][data-vim-focused='true'] {
+        color: var(--blue) !important;
+        background-color: oklch(from var(--blue) l c h / 0.12);
+    }
+    .iw-social-links a[href='/rss.xml']:hover,
+    .iw-social-links a[href='/rss.xml']:focus-visible,
+    .iw-social-links a[href='/rss.xml'][data-vim-focused='true'] {
+        color: var(--orange) !important;
+        background-color: oklch(from var(--orange) l c h / 0.12);
+    }
+    .iw-social-links button.iw-social-search-btn {
+        all: unset;
+        cursor: pointer;
+    }
+    .iw-social-links button.iw-social-search-btn:hover,
+    .iw-social-links button.iw-social-search-btn:focus-visible,
+    .iw-social-links button.iw-social-search-btn[data-vim-focused='true'] {
+        color: var(--green) !important;
+        background-color: oklch(from var(--green) l c h / 0.12);
     }
 
     [is-='separator'] {
@@ -490,3 +524,16 @@ const { variant, total, home = false } = Astro.props
         }
     }
 </style>
+
+<script>
+    // Wire the merged search chip in iw-social-links to open the
+    // existing #search-dialog mounted by NavbarMinimal → Filter.
+    document.querySelectorAll('[data-iw-search]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const dialog = document.getElementById(
+                'search-dialog',
+            ) as HTMLDialogElement | null
+            dialog?.showModal()
+        })
+    })
+</script>
