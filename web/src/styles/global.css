@@ -585,17 +585,6 @@
             from var(--callout-color) calc(l * var(--oklch-scale, 1.12)) c h /
                 0.1
         );
-        /* Slightly stronger tint for the summary band so it sits a
-           half-step in front of the body bg — same hue, ~2× alpha.
-           color-mix instead of nested oklch(from …) because Chrome
-           can't resolve a relative-color expression through a var()
-           indirection (the outer oklch sees a string and can't
-           pull the hue/chroma off the base color). */
-        --callout-summary-bg: color-mix(
-            in srgb,
-            transparent,
-            var(--callout-color) 22%
-        );
         padding-left: 0.5ch;
         transition:
             transform 120ms ease-out,
@@ -661,7 +650,7 @@
     }
 
     .callout-tip {
-        --callout-color: var(--teal, var(--green, #1ab394));
+        --callout-color: var(--foreground2, #838383);
     }
     .callout-note {
         --callout-color: var(--blue, #118cc2);
