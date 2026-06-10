@@ -145,11 +145,18 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
     /* TUI hard-offset shadow on the active/focused/hovered widget —
        matches the navbar's interactive shadow treatment. */
     #widgets-grid > :global([tabindex='0']) {
-        transition: box-shadow 100ms linear;
+        transition:
+            box-shadow 100ms linear,
+            color 100ms linear;
     }
     #widgets-grid > :global([tabindex='0']:hover),
-    #widgets-grid > :global([tabindex='0']:focus-within) {
+    #widgets-grid > :global([tabindex='0']:focus-within),
+    #widgets-grid > :global([tabindex='0'][data-scroll-active='true']) {
         box-shadow: 2px 2px 0 0 var(--foreground0, #000);
+    }
+    #widgets-grid > :global([tabindex='0'][data-scroll-active='true']) {
+        color: var(--foreground0);
+        --box-border-color: var(--foreground0);
     }
 
     #grid-navbar {
@@ -608,8 +615,13 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
                    (restores the older multi-section home behavior).
                    scroll-snap-type is set on <html> below — putting
                    it on the grid wouldn't fire because the grid
-                   isn't the scrolling element here, the page is. */
+                   isn't the scrolling element here, the page is.
+                   scroll-snap-stop: always so a fast swipe past the
+                   intro doesn't skip clear over the tall lastfm
+                   widget — the browser is forced to land on each
+                   widget in sequence. */
                 scroll-snap-align: start;
+                scroll-snap-stop: always;
                 scroll-margin-block-start: 1lh;
             }
 
@@ -698,3 +710,64 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
         }
     }
 </style>
+
+<script>
+    /* Mark the most-visible v21 widget as data-scroll-active so it
+       picks up the active-state styling (accent border + foreground
+       color shift) above. Active = the widget whose top crossed the
+       viewport's 50% mark most recently but is still on screen.
+       Runs on every scroll; cheap because it's just a 5-element
+       reduce. */
+    function markActiveWidget() {
+        const grid = document.querySelector(
+            '#widgets-grid.intro-v21',
+        ) as HTMLElement | null
+        if (!grid) return
+        const widgets = Array.from(
+            grid.querySelectorAll<HTMLElement>(':scope > [tabindex="0"]'),
+        )
+        if (!widgets.length) return
+
+        const midline = window.innerHeight / 2
+        let best: HTMLElement | null = null
+        let bestTop = -Infinity
+        for (const w of widgets) {
+            const top = w.getBoundingClientRect().top
+            // Pick the widget whose top is highest (= most-scrolled)
+            // but still above the viewport midline. That widget owns
+            // the upper half of the viewport.
+            if (top <= midline && top > bestTop) {
+                bestTop = top
+                best = w
+            }
+        }
+        // Fallback: if every widget is below the midline (very top of
+        // page), the first widget is active.
+        if (!best) best = widgets[0] ?? null
+
+        for (const w of widgets) {
+            const active = w === best
+            const cur = w.getAttribute('data-scroll-active') === 'true'
+            if (cur !== active) {
+                w.setAttribute('data-scroll-active', String(active))
+            }
+        }
+    }
+
+    let raf = 0
+    function onScroll() {
+        if (raf) return
+        raf = requestAnimationFrame(() => {
+            raf = 0
+            markActiveWidget()
+        })
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', markActiveWidget)
+    } else {
+        markActiveWidget()
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+</script>
