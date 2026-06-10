@@ -1217,7 +1217,12 @@ const ICON_ABOUT = '\u{f1028}'
             cursor: pointer;
             font-family: var(--font-family);
             font-size: inherit;
-            line-height: inherit;
+            /* Collapse line-box to font-size so the glyph's vertical
+               center aligns with the chip's geometric center. With
+               `line-height: inherit` (~1.4) the glyph's ascent
+               anchored at the line top pushes the visible ink up past
+               the chip's upper border — looks bottom-heavy. */
+            line-height: 1;
             text-decoration: none;
             /* Default hover-shadow tint — overridden per-button below.
                Setting the CSS var here lets the shared `:hover/:focus`
