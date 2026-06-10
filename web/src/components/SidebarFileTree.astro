@@ -291,7 +291,7 @@ const stripEmoji = (text: string) =>
     )
 
 /* Nerd Font codepoints (folder/chevron glyphs are drawn via CSS pseudos) */
-const ICON_FOLDER_OPEN = '\uf07c'
+const ICON_FOLDER_OPEN = '\ueaf7'
 const ICON_FILE = '\uf0f6'
 ---
 
@@ -1496,12 +1496,12 @@ const ICON_FILE = '\uf0f6'
     }
 
     .folder-icon::before {
-        content: ''; /* closed folder */
+        content: ''; /* closed folder */
         color: var(--foreground2);
     }
 
     details[open] > summary > .folder-icon::before {
-        content: ''; /* open folder */
+        content: ''; /* open folder */
         color: var(--accent, var(--foreground2));
     }
 
