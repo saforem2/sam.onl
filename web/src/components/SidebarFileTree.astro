@@ -1180,11 +1180,12 @@ const ICON_ABOUT = '\u{f1028}'
         /* Hairline gap between chips so each reads as its own cell
            without going full TUI-vacuum. */
         gap: 1px;
-        /* Match the sidebar body type — earlier I shrunk this 0.85em on
-           the theory that nerd-font glyphs look bigger than text at the
-           same em-size, but with the keycap chips around them the icons
-           read as a bit cramped. Letting them sit at full body size. */
-        font-size: 1em;
+        /* Nerd-font glyphs render visibly larger than text at the same
+           em-size — they don't share the same x-height / cap-height
+           metrics as the body font. Shrink one step so the icons sit
+           inside their keycap chips instead of spilling outside.
+           Matches the floating navbar on the landing page. */
+        font-size: 0.85em;
         position: relative;
         z-index: 10;
         width: fit-content;
