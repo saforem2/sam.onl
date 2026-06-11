@@ -86,6 +86,14 @@ const { variant, total, home = false } = Astro.props
     <div class="iw-social-wrap">
         <row class="iw-social-links">
             <a href="/" title="Home" size-="small">&#xef85;</a>
+            <button
+                type="button"
+                class="iw-social-cmd-btn"
+                title="Open command menu (?)"
+                size-="small"
+                aria-label="Open command menu"
+                data-iw-cmd>&#xf0e7;</button
+            >
             <a
                 href="https://github.com/saforem2"
                 target="_blank"
@@ -550,7 +558,8 @@ const { variant, total, home = false } = Astro.props
         border-color: var(--orange) !important;
         color: var(--orange) !important;
     }
-    .iw-social-links button.iw-social-search-btn {
+    .iw-social-links button.iw-social-search-btn,
+    .iw-social-links button.iw-social-cmd-btn {
         cursor: pointer;
         font-family: var(--font-family);
         font-size: inherit;
@@ -566,6 +575,18 @@ const { variant, total, home = false } = Astro.props
         ) !important;
         border-color: var(--green) !important;
         color: var(--green) !important;
+    }
+    .iw-social-links button.iw-social-cmd-btn:hover,
+    .iw-social-links button.iw-social-cmd-btn:focus-visible,
+    .iw-social-links button.iw-social-cmd-btn[data-vim-focused='true'] {
+        --chip-accent: var(--yellow);
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--yellow) 18%
+        ) !important;
+        border-color: var(--yellow) !important;
+        color: var(--yellow) !important;
     }
 
     [is-='separator'] {
@@ -694,6 +715,17 @@ const { variant, total, home = false } = Astro.props
         btn.addEventListener('click', () => {
             const dialog = document.getElementById(
                 'search-dialog',
+            ) as HTMLDialogElement | null
+            dialog?.showModal()
+        })
+    })
+
+    // Wire the command-menu chip (the lightning bolt mirror of the
+    // sidebar's #command-button-sidebar) to open #command-dialog.
+    document.querySelectorAll('[data-iw-cmd]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const dialog = document.getElementById(
+                'command-dialog',
             ) as HTMLDialogElement | null
             dialog?.showModal()
         })
