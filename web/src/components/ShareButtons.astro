@@ -54,16 +54,32 @@ const { title, url } = Astro.props as Props
         padding: 0;
         color: var(--foreground2);
         background: none;
-        border: none;
+        border: 1px solid transparent;
+        border-radius: 0;
         cursor: pointer;
         text-decoration: none;
         text-align: center;
         justify-content: center;
         opacity: 0.6;
+        --chip-accent: var(--foreground2);
+        transition:
+            opacity 0.1s linear,
+            color 0.1s linear,
+            background-color 0.1s linear,
+            border-color 0.1s linear,
+            transform 0.1s ease-out,
+            box-shadow 0.1s ease-out;
 
-        &:hover {
+        &:hover,
+        &:focus-visible {
             opacity: 1;
             color: var(--foreground0);
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0 0 var(--chip-accent);
+        }
+        &:active {
+            transform: translate(0, 0);
+            box-shadow: 1px 1px 0 0 var(--chip-accent);
         }
     }
 
@@ -84,34 +100,63 @@ const { title, url } = Astro.props as Props
     }
 
     .share-btn-copy {
-        --badge-color: oklch(from var(--pink) l c h / 0.18);
+        --chip-accent: var(--pink);
+        --badge-color: color-mix(in srgb, var(--background0), var(--pink) 18%);
         --badge-text: var(--pink);
 
-        &:hover {
-            --badge-color: oklch(from var(--pink) l c h / 0.3);
+        &:hover,
+        &:focus-visible {
+            --badge-color: color-mix(
+                in srgb,
+                var(--background0),
+                var(--pink) 30%
+            );
             color: var(--pink);
+            border-color: var(--pink);
         }
     }
 
     .share-btn-twitter {
-        --twitter: oklch(from #1da1f2 l c h);
-        --badge-color: oklch(from var(--twitter) l c h / 0.18);
+        --twitter: #1da1f2;
+        --chip-accent: var(--twitter);
+        --badge-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--twitter) 18%
+        );
         --badge-text: var(--twitter);
 
-        &:hover {
-            --badge-color: oklch(from var(--twitter) l c h / 0.3);
+        &:hover,
+        &:focus-visible {
+            --badge-color: color-mix(
+                in srgb,
+                var(--background0),
+                var(--twitter) 30%
+            );
             color: var(--twitter);
+            border-color: var(--twitter);
         }
     }
 
     .share-btn-bluesky {
-        --bluesky: oklch(from #0085ff l c h);
-        --badge-color: oklch(from var(--bluesky) l c h / 0.18);
+        --bluesky: #0085ff;
+        --chip-accent: var(--bluesky);
+        --badge-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--bluesky) 18%
+        );
         --badge-text: var(--bluesky);
 
-        &:hover {
-            --badge-color: oklch(from var(--bluesky) l c h / 0.3);
+        &:hover,
+        &:focus-visible {
+            --badge-color: color-mix(
+                in srgb,
+                var(--background0),
+                var(--bluesky) 30%
+            );
             color: var(--bluesky);
+            border-color: var(--bluesky);
         }
     }
 </style>
