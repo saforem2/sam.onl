@@ -714,6 +714,16 @@
             vertical-align: top;
         }
     }
+    /* Callout summary `+` / `x` glyph: 1ch breathing room on both
+       sides instead of just the trailing 1ch margin from the generic
+       accordion rule. Written as a flat descendant selector instead of
+       nested inside the .callout block — Lightning CSS's nesting
+       flattener drops attribute+class compounds and the rule would
+       leak to every accordion summary. */
+    .callout > summary::before {
+        margin-inline: 1ch;
+    }
+
     /* Kept OUTSIDE the .callout nesting block — Lightning CSS's nesting
        parser silently dropped the parent compound selector when this
        lived inside `details[is~='accordion'].callout { … & p { … } }`,
