@@ -21,14 +21,28 @@
     overflow-x: auto;
 }
 
-/* WebTUI's box-= utility sets `isolation: isolate` on every box element,
-   which creates a stacking context. That traps the footnote tooltip
-   (position: fixed, z-index: 1000) inside #doc-article so the sidebar's
-   own stacking context paints over it. Disable isolation here so the
-   tooltip can stack against the viewport. The article's box border
-   doesn't need its own context. */
+/* Page-title h1 sits inside an is-="badge" wrapper for the colored
+   background — but WebTUI's badge adds inline padding that shifted
+   the `#` prefix away from the page-edge alignment shared by every
+   ##/### heading below. Zero the badge's left padding so the h1
+   prefix lines up with the h2+ prefixes; keep the right padding
+   intact so the badge background still extends past the title text. */
+#doc-article > header [is-~='badge'] {
+    padding-inline-start: 0;
+}
+
+/* Keep WebTUI's `isolation: isolate` on #doc-article — the box
+   border's ::before draws at z-index: -1 and needs the article's
+   own stacking context to paint against. Without isolation, the
+   negative-z layer falls through to <html>, where html's opaque
+   background covers it and the article frame disappears.
+   The earlier "isolation: auto" hack (to free the footnote popover
+   from the article's stacking context) had to go. The popover
+   problem is solved instead by lifting the whole article above
+   the sidebar via a positive z-index. */
 #doc-article {
-    isolation: auto;
+    position: relative;
+    z-index: 1;
 }
 
 #doc-columns {
@@ -45,12 +59,47 @@
         display: block !important;
         height: auto !important;
         max-height: none !important;
-        overflow: visible !important;
+        /* Vertical: visible so the page (not the article) scrolls.
+           Horizontal: clip — caps the article + main at viewport
+           width so an unbreakable child (long <pre> line with
+           white-space: pre, a chunky inline-code chip with no wrap
+           point) can't push the parent past viewport and clip every
+           paragraph's right edge. With max-width: 100vw + overflow-x:
+           clip, code-blocks resolve their `max-width: 100%` against
+           viewport and their own `overflow-x: auto` kicks in (scroll
+           inside the pre, not the page). */
+        overflow-y: visible !important;
+        overflow-x: clip !important;
+        /* CRITICAL: unset position on #main-content. On desktop it's
+           absolutely-positioned to fill the scroll-container. On mobile
+           an absolutely-positioned <main> is out of flow — its
+           children's heights don't contribute to its parent (#doc-
+           article), so the article collapses to ~700px and any content
+           past that (the prev/next chips, footnotes, etc.) overflows
+           past the viewport end, getting clipped behind the fixed
+           #mobile-nav at bottom: 0. Restore static positioning so the
+           document flow accounts for main's children. */
+        position: static !important;
+        max-width: 100vw !important;
+        min-width: 0 !important;
     }
     #scroll-container {
         height: auto !important;
         max-height: none !important;
-        overflow: visible !important;
+        overflow-y: visible !important;
+        overflow-x: clip !important;
+        max-width: 100vw !important;
+        min-width: 0 !important;
+    }
+    /* WebTUI's box-= decoration draws a frame anchored to the article's
+       box. On mobile the article is allowed to be tall (`height: auto`
+       above) and the *page* scrolls, so only random slices of the frame
+       cross the viewport at any time — reads as the box "moving" as you
+       scroll. Hide the decoration on phones; desktop keeps the border
+       because the article scrolls internally there. */
+    #doc-article::before,
+    #doc-article::after {
+        display: none !important;
     }
 }
 
@@ -235,6 +284,12 @@
     padding-inline: 1.5ch !important;
 }
 
+/* Push the GitHub-icon segment off the branch chip so the icon
+   doesn't sit flush against the chip's trailing edge. */
+.vsl-site {
+    margin-inline-start: 1ch;
+}
+
 .vsl-file {
     color: var(--foreground1);
 }
@@ -335,30 +390,6 @@ a.vsl-file:focus-visible {
 
         &:last-child {
             border-right: none;
-        }
-    }
-    /* Help button — flush with the rest of the statusbar (no border /
-       radius), with a small horizontal padding so it doesn't feel
-       crowded against the adjacent date segment. */
-    #vsl-btn-q {
-        cursor: pointer;
-        padding: 0 1ch;
-        margin: 0;
-        color: var(--foreground2);
-        background-color: transparent;
-        border: none;
-        border-radius: 0;
-        height: 1lh;
-        line-height: 1lh;
-        transition:
-            color 100ms linear,
-            background-color 100ms linear;
-        &:hover,
-        &:focus-visible {
-            color: var(--foreground0);
-            background-color: oklch(
-                from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.4
-            );
         }
     }
 }
@@ -654,6 +685,23 @@ h6::before {
     box-sizing: border-box;
 }
 
+/* When a <details> (accordion or callout) is nested as a direct child
+   of an <li>, align it with the list-item text (after the bullet) —
+   not with the bullet itself. Without this the details renders flush
+   at the bullet's x position, looking like an orphan sibling of the
+   list rather than a child of the item. 2ch matches the bullet+space
+   width used elsewhere (cf. li > pre.astro-code's `margin-left: 2ch`).
+   `!important` because the webtui base.css ships a global
+   `*{margin:0}` reset inside @layer base that, due to a quirk in how
+   Astro/Lightning CSS resolve unlayered rules in this project, beats
+   even high-specificity unlayered rules on margin (verified in browser
+   — width: calc(100% - 2ch) on the same rule WORKS, only margin loses
+   to the * reset). */
+#main-content li > details:not(.footnote-popover) {
+    margin-left: 2ch !important;
+    width: calc(100% - 2ch);
+}
+
 #main-content details[is-~='accordion'] + details[is-~='accordion'] {
     margin-top: 0.5lh;
 }
@@ -688,8 +736,20 @@ h6::before {
         content: none;
     }
 
+    /* `##`/`###` prefix — wiggles on direct heading hover. Pivot from
+       the right edge so the rotation tucks INTO the 1ch gap between
+       the prefix and the heading text instead of overflowing left and
+       getting clipped against the page margin. */
     .heading-anchor {
         text-decoration: none;
+        display: inline-block;
+        transform-origin: right center;
+        transition:
+            transform 180ms ease-out,
+            color 100ms linear;
+    }
+    &:hover > .heading-anchor {
+        transform: rotate(-6deg);
     }
 }
 
@@ -1190,6 +1250,18 @@ article {
 
     #mobile-nav {
         display: flex;
+    }
+
+    /* The fixed #mobile-nav at bottom: 0 overlays the last ~2lh of
+       the scroll area. Body is the scroll container on mobile but
+       its padding-bottom doesn't extend scrollHeight (well-known
+       browser quirk on body as scroll root) — so use margin-bottom
+       on the *last article child* instead. Margin extends scrollable
+       height; padding on body doesn't. 5lh = ~85px, clears the
+       nav (≈40px) + the [n]ext chip's box-shear bottom border + a
+       multi-line title wrap. */
+    #doc-pagination {
+        margin-block-end: 5lh;
     }
 
     #vim-statusline {

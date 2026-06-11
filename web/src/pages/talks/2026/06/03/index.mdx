@@ -1,6 +1,7 @@
 ---
 layout: '@/layouts/SlideLayout.astro'
 title: 'Production Pre-Training at Scale: The Good, the Bad, and the Restarts'
+shortTitle: 'Production Pre-Training at Scale'
 subtitle: 'Lessons from AuroraGPT'
 description: 'Production pre-training at scale is less a story of peak FLOP/s than of what works, what breaks, scaling and tuning hyper-parameters and how cheaply you recover: corrupted shards, ECC errors, fabric flaps, silent data corruption, and the operational cost of separating transient from systemic faults. This talk describes the open-source stack we have built and battle-tested through the AuroraGPT effort at the Argonne Leadership Computing Facility, where we routinely train across thousands of Intel GPU nodes on Aurora. The stack pairs `blendcorpus` for reproducible, weighted data blending over petabyte-scale scientific corpora with a fork of `torchtitan` extended to target Intel XPUs and the SYCL toolchain, driven by `ezpz`: our orchestration layer that makes distributed PyTorch launches portable across \{NVIDIA, AMD, Intel, MPS, CPU\} with zero code changes. We will walk through concrete pain points at each layer, including upstream data churn and shard reproducibility, collective tuning and dataloader behavior on non-NVIDIA accelerators, and node-failure management at scale. We will describe our efforts with various first and second order optimizers and related tuning for scaling pre-training. We will close on the good, the bad, and the restarts: what generalizes across vendors, what we got wrong, and the open questions we would like the TPC community to help us answer.'
 date: 2026-06-03
@@ -72,6 +73,16 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
     height: 11ch;
     display: block;
   }
+  /* QR SVG ships with stroke="currentColor" but loaded as an <img> it
+     resolves to canvastext (black). Invert the pixels on dark themes
+     so the dark ink reads as white-on-dark. Applies to both QRs on
+     this deck (title + thanks). */
+  html[data-webtui-theme='custom-dark']
+    :is(.title-slide-qr, .thanks-qr) img,
+  html[data-webtui-theme='catppuccin']
+    :is(.title-slide-qr, .thanks-qr) img {
+    filter: invert(1);
+  }
   #title-slide .title-slide-qr span {
     font-size: 0.75em;
     color: var(--foreground1);
@@ -126,8 +137,6 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
       - Fork tax (fast-moving upstream!)
     - At scale, *failure is the default*
 
-[^mds]: And *away* from [argonne-lcf/Megatron-DeepSpeed](https://github.com/argonne-lcf/Megatron-DeepSpeed)!
-
 </div>
 
 <div>
@@ -140,6 +149,8 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 </div>
 
 </div>
+
+[^mds]: And *away* from [argonne-lcf/Megatron-DeepSpeed](https://github.com/argonne-lcf/Megatron-DeepSpeed)!
 
 <style>{`
   /* Tighten heading -> content spacing for this slide only. */
@@ -1175,8 +1186,24 @@ Questions?
     color: var(--foreground1);
     white-space: nowrap;
   }
+  /* Reserve horizontal space so the QR (top-right, position: absolute,
+     ~11ch wide + 4ch right offset) never overlaps the text that sits
+     at the same vertical range. Only the heading + the three thanks
+     paragraphs share QR rows; bullets and blockquote start below. */
+  #thanks .slide-inner > h2,
+  #thanks .slide-inner > h2 + p,
+  #thanks .slide-inner > h2 + p + p,
+  #thanks .slide-inner > h2 + p + p + p {
+    padding-inline-end: 18ch;
+  }
   @media (max-width: 768px) {
     #thanks .thanks-qr { display: none; }
+    #thanks .slide-inner > h2,
+    #thanks .slide-inner > h2 + p,
+    #thanks .slide-inner > h2 + p + p,
+    #thanks .slide-inner > h2 + p + p + p {
+      padding-inline-end: 0;
+    }
   }
 `}</style>
 

@@ -6,7 +6,6 @@ import Filter from '@/components/Filter.astro'
     <a href="/" id="home-link"></a>
     <span id="nav-spacer"></span>
     <span id="nav-right">
-        <button id="theme-button"></button>
         <a
             id="github-button"
             href="https://github.com/saforem2/sam.onl"
@@ -26,179 +25,18 @@ import Filter from '@/components/Filter.astro'
                 > github</a
             >
             <a href="/rss.xml" target="_blank"> rss</a>
-            <button id="theme-button-mobile"> theme</button>
         </div>
     </details>
 </nav>
 <Filter />
 
 <style>
+    /* Visible bar hidden — the home/github/rss/search chips were
+       merged into IntroWidget's .iw-social-links row. This file is
+       still mounted because <Filter /> + theme/search wiring lives in
+       its module script; only the nav element is suppressed. */
     nav {
-        display: flex;
-        align-items: stretch;
-        gap: 0;
-        height: 1lh;
-        line-height: 1lh;
-        white-space: nowrap;
-        max-width: 100%;
-        overflow: hidden;
-        /* Float in the top-right corner of the page, like the old vim
-           island. Anchored to the #intro container (which is
-           position: relative) so it stays inside the page bounds. */
-        position: absolute;
-        /* JS sets --navbar-left and --navbar-top to align with the
-           #widgets-grid's left edge and roughly halfway between the
-           top of the page and the grid's top. */
-        top: var(--navbar-top, 2lh);
-        left: var(--navbar-left, 1ch);
-        z-index: 20;
-        min-width: 0;
-        width: max-content;
-        background-color: var(--background1);
-        border: 1px solid var(--foreground2);
-        /* TUI hard-offset shadow only when the navbar is being interacted
-           with — keeps the resting state minimal but signals focus. */
-        transition: box-shadow 100ms linear;
-        &:hover,
-        &:focus-within {
-            box-shadow: 2px 2px 0 0 var(--foreground0, #000);
-        }
-
-        :is(a[href], button:not([disabled])) {
-            position: relative;
-            outline: none;
-            transition:
-                background-color 100ms linear,
-                color 100ms linear;
-        }
-
-        :is(a[href], button:not([disabled])):focus-visible,
-        :is(a[href], button:not([disabled]))[data-vim-focused='true']:focus {
-            background-color: var(--focus-bg-strong);
-            color: var(--focus-fg);
-            text-decoration: none;
-        }
-    }
-
-    #home-link {
-        all: unset;
-        display: inline-flex;
-        align-items: center;
-        padding: 0 1ch;
-        color: var(--foreground1);
-        font-weight: bold;
-        cursor: pointer;
-        font-family: var(--font-family);
-        text-decoration: none;
-        border-right: 1px solid var(--background2);
-
-        &:hover {
-            background-color: var(--background2);
-        }
-    }
-
-    #nav-spacer {
-        flex: 1;
-    }
-
-    #nav-right {
-        display: flex;
-        align-items: stretch;
-        gap: 0;
-
-        :is(a, button) {
-            all: unset;
-            display: inline-flex;
-            align-items: center;
-            padding: 0 1ch;
-            color: var(--foreground3);
-            cursor: pointer;
-            font-family: var(--font-family);
-            font-size: inherit;
-            line-height: inherit;
-            text-decoration: none;
-            border-left: 1px solid var(--background2);
-        }
-
-        #theme-button:hover,
-        #theme-button:focus-visible {
-            background-color: oklch(from var(--blue) l c h / 0.15);
-            color: var(--blue);
-        }
-
-        #github-button:hover,
-        #github-button:focus-visible {
-            background-color: oklch(from var(--purple) l c h / 0.15);
-            color: var(--purple);
-        }
-
-        #rss-button:hover,
-        #rss-button:focus-visible {
-            background-color: oklch(from var(--orange) l c h / 0.15);
-            color: var(--orange);
-        }
-
-        #search-button:hover,
-        #search-button:focus-visible {
-            background-color: oklch(from var(--green) l c h / 0.15);
-            color: var(--green);
-        }
-    }
-
-    #nav-dropdown {
         display: none;
-    }
-
-    @media (max-width: 768px) {
-        #nav-right {
-            display: none;
-        }
-
-        #nav-dropdown {
-            display: block;
-
-            summary {
-                display: flex;
-                align-items: center;
-                padding: 0 1ch;
-                cursor: pointer;
-                list-style: none;
-                color: var(--foreground2);
-                border-left: 1px solid var(--background2);
-
-                &::-webkit-details-marker {
-                    display: none;
-                }
-            }
-
-            .nav-dropdown-content {
-                position: absolute;
-                right: 0;
-                top: 100%;
-                display: flex;
-                flex-direction: column;
-                background: var(--background0);
-                border: 1px solid var(--foreground2);
-                box-shadow: 2px 2px 0 0 var(--foreground2);
-                z-index: 30;
-                min-width: 16ch;
-
-                :is(a, button) {
-                    padding: 0.25lh 2ch;
-                    text-decoration: none;
-                    color: var(--foreground1);
-                    border: none;
-                    background: none;
-                    cursor: pointer;
-                    font: inherit;
-                    text-align: left;
-
-                    &:hover {
-                        background: var(--background1);
-                    }
-                }
-            }
-        }
     }
 </style>
 
@@ -220,10 +58,23 @@ import Filter from '@/components/Filter.astro'
     const themeButtons = Array.from(
         document.querySelectorAll('[data-theme-option]'),
     ) as HTMLButtonElement[]
+    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+    const resolveTheme = (theme: string) =>
+        theme === 'auto'
+            ? colorSchemeQuery.matches
+                ? 'custom-dark'
+                : 'custom-light'
+            : theme
 
     const setTheme = (theme: string) => {
-        if (root.getAttribute('data-webtui-theme') !== theme) {
-            root.setAttribute('data-webtui-theme', theme)
+        // Apply the resolved theme to the DOM (so CSS selectors keep
+        // working) but remember the user's literal choice in storage —
+        // including 'auto' — so the picker can show the right active
+        // pill and live-follow OS preference flips.
+        const resolved = resolveTheme(theme)
+        if (root.getAttribute('data-webtui-theme') !== resolved) {
+            root.setAttribute('data-webtui-theme', resolved)
         }
 
         themeDropdowns.forEach((dropdown) => {
@@ -254,6 +105,13 @@ import Filter from '@/components/Filter.astro'
         setTheme(systemTheme)
     }
 
+    // Live-follow OS preference flips when the user chose 'auto'.
+    colorSchemeQuery.addEventListener('change', () => {
+        if (localStorage.getItem(themeStorageKey) === 'auto') {
+            setTheme('auto')
+        }
+    })
+
     themeDropdowns.forEach((dropdown) => {
         new MutationObserver(() => {
             const value = dropdown.getAttribute('data-value')
@@ -274,29 +132,6 @@ import Filter from '@/components/Filter.astro'
             themeDialog.close()
         })
     })
-
-    const focusThemeOption = () => {
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                const active = themeDialog.querySelector(
-                    '.theme-option[aria-selected="true"]',
-                ) as HTMLElement | null
-                ;(active ?? themeDialog.querySelector('.theme-option'))?.focus()
-            })
-        })
-    }
-
-    document.getElementById('theme-button')?.addEventListener('click', () => {
-        themeDialog.showModal()
-        focusThemeOption()
-    })
-
-    document
-        .getElementById('theme-button-mobile')
-        ?.addEventListener('click', () => {
-            themeDialog.showModal()
-            focusThemeOption()
-        })
 
     document.getElementById('search-button')?.addEventListener('click', () => {
         searchDialog.showModal()
@@ -324,32 +159,4 @@ import Filter from '@/components/Filter.astro'
             window.location.href = href
         }
     })
-</script>
-
-<script>
-    /* Pin the floating navbar's left edge to #widgets-grid's left edge.
-       The grid uses translate-based centering; matching that exactly in
-       pure CSS is fragile across viewports, so we measure on load + on
-       resize and write the value to --navbar-left. */
-    function alignNavbar() {
-        const navbar = document.getElementById('top-navbar')
-        const grid = document.getElementById('widgets-grid')
-        if (!navbar || !grid) return
-        const gridRect = grid.getBoundingClientRect()
-        const navHeight = navbar.getBoundingClientRect().height || 20
-        const intro = document.getElementById('intro')
-        const introTop = intro ? intro.getBoundingClientRect().top : 0
-        // Sit 1lh above the grid top. nav's own height is 1lh, so the
-        // navbar's bottom edge ends up exactly at gridTop - 1lh, and its
-        // top edge at gridTop - 2lh. (1lh ≈ navHeight on this page.)
-        const top = gridRect.top - introTop - navHeight * 2
-        navbar.style.setProperty('--navbar-left', `${gridRect.left}px`)
-        navbar.style.setProperty('--navbar-top', `${top}px`)
-    }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', alignNavbar)
-    } else {
-        alignNavbar()
-    }
-    window.addEventListener('resize', alignNavbar)
 </script>

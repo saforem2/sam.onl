@@ -16,8 +16,7 @@ const posts = docs
 function formatDate(date: Date): string {
     const y = String(date.getFullYear()).slice(-2)
     const m = String(date.getMonth() + 1).padStart(2, '0')
-    const d = String(date.getDate()).padStart(2, '0')
-    return `${y}/${m}/${d}`
+    return `${y}/${m}`
 }
 
 function stripEmoji(text: string): string {
@@ -86,9 +85,8 @@ function stripEmoji(text: string): string {
 
     .pw-item {
         display: flex;
-        gap: 2ch;
+        gap: 1ch;
         align-items: baseline;
-        /* line-height: 2; */
         text-decoration: none;
         color: var(--foreground1);
         white-space: nowrap;
@@ -104,7 +102,11 @@ function stripEmoji(text: string): string {
     .pw-date {
         color: var(--foreground2);
         flex-shrink: 0;
-        width: 10ch;
+        /* Date format is YY/MM (5 chars). Pin the column to the glyph
+           width so the title starts immediately after with a single
+           1ch gap from .pw-item — no extra trailing padding inside the
+           date cell. */
+        width: 5ch;
     }
 
     .pw-name {

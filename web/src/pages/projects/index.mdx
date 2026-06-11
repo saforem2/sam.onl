@@ -8,6 +8,39 @@ Sam Foreman
 > [!TIP] <span style="color: var(--foreground2)">📂 [`saforem2/`](https://github.com/saforem2?tab=repositories)</span>
 
 <style>{`
+  /* Sortable table */
+  #repo-table {
+    width: 100%;
+    margin-block: 1lh;
+    border-collapse: collapse;
+  }
+  #repo-table th button {
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: inherit;
+  }
+  #repo-table th[data-sort] button:hover,
+  #repo-table th[data-sort] button:focus-visible {
+    color: var(--accent, var(--blue));
+  }
+  .repo-arrow {
+    display: inline-block;
+    width: 1ch;
+    color: var(--foreground2);
+    font-size: 0.85em;
+  }
+  #repo-table th[data-sort-dir="asc"] .repo-arrow::before { content: "↑"; }
+  #repo-table th[data-sort-dir="desc"] .repo-arrow::before { content: "↓"; }
+  #repo-table td { vertical-align: top; }
+  #repo-table td.col-stars,
+  #repo-table td.col-updated { white-space: nowrap; }
+  #repo-table td.col-desc { color: var(--foreground2); }
+
   #repo-grid {
     display: flex;
     flex-wrap: wrap;
@@ -85,6 +118,18 @@ Sam Foreman
     <p id="repo-grid-status">
         Loading repositories from GitHub…
     </p>
+    <table id="repo-table" hidden>
+        <thead>
+            <tr>
+                <th data-sort="stars" data-sort-dir="desc"><button type="button">⭐ <span class="repo-arrow"></span></button></th>
+                <th data-sort="updated"><button type="button">Updated <span class="repo-arrow"></span></button></th>
+                <th data-sort="name"><button type="button">Repo <span class="repo-arrow"></span></button></th>
+                <th>Description</th>
+                <th data-sort="lang"><button type="button">Lang <span class="repo-arrow"></span></button></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
     <div id="repo-grid" data-github-user="saforem2"></div>
 </div>
 
@@ -92,89 +137,157 @@ Sam Foreman
   (async function () {
     const grid = document.getElementById("repo-grid");
     const status = document.getElementById("repo-grid-status");
-    if (!grid) return;
+    const table = document.getElementById("repo-table");
+    const tbody = table ? table.querySelector("tbody") : null;
+    if (!grid || !table || !tbody) return;
+    const limit = grid.getAttribute("data-limit");
+    const cap = limit ? parseInt(limit, 10) : Infinity;
+    const showCards = grid.getAttribute("data-show-cards") !== "false";
     const username = grid.getAttribute("data-github-user") || "saforem2";
     const apiUrl =
       "https://api.github.com/users/" +
       username +
       "/repos?per_page=100&sort=updated";
+
+    function formatNumber(n) {
+      if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\\.0$/, "") + "M";
+      if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\\.0$/, "") + "k";
+      return String(n);
+    }
+    function fmtDate(iso) { return iso.slice(0, 10); }
+    function compare(a, b, key, dir) {
+      const mul = dir === "asc" ? 1 : -1;
+      let cmp = 0;
+      if (key === "stars") {
+        cmp = a.stargazers_count - b.stargazers_count;
+        if (cmp === 0) cmp = a.updated_at.localeCompare(b.updated_at);
+      } else if (key === "updated") {
+        cmp = a.updated_at.localeCompare(b.updated_at);
+      } else if (key === "name") {
+        cmp = a.name.localeCompare(b.name);
+      } else if (key === "lang") {
+        cmp = (a.language || "").localeCompare(b.language || "");
+      }
+      return cmp * mul;
+    }
+
+    let repos = [];
+    let sortKey = "stars";
+    let sortDir = "desc";
+
+    function makeCell(text, cls) {
+      const td = document.createElement("td");
+      td.textContent = text;
+      if (cls) td.className = cls;
+      return td;
+    }
+    function makeRepoCell(repo) {
+      const td = document.createElement("td");
+      const a = document.createElement("a");
+      a.href = repo.html_url;
+      a.textContent = repo.name;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      td.appendChild(a);
+      return td;
+    }
+    function makeCard(repo) {
+      const card = document.createElement("div");
+      card.className = "repo-card";
+      card.setAttribute("box-", "square");
+      const header = document.createElement("row");
+      header.setAttribute("align-", "center between");
+      const title = document.createElement("h3");
+      const link = document.createElement("a");
+      link.href = repo.html_url;
+      link.textContent = repo.name;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      title.appendChild(link);
+      const badge = document.createElement("span");
+      badge.setAttribute("is-", "badge");
+      badge.setAttribute("variant-", "background2");
+      badge.textContent = repo.private ? "Private" : "Public";
+      header.appendChild(title);
+      header.appendChild(badge);
+      const desc = document.createElement("p");
+      desc.className = "repo-description";
+      desc.textContent = repo.description || "No description provided.";
+      const meta = document.createElement("div");
+      meta.className = "repo-meta";
+      if (repo.language) {
+        const langSpan = document.createElement("span");
+        const dot = document.createElement("span");
+        dot.className = "repo-language-dot";
+        langSpan.appendChild(dot);
+        const langText = document.createElement("span");
+        langText.textContent = repo.language;
+        langSpan.appendChild(langText);
+        meta.appendChild(langSpan);
+      }
+      const starsSpan = document.createElement("span");
+      starsSpan.textContent = "⭐️ " + formatNumber(repo.stargazers_count || 0);
+      meta.appendChild(starsSpan);
+      const updatedSpan = document.createElement("span");
+      updatedSpan.textContent = "Updated " + fmtDate(repo.updated_at);
+      meta.appendChild(updatedSpan);
+      card.appendChild(header);
+      card.appendChild(desc);
+      card.appendChild(meta);
+      return card;
+    }
+
+    function render() {
+      const sorted = repos.slice().sort((a, b) => compare(a, b, sortKey, sortDir));
+      const shown = sorted.slice(0, cap);
+      tbody.replaceChildren();
+      if (showCards) grid.replaceChildren();
+      shown.forEach((repo) => {
+        const tr = document.createElement("tr");
+        tr.append(
+          makeCell(formatNumber(repo.stargazers_count || 0), "col-stars"),
+          makeCell(fmtDate(repo.updated_at), "col-updated"),
+          makeRepoCell(repo),
+          makeCell(repo.description || "", "col-desc"),
+          makeCell(repo.language || "")
+        );
+        tbody.appendChild(tr);
+        if (showCards) grid.appendChild(makeCard(repo));
+      });
+      table.querySelectorAll("th[data-sort]").forEach((th) => {
+        if (th.getAttribute("data-sort") === sortKey) th.setAttribute("data-sort-dir", sortDir);
+        else th.removeAttribute("data-sort-dir");
+      });
+    }
+
+    table.querySelectorAll("th[data-sort]").forEach((th) => {
+      th.addEventListener("click", () => {
+        const key = th.getAttribute("data-sort");
+        if (key === sortKey) {
+          sortDir = sortDir === "asc" ? "desc" : "asc";
+        } else {
+          sortKey = key;
+          sortDir = key === "name" || key === "lang" ? "asc" : "desc";
+        }
+        render();
+      });
+    });
+
     try {
       const res = await fetch(apiUrl);
       if (!res.ok) throw new Error("GitHub API error: " + res.status);
-      const repos = await res.json();
-      const filtered = repos.filter((repo) => !repo.fork);
-      if (filtered.length === 0) {
+      const data = await res.json();
+      repos = data.filter((r) => !r.fork);
+      if (repos.length === 0) {
         if (status) status.textContent = "No repositories found.";
         return;
       }
       if (status) status.remove();
-      function formatNumber(n) {
-        if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-        if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "k";
-        return String(n);
-      }
-      filtered.forEach((repo) => {
-        const card = document.createElement("div");
-        card.className = "repo-card";
-        card.setAttribute("box-", "square");
-
-        const header = document.createElement("row");
-        header.setAttribute("align-", "center between");
-
-        const title = document.createElement("h3");
-        const link = document.createElement("a");
-        link.href = repo.html_url;
-        link.textContent = repo.name;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        title.appendChild(link);
-
-        const badge = document.createElement("span");
-        badge.setAttribute("is-", "badge");
-        badge.setAttribute("variant-", "background2");
-        badge.textContent = repo.private ? "Private" : "Public";
-
-        header.appendChild(title);
-        header.appendChild(badge);
-
-        const desc = document.createElement("p");
-        desc.className = "repo-description";
-        desc.textContent = repo.description || "No description provided.";
-
-        const meta = document.createElement("div");
-        meta.className = "repo-meta";
-        if (repo.language) {
-          const langSpan = document.createElement("span");
-          const dot = document.createElement("span");
-          dot.className = "repo-language-dot";
-          langSpan.appendChild(dot);
-          const langText = document.createElement("span");
-          langText.textContent = repo.language;
-          langSpan.appendChild(langText);
-          meta.appendChild(langSpan);
-        }
-        const starsSpan = document.createElement("span");
-        starsSpan.innerHTML = "⭐️ " + formatNumber(repo.stargazers_count || 0);
-        meta.appendChild(starsSpan);
-        const updatedSpan = document.createElement("span");
-        const updatedDate = new Date(repo.updated_at);
-        updatedSpan.textContent = "Updated " + updatedDate.toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        });
-        meta.appendChild(updatedSpan);
-
-        card.appendChild(header);
-        card.appendChild(desc);
-        card.appendChild(meta);
-        grid.appendChild(card);
-      });
+      table.hidden = false;
+      render();
     } catch (err) {
       console.error(err);
-      if (status) {
-        status.textContent = "Failed to load repositories from GitHub.";
-      }
+      if (status) status.textContent = "Failed to load repositories from GitHub.";
     }
   })();
 `}</script>

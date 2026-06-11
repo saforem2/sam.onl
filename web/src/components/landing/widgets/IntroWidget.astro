@@ -62,8 +62,8 @@ const { variant, total, home = false } = Astro.props
             scientific data, and in applying these models to accelerate
             scientific discovery across a wide range of domains.
         </p>
-        <details is-="accordion">
-            <summary>Recent projects</summary>
+        <details is-="accordion" class="callout callout-tip" data-callout="tip">
+            <summary>Recent Projects</summary>
             <p>
                 Some recent projects include AERIS, a large language model for
                 materials science that was a finalist for the 2025 Gordon Bell
@@ -83,46 +83,62 @@ const { variant, total, home = false } = Astro.props
         <!--     > project. -->
         <!-- </p> -->
     </div>
-    <row class="iw-social-links">
-        <a
-            href="https://github.com/saforem2"
-            target="_blank"
-            title="GitHub"
-            size-="small">&#xe65b;</a
-        >
-        <a
-            href="https://bsky.app/profile/samforeman.bsky.social"
-            target="_blank"
-            title="Bluesky"
-            size-="small">&#xe28e;</a
-        >
-        <a
-            href="https://twitter.com/saforem2"
-            target="_blank"
-            title="Twitter"
-            size-="small">&#xeb72;</a
-        >
-        <a
-            href="https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en"
-            target="_blank"
-            title="Google Scholar"
-            size-="small">&#xf19d;</a
-        >
-        <a
-            href="https://www.linkedin.com/in/samforem2"
-            target="_blank"
-            title="LinkedIn"
-            size-="small">&#xe820;</a
-        >
-        <a href="mailto:sf@omg.lol" title="Email" size-="small">&#xf0e0;</a>
+    <div class="iw-social-wrap">
+        <row class="iw-social-links">
+            <a href="/" title="Home" size-="small">&#xef85;</a>
+            <button
+                type="button"
+                class="iw-social-cmd-btn"
+                title="Open command menu (?)"
+                size-="small"
+                aria-label="Open command menu"
+                data-iw-cmd>&#xf0e7;</button
+            >
+            <a
+                href="https://github.com/saforem2"
+                target="_blank"
+                title="GitHub"
+                size-="small">&#xe65b;</a
+            >
+            <a
+                href="https://twitter.com/saforem2"
+                target="_blank"
+                title="Twitter"
+                size-="small">&#xeb72;</a
+            >
+            <a
+                href="https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en"
+                target="_blank"
+                title="Google Scholar"
+                size-="small">&#xf19d;</a
+            >
+            <a
+                href="https://www.linkedin.com/in/samforem2"
+                target="_blank"
+                title="LinkedIn"
+                size-="small">&#xe820;</a
+            >
+            <a href="mailto:sf@omg.lol" title="Email" size-="small">&#xf0e0;</a>
+            <a href="/rss.xml" target="_blank" title="RSS" size-="small"
+                >&#xf09e;</a
+            >
+            <button
+                type="button"
+                class="iw-social-search-btn"
+                title="Search"
+                size-="small"
+                aria-label="Open search"
+                data-iw-search>&#xf002;</button
+            >
+        </row>
         {
             home && (
-                <a href="/about" class="iw-nav-home" style="margin-left: auto;">
+                <a href="/about" class="iw-nav-home">
                     [a]bout &rarr;
                 </a>
             )
         }
-    </row>
+    </div>
     {
         variant === 16 && (
             <column class="iw-highlights" gap-="0">
@@ -300,20 +316,276 @@ const { variant, total, home = false } = Astro.props
         }
     }
 
-    .iw-social-links {
+    /* Wrap: icon row + [a]bout CTA. On wide containers they sit
+       side-by-side (about pinned right); on narrow (mobile) the
+       about chip drops to its own row, full-width. */
+    .iw-social-wrap {
         display: flex;
         flex-wrap: wrap;
-        gap: 2ch;
+        align-items: center;
+        gap: 0.5lh 1ch;
         margin-top: auto;
+    }
+    /* [a]bout → CTA chip. Same keycap-chip language as the icon row,
+       with a wider tap target and the accent blue palette. */
+    .iw-social-wrap > .iw-nav-home {
+        margin-left: auto;
+        text-decoration: none !important;
+        box-sizing: border-box;
+        padding: 0 1ch;
+        line-height: 1lh;
+        height: 1lh;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--foreground0) 5%
+        );
+        border: 1px solid
+            color-mix(in srgb, var(--background0), var(--foreground0) 18%);
+        color: var(--foreground1);
+        font-weight: bold;
+        --chip-accent: var(--accent, var(--blue));
+        transition:
+            background-color 0.1s linear,
+            color 0.1s linear,
+            border-color 0.1s linear,
+            transform 0.1s ease-out,
+            box-shadow 0.1s ease-out;
 
-        a {
-            text-decoration: none !important;
-            padding-inline: 1ch;
-            background-color: oklch(
-                from var(--foreground0) calc(l * var(--oklch-scale, 0.85)) c h /
-                    0.1
+        &:hover,
+        &:focus-visible,
+        &[data-vim-focused='true'] {
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0 0 var(--chip-accent);
+            background-color: color-mix(
+                in srgb,
+                var(--background0),
+                var(--chip-accent) 18%
             );
+            border-color: var(--chip-accent);
+            color: var(--chip-accent);
         }
+        &:active {
+            transform: translate(0, 0);
+            box-shadow: 1px 1px 0 0 var(--chip-accent);
+        }
+    }
+    @media (max-width: 480px) {
+        .iw-social-wrap > .iw-nav-home {
+            margin-left: 0;
+            width: 100%;
+        }
+    }
+
+    .iw-social-links {
+        display: flex;
+        flex-wrap: nowrap;
+        /* Tighter gap — chips read as a key row instead of a sparse
+           list. Matches the .flex-container.icon-flex pattern on
+           /about/. */
+        gap: 0.5ch;
+        flex: 1 1 auto;
+        min-width: 0;
+
+        a,
+        button {
+            text-decoration: none !important;
+            box-sizing: border-box;
+            padding: 0 0.5ch;
+            line-height: 1lh;
+            height: 1lh;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+            flex: 1 1 0;
+            /* Keycap chip — opaque color-mix bg + hairline border, no
+               radius. Matches .flex-container.icon-flex on /about/. */
+            background-color: color-mix(
+                in srgb,
+                var(--background0),
+                var(--foreground0) 5%
+            );
+            border: 1px solid
+                color-mix(in srgb, var(--background0), var(--foreground0) 18%);
+            color: var(--foreground1);
+            /* Per-platform hover rules below override --chip-accent so
+               the shared lift+shadow declaration resolves to the right
+               hue without duplicating box-shadow lines. */
+            --chip-accent: var(--foreground2);
+            transition:
+                background-color 0.1s linear,
+                color 0.1s linear,
+                border-color 0.1s linear,
+                transform 0.1s ease-out,
+                box-shadow 0.1s ease-out;
+        }
+
+        a:hover,
+        a:focus-visible,
+        a[data-vim-focused='true'],
+        button:hover,
+        button:focus-visible,
+        button[data-vim-focused='true'] {
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0 0 var(--chip-accent);
+        }
+
+        a:active,
+        button:active {
+            transform: translate(0, 0);
+            box-shadow: 1px 1px 0 0 var(--chip-accent);
+        }
+    }
+
+    /* Per-button accent: each social link gets a brand-family color on
+       hover / focus / vim-focus. The vim cursor reads
+       getComputedStyle(focused).color as its background, so making each
+       link paint in its accent color here is what drives the cursor's
+       per-button color match (purple on github, sky on bluesky, etc.).
+       Kept OUTSIDE the .iw-social-links {} nesting block because
+       Lightning CSS's nesting parser silently drops attribute+
+       pseudo-class compound selectors when they're nested without an
+       explicit `&` — using top-level descendant selectors gets them
+       into the build reliably.
+       `!important` because there's an upstream `body a` rule in the
+       base layer using relative-color syntax that — even though it
+       SHOULD lose to a higher-specificity unlayered rule — appears
+       to silently invalidate the entire color cascade for these
+       anchors. !important sidesteps the cascade mystery entirely. */
+    .iw-social-links a[href='/']:hover,
+    .iw-social-links a[href='/']:focus-visible,
+    .iw-social-links a[href='/'][data-vim-focused='true'] {
+        --chip-accent: var(--accent, var(--blue));
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--accent, var(--blue)) 18%
+        ) !important;
+        border-color: var(--accent, var(--blue)) !important;
+        color: var(--accent, var(--blue)) !important;
+    }
+    .iw-social-links a[href*='github']:hover,
+    .iw-social-links a[href*='github']:focus-visible,
+    .iw-social-links a[href*='github'][data-vim-focused='true'] {
+        --chip-accent: #6e5494;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            #6e5494 18%
+        ) !important;
+        border-color: #6e5494 !important;
+        color: #6e5494 !important;
+    }
+    .iw-social-links a[href*='bsky']:hover,
+    .iw-social-links a[href*='bsky']:focus-visible,
+    .iw-social-links a[href*='bsky'][data-vim-focused='true'] {
+        --chip-accent: #0085ff;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            #0085ff 18%
+        ) !important;
+        border-color: #0085ff !important;
+        color: #0085ff !important;
+    }
+    .iw-social-links a[href*='twitter']:hover,
+    .iw-social-links a[href*='twitter']:focus-visible,
+    .iw-social-links a[href*='twitter'][data-vim-focused='true'] {
+        --chip-accent: #1da1f2;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            #1da1f2 18%
+        ) !important;
+        border-color: #1da1f2 !important;
+        color: #1da1f2 !important;
+    }
+    .iw-social-links a[href*='scholar.google']:hover,
+    .iw-social-links a[href*='scholar.google']:focus-visible,
+    .iw-social-links a[href*='scholar.google'][data-vim-focused='true'] {
+        --chip-accent: #4285f4;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            #4285f4 18%
+        ) !important;
+        border-color: #4285f4 !important;
+        color: #4285f4 !important;
+    }
+    .iw-social-links a[href*='linkedin']:hover,
+    .iw-social-links a[href*='linkedin']:focus-visible,
+    .iw-social-links a[href*='linkedin'][data-vim-focused='true'] {
+        --chip-accent: #0077b5;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            #0077b5 18%
+        ) !important;
+        border-color: #0077b5 !important;
+        color: #0077b5 !important;
+    }
+    .iw-social-links a[href^='mailto']:hover,
+    .iw-social-links a[href^='mailto']:focus-visible,
+    .iw-social-links a[href^='mailto'][data-vim-focused='true'] {
+        --chip-accent: #ea4335;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            #ea4335 18%
+        ) !important;
+        border-color: #ea4335 !important;
+        color: #ea4335 !important;
+    }
+    .iw-social-links a[href='/rss.xml']:hover,
+    .iw-social-links a[href='/rss.xml']:focus-visible,
+    .iw-social-links a[href='/rss.xml'][data-vim-focused='true'] {
+        --chip-accent: var(--orange);
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--orange) 18%
+        ) !important;
+        border-color: var(--orange) !important;
+        color: var(--orange) !important;
+    }
+    .iw-social-links button.iw-social-search-btn,
+    .iw-social-links button.iw-social-cmd-btn {
+        cursor: pointer;
+        font-family: var(--font-family);
+        font-size: inherit;
+        /* The shared `.iw-social-links a, button` rule sets
+           color: var(--foreground1), but webtui's <button> defaults
+           win on these two specifically — at-rest glyph reads darker
+           than the surrounding <a> chips. Pin the color explicitly. */
+        color: var(--foreground1) !important;
+    }
+    .iw-social-links button.iw-social-search-btn:hover,
+    .iw-social-links button.iw-social-search-btn:focus-visible,
+    .iw-social-links button.iw-social-search-btn[data-vim-focused='true'] {
+        --chip-accent: var(--green);
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--green) 18%
+        ) !important;
+        border-color: var(--green) !important;
+        color: var(--green) !important;
+    }
+    .iw-social-links button.iw-social-cmd-btn:hover,
+    .iw-social-links button.iw-social-cmd-btn:focus-visible,
+    .iw-social-links button.iw-social-cmd-btn[data-vim-focused='true'] {
+        --chip-accent: var(--yellow);
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--yellow) 18%
+        ) !important;
+        border-color: var(--yellow) !important;
+        color: var(--yellow) !important;
     }
 
     [is-='separator'] {
@@ -434,3 +706,27 @@ const { variant, total, home = false } = Astro.props
         }
     }
 </style>
+
+<script>
+    // Wire the merged search chip in iw-social-links to open the
+    // existing #search-dialog mounted by NavbarMinimal → Filter.
+    document.querySelectorAll('[data-iw-search]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const dialog = document.getElementById(
+                'search-dialog',
+            ) as HTMLDialogElement | null
+            dialog?.showModal()
+        })
+    })
+
+    // Wire the command-menu chip (the lightning bolt mirror of the
+    // sidebar's #command-button-sidebar) to open #command-dialog.
+    document.querySelectorAll('[data-iw-cmd]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const dialog = document.getElementById(
+                'command-dialog',
+            ) as HTMLDialogElement | null
+            dialog?.showModal()
+        })
+    })
+</script>

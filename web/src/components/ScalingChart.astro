@@ -1,0 +1,157 @@
+---
+/*
+ * ScalingChart — interactive log-log line chart, themed via CSS vars.
+ *
+ * Renders client-side with uPlot. Replaces matplotlib-baked SVGs in
+ * posts where the data is small enough to ship inline as JSON and
+ * theming matters more than print fidelity.
+ *
+ * Props:
+ *   id           — unique chart id (used to namespace the mount target)
+ *   title        — heading above the plot
+ *   xLabel       — x-axis label (e.g. "nodes")
+ *   yLabel       — y-axis label (e.g. "yeet-env wall-clock (seconds)")
+ *   x            — array of x values (log-scaled by default)
+ *   series       — array of `{ name, color, data, valueLabel? }`.
+ *                  `color` is a CSS var name like 'blue' or 'red' —
+ *                  resolved at runtime against the active theme.
+ *   refs         — optional reference lines (dashed/dotted helpers):
+ *                  `{ name, color, dash, data }`. Same color rules.
+ *   xLog/yLog    — booleans (default true) for log10 scaling
+ *
+ * The plot re-renders when [data-webtui-theme] on <html> changes so
+ * series colors stay tied to whatever palette is active.
+ */
+export interface ScalingChartSeries {
+    name: string
+    /** CSS var name (e.g. 'blue', 'red', 'orange') without the `--` prefix */
+    color: string
+    data: number[]
+    /** Optional per-point label, e.g. "70s" or "8,712ms" */
+    valueLabel?: (v: number) => string
+    /** Marker style: 'circle' (default) or 'square' */
+    marker?: 'circle' | 'square'
+}
+
+export interface ScalingChartRef {
+    name: string
+    color: string
+    /** Dash pattern, e.g. [4, 4] for dashed or [1, 4] for dotted */
+    dash?: number[]
+    data: number[]
+}
+
+export interface Props {
+    id: string
+    title?: string
+    xLabel?: string
+    yLabel?: string
+    x: number[]
+    series: ScalingChartSeries[]
+    refs?: ScalingChartRef[]
+    xLog?: boolean
+    yLog?: boolean
+    /** Height in px; defaults to 360 */
+    height?: number
+}
+
+const {
+    id,
+    title,
+    xLabel = '',
+    yLabel = '',
+    x,
+    series,
+    refs = [],
+    xLog = true,
+    yLog = true,
+    height = 360,
+} = Astro.props as Props
+
+/* Serialize chart payload as JSON for the client runtime to read off
+   the mount element via `data-chart-payload`. Kept as a JSON-encoded
+   attribute (vs. define:vars on an inline script tag) so the runtime
+   can pick it up from any number of mounts without per-mount script
+   blocks. */
+const payload = {
+    title,
+    xLabel,
+    yLabel,
+    x,
+    series: series.map((s) => ({
+        name: s.name,
+        color: s.color,
+        data: s.data,
+        marker: s.marker ?? 'circle',
+    })),
+    refs,
+    xLog,
+    yLog,
+    height,
+}
+---
+
+<div class="scaling-chart" id={`scaling-${id}`}>
+    {title && <p class="scaling-chart-title">{title}</p>}
+    <div
+        class="scaling-chart-mount"
+        data-chart-id={id}
+        data-chart-payload={JSON.stringify(payload)}>
+    </div>
+</div>
+
+<style is:global>
+    @import 'uplot/dist/uPlot.min.css';
+
+    .scaling-chart {
+        margin-block: 1lh;
+        /* Inside a flex/grid parent (.figure-row uses flex) the
+           default min-content sizing collapses the chart to its
+           narrowest child (~legend pill width). Force a flexible
+           basis and zero min-width so the chart fills the column it
+           lives in and sits side-by-side with siblings. */
+        flex: 1 1 0;
+        min-width: 0;
+        width: 100%;
+    }
+    .scaling-chart-title {
+        text-align: center;
+        color: var(--foreground1);
+        margin-block-end: 0.25lh;
+    }
+    .scaling-chart-mount {
+        width: 100%;
+    }
+    /* uPlot's own root — paint over its grey defaults with our theme. */
+    .scaling-chart .uplot {
+        font-family: var(--font-family);
+        color: var(--foreground2);
+    }
+    .scaling-chart .u-title {
+        color: var(--foreground1);
+    }
+    .scaling-chart .u-legend {
+        color: var(--foreground2);
+        font-size: 0.85em;
+    }
+    .scaling-chart .u-legend .u-marker {
+        border-radius: 0;
+    }
+    .scaling-chart .u-cursor-pt {
+        border-width: 2px !important;
+    }
+    /* Tooltip styling for our value labels (rendered by the
+       drawSeriesLabels hook, see the script). */
+    .scaling-chart .uplot canvas {
+        cursor: crosshair;
+    }
+</style>
+
+<script>
+    /* The client-side runtime lives in @/utils/scaling-chart so it
+       can be imported from MDX pages directly. Astro doesn't reliably
+       hoist this component's own script into MDX-consuming pages
+       (only the CSS module survives), so the layout-level
+       Doc.astro imports the runtime once for side-effects. */
+    import '@/utils/scaling-chart'
+</script>

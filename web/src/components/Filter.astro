@@ -2,6 +2,28 @@
 import { docPages } from '@/utils/content'
 import type { MarkdownHeading } from 'astro'
 
+// MarkdownHeading.text preserves inline markup from the source — a
+// heading like `### \`<style>\` tag` lands here with the literal
+// `<style>` substring intact. That string then flowed into
+// data-value="…" below as `<style> tag`; the browser parser saw
+// the literal `<style>` and opened a real <style> element inside
+// the attribute, eating everything through the next </style> as
+// CSS. The visible result on pages that render Filter (e.g.
+// /posts/) is "no styles applied" for the entire downstream tree.
+//
+// Earlier this used `.replace(/<\/?[a-zA-Z][^>]*>/g, '')` to strip
+// the tag entirely, but that nuked legitimate doc headings that
+// reference HTML element names in code spans (e.g. the webtui
+// typography page has `### \`<h1>\`-\`<h6>\``, `### \`<blockquote>\``,
+// `### \`<p>\``, etc.) — each one would collapse to either an empty
+// string or just `-` in the command-palette label, making them
+// indistinguishable and unfindable. Swap the brackets for the
+// Unicode single-angle quotes U+2039 / U+203A instead — visually
+// near-identical, never parses as HTML, and the heading stays
+// searchable as "‹h1›-‹h6›" / "‹blockquote›" / "‹p›".
+const safenAngleBrackets = (s: string) =>
+    s.replace(/</g, '‹').replace(/>/g, '›')
+
 const docHeadings = docPages
     .map((page) => ({
         headings:
@@ -27,14 +49,20 @@ const docHeadings = docPages
     )
 
 const themeOptions = {
+    auto: 'Auto (system)',
     'custom-light': 'Light',
     'custom-dark': 'Dark',
     catppuccin: 'Catppuccin Mocha',
     'catppuccin-latte': 'Catppuccin Latte',
+    'sam-light': 'sam.onl Light',
+    'sam-dark': 'sam.onl Dark',
 }
 
 const fontOptions = {
     iosevka: 'Iosevka',
+    'victor-mono': 'Victor Mono',
+    'miosevka-term': 'mIosevka-Term',
+    'miosevka-qp': 'mIosevka-QP',
     system: 'System',
 }
 ---
@@ -193,8 +221,16 @@ const fontOptions = {
             <div id="search-results-container">
                 {
                     docHeadings.map(([id, header], i) => {
-                        const headerText =
+                        const headerTextRaw =
                             typeof header === 'string' ? header : header.text
+                        // Substitute angle brackets before the
+                        // string lands in the page — without it a
+                        // heading like `### \`<style>\` tag` opens a
+                        // rogue <style> element inside data-value=…
+                        // and eats half the doc tree (browser
+                        // attribute parser still treats < as a real
+                        // tag start in some contexts).
+                        const headerText = safenAngleBrackets(headerTextRaw)
 
                         return (
                             <a
@@ -565,10 +601,13 @@ const fontOptions = {
     ) as HTMLElement | null
     const focusableLinks = document.querySelectorAll('.search-result')
     const themeLabels: Record<string, string> = {
+        auto: 'Auto (system)',
         'custom-light': 'Light',
         'custom-dark': 'Dark',
         catppuccin: 'Catppuccin Mocha',
         'catppuccin-latte': 'Catppuccin Latte',
+        'sam-light': 'sam.onl Light',
+        'sam-dark': 'sam.onl Dark',
     }
 
     let activeLink: HTMLAnchorElement | null =
@@ -591,8 +630,15 @@ const fontOptions = {
     const updateThemeCurrentValue = () => {
         if (!themeCurrentValue) return
 
+        // When the user picked "auto", localStorage holds 'auto' but the
+        // DOM attribute is the resolved system theme (custom-light /
+        // custom-dark). Surface the stored choice so the picker label
+        // reads "Auto (system)" instead of jumping between Light/Dark
+        // every time the OS preference flips.
+        const storedTheme = localStorage.getItem('webtui-theme')
         const activeTheme =
-            document.documentElement.getAttribute('data-webtui-theme') ??
+            storedTheme ||
+            document.documentElement.getAttribute('data-webtui-theme') ||
             'custom-light'
         const label = themeLabels[activeTheme] ?? activeTheme
         themeCurrentValue.textContent = label
@@ -882,7 +928,7 @@ const fontOptions = {
             })
         localStorage.setItem(fontStorageKey, font)
     }
-    setMonoFont(localStorage.getItem(fontStorageKey) ?? 'iosevka')
+    setMonoFont(localStorage.getItem(fontStorageKey) ?? 'miosevka-qp')
     document.addEventListener('click', (e) => {
         const btn = (e.target as HTMLElement)?.closest?.(
             '[data-font-option]',

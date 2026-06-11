@@ -28,12 +28,19 @@ const ogImage = ogSlug
             src="https://www.googletagmanager.com/gtag/js?id=G-RD883HJ1J2"
         ></script>
         <script is:inline>
+            // GA's reference snippet REQUIRES the Arguments object
+            // (gtag.js inspects each dataLayer entry via [0]/[1] on the
+            // Arguments prototype; a plain Array from rest params gets
+            // silently dropped — see commit 54db951). Don't "fix" this
+            // back to (...args).
+            /* eslint-disable prefer-rest-params */
             window.dataLayer = window.dataLayer || []
-            function gtag(...args) {
-                dataLayer.push(args)
+            function gtag() {
+                dataLayer.push(arguments)
             }
             gtag('js', new Date())
             gtag('config', 'G-RD883HJ1J2')
+            /* eslint-enable prefer-rest-params */
         </script>
 
         <script is:inline>
@@ -49,7 +56,15 @@ const ogImage = ogSlug
             ).matches
                 ? 'custom-dark'
                 : 'custom-light'
-            const resolvedTheme = migratedTheme ?? systemTheme
+            // "auto" follows the OS prefers-color-scheme — stored as
+            // 'auto' in localStorage so the picker can show "Auto
+            // (system)" as the selected entry, but the DOM attribute
+            // is always the resolved theme name so existing CSS
+            // selectors keep matching.
+            const resolvedTheme =
+                migratedTheme === 'auto'
+                    ? systemTheme
+                    : (migratedTheme ?? systemTheme)
             document.documentElement.setAttribute(
                 'data-webtui-theme',
                 resolvedTheme,
@@ -58,8 +73,12 @@ const ogImage = ogSlug
                 localStorage.setItem('webtui-theme', migratedTheme)
             }
 
-            // Mono-font preference (default: iosevka)
-            const storedMono = localStorage.getItem('mono-font') ?? 'iosevka'
+            // Mono-font preference (default: mIosevka-QP — quasi-
+            // proportional for prose; mIosevka-Term overlays onto code
+            // blocks via the [data-mono-font='miosevka-qp'] rule in
+            // global.css).
+            const storedMono =
+                localStorage.getItem('mono-font') ?? 'miosevka-qp'
             document.documentElement.setAttribute('data-mono-font', storedMono)
         </script>
         <meta name="generator" content={Astro.generator} />
@@ -108,20 +127,33 @@ const ogImage = ogSlug
         />
         <meta name="theme-color" content="#1c1c1c" />
 
-        <!-- Fonts: self-hosted, subset Iosevka WOFF2 (~668KB vs ~11MB
-             upstream). Preload only the Regular weight — the LCP-blocking
-             one; the rest swap in via font-display:swap as needed. See
-             web/public/fonts/iosevka/iosevka.css for the @font-face decls
-             and .claude/plans/velvety-twirling-glade.md for the
-             subsetting recipe. -->
+        <!-- Default font: mIosevka-QP (body prose) + mIosevka-Term
+             (code blocks, via the [data-mono-font='miosevka-qp']
+             override in global.css). Preload the Regular weight of
+             each so first paint doesn't FOUT through Iosevka or a
+             system fallback. -->
         <link
             rel="preload"
-            href="/fonts/iosevka/Iosevka-Regular.woff2"
+            href="/fonts/miosevka-qp/MIosevkaQp-Regular.woff2"
             as="font"
             type="font/woff2"
             crossorigin
         />
+        <link
+            rel="preload"
+            href="/fonts/miosevka-term/MIosevkaTerm-Regular.woff2"
+            as="font"
+            type="font/woff2"
+            crossorigin
+        />
+        <link href="/fonts/miosevka-qp/miosevka-qp.css" rel="stylesheet" />
+        <link href="/fonts/miosevka-term/miosevka-term.css" rel="stylesheet" />
+        <!-- Alternate font CSS files — @font-face decls only, ~1-2 KB
+             each. Browsers fetch the actual WOFF2 weights only when an
+             element resolves to one of these families (i.e. only when
+             the user picks the font in the command palette). -->
         <link href="/fonts/iosevka/iosevka.css" rel="stylesheet" />
+        <link href="/fonts/victor-mono/victor-mono.css" rel="stylesheet" />
         <style is:inline>
             svg[id^='mermaid-'] {
                 display: block;

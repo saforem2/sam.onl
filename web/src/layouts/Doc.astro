@@ -90,8 +90,16 @@ const tocLines: TocLine[] = tocHeadings.map((heading, index) => {
 const rawBody = await Astro.slots.render('default')
 const readingTime = getReadingTime(rawBody.replace(/<[^>]*>/g, ''))
 
-// Find related posts (same parent directory)
-const currentPath = Astro.url.pathname
+// Find related posts (same parent directory).
+// Normalize a trailing slash before the startsWith checks so the
+// bare collection-index path ('/posts', '/talks') matches the same
+// branch as nested entries ('/posts/foo/'). Production normalizes
+// to '/posts/' via Netlify; Astro dev sometimes serves '/posts'
+// unredirected, which previously fell through and hid the
+// Related-posts block.
+const currentPath = Astro.url.pathname.endsWith('/')
+    ? Astro.url.pathname
+    : `${Astro.url.pathname}/`
 const isPost = currentPath.startsWith('/posts/')
 const isTalk = currentPath.startsWith('/talks/')
 
@@ -103,19 +111,42 @@ const category =
         : null
 
 // Source file path for GitHub links
+import { stat } from 'node:fs/promises'
+
 const sourceFile = sortedPages.find((p) => compareUrlPaths(p.id, currentPath))
 const sourceId = sourceFile?.id ?? ''
-// The collection id strips index.md(x) — reconstruct the full file path
-const sourceFilePath = sourceFile
-    ? sourceId.endsWith('.md') || sourceId.endsWith('.mdx')
-        ? `web/src/pages/${sourceId}`
-        : `web/src/pages/${sourceId}/index.mdx`
-    : null
+// The collection id strips index.md(x) — reconstruct the full file path.
+// For dir-style pages (id is just the dir, e.g. "posts/2026/04/27"),
+// probe the filesystem for .mdx first then .md so GitHub/raw links
+// resolve to the real file (a hardcoded .mdx fallback used to 404 for
+// the 3 .md posts in the repo).
+async function resolveSourceFile(id: string): Promise<string | null> {
+    if (!id) return null
+    if (id.endsWith('.md') || id.endsWith('.mdx')) {
+        return `web/src/pages/${id}`
+    }
+    for (const ext of ['mdx', 'md'] as const) {
+        const rel = `web/src/pages/${id}/index.${ext}`
+        try {
+            // Doc.astro lives at web/src/layouts/, so `../pages/...`
+            // (NOT `../src/pages/...`) is the right relative path.
+            const resolved = new URL(
+                `../pages/${id}/index.${ext}`,
+                import.meta.url,
+            ).pathname
+            await stat(resolved)
+            return rel
+        } catch {
+            // try next extension
+        }
+    }
+    return null
+}
+const sourceFilePath = await resolveSourceFile(sourceId)
 const githubBase = 'https://github.com/saforem2/sam.onl'
 const githubRawBase = 'https://raw.githubusercontent.com/saforem2/sam.onl'
 
 // Get file last-modified date
-import { stat } from 'node:fs/promises'
 let fileModifiedDate: Date | null = null
 if (sourceFilePath) {
     try {
@@ -305,7 +336,7 @@ const articleSchema =
                                             {sourceFilePath && (
                                                 <span class="post-meta-links">
                                                     <a
-                                                        href={`${githubBase}/blob/main/${sourceFilePath}`}
+                                                        href={`${githubBase}/blob/${currentBranch}/${sourceFilePath}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         is-="badge"
@@ -317,7 +348,7 @@ const articleSchema =
                                                         &#xf09b;
                                                     </a>
                                                     <a
-                                                        href={`${githubRawBase}/main/${sourceFilePath}`}
+                                                        href={`${githubRawBase}/${currentBranch}/${sourceFilePath}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         is-="badge"
@@ -533,7 +564,6 @@ const articleSchema =
             <span class="vsl-spacer"></span>
             <span class="vsl-keys">
                 <span id="vsl-last-key"></span>
-                <button id="vsl-btn-q" tabindex="-1">?</button>
             </span>
             <span class="vsl-clock">
                 <span id="vsl-clock-date"></span>
@@ -569,6 +599,11 @@ const articleSchema =
         isUserTyping,
         vimFocusElement,
     } from '@/utils/vim'
+    /* Side-effect import. The runtime no-ops if no .scaling-chart-mount
+       elements exist; on pages that DO mount a chart, the uPlot library
+       is dynamically imported from inside that runtime so other doc
+       pages pay nothing beyond the small selector check. */
+    import '@/utils/scaling-chart'
 
     const mainItemQuery = '[tabindex="0"], a[href], summary'
     const queryString = `#main-content ${mainItemQuery}`
@@ -968,12 +1003,15 @@ const articleSchema =
             window.history.forward()
         }
 
-        // ctrl-d / ctrl-u — half-page scroll with focus follow
+        // d / u (or ctrl-d / ctrl-u) — half-page scroll with focus follow.
+        // Plain d/u matches less(1) and the vim default; ctrl-d/ctrl-u is
+        // mostly intercepted by the browser (bookmark / address-bar focus)
+        // but kept for muscle memory when it makes it through.
         if (
             (e.key === 'd' || e.key === 'u') &&
-            e.ctrlKey &&
             !e.metaKey &&
-            !e.altKey
+            !e.altKey &&
+            !e.shiftKey
         ) {
             e.preventDefault()
             const scroller = mainContent
@@ -1203,6 +1241,14 @@ const articleSchema =
             anchor.textContent = '#'.repeat(level)
             anchor.style.marginInlineEnd = '1ch'
             heading.prepend(anchor)
+
+            /* Click the prefix `##`/`###`/... to both navigate to the
+               section (default <a href="#slug"> behavior) AND copy the
+               canonical URL to the clipboard. */
+            anchor.addEventListener('click', () => {
+                const url = `${location.origin}${location.pathname}#${slug}`
+                navigator.clipboard?.writeText(url).catch(() => {})
+            })
         })
     }
 </script>
@@ -1968,17 +2014,12 @@ const articleSchema =
         setInterval(tick, 10_000)
     }
 
-    // Visual feedback for statusline keys + last-key indicator
-    const vslBtnQ = document.getElementById('vsl-btn-q')
+    // Last-key indicator in the statusline — show the last pressed
+    // single-char key for ~2 seconds. Helps signal which key triggered
+    // a navigation when the action isn't otherwise visible.
     const lastKeyEl = document.getElementById('vsl-last-key')
     let lastKeyTimer: ReturnType<typeof setTimeout> | null = null
-    const keyMap: Record<string, HTMLElement | null> = {
-        '?': vslBtnQ,
-    }
     window.addEventListener('keydown', (e) => {
-        const btn = keyMap[e.key]
-        if (btn) btn.style.color = 'var(--foreground0)'
-        // Show last pressed key
         if (lastKeyEl && e.key.length === 1) {
             lastKeyEl.textContent = e.key
             if (lastKeyTimer) clearTimeout(lastKeyTimer)
@@ -1986,10 +2027,6 @@ const articleSchema =
                 lastKeyEl.textContent = ''
             }, 2000)
         }
-    })
-    window.addEventListener('keyup', (e) => {
-        const btn = keyMap[e.key]
-        if (btn) btn.style.color = ''
     })
 </script>
 
@@ -2022,7 +2059,18 @@ const articleSchema =
                 // page (Music / Projects / More). Strip any leading
                 // emoji-icon-+-space before comparing so e.g.
                 // "📓 Projects" still matches "projects".
-                const headingText = heading.textContent?.trim() ?? ''
+                //
+                // Ignore the `<a class="heading-anchor">` that rehype
+                // injects (renders as a literal "##"/"###"/etc.) — its
+                // textContent otherwise prefixes the heading and breaks
+                // the exact-label match.
+                const headingClone = heading.cloneNode(true) as HTMLElement
+                for (const a of headingClone.querySelectorAll(
+                    '.heading-anchor',
+                )) {
+                    a.remove()
+                }
+                const headingText = headingClone.textContent?.trim() ?? ''
                 const headingBare = headingText
                     .replace(
                         /^[\p{Emoji_Presentation}\p{Extended_Pictographic}️‍]+\s*/gu,
@@ -2030,7 +2078,12 @@ const articleSchema =
                     )
                     .trim()
                     .toLowerCase()
-                const collapseExact = new Set(['music', 'projects', 'more'])
+                const collapseExact = new Set([
+                    'music',
+                    'projects',
+                    'more',
+                    'detailed list',
+                ])
                 const collapseByDefault =
                     /\b(19|20)\d{2}\s*$/.test(headingText) ||
                     collapseExact.has(headingBare)
@@ -2086,15 +2139,16 @@ const articleSchema =
             background-color: transparent !important;
             list-style: none;
             cursor: pointer;
-            padding: 0 !important;
+            padding-block: 0 !important;
             line-height: 1lh !important;
             min-height: 1lh;
             display: flex;
             align-items: center;
 
-            &::before {
-                content: none !important;
-            }
+            /* (previous rule killed all ::before content here so the
+               default details disclosure marker didn't ghost-render;
+               with the new + / x glyph that sets content via the
+               state-specific selectors below, we let those win.) */
 
             &::-webkit-details-marker {
                 display: none;
@@ -2109,8 +2163,24 @@ const articleSchema =
             }
         }
 
-        /* When collapsed, dim + tinted bg + ellipsis (only on hover/focus) */
+        /* When collapsed, treat the band like a collapsed callout:
+           italic heading text + `+` glyph prefix + left-border accent
+           in the heading's hue. The trailing ellipsis still fades in
+           on hover/focus so the reader knows there's content tucked
+           behind. */
         &:not([open]) > summary {
+            font-style: italic;
+            border-left: 2px solid var(--callout-color, var(--foreground3));
+            padding-inline-start: 1.5ch;
+
+            &::before {
+                content: '+';
+                color: var(--callout-color, var(--foreground3));
+                margin-inline-end: 1ch;
+                font-style: normal;
+                font-weight: bold;
+            }
+
             &::after {
                 content: ' ...';
                 color: var(--foreground2);
@@ -2123,30 +2193,65 @@ const articleSchema =
                 opacity: 1;
             }
         }
+        /* Open band: no inline padding (the heading should sit at the
+           same x-position as the surrounding prose, since there's no
+           border or glyph to clear) and no `x` disclosure glyph.
+           webtui's theme-custom accordion paints an `x` on
+           `details[is-~='accordion'][open] > summary::before` by
+           default, which our heading-collapse <details> inherits;
+           explicitly suppress it. */
+        &[open] > summary {
+            padding-inline-start: 0;
+            &::before {
+                content: none !important;
+            }
+        }
+        /* Per-level callout-color so the `+`/`x` glyph and the left
+           border track the same hue as the heading text. */
+        &[data-heading-level='2'] {
+            --callout-color: var(--h2, var(--orange));
+        }
+        &[data-heading-level='3'] {
+            --callout-color: var(--h3, var(--green));
+        }
+        &[data-heading-level='4'] {
+            --callout-color: var(--h4, var(--blue));
+        }
+        &[data-heading-level='5'] {
+            --callout-color: var(--h5, var(--purple));
+        }
+        &[data-heading-level='6'] {
+            --callout-color: var(--h6, var(--aqua));
+        }
 
+        /* Closed-band tint: very faint slice of the heading's accent
+           color, just enough to mark the row as a discrete band. Was
+           0.1 alpha which read as a glaring color block when a stack
+           of years collapsed together (year list). 0.04 keeps the
+           rhythm without competing with the heading text. */
         &:not([open])[data-heading-level='2'] > summary {
             background-color: oklch(
-                from var(--h2, var(--orange)) l c h / 0.1
+                from var(--h2, var(--orange)) l c h / 0.04
             ) !important;
         }
         &:not([open])[data-heading-level='3'] > summary {
             background-color: oklch(
-                from var(--h3, var(--green)) l c h / 0.1
+                from var(--h3, var(--green)) l c h / 0.04
             ) !important;
         }
         &:not([open])[data-heading-level='4'] > summary {
             background-color: oklch(
-                from var(--h4, var(--blue)) l c h / 0.1
+                from var(--h4, var(--blue)) l c h / 0.04
             ) !important;
         }
         &:not([open])[data-heading-level='5'] > summary {
             background-color: oklch(
-                from var(--h5, var(--purple)) l c h / 0.1
+                from var(--h5, var(--purple)) l c h / 0.04
             ) !important;
         }
         &:not([open])[data-heading-level='6'] > summary {
             background-color: oklch(
-                from var(--h6, var(--aqua)) l c h / 0.1
+                from var(--h6, var(--aqua)) l c h / 0.04
             ) !important;
         }
 

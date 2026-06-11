@@ -1,9 +1,20 @@
 [build]
 command = "npx playwright install chromium && bun run build"
 publish = "web/dist"
+# Skip the build when nothing in the publishable surface changed.
+# - Exit 0 (no diff in these paths) → Netlify skips the build
+# - Exit 1 (something changed)      → Netlify runs the build
+# `web/` is the Astro app (incl. content collections); `packages/` is the
+# webtui CSS deps it imports; lockfile + workspace root + this file are
+# build-relevant. README / .github / .claude → no rebuild.
+ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- web/ packages/ netlify.toml package.json bun.lock turbo.json"
 
 [build.environment]
 NODE_OPTIONS = "--max-old-space-size=4096"
+# Install Playwright's chromium into node_modules (default is ~/.cache/ms-playwright,
+# which Netlify does NOT cache between builds). Netlify caches node_modules
+# automatically, so this turns the ~150 MB Chromium download into a one-time cost.
+PLAYWRIGHT_BROWSERS_PATH = "0"
 
 # Self-hosted font binaries (Iosevka, Nerd Font) are content-addressable
 # by path; pin them as immutable for a year so users never re-download.

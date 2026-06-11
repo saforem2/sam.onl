@@ -41,10 +41,9 @@ export const recentTalks = (await getCollection('docs'))
 ## 🧑🏻‍💻 About
 <div id="flex-container" style="display: flex; flex-direction: row; gap: 1ch; width: 100%; justify-content: space-between">
 <div style="width: round(50%, 1ch);">
-
 I’m a [Computational Scientist][Argonne National Laboratory] in the [AI
 / ML group] at the [Argonne Leadership Computing Facility (ALCF)].
-
+<br />
 I’m generally interested in the large scale distributed training of AI
 models for scientific applications, and am the co-lead of the [Models /
 Pre-Training group] for the [AuroraGPT] project.
@@ -227,7 +226,7 @@ Pre-Training group] for the [AuroraGPT] project.
 {recentTalks.map((talk) => (
 <tr>
 <td>{(() => { const d = new Date(talk.data.date); return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`; })()}</td>
-<td><a href={`/${talk.id.replace(/\/index\.(mdx?|md)$/, '/')}`}>{talk.data.title}</a></td>
+<td><a href={`/${talk.id.replace(/\/index\.(mdx?|md)$/, '/')}`}>{talk.data.shortTitle ?? talk.data.title}</a></td>
 <td>{talk.data.location ?? ''}</td>
 </tr>
 ))}
@@ -240,6 +239,22 @@ Pre-Training group] for the [AuroraGPT] project.
 </div>
 
 ### By Year
+
+#### 📆 2026
+
+> [!TIP] Production Pre-Training at Scale: The Good, the Bad, and the Restarts @ TPC'26 (Baltimore) 06/2026
+>
+> <iframe
+>     class="slide-deck reveal-full-page"
+>     sandbox="allow-scripts allow-same-origin"
+>     loading="lazy"
+>     src="https://sam.onl/talks/2026/06/03/"
+>     title="Production Pre-Training at Scale: The Good, the Bad, and the Restarts"
+>     align="center"
+>     frameborder="0"
+>     webkitallowfullscreen
+>     allowfullscreen
+>     style="aspect-ratio:1.3671875;"></iframe>
 
 #### 📆 2025
 
@@ -759,33 +774,25 @@ Pre-Training group] for the [AuroraGPT] project.
 
 > [!TIP] Deep Learning HMC for Improved Gauge Generation @ ML in LQCD Workshop 2021
 >
-> <iframe
->     class="slide-deck reveal-full-page"
->     sandbox="allow-scripts allow-same-origin"
->     loading="lazy"
->     src="https://slides.com/samforeman/dlhmc/embed"
->     title="Deep Learning HMC for Improved Gauge Generation"
->     scrolling="no"
->     frameborder="0"
->     webkitallowfullscreen
->     allowfullscreen
->     style="aspect-ratio:1.3671875;"></iframe>
+> <a href="https://slides.com/samforeman/dlhmc" target="_blank" rel="noopener">
+>     <img
+>         src="https://media.slid.es/thumbnails/aec105f157069fcd9dbfa170dcaa7073/thumb.jpg?1723754148"
+>         alt="Deep Learning HMC for Improved Gauge Generation — title slide"
+>         loading="lazy"
+>         style="width:100%;max-width:100%;aspect-ratio:1.3671875;object-fit:cover;display:block;" />
+> </a>
 
 #### 📆 2020
 
 > [!TIP] Machine Learning for Lattice QCD @ U. Iowa 2020
 >
-> <iframe
->     class="slide-deck reveal-full-page"
->     sandbox="allow-scripts allow-same-origin"
->     loading="lazy"
->     src="https://slides.com/samforeman/l2hmc-qcd/embed"
->     title="Machine Learning for Lattice QCD"
->     align="center"
->     frameborder="0"
->     webkitallowfullscreen
->     allowfullscreen
->     style="aspect-ratio:1.3671875;"></iframe>
+> <a href="https://slides.com/samforeman/l2hmc-qcd" target="_blank" rel="noopener">
+>     <img
+>         src="https://media.slid.es/thumbnails/faa4b59878147903edf834901c898e3f/thumb.jpg?1657402696"
+>         alt="Machine Learning for Lattice QCD — title slide"
+>         loading="lazy"
+>         style="width:100%;max-width:100%;aspect-ratio:1.3671875;object-fit:cover;display:block;" />
+> </a>
 
 ## 📝 Work
 
@@ -794,12 +801,14 @@ Pre-Training group] for the [AuroraGPT] project.
 
 | Year | Title |
 | ---- | ----- |
-| 2025 | 🌎 [<span class="highlight-green">**AERIS**</span>: Argonne Earth Systems Model for Reliable and Skillful Predictions][Argonne Earth Systems Model for Reliable and Skillful Predictions][^aeris-bell] |
+| 2026 | [Extending µP: Spectral Conditions for Feature Learning Across Optimizers][extending-mup] |
+| 2026 | [Building an AI-native Research Ecosystem for Experimental Particle Physics: A Community Vision][ai-native-research] |
+| 2025 | [<span class="highlight-green">**AERIS**</span>: Argonne Earth Systems Model for Reliable and Skillful Predictions][Argonne Earth Systems Model for Reliable and Skillful Predictions][^aeris-bell] |
 | 2025 | [Aurora: Architecting Argonne's First Exascale Supercomputer for Accelerated Scientific Discovery][aurora-paper] |
 | 2025 | [HiPerRAG: High-Performance Retrieval Augmented Generation for Scientific Insights] |
 | 2025 | [Automated Tuning for HMC Mass Ratios] |
 | 2025 | [MOFA: Discovering Materials for Carbon Capture with a GenAI and Simulation-Based Workflow] |
-| 2024 | 🧪 [<span class="highlight-pink">**MProt-DPO**</span>: Breaking the ExaFLOPS Barrier for Multimodal Protein Design with DPO][mprot-paper][^mprot-bell] |
+| 2024 | [<span class="highlight-pink">**MProt-DPO**</span>: Breaking the ExaFLOPS Barrier for Multimodal Protein Design with DPO][mprot-paper][^mprot-bell] |
 | 2024 | [Intro to HPC Bootcamp: Engaging New Communities Through Energy Justice Projects] |
 | 2024 | [Thorough Characterization and Analysis of Large Transformer Model Training At-Scale] |
 | 2023 | [MLMC: Machine Learning Monte Carlo for Lattice Gauge Theory] |
@@ -807,7 +816,7 @@ Pre-Training group] for the [AuroraGPT] project.
 | 2023 | [DeepSpeed4Science Initiative: Enabling Large-Scale Scientific Discovery] |
 | 2023 | [Comprehensive Performance Study of LLMs on Novel AI Accelerators] |
 | 2023 | [Exploratory Analysis of Climate Data with `ClimRR`][Foundation models for long term climate forecasting] |
-| 2023 | 🧬 [<span class="highlight">**GenSLMs**</span>: Genome-scale language models reveal SARS-Cov-2 evolutionary dynamics][genslms-paper][^genslms-bell] |
+| 2023 | [<span class="highlight">**GenSLMs**</span>: Genome-scale language models reveal SARS-Cov-2 evolutionary dynamics][genslms-paper][^genslms-bell] |
 | 2022 | [Lattice QCD and Particle Physics] |
 | 2022 | [Applications of ML to Lattice QFT] |
 | 2021 | [LeapFrogLayers: Trainable Framework for Effective Sampling] |
@@ -825,65 +834,70 @@ Pre-Training group] for the [AuroraGPT] project.
 
 ### Detailed list
 
-1.  🌎 [<span class="highlight-green">**AERIS**</span>: **Argonne Earth
+1.  [**Extending µP: Spectral Conditions for Feature Learning Across
+    Optimizers**][extending-mup] (Gupta et al. (2026))
+2.  [**Building an AI-native Research Ecosystem for Experimental
+    Particle Physics: A Community Vision**][ai-native-research]
+    (Aarrestad et al. (2026))
+3.  🌎 [<span class="highlight-green">**AERIS**</span>: **Argonne Earth
     Systems Model for Reliable and Skillful
     Predictions**][Argonne Earth Systems Model for Reliable and Skillful Predictions]
     (Hatanpää et al. (2025))
     - ✨ [*2025 ACM Gordon Bell Prize for Climate Modeling Finalist*]
-2.  Aurora: Architecting Argonne’s First Exascale Supercomputer for
+4.  Aurora: Architecting Argonne’s First Exascale Supercomputer for
     Accelerated Scientific Discovery (Allen et al. (2025))
-3.  [HiPerRAG: High-Performance Retrieval Augmented Generation for
+5.  [HiPerRAG: High-Performance Retrieval Augmented Generation for
     Scientific Insights] (Gokdemir et al. (2025))
-4.  [Automated Tuning for HMC Mass Ratios] (Torsiello et al. (2025))
-5.  [MOFA: Discovering Materials for Carbon Capture with a GenAI and
+6.  [Automated Tuning for HMC Mass Ratios] (Torsiello et al. (2025))
+7.  [MOFA: Discovering Materials for Carbon Capture with a GenAI and
     Simulation-Based Workflow] (Yan et al. (2025))
-6.  🧪 [<span class="highlight-pink">**MProt-DPO**</span>: **Breaking
+8.  🧪 [<span class="highlight-pink">**MProt-DPO**</span>: **Breaking
     the ExaFLOPS Barrier for Multimodal Protein Design with DPO**]
     (Dharuman et al. (2024))
     - 🌟 [*2024 ACM Gordon Bell Finalist*]
-7.  [Intro to HPC Bootcamp: Engaging New Communities Through Energy
+9.  [Intro to HPC Bootcamp: Engaging New Communities Through Energy
     Justice Projects] (<span class="nocase">Leung et al.</span> (2024))
-8.  [Thorough Characterization and Analysis of Large Transformer Model
+10.  [Thorough Characterization and Analysis of Large Transformer Model
     Training At-Scale] (Cheng et al. (2024))
-9.  [MLMC: Machine Learning Monte Carlo for Lattice Gauge Theory]
+11.  [MLMC: Machine Learning Monte Carlo for Lattice Gauge Theory]
     (Foreman et al. (2023))
-10. [Protein Generation via Genome-scale Language Models with
+12. [Protein Generation via Genome-scale Language Models with
     Bio-physical Scoring] (<span class="nocase">Dharuman et al.</span>
     (2023))
-11. [DeepSpeed4Science Initiative: Enabling Large-Scale Scientific
+13. [DeepSpeed4Science Initiative: Enabling Large-Scale Scientific
     Discovery] (<span class="nocase">Song et al.</span> (2023))
     - [📰 DeepSpeed4Science.ai Blog Post]
     - [🚂 Loooooooong Sequence Lengths]
-12. [Comprehensive Performance Study of LLMs on Novel AI Accelerators]
+14. [Comprehensive Performance Study of LLMs on Novel AI Accelerators]
     (Emani et al. (2023))
-13. [Exploratory Analysis of Climate Data with
+15. [Exploratory Analysis of Climate Data with
     `ClimRR`][Foundation models for long term climate forecasting],
     [Intro to HPC Bootcamp @ NERSC] (Foreman (2023))
-14. 🧬 [<span class="highlight">**GenSLMs**</span>: **Genome-scale
+16. 🧬 [<span class="highlight">**GenSLMs**</span>: **Genome-scale
     language models reveal SARS-Cov-2 evolutionary dynamics**]
     (<span class="nocase">Zvyagin et al.</span> (2023))
     - Winner of the [🏆 _ACM Gordon Bell Special Prize for High
       Performance Computing-Based COVID-19
       Research_][ACM Gordon Bell Special Prize]
-15. [Lattice QCD and Particle Physics] (<span class="nocase">Kronfeld et
+17. [Lattice QCD and Particle Physics] (<span class="nocase">Kronfeld et
     al.</span> (2022))
-16. [Applications of ML to Lattice QFT] (<span class="nocase">Boyda et
+18. [Applications of ML to Lattice QFT] (<span class="nocase">Boyda et
     al.</span> (2022))
-17. [LeapFrogLayers: Trainable Framework for Effective Sampling]
+19. [LeapFrogLayers: Trainable Framework for Effective Sampling]
     (Foreman, Izubuchi, et al. (2021))
-18. [HMC with Normalizing Flows][] \[[slides]\] (Foreman, Izubuchi, et
+20. [HMC with Normalizing Flows][] \[[slides]\] (Foreman, Izubuchi, et
     al. (2021))
-19. [Deep Learning Hamiltonian Monte Carlo][] \[[+ poster]\] (Foreman,
+21. [Deep Learning Hamiltonian Monte Carlo][] \[[+ poster]\] (Foreman,
     Jin, et al. (2021))
-20. [Machine Learning and Neural Networks for Field Theory] (Foreman et
+22. [Machine Learning and Neural Networks for Field Theory] (Foreman et
     al. (2020))
-21. [Examples of renormalization group transformations for image sets]
+23. [Examples of renormalization group transformations for image sets]
     (Samuel Foreman et al. (2018))
-22. [RG inspired Machine Learning for lattice field theory] (Sam Foreman
+24. [RG inspired Machine Learning for lattice field theory] (Sam Foreman
     et al. (2018))
-23. [Large Energy Density in Three-Plate Nanocapacitors due to Coulomb
+25. [Large Energy Density in Three-Plate Nanocapacitors due to Coulomb
     Blockade] (Hubler et al. (2018))
-24. [Superconductivity of In and Sn Samples] (Deamont and Foreman
+26. [Superconductivity of In and Sn Samples] (Deamont and Foreman
     (2014))
 
 > [!NOTE] 📓 References
@@ -1094,243 +1108,160 @@ Pre-Training group] for the [AuroraGPT] project.
 
 ## 📂 Projects
 
+<a href="https://github.com/saforem2/"><code>saforem2</code></a>'s GitHub Repositories — top 10 by stars.
+Full list at [/projects](/projects).
+
 <style>{`
-  .repo-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1ch;
-    justify-content: flex-start;
-    align-items: stretch;
-    margin-inline: 2ch;
+  #repo-table {
+    width: 100%;
+    margin-block: 1lh;
+    border-collapse: collapse;
   }
-  .repo-card {
-    flex: 1 1 260px; /* responsive: min width ~260px */
-    max-width: 360px;
-    border-radius: 0pt;
-    padding: 1ch;
-    border: 1px solid var(--foreground3, #dee2e6);
-    background-color: oklch(from var(--background0, #f8f9fa) calc(var(--l) + 0.02) var(--c) var(--h));
-    /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); */
-    /* box-shadow: 2pt 2pt black; */
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.15s ease, box-shadow 0.15s ease,
-                border-color 0.15s ease, background-color 0.15s ease;
-  }
-  .repo-card:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 3px 3px black;
-    border: 1pt solid var(--foreground0, black);
-  }
-  .repo-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.4rem;
-    margin-bottom: 0.35rem;
-  }
-  .repo-name {
-    color: inherit;
+  #repo-table th button {
+    appearance: none;
     background: none;
-    font-size: 1.0rem;
-    font-weight: 600;
-    margin: 0;
-    word-break: break-word;
-    border: 1pt solid rgba(0,0,0,0.0) !important;
-    padding-inline: 1pt;
-  }
-  .repo-name a {
-    text-decoration: none;
-    color: var(--accent-color, var(--blue, #0d6efd));
-  }
-  .repo-name a:hover {
-    text-decoration: underline;
     border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: inherit;
   }
-  .repo-badge {
-    font-size: 0.7rem;
-    padding: 0.15rem 0.45rem;
-    /* border-radius: 999px; */
-    border: 1px solid var(--bs-border-color, #838383);
-    background: var(--bs-secondary-bg, rgba(108, 117, 125, 0.1));
-    white-space: nowrap;
+  #repo-table th[data-sort] button:hover,
+  #repo-table th[data-sort] button:focus-visible {
+    color: var(--accent, var(--blue));
   }
-  .repo-description {
-    margin: 0.3rem 0 0.6rem;
-    color: var(--bs-secondary-color, #6c757d);
-    min-height: 2.2em; /* keep rows roughly aligned */
-    margin-block-end: 0pt!important;
+  .repo-arrow {
+    display: inline-block;
+    width: 1ch;
+    color: var(--foreground2);
+    font-size: 0.85em;
   }
-  .repo-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.6rem;
-    margin-top: auto;
-    font-size: 0.8rem;
-    color: var(--bs-secondary-color, #6c757d);
-  }
-  .repo-meta span {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.2rem;
-  }
-  .repo-language-dot {
-    width: 0.55rem;
-    height: 0.55rem;
-    /* border-radius: 999px; */
-    background: currentColor;
-  }
-  /* Dark mode tweaks when using Quarto's theme toggle */
-  body[data-mode="dark"] .repo-card {
-    background-color: var(--bs-body-bg, #111827);
-    border-color: var(--bs-border-color, #374151);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
-  }
-  body[data-mode="dark"] .repo-badge {
-    background: var(--bs-secondary-bg, #1f2933);
-  }
-  .repo-grid-loading {
-    font-size: 0.9rem;
-    color: var(--bs-secondary-color, #6c757d);
-    margin-top: 0.75rem;
-  }
+  #repo-table th[data-sort-dir="asc"] .repo-arrow::before { content: "↑"; }
+  #repo-table th[data-sort-dir="desc"] .repo-arrow::before { content: "↓"; }
+  #repo-table td { vertical-align: top; }
+  #repo-table td.col-stars,
+  #repo-table td.col-updated { white-space: nowrap; }
+  #repo-table td.col-desc { color: var(--foreground2); }
 `}</style>
 
-<div class="repo-grid-container">
-
-<a href="https://github.com/saforem2/"><code>saforem2</code></a>s GitHub Repositories
-
-<table id="repo-table">
+<p id="repo-grid-status">Loading repositories from GitHub…</p>
+<table id="repo-table" hidden>
   <thead>
-    <tr><th>Repo</th><th>Description</th><th>Lang</th><th>⭐️</th><th>Updated</th></tr>
+    <tr>
+      <th data-sort="stars" data-sort-dir="desc"><button type="button">⭐ <span class="repo-arrow"></span></button></th>
+      <th data-sort="updated"><button type="button">Updated <span class="repo-arrow"></span></button></th>
+      <th data-sort="name"><button type="button">Repo <span class="repo-arrow"></span></button></th>
+      <th>Description</th>
+      <th data-sort="lang"><button type="button">Lang <span class="repo-arrow"></span></button></th>
+    </tr>
   </thead>
   <tbody></tbody>
 </table>
-
-<div id="repo-grid" class="repo-grid" data-github-user="saforem2">
-
-</div>
-
-</div>
+<div id="repo-grid" data-github-user="saforem2" data-limit="10" data-show-cards="false" hidden></div>
 
 <script>{`
   (async function () {
     const grid = document.getElementById("repo-grid");
     const status = document.getElementById("repo-grid-status");
-    if (!grid) return;
+    const table = document.getElementById("repo-table");
+    const tbody = table ? table.querySelector("tbody") : null;
+    if (!grid || !table || !tbody) return;
+    const limit = grid.getAttribute("data-limit");
+    const cap = limit ? parseInt(limit, 10) : Infinity;
+    const showCards = grid.getAttribute("data-show-cards") !== "false";
     const username = grid.getAttribute("data-github-user") || "saforem2";
     const apiUrl =
       "https://api.github.com/users/" +
       username +
       "/repos?per_page=100&sort=updated";
+    function formatNumber(n) {
+      if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\\.0$/, "") + "M";
+      if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\\.0$/, "") + "k";
+      return String(n);
+    }
+    function fmtDate(iso) { return iso.slice(0, 10); }
+    function compare(a, b, key, dir) {
+      const mul = dir === "asc" ? 1 : -1;
+      let cmp = 0;
+      if (key === "stars") {
+        cmp = a.stargazers_count - b.stargazers_count;
+        if (cmp === 0) cmp = a.updated_at.localeCompare(b.updated_at);
+      } else if (key === "updated") {
+        cmp = a.updated_at.localeCompare(b.updated_at);
+      } else if (key === "name") {
+        cmp = a.name.localeCompare(b.name);
+      } else if (key === "lang") {
+        cmp = (a.language || "").localeCompare(b.language || "");
+      }
+      return cmp * mul;
+    }
+    let repos = [];
+    let sortKey = "stars";
+    let sortDir = "desc";
+    function makeCell(text, cls) {
+      const td = document.createElement("td");
+      td.textContent = text;
+      if (cls) td.className = cls;
+      return td;
+    }
+    function makeRepoCell(repo) {
+      const td = document.createElement("td");
+      const a = document.createElement("a");
+      a.href = repo.html_url;
+      a.textContent = repo.name;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      td.appendChild(a);
+      return td;
+    }
+    function render() {
+      const sorted = repos.slice().sort((a, b) => compare(a, b, sortKey, sortDir));
+      const shown = sorted.slice(0, cap);
+      tbody.replaceChildren();
+      shown.forEach((repo) => {
+        const tr = document.createElement("tr");
+        tr.append(
+          makeCell(formatNumber(repo.stargazers_count || 0), "col-stars"),
+          makeCell(fmtDate(repo.updated_at), "col-updated"),
+          makeRepoCell(repo),
+          makeCell(repo.description || "", "col-desc"),
+          makeCell(repo.language || "")
+        );
+        tbody.appendChild(tr);
+      });
+      table.querySelectorAll("th[data-sort]").forEach((th) => {
+        if (th.getAttribute("data-sort") === sortKey) th.setAttribute("data-sort-dir", sortDir);
+        else th.removeAttribute("data-sort-dir");
+      });
+    }
+    table.querySelectorAll("th[data-sort]").forEach((th) => {
+      th.addEventListener("click", () => {
+        const key = th.getAttribute("data-sort");
+        if (key === sortKey) {
+          sortDir = sortDir === "asc" ? "desc" : "asc";
+        } else {
+          sortKey = key;
+          sortDir = key === "name" || key === "lang" ? "asc" : "desc";
+        }
+        render();
+      });
+    });
     try {
       const res = await fetch(apiUrl);
       if (!res.ok) throw new Error("GitHub API error: " + res.status);
-      const repos = await res.json();
-      // Filter out forks if you don't want them:
-      const filtered = repos.filter(r => !r.fork);
-      if (filtered.length === 0) {
+      const data = await res.json();
+      repos = data.filter((r) => !r.fork);
+      if (repos.length === 0) {
         if (status) status.textContent = "No repositories found.";
         return;
       }
       if (status) status.remove();
-      // Small helper: nice abbreviations for numbers
-      function formatNumber(n) {
-        if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-        if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "k";
-        return String(n);
-      }
-      filtered.forEach(repo => {
-        const card = document.createElement("div");
-        card.className = "repo-card";
-        const header = document.createElement("div");
-        header.className = "repo-header";
-        const title = document.createElement("h3");
-        title.className = "repo-name";
-        const link = document.createElement("a");
-        link.href = repo.html_url;
-        link.textContent = repo.name;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        title.appendChild(link);
-        const badge = document.createElement("span");
-        badge.className = "repo-badge";
-        badge.textContent = repo.private ? "Private" : "Public";
-        header.appendChild(title);
-        header.appendChild(badge);
-        const desc = document.createElement("p");
-        desc.className = "repo-description";
-        desc.textContent = repo.description || "No description provided.";
-        const meta = document.createElement("div");
-        meta.className = "repo-meta";
-        if (repo.language) {
-          const langSpan = document.createElement("span");
-          const dot = document.createElement("span");
-          dot.className = "repo-language-dot";
-          langSpan.appendChild(dot);
-          const langText = document.createElement("span");
-          langText.textContent = repo.language;
-          langSpan.appendChild(langText);
-          meta.appendChild(langSpan);
-        }
-        const starsSpan = document.createElement("span");
-        starsSpan.innerHTML = "⭐️ " + formatNumber(repo.stargazers_count || 0);
-        meta.appendChild(starsSpan);
-        const updatedSpan = document.createElement("span");
-        const updatedDate = new Date(repo.updated_at);
-        updatedSpan.textContent = "Updated " + updatedDate.toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "short",
-          day: "numeric"
-        });
-        meta.appendChild(updatedSpan);
-        card.appendChild(header);
-        card.appendChild(desc);
-        card.appendChild(meta);
-        grid.appendChild(card);
-      });
-      // Populate the matching repo-table with the same data
-      const table = document.querySelector("#repo-table tbody");
-      if (table) {
-        filtered.forEach(repo => {
-          const tr = document.createElement("tr");
-          // Repo
-          const tdName = document.createElement("td");
-          const a = document.createElement("a");
-          a.href = repo.html_url;
-          a.textContent = repo.name;
-          a.target = "_blank";
-          a.rel = "noopener noreferrer";
-          tdName.appendChild(a);
-          tr.appendChild(tdName);
-          // Description
-          const tdDesc = document.createElement("td");
-          tdDesc.textContent = repo.description || "";
-          tr.appendChild(tdDesc);
-          // Lang
-          const tdLang = document.createElement("td");
-          tdLang.textContent = repo.language || "";
-          tr.appendChild(tdLang);
-          // Stars
-          const tdStars = document.createElement("td");
-          tdStars.textContent = formatNumber(repo.stargazers_count || 0);
-          tr.appendChild(tdStars);
-          // Updated
-          const tdUpdated = document.createElement("td");
-          const d = new Date(repo.updated_at);
-          tdUpdated.textContent = d.toLocaleDateString(undefined, {
-            year: "numeric", month: "short", day: "numeric"
-          });
-          tr.appendChild(tdUpdated);
-          table.appendChild(tr);
-        });
-      }
+      table.hidden = false;
+      render();
     } catch (err) {
       console.error(err);
-      if (status) {
-        status.textContent = "Failed to load repositories from GitHub.";
-      }
+      if (status) status.textContent = "Failed to load repositories from GitHub.";
     }
   })();
 `}</script>
@@ -1393,7 +1324,7 @@ Pre-Training group] for the [AuroraGPT] project.
       library for large-scale model training.
 
 - Nominated to serve on the APS [**Coordinating Panel for Software and
-  Computing (CPSC)**].
+  Computing**] (CPSC).
 
 - **Finalist, ACM Gordon Bell Prize in Climate Modeling**, 2025
     - Recognized for our work on  
@@ -1584,6 +1515,8 @@ Pre-Training group] for the [AuroraGPT] project.
 [Models / Pre-Training group]: https://auroragpt.anl.gov/about/#teams
 [AuroraGPT]: https://auroragpt.anl.gov
 [`l2hmc-qcd`]: https://github.com/saforem2/l2hmc-qcd
+[extending-mup]: https://arxiv.org/abs/2602.20937
+[ai-native-research]: https://arxiv.org/abs/2602.17582
 [Argonne Earth Systems Model for Reliable and Skillful Predictions]: https://arxiv.org/abs/2509.13523
 [aurora-paper]: https://arxiv.org/abs/2509.08207
 [mprot-paper]: https://doi.org/10.1109/SC41406.2024.00013

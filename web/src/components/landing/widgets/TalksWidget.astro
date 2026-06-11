@@ -16,8 +16,7 @@ const talks = docs
 function formatDate(date: Date): string {
     const y = String(date.getFullYear()).slice(-2)
     const m = String(date.getMonth() + 1).padStart(2, '0')
-    const d = String(date.getDate()).padStart(2, '0')
-    return `${y}/${m}/${d}`
+    return `${y}/${m}`
 }
 ---
 
@@ -77,9 +76,8 @@ function formatDate(date: Date): string {
 
     .tw-item {
         display: flex;
-        gap: 2ch;
+        gap: 1ch;
         align-items: baseline;
-        /* line-height: 2; */
         text-decoration: none;
         color: var(--foreground1);
         white-space: nowrap;
@@ -93,7 +91,7 @@ function formatDate(date: Date): string {
     .tw-date {
         color: var(--foreground2);
         flex-shrink: 0;
-        width: 10ch;
+        width: 5ch;
     }
 
     .tw-name {

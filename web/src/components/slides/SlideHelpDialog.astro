@@ -16,6 +16,9 @@ const themeOptions = {
 }
 const fontOptions = {
     iosevka: 'Iosevka',
+    'victor-mono': 'Victor Mono',
+    'miosevka-term': 'mIosevka-Term',
+    'miosevka-qp': 'mIosevka-QP',
     system: 'System',
 }
 ---
@@ -423,8 +426,23 @@ const fontOptions = {
         const themeChips = dlg.querySelectorAll<HTMLElement>(
             '.shn-theme-chip[data-theme-option]',
         )
+        const colorSchemeQuery = window.matchMedia(
+            '(prefers-color-scheme: dark)',
+        )
+        const resolveTheme = (theme: string) =>
+            theme === 'auto'
+                ? colorSchemeQuery.matches
+                    ? 'custom-dark'
+                    : 'custom-light'
+                : theme
         const setTheme = (theme: string) => {
-            document.documentElement.setAttribute('data-webtui-theme', theme)
+            // Apply the resolved theme to the DOM; remember literal
+            // choice (incl. 'auto') in storage so the chip shows the
+            // right selection and live-follows OS preference changes.
+            document.documentElement.setAttribute(
+                'data-webtui-theme',
+                resolveTheme(theme),
+            )
             localStorage.setItem('webtui-theme', theme)
             themeChips.forEach((btn) => {
                 const v = btn.getAttribute('data-theme-option')
@@ -436,6 +454,11 @@ const fontOptions = {
                 const v = btn.getAttribute('data-theme-option')
                 if (v) setTheme(v)
             })
+        })
+        colorSchemeQuery.addEventListener('change', () => {
+            if (localStorage.getItem('webtui-theme') === 'auto') {
+                setTheme('auto')
+            }
         })
 
         // Font picker: chip click → update --mono-font + persist.
@@ -457,17 +480,21 @@ const fontOptions = {
             })
         })
 
-        // Mark the currently-active chip on open
+        // Mark the currently-active chip on open. Prefer the literal
+        // stored value (so 'auto' shows as selected) and fall back to
+        // the resolved attribute when no choice is saved.
         const syncActive = () => {
             const curTheme =
-                document.documentElement.getAttribute('data-webtui-theme') ?? ''
+                localStorage.getItem('webtui-theme') ||
+                document.documentElement.getAttribute('data-webtui-theme') ||
+                ''
             themeChips.forEach((btn) => {
                 const v = btn.getAttribute('data-theme-option')
                 btn.setAttribute('aria-selected', String(v === curTheme))
             })
             const curFont =
                 document.documentElement.getAttribute('data-mono-font') ??
-                'iosevka'
+                'miosevka-qp'
             fontChips.forEach((btn) => {
                 const v = btn.getAttribute('data-font-option')
                 btn.setAttribute('aria-selected', String(v === curFont))

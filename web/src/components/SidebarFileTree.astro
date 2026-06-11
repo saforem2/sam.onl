@@ -291,15 +291,19 @@ const stripEmoji = (text: string) =>
     )
 
 /* Nerd Font codepoints (folder/chevron glyphs are drawn via CSS pseudos) */
-const ICON_FOLDER_OPEN = '\uf07c'
-const ICON_FILE = '\uf0f6'
+const ICON_FOLDER_OPEN = '\u{f0dcf}'
+const ICON_FILE = '\u{f0224}'
+const ICON_ABOUT = '\u{f1028}'
 ---
 
 <nav box-="square" shear-="top" id="sidebar">
     <div id="sidebar-actions">
         <a href="/" class="sidebar-action" title="Home">&#xef85;</a>
-        <button id="theme-button-sidebar" class="sidebar-action" title="Theme"
-            >&#xe22b;</button
+        <button
+            id="command-button-sidebar"
+            class="sidebar-action"
+            title="Open command menu (?)"
+            aria-label="Open command menu">&#xf0e7;</button
         >
         <a
             href="https://github.com/saforem2/sam.onl"
@@ -378,7 +382,7 @@ const ICON_FILE = '\uf0f6'
                                 data-last={isLastCategory ? '' : undefined}>
                                 <span class="tree-line" />
                                 <span class="tree-icon file-icon">
-                                    {ICON_FILE}
+                                    {ICON_ABOUT}
                                 </span>
                                 <span class="tree-label">
                                     <Fragment
@@ -1139,9 +1143,19 @@ const ICON_FILE = '\uf0f6'
         position: relative;
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        /* overflow:visible (not hidden) so the action-row chips can
+           lift on hover without getting clipped against the box-=
+           border. The scrolling category list has its own
+           overflow-y:auto, so removing the outer clip is safe. */
+        overflow: visible;
         flex-grow: 1;
         padding-inline: 1ch;
+        /* shear-="top" on the nav already zeroes the top padding so
+           the action chips can sit on the box-= border line (like the
+           "top-left" label in webtui box examples). overflow:visible
+           above lets the chips overhang above the border without
+           getting clipped on hover. */
+        padding-block-start: 0;
         color: var(--foreground2);
         font-family: var(--font-family);
         line-height: 1.25;
@@ -1165,91 +1179,168 @@ const ICON_FILE = '\uf0f6'
 
     #sidebar-actions {
         display: flex;
+        /* Flush — chip borders touch so the action bar reads as a
+           continuous key row, not five separate buttons. */
         gap: 0;
-        /* Subtle TUI "key bar" frame: faint background + 1px outer border
-           with hairline dividers between buttons. Background is an opaque
-           mix of bg0 + foreground0 so the WebTUI box-= border behind the
-           sidebar doesn't bleed through. */
-        background-color: color-mix(
-            in oklch,
-            var(--background0),
-            var(--foreground0) 5%
-        );
-        border: 1px solid
-            color-mix(in oklch, var(--background0), var(--foreground0) 18%);
+        font-size: 0.95em;
         position: relative;
         z-index: 10;
         width: fit-content;
+        /* Anchor the chip row to the top-left corner of the parent
+           nav's box-= border (just like the "top-left" label in webtui
+           box examples). shear-="top" on the nav kills top padding, so
+           a 0 top-margin sits the chips' top edge on the border line.
+           Slight inline nudge so they don't touch the corner. */
+        margin-block-start: 0;
+        margin-inline-start: 1ch;
+        margin-block-end: 0.25lh;
 
         .sidebar-action {
             all: unset;
             display: inline-flex;
             align-items: center;
-            padding: 0 1ch;
-            color: var(--foreground3);
+            justify-content: center;
+            box-sizing: border-box;
+            /* Square keycap. Padding and min-width are sized for the
+               Material-Design nerd-font glyphs, which are visibly wider
+               than the Font-Awesome line-art icons we used before — too
+               tight and they touch the chip border. Hairline border +
+               opaque fill (color-mix, not alpha) so the WebTUI box-=
+               border on the parent nav doesn't bleed through. No
+               border-radius — matches the TUI box-drawing language
+               used elsewhere. */
+            padding: 0.2lh 0.75ch;
+            min-width: 3ch;
+            color: var(--foreground2);
+            background-color: color-mix(
+                in oklch,
+                var(--background0),
+                var(--foreground0) 5%
+            );
+            border: 1px solid
+                color-mix(in oklch, var(--background0), var(--foreground0) 18%);
             cursor: pointer;
             font-family: var(--font-family);
             font-size: inherit;
-            line-height: inherit;
+            /* Collapse line-box to font-size so the glyph's vertical
+               center aligns with the chip's geometric center. With
+               `line-height: inherit` (~1.4) the glyph's ascent
+               anchored at the line top pushes the visible ink up past
+               the chip's upper border — looks bottom-heavy. */
+            line-height: 1;
             text-decoration: none;
-            /* Hairline divider between adjacent buttons; suppressed on the
-               last button so the trailing edge meets the outer border
-               cleanly. */
-            border-right: 1px solid oklch(from var(--foreground0) l c h / 0.1);
+            /* Default hover-shadow tint — overridden per-button below.
+               Setting the CSS var here lets the shared `:hover/:focus`
+               transform/shadow rules below resolve to the right hue
+               without duplicating the box-shadow line in every button
+               selector. */
+            --chip-accent: var(--foreground2);
             transition:
-                color 0.15s,
-                background-color 0.15s;
+                color 0.1s linear,
+                background-color 0.1s linear,
+                border-color 0.1s linear,
+                transform 0.1s ease-out,
+                box-shadow 0.1s ease-out;
 
-            &:last-child {
-                border-right: none;
-            }
-
+            /* Tactile hover: nudge 1px up-left and drop a hard-offset
+               TUI-style shadow in the per-button accent color so the
+               chip reads as a physical key being lifted. */
             &:hover,
             &:focus-visible,
-            &[data-vim-focused='true']:focus {
+            &[data-vim-focused='true'] {
                 color: var(--foreground0);
-                background-color: var(--background1) !important;
-                box-shadow: none !important;
+                transform: translate(-1px, -1px);
+                box-shadow: 2px 2px 0 0 var(--chip-accent);
             }
 
+            /* Pressed: snap back to flat with a smaller shadow so the
+               click reads as a key bottoming out. */
+            &:active {
+                transform: translate(0, 0);
+                box-shadow: 1px 1px 0 0 var(--chip-accent);
+            }
+
+            /* Per-button accent tints. Background uses color-mix
+               against background0 (opaque, ~18% accent) so the box-=
+               border on the parent nav doesn't bleed through on
+               hover/focus the way an alpha overlay would. */
+            /* Per-button accent rules: extend each selector to also
+               match vim-focused state ([data-vim-focused='true'])
+               so j/k navigation gets the same color treatment as
+               mouse hover or keyboard tab-focus. Without the vim
+               selector, vim-focus fires the base hover rule (gets
+               foreground0 + shadow) but the per-button color override
+               doesn't apply — the chip shows the wrong color and the
+               vim-cursor (which reads cs.color) inherits the default
+               --chip-accent (pink) instead of the chip's family. */
             &[href='/']:hover,
-            &[href='/']:focus-visible {
-                color: var(--accent, var(--blue));
-                background-color: oklch(
-                    from var(--blue) l c h / 0.1
-                ) !important;
-            }
-
-            &#theme-button-sidebar:hover,
-            &#theme-button-sidebar:focus-visible {
+            &[href='/']:focus-visible,
+            &[href='/'][data-vim-focused='true'] {
+                --chip-accent: var(--blue);
+                /* Pin to --blue (not --accent) so the icon matches
+                   the blue-mixed background. The other buttons all
+                   use their named color for icon + bg + border as
+                   one family; --accent floats per-theme (e.g. red on
+                   catppuccin) and was clashing with the blue tint. */
                 color: var(--blue);
-                background-color: oklch(
-                    from var(--blue) l c h / 0.1
+                background-color: color-mix(
+                    in srgb,
+                    var(--background0),
+                    var(--blue) 18%
                 ) !important;
+                border-color: var(--blue) !important;
             }
 
             &[href*='github']:hover,
-            &[href*='github']:focus-visible {
+            &[href*='github']:focus-visible,
+            &[href*='github'][data-vim-focused='true'] {
+                --chip-accent: var(--purple);
                 color: var(--purple);
-                background-color: oklch(
-                    from var(--purple) l c h / 0.1
+                background-color: color-mix(
+                    in srgb,
+                    var(--background0),
+                    var(--purple) 18%
                 ) !important;
+                border-color: var(--purple) !important;
             }
 
             &[href*='rss']:hover,
-            &[href*='rss']:focus-visible {
+            &[href*='rss']:focus-visible,
+            &[href*='rss'][data-vim-focused='true'] {
+                --chip-accent: var(--orange);
                 color: var(--orange);
-                background-color: oklch(
-                    from var(--orange) l c h / 0.1
+                background-color: color-mix(
+                    in srgb,
+                    var(--background0),
+                    var(--orange) 18%
                 ) !important;
+                border-color: var(--orange) !important;
             }
 
             &#search-button-sidebar:hover,
-            &#search-button-sidebar:focus-visible {
+            &#search-button-sidebar:focus-visible,
+            &#search-button-sidebar[data-vim-focused='true'] {
+                --chip-accent: var(--green);
                 color: var(--green);
-                background-color: oklch(
-                    from var(--green) l c h / 0.1
+                background-color: color-mix(
+                    in srgb,
+                    var(--background0),
+                    var(--green) 18%
                 ) !important;
+                border-color: var(--green) !important;
+            }
+
+            &#command-button-sidebar:hover,
+            &#command-button-sidebar:focus-visible,
+            &#command-button-sidebar[data-vim-focused='true'] {
+                --chip-accent: var(--pink);
+                color: var(--pink);
+                background-color: color-mix(
+                    in srgb,
+                    var(--background0),
+                    var(--pink) 18%
+                ) !important;
+                border-color: var(--pink) !important;
             }
         }
     }
@@ -1310,7 +1401,7 @@ const ICON_FILE = '\uf0f6'
     }
 
     .tree-entry:focus-visible,
-    .tree-entry[data-vim-focused='true']:focus {
+    .tree-entry[data-vim-focused='true'] {
         background-color: var(--focus-bg-strong);
         color: var(--focus-fg);
         text-decoration: none;
@@ -1416,12 +1507,12 @@ const ICON_FILE = '\uf0f6'
     }
 
     .folder-icon::before {
-        content: ''; /* closed folder */
+        content: '󰉖'; /* closed folder */
         color: var(--foreground2);
     }
 
     details[open] > summary > .folder-icon::before {
-        content: ''; /* open folder */
+        content: '󰷏'; /* open folder */
         color: var(--accent, var(--foreground2));
     }
 
@@ -1486,19 +1577,19 @@ const ICON_FILE = '\uf0f6'
 
     // Sidebar action buttons
     document
-        .getElementById('theme-button-sidebar')
+        .getElementById('search-button-sidebar')
         ?.addEventListener('click', () => {
             const dialog = document.getElementById(
-                'theme-dialog',
+                'search-dialog',
             ) as HTMLDialogElement | null
             dialog?.showModal()
         })
 
     document
-        .getElementById('search-button-sidebar')
+        .getElementById('command-button-sidebar')
         ?.addEventListener('click', () => {
             const dialog = document.getElementById(
-                'search-dialog',
+                'command-dialog',
             ) as HTMLDialogElement | null
             dialog?.showModal()
         })
@@ -1596,10 +1687,23 @@ const ICON_FILE = '\uf0f6'
     const themeButtons = Array.from(
         document.querySelectorAll('[data-theme-option]'),
     ) as HTMLButtonElement[]
+    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+    const resolveTheme = (theme: string) =>
+        theme === 'auto'
+            ? colorSchemeQuery.matches
+                ? 'custom-dark'
+                : 'custom-light'
+            : theme
 
     const setTheme = (theme: string) => {
-        if (root.getAttribute('data-webtui-theme') !== theme) {
-            root.setAttribute('data-webtui-theme', theme)
+        // Apply the resolved theme to the DOM (so CSS selectors keep
+        // working) but remember the user's literal choice in storage —
+        // including 'auto' — so the picker can show the right active
+        // pill and live-follow OS preference flips.
+        const resolved = resolveTheme(theme)
+        if (root.getAttribute('data-webtui-theme') !== resolved) {
+            root.setAttribute('data-webtui-theme', resolved)
         }
         themeButtons.forEach((button) => {
             const value = button.getAttribute('data-theme-option')
@@ -1616,6 +1720,13 @@ const ICON_FILE = '\uf0f6'
         setTheme(storedTheme)
     }
 
+    // If the user is on 'auto', re-resolve when the OS preference flips.
+    colorSchemeQuery.addEventListener('change', () => {
+        if (localStorage.getItem(themeStorageKey) === 'auto') {
+            setTheme('auto')
+        }
+    })
+
     themeButtons.forEach((button) => {
         button.addEventListener('click', () => {
             const value = button.getAttribute('data-theme-option')
@@ -1627,23 +1738,6 @@ const ICON_FILE = '\uf0f6'
             themeDialog?.close()
         })
     })
-
-    const themeDialog = document.getElementById(
-        'theme-dialog',
-    ) as HTMLDialogElement | null
-    document
-        .getElementById('theme-button-sidebar')
-        ?.addEventListener('click', () => {
-            themeDialog?.showModal()
-            requestAnimationFrame(() => {
-                const active = themeDialog?.querySelector(
-                    '.theme-option[aria-selected="true"]',
-                ) as HTMLElement | null
-                ;(
-                    active ?? themeDialog?.querySelector('.theme-option')
-                )?.focus()
-            })
-        })
 
     document
         .getElementById('search-button-sidebar')

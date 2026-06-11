@@ -36,77 +36,133 @@
 
 .flex-container.icon-flex a {
     text-decoration: none;
+    box-sizing: border-box;
     padding: 0 1ch;
     line-height: 1lh;
     height: 1lh;
     display: inline-flex;
     align-items: center;
-    background-color: var(--background1);
+    justify-content: center;
+    min-width: 2.5ch;
+    /* Keycap chip — same language as the sidebar action row. Opaque
+       fill + 1px hairline border so each icon reads as a discrete
+       button at rest, not a flat decal. The per-platform hover rules
+       below recolor border + bg + glyph + shadow in the brand hue. */
+    background-color: color-mix(
+        in srgb,
+        var(--background0),
+        var(--foreground0) 5%
+    );
+    border: 1px solid
+        color-mix(in srgb, var(--background0), var(--foreground0) 18%);
     color: var(--foreground1);
+    /* --chip-accent is overridden per-platform in the hover rules below
+       so the shared lift+shadow declaration resolves to the right hue. */
+    --chip-accent: var(--foreground2);
     transition:
-        background-color 0.15s,
-        color 0.15s;
+        background-color 0.1s linear,
+        color 0.1s linear,
+        border-color 0.1s linear,
+        transform 0.1s ease-out,
+        box-shadow 0.1s ease-out;
+
+    /* Tactile lift on hover/focus — matches the sidebar chip language:
+       nudge 1px up-left, drop a hard TUI-style shadow in the platform
+       accent color so the icon feels like a physical key being lifted. */
+    &:hover,
+    &:focus-visible,
+    &[data-vim-focused='true'] {
+        transform: translate(-1px, -1px);
+        box-shadow: 2px 2px 0 0 var(--chip-accent);
+    }
+    /* Pressed: snap flat with smaller shadow. */
+    &:active {
+        transform: translate(0, 0);
+        box-shadow: 1px 1px 0 0 var(--chip-accent);
+    }
 
     &[href*='github']:hover,
     &[href*='github']:focus-visible,
-    &[href*='github'][data-vim-focused='true']:focus {
-        background-color: oklch(from #6e5494 l c h / 0.15);
+    &[href*='github'][data-vim-focused='true'] {
+        --chip-accent: #6e5494;
+        background-color: color-mix(in srgb, var(--background0), #6e5494 18%);
+        border-color: #6e5494;
         color: #6e5494;
     }
 
     &[href*='twitter']:hover,
     &[href*='twitter']:focus-visible,
-    &[href*='twitter'][data-vim-focused='true']:focus {
-        background-color: oklch(from #1da1f2 l c h / 0.15);
+    &[href*='twitter'][data-vim-focused='true'] {
+        --chip-accent: #1da1f2;
+        background-color: color-mix(in srgb, var(--background0), #1da1f2 18%);
+        border-color: #1da1f2;
         color: #1da1f2;
     }
 
     &[href*='bsky']:hover,
     &[href*='bsky']:focus-visible,
-    &[href*='bsky'][data-vim-focused='true']:focus {
-        background-color: oklch(from #0085ff l c h / 0.15);
+    &[href*='bsky'][data-vim-focused='true'] {
+        --chip-accent: #0085ff;
+        background-color: color-mix(in srgb, var(--background0), #0085ff 18%);
+        border-color: #0085ff;
         color: #0085ff;
     }
 
     &[href*='scholar']:hover,
     &[href*='scholar']:focus-visible,
-    &[href*='scholar'][data-vim-focused='true']:focus {
-        background-color: oklch(from #4285f4 l c h / 0.15);
+    &[href*='scholar'][data-vim-focused='true'] {
+        --chip-accent: #4285f4;
+        background-color: color-mix(in srgb, var(--background0), #4285f4 18%);
+        border-color: #4285f4;
         color: #4285f4;
     }
 
     &[href*='linkedin']:hover,
     &[href*='linkedin']:focus-visible,
-    &[href*='linkedin'][data-vim-focused='true']:focus {
-        background-color: oklch(from #0077b5 l c h / 0.15);
+    &[href*='linkedin'][data-vim-focused='true'] {
+        --chip-accent: #0077b5;
+        background-color: color-mix(in srgb, var(--background0), #0077b5 18%);
+        border-color: #0077b5;
         color: #0077b5;
     }
 
     &[href*='mailto']:hover,
     &[href*='mailto']:focus-visible,
-    &[href*='mailto'][data-vim-focused='true']:focus {
-        background-color: oklch(from #ea4335 l c h / 0.15);
+    &[href*='mailto'][data-vim-focused='true'] {
+        --chip-accent: #ea4335;
+        background-color: color-mix(in srgb, var(--background0), #ea4335 18%);
+        border-color: #ea4335;
         color: #ea4335;
     }
 
     &[href*='last.fm']:hover,
     &[href*='last.fm']:focus-visible,
-    &[href*='last.fm'][data-vim-focused='true']:focus {
-        background-color: oklch(from #d51007 l c h / 0.15);
+    &[href*='last.fm'][data-vim-focused='true'] {
+        --chip-accent: #d51007;
+        background-color: color-mix(in srgb, var(--background0), #d51007 18%);
+        border-color: #d51007;
         color: #d51007;
     }
 
     &[href*='spotify']:hover,
     &[href*='spotify']:focus-visible,
-    &[href*='spotify'][data-vim-focused='true']:focus {
-        background-color: oklch(from #1db954 l c h / 0.15);
+    &[href*='spotify'][data-vim-focused='true'] {
+        --chip-accent: #1db954;
+        background-color: color-mix(in srgb, var(--background0), #1db954 18%);
+        border-color: #1db954;
         color: #1db954;
     }
 
     &[href*='sam.onl']:hover,
     &[href*='sam.onl']:focus-visible,
-    &[href*='sam.onl'][data-vim-focused='true']:focus {
-        background-color: oklch(from var(--accent, var(--blue)) l c h / 0.15);
+    &[href*='sam.onl'][data-vim-focused='true'] {
+        --chip-accent: var(--accent, var(--blue));
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--accent, var(--blue)) 18%
+        );
+        border-color: var(--accent, var(--blue));
         color: var(--accent, var(--blue));
     }
 }
@@ -131,10 +187,22 @@
            Switch the user-visible body font via [data-mono-font]. */
         --font-stack-iosevka:
             'Iosevka Web', 'JetBrains Mono', Menlo, Monaco, monospace;
+        --font-stack-victor-mono:
+            'Victor Mono', 'JetBrains Mono', Menlo, Monaco, monospace;
+        /* Personal Iosevka builds from samforeman.me. Term is mono-
+           metrics for everything; QP is quasi-proportional for body
+           with Term overlaid on code blocks (see [data-mono-font]
+           rules below). */
+        --font-stack-miosevka-term:
+            'mIosevka-Term Web', 'Iosevka Web', 'JetBrains Mono', Menlo, Monaco,
+            monospace;
+        --font-stack-miosevka-qp:
+            'mIosevka-QP Web', 'Iosevka Web', 'JetBrains Mono', Menlo, Monaco,
+            monospace;
         --font-stack-system:
             ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas,
             'Liberation Mono', 'Courier New', monospace;
-        --font-stack: var(--font-stack-iosevka);
+        --font-stack: var(--font-stack-miosevka-qp);
         --font-family: var(--font-stack), 'Symbols Nerd Font';
         --font-size: clamp(0.95rem, 0.6rem + 1vw, 1.0625rem);
         /* --line-height: 1.5; */
@@ -173,6 +241,23 @@
     :root[data-mono-font='iosevka'] {
         --font-stack: var(--font-stack-iosevka);
     }
+    :root[data-mono-font='victor-mono'] {
+        --font-stack: var(--font-stack-victor-mono);
+        letter-spacing: -0.02ch;
+    }
+    :root[data-mono-font='miosevka-term'] {
+        --font-stack: var(--font-stack-miosevka-term);
+    }
+    :root[data-mono-font='miosevka-qp'] {
+        --font-stack: var(--font-stack-miosevka-qp);
+    }
+    /* mIosevka-QP is quasi-proportional — beautiful for prose, but
+       monospace alignment matters in codeblocks, kbd glyphs, and
+       inline `code`. Overlay Term (mono-metrics) onto those. */
+    :root[data-mono-font='miosevka-qp']
+        :is(pre, code, kbd, samp, var, .astro-code) {
+        font-family: var(--font-stack-miosevka-term), 'Symbols Nerd Font';
+    }
     :root[data-mono-font='system'] {
         --font-stack: var(--font-stack-system);
     }
@@ -180,6 +265,72 @@
         background-color: var(--foreground0);
         color: var(--background0);
     }
+
+    /* Native text selection — match the active theme accent so the
+       highlight doesn't fight catppuccin/custom-dark backgrounds with
+       the default OS blue. The 0.3 alpha keeps text readable. */
+    ::selection {
+        background-color: oklch(from var(--accent, var(--blue)) l c h / 0.3);
+        color: var(--foreground0);
+    }
+
+    /* Hash-jumps + heading anchors: stop the heading from landing
+       flush with the viewport top so it isn't hidden by mobile chrome
+       or just feels cramped. One line-height of clearance above. */
+    :is(h1, h2, h3, h4, h5, h6)[id] {
+        scroll-margin-top: 1lh;
+    }
+
+    /* <kbd>: reuse the keycap chip language from the sidebar action
+       row + statusline ? button. Opaque background-mix fill, 1px
+       hairline border, 3px radius. Inline-block so the chip doesn't
+       inflate the surrounding line-box (same trick the highlight
+       runs use). */
+    kbd {
+        display: inline-block;
+        box-sizing: border-box;
+        padding: 0 0.6ch;
+        margin-inline: 0.1ch;
+        min-width: 1.8ch;
+        height: 1lh;
+        line-height: 1;
+        font-family: var(--font-family);
+        font-size: 0.85em;
+        color: var(--foreground0);
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--foreground0) 8%
+        );
+        border: 1px solid
+            color-mix(in srgb, var(--background0), var(--foreground0) 22%);
+        border-radius: 3px;
+        vertical-align: baseline;
+        white-space: nowrap;
+        /* The chip looks like a key — give it a 1px hard shadow so it
+           reads as a physical cap rather than a flat outline. */
+        box-shadow: 0 1px 0 0
+            color-mix(in srgb, var(--background0), var(--foreground0) 22%);
+    }
+
+    /* External link indicator: a small ↗ glyph after any anchor that
+       targets _blank, signaling "this leaves the site". Scoped to
+       links inside prose so navbar/widget chips don't get tagged.
+       Suppressed when the anchor wraps an image (chip/badge links) or
+       resolves to nothing (heading-anchor, footnote refs, etc.). */
+    :is(p, blockquote, li, [is-~='typography-block'])
+        a[target='_blank']:not(.heading-anchor):not([data-footnote-ref]):not(
+            [data-footnote-backref]
+        ):not(:has(img))::after {
+        content: ' ↗';
+        font-size: 0.8em;
+        opacity: 0.7;
+        margin-inline-start: 0.15ch;
+        text-decoration: none;
+        display: inline-block;
+        vertical-align: baseline;
+    }
+
     h1 {
         font-size: clamp(1.4rem, 1rem + 2vw, 2rem);
         color: oklch(from var(--h1, var(--red)) l c h);
@@ -363,7 +514,14 @@
         display: none;
     }
     .katex-display {
+        /* Horizontal scroll for wide equations that overflow narrow
+           viewports (mobile, side-panel reading modes, etc.) */
         overflow-x: auto;
+        /* Real paragraph-of-air around display math — katex's own
+           default 1em margin gets squeezed into 0 by adjacent prose
+           paragraphs, so the equation sits flush against the lines
+           above/below. Force a full line-height on each side. */
+        margin-block: 1lh;
     }
     hr {
         display: block;
@@ -428,11 +586,31 @@
                 0.1
         );
         padding-left: 0.5ch;
-        /* border: 0.3ch solid rgba(0, 0, 0, 0); */
-        /* --callout-summary-bg: oklch( */
-        /*     from var(--callout-color) calc(l * var(--oklch-scale, 1.08)) c h / */
-        /*         0.025 */
-        /* ); */
+        transition:
+            transform 120ms ease-out,
+            box-shadow 120ms ease-out,
+            background-color 120ms linear;
+    }
+    /* Hover: tiny 1px lift + hard TUI shadow in the callout's own accent
+       color so the box reads as a physical card. Brightens the inner
+       blockquote tint so the rail pops too. */
+    .callout:hover {
+        transform: translate(-1px, -1px);
+        box-shadow: 2px 2px 0 0 var(--callout-color);
+    }
+    .callout:hover blockquote {
+        background-color: oklch(
+            from var(--callout-color) calc(l * var(--oklch-scale, 1.12)) c h /
+                0.18
+        );
+    }
+    /* Inside the landing widget grid, the cell tracks are sized exactly
+       so the 2px lift-shadow gets clipped on the right edge. Skip the
+       translate+shadow there and rely on the brighter blockquote tint
+       alone for the hover signal. */
+    #widgets-grid .callout:hover {
+        transform: none;
+        box-shadow: none;
     }
     /* Blockquote styling — replaces upstream WebTUI's ::before bar with a
        simple border-left + tinted background. Cleaner, single declaration. */
@@ -535,15 +713,36 @@
             content: 'x';
             vertical-align: top;
         }
-        p {
-            margin-block-end: 0pt !important;
-        }
     }
-    details[is-~='accordion'] {
-        /* only apply background-color to the summary element */
-        summary {
-            background-color: var(--background1);
-        }
+    /* Callout summary `+` / `x` glyph: 1ch breathing room on both
+       sides instead of just the trailing 1ch margin from the generic
+       accordion rule. Written as a flat descendant selector instead of
+       nested inside the .callout block — Lightning CSS's nesting
+       flattener drops attribute+class compounds and the rule would
+       leak to every accordion summary. */
+    .callout > summary::before {
+        margin-inline: 1ch;
+    }
+
+    /* Kept OUTSIDE the .callout nesting block — Lightning CSS's nesting
+       parser silently dropped the parent compound selector when this
+       lived inside `details[is~='accordion'].callout { … & p { … } }`,
+       letting a global `p { margin-block-end: 0 !important }` leak into
+       the stylesheet and break the blank-line-between-paragraphs spacing
+       in the body. Drop the [is-~='accordion'] attribute too — Lightning
+       CSS appears to strip the whole compound when emitting; .callout
+       alone is unique enough. */
+    .callout p {
+        margin-block-end: 0 !important;
+    }
+    /* Written as a flat descendant selector — Lightning CSS's nested
+       compiler emits BOTH the nested form AND a bare `summary {…}`
+       global when the parent selector uses attribute + :not() compounds
+       (see git log for prior occurrences of the same bug in this
+       codebase). The bare global was painting every callout summary
+       grey, including .callout ones that should inherit the accent. */
+    details[is-~='accordion']:not(.footnote-popover):not(.callout) > summary {
+        background-color: var(--background1);
     }
     details[is-~='accordion'] {
         &[variant-='directory'] {
@@ -793,6 +992,28 @@ html[data-webtui-theme='catppuccin-latte'] .astro-code span {
     background-color: var(--pre-background) !important;
 }
 
+/* sam.onl Light/Dark Shiki themes — palette-matched syntax highlighting.
+   Activates --shiki-sam-light-* / --shiki-sam-dark-* CSS vars baked into
+   the rendered code blocks at build time by shikiConfig.themes. */
+html[data-webtui-theme='sam-light'] .astro-code,
+html[data-webtui-theme='sam-light'] .astro-code span {
+    color: var(--shiki-sam-light) !important;
+    font-style: var(--shiki-sam-light-font-style) !important;
+    font-weight: var(--shiki-sam-light-font-weight) !important;
+    text-decoration: var(--shiki-sam-light-text-decoration) !important;
+    --pre-background: var(--shiki-sam-light-bg, #f8f8f8);
+    background-color: var(--pre-background) !important;
+}
+html[data-webtui-theme='sam-dark'] .astro-code,
+html[data-webtui-theme='sam-dark'] .astro-code span {
+    color: var(--shiki-sam-dark) !important;
+    font-style: var(--shiki-sam-dark-font-style) !important;
+    font-weight: var(--shiki-sam-dark-font-weight) !important;
+    text-decoration: var(--shiki-sam-dark-text-decoration) !important;
+    --pre-background: var(--shiki-sam-dark-bg, #282828);
+    background-color: var(--pre-background) !important;
+}
+
 /* Code-block container: hugs content, no internal padding band.
    Half-line gap above and below so code blocks don't crowd
    surrounding text. (Was asymmetric 0.5lh top / 1lh bottom for
@@ -815,7 +1036,7 @@ pre.astro-code {
        content's max-content width and get clipped by #main-content's
        overflow-x: hidden instead of scrolling internally. */
     min-width: 0;
-    max-width: 100%;
+    max-width: round(calc(0.98 * 100%), 1ch);
     width: max-content;
     padding-inline-end: 0;
 }
@@ -857,6 +1078,35 @@ pre.astro-code span.line[tabindex='0']:focus-visible {
 pre.astro-code span.line {
     display: inline-block;
     width: 100%;
+    /* Pin line height so emoji glyphs (🍋, ⚠️, 🚧, …) can't stretch
+       individual lines taller than the rest. Without this the emoji's
+       intrinsic line-box pushes the code line up, the line-number
+       gutter follows, and the side-by-side height mismatch shows as
+       faint grey bands between line numbers. */
+    line-height: var(--pre-line-height, var(--line-height, 1.5));
+}
+
+/* Shrink emoji + color-emoji glyphs slightly inside code blocks so
+   their oversized intrinsic metrics don't force the line taller than
+   the surrounding monospace. unicode-range covers the major emoji
+   ranges (Misc Symbols, Pictographs, Emoticons, Symbols & Pictographs
+   ext, Transport, Supplemental Symbols & Pictographs). */
+@font-face {
+    font-family: 'inline-emoji-shrink';
+    src:
+        local('Apple Color Emoji'), local('Segoe UI Emoji'),
+        local('Noto Color Emoji');
+    size-adjust: 85%;
+    unicode-range:
+        U+1F300-1F5FF, U+1F600-1F64F, U+1F680-1F6FF, U+2600-26FF, U+2700-27BF,
+        U+1F900-1F9FF, U+1FA70-1FAFF;
+}
+pre.astro-code,
+pre.astro-code code,
+pre.astro-code .line {
+    font-family:
+        var(--font-family), 'inline-emoji-shrink', 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Noto Color Emoji';
 }
 
 pre.astro-code span.line::before {
@@ -921,12 +1171,20 @@ pre.astro-code:focus-within .code-copy-btn,
     }
 }
 
+/* The highlight runs used to set font-weight: 500, which swapped in
+   the Medium face and bumped each enclosing row's height by a few
+   pixels in dense tables. We dropped the weight bump — the colored
+   bg + text alone carry the visual emphasis, and the row stays at
+   the same height as its plain neighbors. */
+
 /* Highlight text with angled underline effect */
 .highlight,
 .highlight-yellow {
     position: relative;
     color: var(--yellow);
-    font-weight: 500;
+    /* No font-weight bump — the colored bg + colored text already
+       carry emphasis, and weight 500 swaps in the Medium face whose
+       taller metrics inflated rows in dense tables. */
 
     &::before {
         background: oklch(from var(--yellow) calc(l * 1.15) c h / 0.2);
@@ -944,7 +1202,9 @@ pre.astro-code:focus-within .code-copy-btn,
 .highlight-pink {
     position: relative;
     color: var(--pink, var(--red));
-    font-weight: 500;
+    /* No font-weight bump — the colored bg + colored text already
+       carry emphasis, and weight 500 swaps in the Medium face whose
+       taller metrics inflated rows in dense tables. */
 
     &::before {
         background: oklch(
@@ -964,7 +1224,9 @@ pre.astro-code:focus-within .code-copy-btn,
 .highlight-blue {
     position: relative;
     color: var(--blue);
-    font-weight: 500;
+    /* No font-weight bump — the colored bg + colored text already
+       carry emphasis, and weight 500 swaps in the Medium face whose
+       taller metrics inflated rows in dense tables. */
 
     &::before {
         background: oklch(from var(--blue) calc(l * 1.15) c h / 0.2);
@@ -982,7 +1244,9 @@ pre.astro-code:focus-within .code-copy-btn,
 .highlight-green {
     position: relative;
     color: var(--green);
-    font-weight: 500;
+    /* No font-weight bump — the colored bg + colored text already
+       carry emphasis, and weight 500 swaps in the Medium face whose
+       taller metrics inflated rows in dense tables. */
 
     &::before {
         background: oklch(from var(--green) calc(l * 1.15) c h / 0.2);
@@ -1000,7 +1264,9 @@ pre.astro-code:focus-within .code-copy-btn,
 .highlight-red {
     position: relative;
     color: var(--red);
-    font-weight: 500;
+    /* No font-weight bump — the colored bg + colored text already
+       carry emphasis, and weight 500 swaps in the Medium face whose
+       taller metrics inflated rows in dense tables. */
 
     &::before {
         background: oklch(from var(--red) calc(l * 1.15) c h / 0.2);
@@ -1018,7 +1284,9 @@ pre.astro-code:focus-within .code-copy-btn,
 .highlight-orange {
     position: relative;
     color: var(--orange);
-    font-weight: 500;
+    /* No font-weight bump — the colored bg + colored text already
+       carry emphasis, and weight 500 swaps in the Medium face whose
+       taller metrics inflated rows in dense tables. */
 
     &::before {
         background: oklch(from var(--orange) calc(l * 1.15) c h / 0.2);
@@ -1036,7 +1304,9 @@ pre.astro-code:focus-within .code-copy-btn,
 .highlight-purple {
     position: relative;
     color: var(--purple);
-    font-weight: 500;
+    /* No font-weight bump — the colored bg + colored text already
+       carry emphasis, and weight 500 swaps in the Medium face whose
+       taller metrics inflated rows in dense tables. */
 
     &::before {
         background: oklch(from var(--purple) calc(l * 1.15) c h / 0.2);
@@ -1180,11 +1450,16 @@ html[data-webtui-theme='catppuccin'] {
     --mantle: oklch(from #181825 l c h);
     --crust: oklch(from #11111b l c h);
 
-    /* Dark-theme heading swap: h2 reads blue, h3 reads green.
-       Overrides the shared [data-webtui-theme|='catppuccin'] block
-       above (which keeps peach/yellow for the latte/light variant). */
+    /* Heading palette. webtui's catppuccin pack assigns each h-level
+       a different palette color (h1=red, h2=peach, …); we deviate
+       for h2/h3 because blue/green read better on the mocha dark
+       background than peach/yellow. Other levels match the pack. */
+    --h1: var(--red);
     --h2: var(--blue);
     --h3: var(--green);
+    --h4: var(--green);
+    --h5: var(--blue);
+    --h6: var(--lavender);
 }
 
 /* Same dark-theme heading swap on the custom-dark theme. The
@@ -1194,6 +1469,32 @@ html[data-webtui-theme='catppuccin'] {
 html[data-webtui-theme='custom-dark'] {
     --h2: var(--blue);
     --h3: var(--green);
+}
+
+/* webtui's catppuccin pack paints h1-h6 with hardcoded palette refs
+   (h1=red, h2=peach, …) which makes the heading text disagree with
+   our `##`/`###` ::before prefixes (those use --h1..--h6 and pick up
+   the dark-theme overrides above — e.g. --h2=blue under catppuccin).
+   Force the heading text to follow --hN too so prefix + label match. */
+html[data-webtui-theme|='catppuccin'] {
+    h1 {
+        color: var(--h1);
+    }
+    h2 {
+        color: var(--h2);
+    }
+    h3 {
+        color: var(--h3);
+    }
+    h4 {
+        color: var(--h4);
+    }
+    h5 {
+        color: var(--h5);
+    }
+    h6 {
+        color: var(--h6);
+    }
 }
 
 html[data-webtui-theme='catppuccin-latte'] {
@@ -1256,7 +1557,7 @@ html[data-webtui-theme='catppuccin-latte'] {
 
 @layer components {
     table {
-        margin-block: 0 1lh;
+        margin-block: 1lh;
     }
 
     /* The JS in Doc.astro wraps every <table> with this scroll container so
@@ -1271,7 +1572,10 @@ html[data-webtui-theme='catppuccin-latte'] {
        - explicit `width: calc(100% - 2ch)` to lock the wrapper to the column
          width minus the 2ch left indent. */
     .table-scroll-wrapper {
-        margin-block: 0 1lh;
+        /* Blank line above AND below the table so it reads as a
+           discrete block instead of fused to the previous paragraph /
+           following content. */
+        margin-block: 1lh;
         width: 100%;
         min-width: 0;
         overflow-x: auto;
@@ -1358,7 +1662,17 @@ html[data-webtui-theme='catppuccin-latte'] {
         > tr:not(:has(th)):hover
         > :is(td, th) {
         background-color: oklch(from var(--accent, var(--blue)) l c h / 0.12);
-        transition: background-color 100ms linear;
+        transition:
+            background-color 100ms linear,
+            box-shadow 120ms ease-out;
+    }
+    /* Left-rail accent: 3px colored stripe inset on the first cell of
+       a hovered row so the eye locks onto where the row starts. */
+    table:not([data-table-style='terminal'])
+        :is(tbody, :scope)
+        > tr:not(:has(th)):hover
+        > :is(td, th):first-child {
+        box-shadow: inset 3px 0 0 0 var(--accent, var(--blue));
     }
     /* Drop the webtui first-row top-padding (it makes room for the ascii box
        border, which we don't render in the default style). */

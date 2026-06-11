@@ -58,7 +58,27 @@ const posts = docs
     .posts-table {
         --table-border-width: 1px;
         --table-border-color: var(--foreground1);
-        width: max-content;
+        width: 100%;
+        max-width: 100%;
+        /* table-layout: auto lets columns size by content but bound by
+           the 100% above, so the Title cell wraps instead of forcing
+           horizontal scroll on narrow viewports. */
+        table-layout: auto;
+    }
+    /* Date column: short, fixed-width-ish content (YYYY/MM/DD). Hold
+       it on one line so it doesn't waste vertical space, and let the
+       Title cell soak up the rest. */
+    .posts-table td:first-child,
+    .posts-table th:first-child {
+        white-space: nowrap;
+        width: 1%;
+    }
+    /* Title cell: allow line wrapping (default), and break long
+       URL-ish tokens at any character so they don't push the column
+       wide on narrow viewports. */
+    .posts-table td:nth-child(2) {
+        overflow-wrap: anywhere;
+        word-break: break-word;
     }
     .posts-table a {
         text-decoration: none;
