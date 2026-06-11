@@ -546,20 +546,32 @@ const articleSchema =
                 href={githubBase}
                 target="_blank"
                 title="Source repository on GitHub">
-                &#xea84; sam.onl/
+                &#xea84; sam.onl
             </a>
             {
-                sourceFilePath ? (
-                    <a
-                        class="vsl-file"
-                        href={`${githubBase}/blob/${currentBranch}/${sourceFilePath}`}
-                        target="_blank"
-                        title={`View ${sourceFilePath} on GitHub`}>
-                        {sourceFilePath.replace('web/src/pages/', '')}
-                    </a>
-                ) : (
-                    <span class="vsl-file">{Astro.url.pathname}</span>
-                )
+                /* Always show the URL pathname (e.g. "/about") rather
+                   than the source file path. The earlier branch that
+                   surfaced web/src/pages/.../index.mdx resolved
+                   differently in dev vs prod (the runtime stat probe
+                   succeeded on localhost where the source tree is on
+                   disk, but failed on Netlify where the serverless
+                   bundle doesn't ship the page sources at the
+                   resolved URL). One label everywhere. Trailing
+                   slash stripped so "/about/" reads as "/about". */
+                (() => {
+                    const path = Astro.url.pathname.replace(/\/$/, '') || '/'
+                    return sourceFilePath ? (
+                        <a
+                            class="vsl-file"
+                            href={`${githubBase}/blob/${currentBranch}/${sourceFilePath}`}
+                            target="_blank"
+                            title={`View ${sourceFilePath} on GitHub`}>
+                            {path}
+                        </a>
+                    ) : (
+                        <span class="vsl-file">{path}</span>
+                    )
+                })()
             }
             <span class="vsl-spacer"></span>
             <span class="vsl-keys">
