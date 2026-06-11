@@ -11,9 +11,18 @@ import type { MarkdownHeading } from 'astro'
 // CSS. The visible result on pages that render Filter (e.g.
 // /posts/) is "no styles applied" for the entire downstream tree.
 //
-// Strip inline tags before the string lands in the attribute. JSX
-// interpolation handles the &/< escaping for us after that.
-const stripInlineTags = (s: string) => s.replace(/<\/?[a-zA-Z][^>]*>/g, '')
+// Earlier this used `.replace(/<\/?[a-zA-Z][^>]*>/g, '')` to strip
+// the tag entirely, but that nuked legitimate doc headings that
+// reference HTML element names in code spans (e.g. the webtui
+// typography page has `### \`<h1>\`-\`<h6>\``, `### \`<blockquote>\``,
+// `### \`<p>\``, etc.) — each one would collapse to either an empty
+// string or just `-` in the command-palette label, making them
+// indistinguishable and unfindable. Swap the brackets for the
+// Unicode single-angle quotes U+2039 / U+203A instead — visually
+// near-identical, never parses as HTML, and the heading stays
+// searchable as "‹h1›-‹h6›" / "‹blockquote›" / "‹p›".
+const safenAngleBrackets = (s: string) =>
+    s.replace(/</g, '‹').replace(/>/g, '›')
 
 const docHeadings = docPages
     .map((page) => ({
@@ -214,12 +223,14 @@ const fontOptions = {
                     docHeadings.map(([id, header], i) => {
                         const headerTextRaw =
                             typeof header === 'string' ? header : header.text
-                        // Inline tags must be stripped before this
-                        // string lands in the page — otherwise a
+                        // Substitute angle brackets before the
+                        // string lands in the page — without it a
                         // heading like `### \`<style>\` tag` opens a
                         // rogue <style> element inside data-value=…
-                        // and eats half the doc tree.
-                        const headerText = stripInlineTags(headerTextRaw)
+                        // and eats half the doc tree (browser
+                        // attribute parser still treats < as a real
+                        // tag start in some contexts).
+                        const headerText = safenAngleBrackets(headerTextRaw)
 
                         return (
                             <a
