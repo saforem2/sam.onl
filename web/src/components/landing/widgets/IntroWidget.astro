@@ -557,6 +557,11 @@ const { variant, total, home = false } = Astro.props
         cursor: pointer;
         font-family: var(--font-family);
         font-size: inherit;
+        /* The shared `.iw-social-links a, button` rule sets
+           color: var(--foreground1), but webtui's <button> defaults
+           win on these two specifically — at-rest glyph reads darker
+           than the surrounding <a> chips. Pin the color explicitly. */
+        color: var(--foreground1) !important;
     }
     .iw-social-links button.iw-social-search-btn:hover,
     .iw-social-links button.iw-social-search-btn:focus-visible,
