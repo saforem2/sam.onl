@@ -506,6 +506,16 @@
     p {
         color: var(--text);
     }
+    /* Drop the default 1em top margin on the first <p> in any
+       container. Margin-collapse handles this for block siblings
+       (the previous block's bottom margin absorbs the <p>'s top),
+       but margin-collapse is *disabled* inside flex / grid — so a
+       <p> at the top of a flex column (callout body, intro widget,
+       sidebar entry, etc.) used to sit 1em below the container's
+       top edge. :first-child zeroes that. */
+    p:first-child {
+        margin-block-start: 0;
+    }
 
     details[is-~='accordion'] > summary {
         list-style: none;
