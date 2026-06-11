@@ -28,12 +28,19 @@ const ogImage = ogSlug
             src="https://www.googletagmanager.com/gtag/js?id=G-RD883HJ1J2"
         ></script>
         <script is:inline>
+            // GA's reference snippet REQUIRES the Arguments object
+            // (gtag.js inspects each dataLayer entry via [0]/[1] on the
+            // Arguments prototype; a plain Array from rest params gets
+            // silently dropped — see commit 54db951). Don't "fix" this
+            // back to (...args).
+            /* eslint-disable prefer-rest-params */
             window.dataLayer = window.dataLayer || []
             function gtag() {
                 dataLayer.push(arguments)
             }
             gtag('js', new Date())
             gtag('config', 'G-RD883HJ1J2')
+            /* eslint-enable prefer-rest-params */
         </script>
 
         <script is:inline>

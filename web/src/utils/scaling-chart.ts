@@ -23,8 +23,11 @@
  */
 
 /* uPlot is dynamically imported below so its ~50 KB bundle (+ CSS)
-   only loads on pages that actually mount a chart. */
+   only loads on pages that actually mount a chart. The class +
+   namespace are pulled in here as types only (import type) — no
+   runtime cost. */
 import 'uplot/dist/uPlot.min.css'
+import type UPlot from 'uplot'
 
 type ChartPayload = {
     xLabel?: string
@@ -118,7 +121,11 @@ function installResizeListener() {
     })
 }
 
-function initChart(uPlot: any, mount: HTMLElement, payload: ChartPayload) {
+function initChart(
+    uPlot: typeof UPlot,
+    mount: HTMLElement,
+    payload: ChartPayload,
+) {
     function formatValue(v: number, axisLabel?: string) {
         const isMs = axisLabel && /\bms\b/.test(axisLabel)
         const isSec = axisLabel && /\bsec/i.test(axisLabel)
@@ -128,7 +135,7 @@ function initChart(uPlot: any, mount: HTMLElement, payload: ChartPayload) {
         return `${v}${suffix}`
     }
 
-    let chart: any = null
+    let chart: UPlot | null = null
 
     function build() {
         if (chart) chart.destroy()
@@ -144,9 +151,12 @@ function initChart(uPlot: any, mount: HTMLElement, payload: ChartPayload) {
 
         // uPlot's data layout: parallel arrays. data[0] = x; data[1..] = each y.
         const seriesAll = [...payload.series, ...payload.refs]
-        const data = [payload.x, ...seriesAll.map((s) => s.data)] as any
+        const data = [
+            payload.x,
+            ...seriesAll.map((s) => s.data),
+        ] as UPlot.AlignedData
 
-        const uSeries: any[] = [
+        const uSeries: UPlot.Series[] = [
             { label: payload.xLabel || 'x' },
             ...payload.series.map((s) => ({
                 label: s.name,
@@ -168,7 +178,7 @@ function initChart(uPlot: any, mount: HTMLElement, payload: ChartPayload) {
             })),
         ]
 
-        const opts: any = {
+        const opts: UPlot.Options = {
             width: mount.clientWidth || 600,
             height: payload.height,
             scales: {
