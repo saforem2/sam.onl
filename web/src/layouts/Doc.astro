@@ -2385,7 +2385,14 @@ const articleSchema =
         vertical-align: baseline;
 
         > summary {
-            display: inline;
+            /* inline-block instead of inline so the summary's box
+               (and its padding) is part of the pointer hit area.
+               Plain inline made the trigger exactly the visible
+               1-char superscript — easy for a mouse to miss in
+               practice. 0.5ch padding widens the target on both
+               sides without visually shifting surrounding text. */
+            display: inline-block;
+            padding: 0 0.5ch;
             cursor: help;
             list-style: none;
             border: none !important;
