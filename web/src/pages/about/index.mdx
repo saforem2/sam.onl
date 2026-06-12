@@ -1639,7 +1639,13 @@ Full list at [/projects](/projects).
 
 <style>{`
 .recent-posts-table {
-    width: fit-content;
+    /* width: fit-content sized the table to content's max-content,
+       which pushed long titles past the mobile viewport. 100% +
+       table-layout: fixed forces the browser to size columns from
+       the first row's widths and let the Title cell wrap. */
+    width: 100%;
+    max-width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
 }
 .recent-posts-table th,
@@ -1649,6 +1655,19 @@ Full list at [/projects](/projects).
 }
 .recent-posts-table th {
     background-color: var(--background1);
+}
+/* Date column: short fixed-width content (YYYY/MM/DD), no wrap. */
+.recent-posts-table td:first-child,
+.recent-posts-table th:first-child {
+    white-space: nowrap;
+    width: 11ch;
+}
+/* Title cell: take the remaining width and wrap inside it. */
+.recent-posts-table td:nth-child(2),
+.recent-posts-table th:nth-child(2) {
+    width: auto;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 `}</style>
 
