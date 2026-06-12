@@ -1570,6 +1570,23 @@ html[data-webtui-theme='catppuccin-latte'] {
         margin-block: 1lh;
     }
 
+    /* Plain markdown tables in #main-content (without their own
+       component-level class) need the same overflow-wrap treatment
+       that the per-component tables get — otherwise long PascalCase
+       or URL-ish titles in the first column push the table past the
+       mobile viewport. Scoped to #main-content so non-prose tables
+       (e.g. component examples on /webtui/ pages) keep their default
+       max-content sizing. */
+    #main-content table {
+        width: 100%;
+        max-width: 100%;
+    }
+    #main-content table th,
+    #main-content table td {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
     /* The JS in Doc.astro wraps every <table> with this scroll container so
        wide tables overflow horizontally inside it instead of breaking the
        column.
