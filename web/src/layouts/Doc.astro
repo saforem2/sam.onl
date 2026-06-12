@@ -2406,14 +2406,24 @@ const articleSchema =
     }
 
     .footnote-popover-content {
-        background-color: var(--background1);
-        border: 1px solid var(--foreground2);
+        background-color: var(--background0);
+        /* Stronger border + 2ch left accent rail in the URL hue so the
+           popover reads as a discrete chip floating over the prose,
+           matching the callout-band language. */
+        border: 1px solid var(--foreground1);
+        border-left: 2px solid var(--url, var(--blue));
         padding: 0.5lh 1ch;
         max-width: min(40ch, calc(100vw - 4ch));
         width: max-content;
         font-size: 0.9em;
         line-height: 1.4;
         z-index: 1000;
+        /* Hard TUI-style offset shadow — makes the popover pop off the
+           page background without a soft blur that would feel out of
+           place against the rest of the box-drawing aesthetic. */
+        box-shadow:
+            3px 3px 0 0 var(--foreground1),
+            3px 3px 0 1px var(--background0);
         /* Reset white-space — footnotes inside table cells inherit
            `white-space: nowrap` from the table-scroll-wrapper rule, which
            breaks line wrapping inside the popover. */
