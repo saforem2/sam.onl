@@ -2887,3 +2887,118 @@ const articleSchema =
         setupTableScroll()
     }
 </script>
+
+<!-- Lazy-mount slide-deck iframes on click.
+     The /about/ page has ~35 reveal.js / slides.com iframes for the
+     talks-by-year section. Loading 35 full webapps simultaneously
+     crashes mobile Safari/Chrome (per-page resource budget blown).
+     Replace each one with a click-through placeholder; the iframe
+     only attaches when the user actually wants it, and detaches when
+     the surrounding <details> closes so memory drops back. -->
+<script>
+    function setupSlideDeckLazyMount() {
+        const iframes =
+            document.querySelectorAll<HTMLIFrameElement>('iframe.slide-deck')
+        if (iframes.length === 0) return
+
+        for (const iframe of iframes) {
+            const src = iframe.getAttribute('src')
+            const title = iframe.getAttribute('title') || 'slides'
+            const style = iframe.getAttribute('style') || ''
+            if (!src) continue
+
+            // Build placeholder
+            const placeholder = document.createElement('button')
+            placeholder.type = 'button'
+            placeholder.className = 'slide-deck-placeholder'
+            placeholder.setAttribute('aria-label', `Load slides: ${title}`)
+            placeholder.setAttribute('style', style)
+            placeholder.innerHTML = `<span class="slide-deck-placeholder-inner">&#xe628; ${title}<br><small>tap to load</small></span>`
+
+            // Stash the iframe attrs we'll restore on click
+            placeholder.dataset.src = src
+            placeholder.dataset.title = title
+
+            const onClick = () => {
+                const live = document.createElement('iframe')
+                for (const attr of iframe.attributes) {
+                    live.setAttribute(attr.name, attr.value)
+                }
+                placeholder.replaceWith(live)
+                // When the surrounding <details> closes, swap the
+                // iframe back to a placeholder so memory drops.
+                const details = live.closest('details')
+                if (details) {
+                    const onToggle = () => {
+                        if (!details.open && live.isConnected) {
+                            details.removeEventListener('toggle', onToggle)
+                            // Re-run setup on the swapped placeholder
+                            const newPlaceholder = placeholder.cloneNode(
+                                true,
+                            ) as HTMLButtonElement
+                            newPlaceholder.addEventListener('click', onClick, {
+                                once: true,
+                            })
+                            live.replaceWith(newPlaceholder)
+                        }
+                    }
+                    details.addEventListener('toggle', onToggle)
+                }
+            }
+            placeholder.addEventListener('click', onClick, { once: true })
+
+            iframe.replaceWith(placeholder)
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupSlideDeckLazyMount)
+    } else {
+        setupSlideDeckLazyMount()
+    }
+</script>
+
+<style is:global>
+    .slide-deck-placeholder {
+        all: unset;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        cursor: pointer;
+        padding: 1lh 1ch;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--url, var(--blue)) 8%
+        );
+        border: 1px dashed var(--url, var(--blue));
+        color: var(--url, var(--blue));
+        text-align: center;
+        font-family: var(--font-family);
+        transition:
+            background-color 0.12s linear,
+            color 0.12s linear,
+            border-color 0.12s linear;
+
+        &:hover,
+        &:focus-visible {
+            background-color: color-mix(
+                in srgb,
+                var(--background0),
+                var(--url, var(--blue)) 16%
+            );
+            color: var(--foreground0);
+        }
+    }
+    .slide-deck-placeholder-inner {
+        display: inline-block;
+        font-weight: bold;
+        & small {
+            display: block;
+            font-weight: normal;
+            font-size: 0.85em;
+            color: var(--foreground2);
+            margin-top: 0.25lh;
+        }
+    }
+</style>
