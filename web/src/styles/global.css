@@ -415,6 +415,15 @@
         margin: 0;
         display: block;
         overflow-x: hidden;
+        /* iOS Safari / mobile Chrome default to -webkit-text-size-
+           adjust: auto, which inflates text inside narrow sub-
+           containers (e.g. table cells inside .table-scroll-wrapper)
+           to keep it "readable". The side effect was that table
+           text looked massively bigger than the surrounding prose
+           on mobile, despite the computed font-size being identical
+           (16px both). Pin to 100% to take manual control. */
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
     }
 
     .flex-container {
