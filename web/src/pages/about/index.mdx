@@ -5,6 +5,7 @@ order: 0
 ---
 
 import { getCollection } from 'astro:content'
+import LastUpdated from '@/components/LastUpdated.astro'
 
 export const recentPosts = (await getCollection('docs'))
     .filter((doc) => {
@@ -70,6 +71,10 @@ Pre-Training group] for the [AuroraGPT] project.
 > 🌎 <span class="highlight-green">AERIS</span>: [Argonne Earth Systems
 > Model for Reliable and Skillful Predictions](https://arxiv.org/abs/2509.13523)[^1]
 > (Hatanpää et al. (2025))
+
+<br />
+
+<LastUpdated file={import.meta.url} />
 
 <br />
 
