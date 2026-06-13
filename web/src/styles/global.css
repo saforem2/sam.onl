@@ -916,10 +916,20 @@
            IS the same monospace stack, so 1em = parity. */
         font-size: 1em;
         line-height: 1.5;
+        /* iOS Safari still inflates text inside scrollable
+           sub-containers even with html-level text-size-adjust;
+           re-pin here so code blocks render at the explicit em. */
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
     }
-    pre.astro-code code {
-        /* Inner <code> stays at the <pre>'s size — no nested
-           multiplier. */
+    pre.astro-code code,
+    pre.astro-code .line,
+    pre.astro-code .line span {
+        /* Every descendant of the <pre> stays at the <pre>'s size
+           — no nested multiplier. (.line and its token spans get
+           explicit reset too because shiki emits inline color
+           styles that don't include font-size, but some user-agent
+           defaults bump <code>-class elements.) */
         font-size: inherit;
     }
 }
