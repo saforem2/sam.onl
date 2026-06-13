@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config'
 import mdx from '@astrojs/mdx'
+import sitemap from '@astrojs/sitemap'
 import { rehypeHeadingIds } from '@astrojs/markdown-remark'
 import { visit } from 'unist-util-visit'
 import remarkMath from 'remark-math'
@@ -344,6 +345,7 @@ export default defineConfig({
                 rehypeTaskListInteractive,
             ],
         }),
+        sitemap(),
     ],
     vite: {
         ssr: {
