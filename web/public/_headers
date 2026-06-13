@@ -1,0 +1,14 @@
+# Cloudflare Pages header rules. Mirrors the [[headers]] block from
+# the old netlify.toml. CF Pages reads this file from the publish
+# root (web/dist) at deploy time; web/public/ is copied verbatim
+# into dist by Astro's build.
+#
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+# Self-hosted font binaries (Iosevka, Nerd Font) are content-addressable
+# by path; pin them as immutable for a year so users never re-download.
+# Scoped to *.woff2 only so the sibling .css files (iosevka.css /
+# nerd.css) stay invalidatable if we ever change @font-face decls.
+/fonts/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
