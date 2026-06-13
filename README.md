@@ -1,7 +1,5 @@
 # [sam.onl](https://sam.onl)
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/0547cd8d-4722-47b9-bad2-bd636b371a28/deploy-status)](https://app.netlify.com/projects/sam4/deploys)
-
 Personal website for [Sam Foreman](https://sam.onl), built with [Astro](https://astro.build) and [WebTUI](https://webtui.ironclad.sh).
 
 ## Stack
@@ -9,7 +7,7 @@ Personal website for [Sam Foreman](https://sam.onl), built with [Astro](https://
 - **Framework**: [Astro](https://astro.build) (SSG)
 - **Styling**: [WebTUI](https://webtui.ironclad.sh) — terminal UI aesthetics for the web
 - **Monorepo**: [Turborepo](https://turbo.build) + [Bun](https://bun.sh)
-- **Hosting**: [Netlify](https://netlify.com)
+- **Hosting**: [Cloudflare Pages](https://pages.cloudflare.com) — see [`CLOUDFLARE_PAGES.md`](./CLOUDFLARE_PAGES.md) for build settings
 
 ## Structure
 
