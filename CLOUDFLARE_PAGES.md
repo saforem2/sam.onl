@@ -12,10 +12,16 @@ Mirrors what `netlify.toml` used to encode.
 | Setting                | Value                                            |
 | ---------------------- | ------------------------------------------------ |
 | **Production branch**  | `main`                                           |
-| **Build command**      | `npx playwright install chromium && bun run build` |
+| **Build command**      | `bun install --frozen-lockfile && npx playwright install chromium && bun run build` |
 | **Build output**       | `web/dist`                                       |
 | **Root directory**     | (project root, leave blank)                      |
 | **Framework preset**   | None (auto-detect picks Astro, also fine)        |
+
+> **Note:** the explicit `bun install --frozen-lockfile` at the front of
+> the build command is required. Unlike Netlify, Cloudflare Pages does
+> NOT auto-run `bun install` before invoking the build command —
+> without it, `turbo` (a devDependency) is not on PATH and the build
+> fails with `turbo: command not found`.
 
 ## Environment variables
 
