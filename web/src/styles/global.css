@@ -415,6 +415,15 @@
         margin: 0;
         display: block;
         overflow-x: hidden;
+        /* iOS Safari / mobile Chrome default to -webkit-text-size-
+           adjust: auto, which inflates text inside narrow sub-
+           containers (e.g. table cells inside .table-scroll-wrapper)
+           to keep it "readable". The side effect was that table
+           text looked massively bigger than the surrounding prose
+           on mobile, despite the computed font-size being identical
+           (16px both). Pin to 100% to take manual control. */
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
     }
 
     .flex-container {
@@ -505,6 +514,16 @@
 @layer components {
     p {
         color: var(--text);
+    }
+    /* Drop the default 1em top margin on the first <p> in any
+       container. Margin-collapse handles this for block siblings
+       (the previous block's bottom margin absorbs the <p>'s top),
+       but margin-collapse is *disabled* inside flex / grid — so a
+       <p> at the top of a flex column (callout body, intro widget,
+       sidebar entry, etc.) used to sit 1em below the container's
+       top edge. :first-child zeroes that. */
+    p:first-child {
+        margin-block-start: 0;
     }
 
     details[is-~='accordion'] > summary {
@@ -887,16 +906,48 @@
         }
     }
 
-    pre.astro-code,
-    pre.astro-code code {
-        /* Inherit from parent context so code stays at body-text size
-           everywhere it appears. Bumped a hair past 1em because the
-           monospace font is optically narrower per char than the
-           proportional body font, so at the same em-size it reads
-           slightly smaller. Line-height matches body (1.5) so the
-           codeblock doesn't look cramped against surrounding prose. */
-        font-size: 1.05em;
+    pre.astro-code {
+        /* Code-block font stays at the body's font size. The
+           previous rule applied 1.05em to BOTH the <pre> AND the
+           inner <code>, chaining to 1.05² = ~17.64px on a 16px
+           body — code blocks read noticeably bigger than the
+           surrounding prose. The "monospace looks narrower" excuse
+           in the prior comment doesn't apply here: the body font
+           IS the same monospace stack, so 1em = parity. */
+        font-size: 1em;
         line-height: 1.5;
+        /* iOS Safari still inflates text inside scrollable
+           sub-containers even with html-level text-size-adjust;
+           re-pin here so code blocks render at the explicit em. */
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+    }
+    pre.astro-code code,
+    pre.astro-code .line,
+    pre.astro-code .line span {
+        /* Every descendant of the <pre> stays at the <pre>'s size
+           — no nested multiplier. (.line and its token spans get
+           explicit reset too because shiki emits inline color
+           styles that don't include font-size, but some user-agent
+           defaults bump <code>-class elements.) */
+        font-size: inherit;
+    }
+    pre.astro-code code {
+        /* Strip the line-box for whitespace text nodes between
+           <span class="line"> children. Shiki emits literal "\n"
+           between each line span; with line-height: 20.8 inherited
+           on the parent, each "\n" renders a full empty line-box
+           between two block .line children — visible as a ~19px
+           gap on mobile (see deploy-preview-18 screenshot 0b657cf).
+           font-size: 0 collapses the whitespace-token line-box to
+           zero. .line + .line span override font-size: inherit
+           above, so the actual code glyphs stay at body size. */
+        font-size: 0;
+    }
+    pre.astro-code .line {
+        /* Re-introduce the real font-size on .line, since the
+           parent code is font-size: 0 now. */
+        font-size: 1rem;
     }
 }
 
@@ -1076,7 +1127,13 @@ pre.astro-code span.line[tabindex='0']:focus-visible {
 }
 
 pre.astro-code span.line {
-    display: inline-block;
+    /* display: block (not inline-block) so consecutive lines stack
+       cleanly without the inter-line whitespace artifact that
+       `\n` text nodes create inside an inline-block parent. The
+       artifact rendered as faint horizontal stripes between line
+       numbers on mobile (visible in /posts/2026/05/01/ screenshot
+       2026-06-13). */
+    display: block;
     width: 100%;
     /* Pin line height so emoji glyphs (🍋, ⚠️, 🚧, …) can't stretch
        individual lines taller than the rest. Without this the emoji's
@@ -1560,6 +1617,30 @@ html[data-webtui-theme='catppuccin-latte'] {
         margin-block: 1lh;
     }
 
+    /* Plain markdown tables in #main-content: encourage cells to
+       wrap so long titles / URL-ish tokens don't push the table
+       past the .table-scroll-wrapper width on mobile. Keep
+       table-layout: auto so 3-column variants don't collapse to
+       equal-share widths (which made the 3-col Talks table
+       overlap its Title and Location columns). The wrapper's
+       overflow-x: auto still acts as a fallback when a cell
+       truly can't wrap further. */
+    #main-content table {
+        width: 100%;
+        max-width: 100%;
+    }
+    #main-content table th,
+    #main-content table td {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+    /* <code> tokens inherit white-space: nowrap from the inline-code
+       rule elsewhere; override it inside table cells so the column
+       stays within the wrapper's width on mobile. */
+    #main-content table :is(td, th) code {
+        white-space: normal;
+    }
+
     /* The JS in Doc.astro wraps every <table> with this scroll container so
        wide tables overflow horizontally inside it instead of breaking the
        column.
@@ -1788,5 +1869,100 @@ html[data-webtui-theme='catppuccin-latte'] {
         background-color: transparent;
         color: inherit;
         text-decoration: none;
+    }
+}
+
+/* ── Hand-drawn highlighter marks (mark-*) ──────────────────────────
+   Adapted from vii120's CodePen KwMBaaY. Two conic + one linear
+   gradient layered on ::before produce the irregular streak of a
+   physical highlighter. Per-color modifiers override --mark-color
+   and tweak the rotation / skew / scale so each highlight reads as
+   hand-drawn rather than a uniform CSS rectangle.
+
+   Usage:
+     <mark class="mark-yellow">text</mark>
+     <mark class="mark-green">text</mark>
+     <mark class="mark-pink">text</mark>
+     <mark class="mark-blue">text</mark>
+
+   Works on plain <mark>, <span>, or any inline element. Doesn't
+   affect surrounding flow — the gradient paints behind the text
+   via z-index: -1 on the pseudo. */
+@layer components {
+    :where(.mark-yellow, .mark-green, .mark-pink, .mark-blue, .mark-orange) {
+        position: relative;
+        z-index: 0;
+        padding: 0 0.25ch;
+        /* The default <mark> bg fights the gradient — strip it. */
+        background-color: transparent;
+        color: inherit;
+    }
+    :where(
+        .mark-yellow,
+        .mark-green,
+        .mark-pink,
+        .mark-blue,
+        .mark-orange
+    )::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        border-radius: 3px 5px 3px 5px;
+        background:
+            conic-gradient(
+                    at 0 100%,
+                    rgb(var(--mark-color) / 100%) 1%,
+                    #fff0 3%
+                )
+                no-repeat 0 0 / auto 120%,
+            conic-gradient(
+                    from 180deg at 100% 0,
+                    #fff0,
+                    rgb(var(--mark-color) / 100%) 1%,
+                    #fff0 4%
+                )
+                no-repeat 100% 100% / auto 120%,
+            linear-gradient(
+                    var(--mark-bg-angle, 50deg),
+                    rgb(var(--mark-color) / 60%),
+                    rgb(var(--mark-color) / 20%) 75%,
+                    rgb(var(--mark-color) / 55%)
+                )
+                no-repeat center / auto;
+    }
+
+    .mark-yellow::before {
+        rotate: 1deg;
+        scale: 1.05;
+        transform: skew(-5deg);
+        --mark-color: 255 232 62;
+        --mark-bg-angle: 50deg;
+    }
+    .mark-green::before {
+        scale: 0.96;
+        transform: skew(7deg);
+        --mark-color: 91 233 92;
+        --mark-bg-angle: 30deg;
+    }
+    .mark-pink::before {
+        rotate: 0.5deg;
+        transform: skew(5deg);
+        --mark-color: 255 100 185;
+        --mark-bg-angle: 150deg;
+    }
+    .mark-blue::before {
+        rotate: -0.5deg;
+        scale: 1.03;
+        transform: skew(-3deg);
+        --mark-color: 130 188 255;
+        --mark-bg-angle: 70deg;
+    }
+    .mark-orange::before {
+        rotate: 0.75deg;
+        scale: 1.02;
+        transform: skew(4deg);
+        --mark-color: 255 165 70;
+        --mark-bg-angle: 130deg;
     }
 }

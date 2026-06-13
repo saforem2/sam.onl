@@ -5,6 +5,7 @@ order: 0
 ---
 
 import { getCollection } from 'astro:content'
+import LastUpdated from '@/components/LastUpdated.astro'
 
 export const recentPosts = (await getCollection('docs'))
     .filter((doc) => {
@@ -68,8 +69,12 @@ Pre-Training group] for the [AuroraGPT] project.
 > [!TIP] ✨ New!
 >
 > 🌎 <span class="highlight-green">AERIS</span>: [Argonne Earth Systems
-> Model for Reliable and Skillful Predictions][^1] (Hatanpää et al.
-> (2025))
+> Model for Reliable and Skillful Predictions](https://arxiv.org/abs/2509.13523)[^1]
+> (Hatanpää et al. (2025))
+
+<br />
+
+<LastUpdated file={import.meta.url} />
 
 <br />
 
@@ -803,12 +808,12 @@ Pre-Training group] for the [AuroraGPT] project.
 | ---- | ----- |
 | 2026 | [Extending µP: Spectral Conditions for Feature Learning Across Optimizers][extending-mup] |
 | 2026 | [Building an AI-native Research Ecosystem for Experimental Particle Physics: A Community Vision][ai-native-research] |
-| 2025 | [<span class="highlight-green">**AERIS**</span>: Argonne Earth Systems Model for Reliable and Skillful Predictions][Argonne Earth Systems Model for Reliable and Skillful Predictions][^aeris-bell] |
+| 2025 | [**AERIS**][Argonne Earth Systems Model for Reliable and Skillful Predictions][^aeris-bell]: Argonne Earth Systems Model for Reliable and Skillful Predictions |
 | 2025 | [Aurora: Architecting Argonne's First Exascale Supercomputer for Accelerated Scientific Discovery][aurora-paper] |
 | 2025 | [HiPerRAG: High-Performance Retrieval Augmented Generation for Scientific Insights] |
 | 2025 | [Automated Tuning for HMC Mass Ratios] |
 | 2025 | [MOFA: Discovering Materials for Carbon Capture with a GenAI and Simulation-Based Workflow] |
-| 2024 | [<span class="highlight-pink">**MProt-DPO**</span>: Breaking the ExaFLOPS Barrier for Multimodal Protein Design with DPO][mprot-paper][^mprot-bell] |
+| 2024 | [**MProt-DPO**][mprot-paper][^mprot-bell]: Breaking the ExaFLOPS Barrier for Multimodal Protein Design with DPO |
 | 2024 | [Intro to HPC Bootcamp: Engaging New Communities Through Energy Justice Projects] |
 | 2024 | [Thorough Characterization and Analysis of Large Transformer Model Training At-Scale] |
 | 2023 | [MLMC: Machine Learning Monte Carlo for Lattice Gauge Theory] |
@@ -816,7 +821,7 @@ Pre-Training group] for the [AuroraGPT] project.
 | 2023 | [DeepSpeed4Science Initiative: Enabling Large-Scale Scientific Discovery] |
 | 2023 | [Comprehensive Performance Study of LLMs on Novel AI Accelerators] |
 | 2023 | [Exploratory Analysis of Climate Data with `ClimRR`][Foundation models for long term climate forecasting] |
-| 2023 | [<span class="highlight">**GenSLMs**</span>: Genome-scale language models reveal SARS-Cov-2 evolutionary dynamics][genslms-paper][^genslms-bell] |
+| 2023 | [**GenSLMs**][genslms-paper][^genslms-bell]: Genome-scale language models reveal SARS-Cov-2 evolutionary dynamics |
 | 2022 | [Lattice QCD and Particle Physics] |
 | 2022 | [Applications of ML to Lattice QFT] |
 | 2021 | [LeapFrogLayers: Trainable Framework for Effective Sampling] |
@@ -1639,16 +1644,33 @@ Full list at [/projects](/projects).
 
 <style>{`
 .recent-posts-table {
-    width: fit-content;
+    /* width: fit-content sized the table to content's max-content,
+       which pushed long titles past the mobile viewport. 100% +
+       table-layout: auto + per-cell overflow-wrap lets the browser
+       distribute width naturally between 2-col (Posts: Date+Title)
+       and 3-col (Talks: Date+Title+Location) tables, while letting
+       long titles break mid-token instead of overflowing. */
+    width: 100%;
+    max-width: 100%;
     border-collapse: collapse;
 }
 .recent-posts-table th,
 .recent-posts-table td {
     border: 1px solid var(--foreground3);
     padding: 0 1ch;
+    /* Anywhere-break wins over white-space defaults so a long URL
+       or PascalCase title doesn't force the column to max-content. */
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 .recent-posts-table th {
     background-color: var(--background1);
+}
+/* Date column: short fixed-width content (YYYY/MM/DD), no wrap. */
+.recent-posts-table td:first-child,
+.recent-posts-table th:first-child {
+    white-space: nowrap;
+    width: 11ch;
 }
 `}</style>
 

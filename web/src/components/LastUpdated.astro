@@ -1,0 +1,40 @@
+---
+/* LastUpdated — renders a "Last Updated" callout block whose
+   timestamp is the build-time mtime of the MDX page that imports
+   it.
+
+   Pass `file` as the importing page's `import.meta.url` so we can
+   stat the right file:
+
+       import LastUpdated from '@/components/LastUpdated.astro'
+       <LastUpdated file={import.meta.url} />
+
+   We do the FS lookup in this Astro component (and not inline in
+   MDX) because MDX's acorn parser is fussy about top-level
+   `export const`s referencing `import.meta`, and exported
+   identifiers don't always reach inline `{…}` expressions in
+   page content depending on the rehype pipeline. An imported
+   component sidesteps both gotchas. */
+import { statSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+
+interface Props {
+    file: string
+    title?: string
+}
+
+const { file, title = '📝 Last Updated' } = Astro.props
+
+const mtime = statSync(fileURLToPath(file)).mtime
+const iso = mtime.toISOString().slice(0, 19).replace('T', ' ')
+const dateStr = iso.slice(0, 10)
+const timeStr = iso.slice(11, 19)
+---
+
+<details is-="accordion" class="callout callout-note" data-callout="note" open>
+    <summary>{title}</summary>
+    <p>
+        <strong>Updated:</strong>{' '}
+        <code>{dateStr}</code> @ <code>{timeStr}</code>
+    </p>
+</details>

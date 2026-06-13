@@ -546,20 +546,32 @@ const articleSchema =
                 href={githubBase}
                 target="_blank"
                 title="Source repository on GitHub">
-                &#xea84; sam.onl/
+                &#xea84; sam.onl
             </a>
             {
-                sourceFilePath ? (
-                    <a
-                        class="vsl-file"
-                        href={`${githubBase}/blob/${currentBranch}/${sourceFilePath}`}
-                        target="_blank"
-                        title={`View ${sourceFilePath} on GitHub`}>
-                        {sourceFilePath.replace('web/src/pages/', '')}
-                    </a>
-                ) : (
-                    <span class="vsl-file">{Astro.url.pathname}</span>
-                )
+                /* Always show the URL pathname (e.g. "/about") rather
+                   than the source file path. The earlier branch that
+                   surfaced web/src/pages/.../index.mdx resolved
+                   differently in dev vs prod (the runtime stat probe
+                   succeeded on localhost where the source tree is on
+                   disk, but failed on Netlify where the serverless
+                   bundle doesn't ship the page sources at the
+                   resolved URL). One label everywhere. Trailing
+                   slash stripped so "/about/" reads as "/about". */
+                (() => {
+                    const path = Astro.url.pathname.replace(/\/$/, '') || '/'
+                    return sourceFilePath ? (
+                        <a
+                            class="vsl-file"
+                            href={`${githubBase}/blob/${currentBranch}/${sourceFilePath}`}
+                            target="_blank"
+                            title={`View ${sourceFilePath} on GitHub`}>
+                            {path}
+                        </a>
+                    ) : (
+                        <span class="vsl-file">{path}</span>
+                    )
+                })()
             }
             <span class="vsl-spacer"></span>
             <span class="vsl-keys">
@@ -2083,6 +2095,7 @@ const articleSchema =
                     'projects',
                     'more',
                     'detailed list',
+                    'by year',
                 ])
                 const collapseByDefault =
                     /\b(19|20)\d{2}\s*$/.test(headingText) ||
@@ -2373,7 +2386,14 @@ const articleSchema =
         vertical-align: baseline;
 
         > summary {
-            display: inline;
+            /* inline-block instead of inline so the summary's box
+               (and its padding) is part of the pointer hit area.
+               Plain inline made the trigger exactly the visible
+               1-char superscript — easy for a mouse to miss in
+               practice. 0.5ch padding widens the target on both
+               sides without visually shifting surrounding text. */
+            display: inline-block;
+            padding: 0 0.5ch;
             cursor: help;
             list-style: none;
             border: none !important;
@@ -2394,14 +2414,24 @@ const articleSchema =
     }
 
     .footnote-popover-content {
-        background-color: var(--background1);
-        border: 1px solid var(--foreground2);
+        background-color: var(--background0);
+        /* Stronger border + 2ch left accent rail in the URL hue so the
+           popover reads as a discrete chip floating over the prose,
+           matching the callout-band language. */
+        border: 1px solid var(--foreground1);
+        border-left: 2px solid var(--url, var(--blue));
         padding: 0.5lh 1ch;
         max-width: min(40ch, calc(100vw - 4ch));
         width: max-content;
         font-size: 0.9em;
         line-height: 1.4;
         z-index: 1000;
+        /* Hard TUI-style offset shadow — makes the popover pop off the
+           page background without a soft blur that would feel out of
+           place against the rest of the box-drawing aesthetic. */
+        box-shadow:
+            3px 3px 0 0 var(--foreground1),
+            3px 3px 0 1px var(--background0);
         /* Reset white-space — footnotes inside table cells inherit
            `white-space: nowrap` from the table-scroll-wrapper rule, which
            breaks line wrapping inside the popover. */
@@ -2857,3 +2887,118 @@ const articleSchema =
         setupTableScroll()
     }
 </script>
+
+<!-- Lazy-mount slide-deck iframes on click.
+     The /about/ page has ~35 reveal.js / slides.com iframes for the
+     talks-by-year section. Loading 35 full webapps simultaneously
+     crashes mobile Safari/Chrome (per-page resource budget blown).
+     Replace each one with a click-through placeholder; the iframe
+     only attaches when the user actually wants it, and detaches when
+     the surrounding <details> closes so memory drops back. -->
+<script>
+    function setupSlideDeckLazyMount() {
+        const iframes =
+            document.querySelectorAll<HTMLIFrameElement>('iframe.slide-deck')
+        if (iframes.length === 0) return
+
+        for (const iframe of iframes) {
+            const src = iframe.getAttribute('src')
+            const title = iframe.getAttribute('title') || 'slides'
+            const style = iframe.getAttribute('style') || ''
+            if (!src) continue
+
+            // Build placeholder
+            const placeholder = document.createElement('button')
+            placeholder.type = 'button'
+            placeholder.className = 'slide-deck-placeholder'
+            placeholder.setAttribute('aria-label', `Load slides: ${title}`)
+            placeholder.setAttribute('style', style)
+            placeholder.innerHTML = `<span class="slide-deck-placeholder-inner">&#xe628; ${title}<br><small>tap to load</small></span>`
+
+            // Stash the iframe attrs we'll restore on click
+            placeholder.dataset.src = src
+            placeholder.dataset.title = title
+
+            const onClick = () => {
+                const live = document.createElement('iframe')
+                for (const attr of iframe.attributes) {
+                    live.setAttribute(attr.name, attr.value)
+                }
+                placeholder.replaceWith(live)
+                // When the surrounding <details> closes, swap the
+                // iframe back to a placeholder so memory drops.
+                const details = live.closest('details')
+                if (details) {
+                    const onToggle = () => {
+                        if (!details.open && live.isConnected) {
+                            details.removeEventListener('toggle', onToggle)
+                            // Re-run setup on the swapped placeholder
+                            const newPlaceholder = placeholder.cloneNode(
+                                true,
+                            ) as HTMLButtonElement
+                            newPlaceholder.addEventListener('click', onClick, {
+                                once: true,
+                            })
+                            live.replaceWith(newPlaceholder)
+                        }
+                    }
+                    details.addEventListener('toggle', onToggle)
+                }
+            }
+            placeholder.addEventListener('click', onClick, { once: true })
+
+            iframe.replaceWith(placeholder)
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupSlideDeckLazyMount)
+    } else {
+        setupSlideDeckLazyMount()
+    }
+</script>
+
+<style is:global>
+    .slide-deck-placeholder {
+        all: unset;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        cursor: pointer;
+        padding: 1lh 1ch;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--url, var(--blue)) 8%
+        );
+        border: 1px dashed var(--url, var(--blue));
+        color: var(--url, var(--blue));
+        text-align: center;
+        font-family: var(--font-family);
+        transition:
+            background-color 0.12s linear,
+            color 0.12s linear,
+            border-color 0.12s linear;
+
+        &:hover,
+        &:focus-visible {
+            background-color: color-mix(
+                in srgb,
+                var(--background0),
+                var(--url, var(--blue)) 16%
+            );
+            color: var(--foreground0);
+        }
+    }
+    .slide-deck-placeholder-inner {
+        display: inline-block;
+        font-weight: bold;
+        & small {
+            display: block;
+            font-weight: normal;
+            font-size: 0.85em;
+            color: var(--foreground2);
+            margin-top: 0.25lh;
+        }
+    }
+</style>

@@ -347,7 +347,13 @@ const { variant, total, home = false } = Astro.props
             color-mix(in srgb, var(--background0), var(--foreground0) 18%);
         color: var(--foreground1);
         font-weight: bold;
-        --chip-accent: var(--accent, var(--blue));
+        /* Track the prose link color (blue) instead of --accent
+           (pink): the link's anchor text inherits color: var(--url)
+           from the body link rule, so a pink shadow + blue text +
+           grey border read as a mismatched chip. Pinning the accent
+           to --url keeps the shadow, border, and hover-text in sync
+           with the visible link color. */
+        --chip-accent: var(--url, var(--blue));
         transition:
             background-color 0.1s linear,
             color 0.1s linear,

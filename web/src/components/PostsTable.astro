@@ -60,23 +60,29 @@ const posts = docs
         --table-border-color: var(--foreground1);
         width: 100%;
         max-width: 100%;
-        /* table-layout: auto lets columns size by content but bound by
-           the 100% above, so the Title cell wraps instead of forcing
-           horizontal scroll on narrow viewports. */
-        table-layout: auto;
+        /* table-layout: fixed forces the browser to size columns from
+           the first row's cell widths instead of measuring every
+           cell's max-content. Without this on mobile the Title
+           column's max-content (a long post title) pushed the whole
+           table past the viewport — overflow-wrap then never had a
+           chance to fire because the column was already sized to fit
+           the unwrapped string. fixed + the col widths below let the
+           Title cell wrap on the first too-long word. */
+        table-layout: fixed;
     }
-    /* Date column: short, fixed-width-ish content (YYYY/MM/DD). Hold
-       it on one line so it doesn't waste vertical space, and let the
-       Title cell soak up the rest. */
+    /* Date column: short, fixed-width-ish content (YYYY/MM/DD). 11ch
+       fits the format with a hair of padding; no wrapping. */
     .posts-table td:first-child,
     .posts-table th:first-child {
         white-space: nowrap;
-        width: 1%;
+        width: 11ch;
     }
-    /* Title cell: allow line wrapping (default), and break long
-       URL-ish tokens at any character so they don't push the column
-       wide on narrow viewports. */
-    .posts-table td:nth-child(2) {
+    /* Title cell: take whatever's left and wrap inside it; break long
+       URL-ish tokens at any character so they don't bleed past the
+       column edge. */
+    .posts-table td:nth-child(2),
+    .posts-table th:nth-child(2) {
+        width: auto;
         overflow-wrap: anywhere;
         word-break: break-word;
     }
