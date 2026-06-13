@@ -932,6 +932,23 @@
            defaults bump <code>-class elements.) */
         font-size: inherit;
     }
+    pre.astro-code code {
+        /* Strip the line-box for whitespace text nodes between
+           <span class="line"> children. Shiki emits literal "\n"
+           between each line span; with line-height: 20.8 inherited
+           on the parent, each "\n" renders a full empty line-box
+           between two block .line children — visible as a ~19px
+           gap on mobile (see deploy-preview-18 screenshot 0b657cf).
+           font-size: 0 collapses the whitespace-token line-box to
+           zero. .line + .line span override font-size: inherit
+           above, so the actual code glyphs stay at body size. */
+        font-size: 0;
+    }
+    pre.astro-code .line {
+        /* Re-introduce the real font-size on .line, since the
+           parent code is font-size: 0 now. */
+        font-size: 1rem;
+    }
 }
 
 .light-content {
