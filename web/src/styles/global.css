@@ -1586,6 +1586,14 @@ html[data-webtui-theme='catppuccin-latte'] {
         overflow-wrap: anywhere;
         word-break: break-word;
     }
+    /* <code> tokens inherit white-space: nowrap from the inline-code
+       rule elsewhere, which overrides overflow-wrap and forces the
+       containing cell to expand to max-content. In table cells we
+       want the opposite — allow code tokens to break so the column
+       stays within the wrapper's width on mobile. */
+    #main-content table :is(td, th) code {
+        white-space: normal;
+    }
 
     /* The JS in Doc.astro wraps every <table> with this scroll container so
        wide tables overflow horizontally inside it instead of breaking the
