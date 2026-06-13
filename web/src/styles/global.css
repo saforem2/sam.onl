@@ -1110,7 +1110,13 @@ pre.astro-code span.line[tabindex='0']:focus-visible {
 }
 
 pre.astro-code span.line {
-    display: inline-block;
+    /* display: block (not inline-block) so consecutive lines stack
+       cleanly without the inter-line whitespace artifact that
+       `\n` text nodes create inside an inline-block parent. The
+       artifact rendered as faint horizontal stripes between line
+       numbers on mobile (visible in /posts/2026/05/01/ screenshot
+       2026-06-13). */
+    display: block;
     width: 100%;
     /* Pin line height so emoji glyphs (🍋, ⚠️, 🚧, …) can't stretch
        individual lines taller than the rest. Without this the emoji's
