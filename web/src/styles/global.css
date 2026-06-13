@@ -897,16 +897,21 @@
         }
     }
 
-    pre.astro-code,
-    pre.astro-code code {
-        /* Inherit from parent context so code stays at body-text size
-           everywhere it appears. Bumped a hair past 1em because the
-           monospace font is optically narrower per char than the
-           proportional body font, so at the same em-size it reads
-           slightly smaller. Line-height matches body (1.5) so the
-           codeblock doesn't look cramped against surrounding prose. */
-        font-size: 1.05em;
+    pre.astro-code {
+        /* Code-block font stays at the body's font size. The
+           previous rule applied 1.05em to BOTH the <pre> AND the
+           inner <code>, chaining to 1.05² = ~17.64px on a 16px
+           body — code blocks read noticeably bigger than the
+           surrounding prose. The "monospace looks narrower" excuse
+           in the prior comment doesn't apply here: the body font
+           IS the same monospace stack, so 1em = parity. */
+        font-size: 1em;
         line-height: 1.5;
+    }
+    pre.astro-code code {
+        /* Inner <code> stays at the <pre>'s size — no nested
+           multiplier. */
+        font-size: inherit;
     }
 }
 
@@ -1570,13 +1575,14 @@ html[data-webtui-theme='catppuccin-latte'] {
         margin-block: 1lh;
     }
 
-    /* Plain markdown tables in #main-content (without their own
-       component-level class) need the same overflow-wrap treatment
-       that the per-component tables get — otherwise long PascalCase
-       or URL-ish titles in the first column push the table past the
-       mobile viewport. Scoped to #main-content so non-prose tables
-       (e.g. component examples on /webtui/ pages) keep their default
-       max-content sizing. */
+    /* Plain markdown tables in #main-content: encourage cells to
+       wrap so long titles / URL-ish tokens don't push the table
+       past the .table-scroll-wrapper width on mobile. Keep
+       table-layout: auto so 3-column variants don't collapse to
+       equal-share widths (which made the 3-col Talks table
+       overlap its Title and Location columns). The wrapper's
+       overflow-x: auto still acts as a fallback when a cell
+       truly can't wrap further. */
     #main-content table {
         width: 100%;
         max-width: 100%;
@@ -1587,9 +1593,7 @@ html[data-webtui-theme='catppuccin-latte'] {
         word-break: break-word;
     }
     /* <code> tokens inherit white-space: nowrap from the inline-code
-       rule elsewhere, which overrides overflow-wrap and forces the
-       containing cell to expand to max-content. In table cells we
-       want the opposite — allow code tokens to break so the column
+       rule elsewhere; override it inside table cells so the column
        stays within the wrapper's width on mobile. */
     #main-content table :is(td, th) code {
         white-space: normal;
