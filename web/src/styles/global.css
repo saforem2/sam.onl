@@ -929,25 +929,15 @@
            — no nested multiplier. (.line and its token spans get
            explicit reset too because shiki emits inline color
            styles that don't include font-size, but some user-agent
-           defaults bump <code>-class elements.) */
+           defaults bump <code>-class elements.)
+
+           NB: the inter-line whitespace gap (shiki's literal "\n"
+           text nodes between .line spans) is handled globally by the
+           `display: flex; flex-direction: column` on `pre.astro-code
+           > code` — not viewport-gated, since the gap shows at every
+           width. The old mobile-only `font-size: 0` hack that used to
+           live here was removed in favor of that. */
         font-size: inherit;
-    }
-    pre.astro-code code {
-        /* Strip the line-box for whitespace text nodes between
-           <span class="line"> children. Shiki emits literal "\n"
-           between each line span; with line-height: 20.8 inherited
-           on the parent, each "\n" renders a full empty line-box
-           between two block .line children — visible as a ~19px
-           gap on mobile (see deploy-preview-18 screenshot 0b657cf).
-           font-size: 0 collapses the whitespace-token line-box to
-           zero. .line + .line span override font-size: inherit
-           above, so the actual code glyphs stay at body size. */
-        font-size: 0;
-    }
-    pre.astro-code .line {
-        /* Re-introduce the real font-size on .line, since the
-           parent code is font-size: 0 now. */
-        font-size: 1rem;
     }
 }
 
@@ -1102,7 +1092,16 @@ ol > li > pre.astro-code {
 }
 
 pre.astro-code > code {
-    display: block;
+    /* flex column (not block) so the literal "\n" text nodes shiki emits
+       between each <span class="line"> collapse instead of generating
+       their own line-box. Under `white-space: pre` + display:block those
+       whitespace nodes each render a full empty row, showing as zebra-
+       striped gaps between code lines (worst on desktop where the font is
+       largest). A flex container drops inter-item whitespace text nodes
+       entirely, so line spacing is governed solely by the .line children.
+       Horizontal overflow/scroll is preserved by min-width: max-content. */
+    display: flex;
+    flex-direction: column;
     min-width: max-content;
     max-width: min-content;
     white-space: pre;
