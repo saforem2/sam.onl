@@ -325,6 +325,26 @@
     pre.astro-code {
         margin-inline-start: -2ch;
     }
+    /* Inter-row whitespace fix — applies at ALL widths. Shiki emits a
+       literal `\n` text node between each inline-block <span class="line">
+       child; with the slide's large line-height inherited, every `\n`
+       renders its own full empty line-box, showing up as a visible
+       zebra-striped gap between code rows (worst on desktop where the
+       font — and thus the stray line-box — is largest). Making <code> a
+       flex column collapses whitespace text nodes between flex items, and
+       block-level <span class="line"> items drop the baseline half-leading
+       so line-height: 1.35 on the parent is the sole inter-line control.
+       This is the same approach the global stylesheet uses on mobile, just
+       not viewport-gated — the gap is not a mobile-only artifact. */
+    pre.astro-code > code {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.35;
+    }
+    pre.astro-code span.line {
+        display: block;
+        line-height: 1.35;
+    }
     /* Mobile: drop the negative offset (otherwise the codeblock can
        extend `100% + 2ch` past the right edge, since max-width is
        relative to the parent's content box, not the offset block).
@@ -341,33 +361,13 @@
            <code>, which compounds (1.05em × 1.05em ≈ 1.10em of
            slide-inner ≈ 19px on a phone — too chunky). Set the
            size on the outer .astro-code only and reset the inner
-           <code> to 1em so nothing compounds.
-
-           Inter-row whitespace fix: shiki emits literal `\n` between
-           inline-block <span class="line"> children, which renders
-           as a visible row-height gap. `display: flex; flex-direction:
-           column` on the <code> element makes whitespace text nodes
-           between flex siblings vanish — cleaner than the font-size:0
-           hack. */
+           <code> to 1em so nothing compounds. */
         pre.astro-code {
             font-size: 0.92em;
             line-height: 1.35;
         }
         pre.astro-code > code {
             font-size: 1em;
-            line-height: 1.35;
-            display: flex;
-            flex-direction: column;
-        }
-        /* Inside the flex column, each <span class="line"> was an
-           inline-block flex item — baseline-aligned with half-leading
-           rendered above + below, which manifests as a visible row gap.
-           Switching to block-level flex items kills the leading
-           overhang; line-height: 1.35 on the parent still controls
-           inter-line spacing without doubling it on each child. */
-        pre.astro-code span.line {
-            display: block;
-            line-height: 1.35;
         }
     }
     p code {
