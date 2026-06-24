@@ -763,11 +763,14 @@
     }
 
     /* Bold text: darker + heavier than ambient body so emphasis carries
-       from across a room. Iosevka has weights 100–900; 800 reads clearly
-       against the 400 body without going full Iosevka Heavy. */
+       from across a room. Pinned to 700 (not 800): the default font
+       mIosevka-QP only ships 400/700, so 800 forced a fallback download
+       of bare 'Iosevka Web' (which has 100–900) just for slide bold —
+       ~180KB per visitor. 700 against the 400 body still reads clearly
+       full-screen, and keeps bold in the primary font. */
     strong,
     b {
-        font-weight: 800;
+        font-weight: 700;
         color: var(--foreground0);
     }
 

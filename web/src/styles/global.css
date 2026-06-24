@@ -176,7 +176,13 @@
     /* } */
     /**/
     strong {
-        font-weight: 600;
+        /* 700, not 600: the default font (mIosevka-QP) only ships
+           weights 400 and 700. Asking for 600 made the browser fall
+           through the font stack to the next family that HAS a 600
+           (bare 'Iosevka Web'), silently downloading ~180KB of Iosevka
+           WOFF2 for every visitor just to render bold prose. Snapping
+           to 700 keeps bold in the primary font — no fallback fetch. */
+        font-weight: 700;
         -moz-osx-font-smoothing: grayscale;
         -webkit-font-smoothing: antialiased;
     }
@@ -192,13 +198,20 @@
         /* Personal Iosevka builds from samforeman.me. Term is mono-
            metrics for everything; QP is quasi-proportional for body
            with Term overlaid on code blocks (see [data-mono-font]
-           rules below). */
+           rules below).
+
+           Deliberately NO 'Iosevka Web' fallback here: mIosevka-{QP,Term}
+           only ship weights 400/700, so any element asking for an
+           in-between weight (e.g. strong at 600, headings at 800) used to
+           fall through to bare 'Iosevka Web' — which DOES have those
+           weights — silently pulling ~180KB of Iosevka WOFF2 for every
+           visitor. Bold is pinned to 700 (which mIosevka has) so the
+           primary font covers it; JetBrains Mono → system mono is the
+           only remaining fallback if mIosevka itself fails to load. */
         --font-stack-miosevka-term:
-            'mIosevka-Term Web', 'Iosevka Web', 'JetBrains Mono', Menlo, Monaco,
-            monospace;
+            'mIosevka-Term Web', 'JetBrains Mono', Menlo, Monaco, monospace;
         --font-stack-miosevka-qp:
-            'mIosevka-QP Web', 'Iosevka Web', 'JetBrains Mono', Menlo, Monaco,
-            monospace;
+            'mIosevka-QP Web', 'JetBrains Mono', Menlo, Monaco, monospace;
         --font-stack-system:
             ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas,
             'Liberation Mono', 'Courier New', monospace;
