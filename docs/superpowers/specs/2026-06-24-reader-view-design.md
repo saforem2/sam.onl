@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-24
 **Status:** Approved, pending implementation
-**Scope:** Distraction-free reading toggle for `Doc.astro` pages (posts + talks)
+**Scope:** Distraction-free reading toggle for all `Doc.astro` pages (posts, talks, webtui docs)
 
 ## Goal
 
@@ -22,9 +22,9 @@ command palette + a meta-row badge).
 | --- | --- |
 | Core intent | Distraction-free reading (declutter layout, keep aesthetic) |
 | Trigger | All three: `zr` keybind, command-palette entry, meta-row badge button |
-| Layout when ON | Hide both sidebars; narrow (~78ch) centered column; hide post-meta + share + pagination + related; hide vim statusline |
+| Layout when ON | Hide both sidebars; narrow (80ch) centered column; hide post-meta + share + pagination + related; hide vim statusline |
 | Persistence | **Per-page, resets on navigate** — no localStorage, no anti-FOUC head script |
-| Scope | `Doc.astro` pages only (posts + talks). NOT slide decks, NOT landing/about |
+| Scope | All `Doc.astro` pages (posts, talks, webtui docs). NOT slide decks, NOT landing/about |
 | Keybind | `zr` chord (fits `zh`/`zl` family); `Esc` also exits |
 | Article frame | Keep the `box-="square"` border in reader mode |
 
@@ -119,7 +119,7 @@ html[data-reader] #main-content aside    /* related posts */ {
 }
 
 html[data-reader] #main-content {
-    max-width: 78ch;
+    max-width: 80ch;
     margin-inline: auto;
 }
 
@@ -143,8 +143,8 @@ rendered as a sibling of `.post-meta`, so hiding `.post-meta` never hides it.
 ## Edge cases
 
 - **Mobile:** sidebars already hidden by responsive CSS; reader additionally
-  drops `#mobile-nav`, `#vim-statusline`, and the meta. Centered 78ch column is
-  a no-op when viewport < 78ch (it just fills width). Fine.
+  drops `#mobile-nav`, `#vim-statusline`, and the meta. Centered 80ch column is
+  a no-op when viewport < 80ch (it just fills width). Fine.
 - **Vim navigation:** hidden elements are `display: none`, which the existing
   `isVimVisible()` check already filters out — j/k navigation automatically
   skips them. No vim changes needed beyond adding the `zr` binding.
@@ -155,10 +155,11 @@ rendered as a sibling of `.post-meta`, so hiding `.post-meta` never hides it.
   into the article border keys off `#toc-list` links; with the TOC hidden the
   links still exist in the DOM, so the effect keeps working (or is harmlessly
   inert). No change required.
-- **Non-post Doc pages (webtui docs):** they use Doc.astro too but the chosen
-  scope is posts + talks. Since the toggle is offered everywhere Doc.astro
-  renders, webtui docs will also get it. This is acceptable (they're long-form
-  prose too); if undesired later, gate the button on `isPost || isTalk`.
+- **All Doc pages (posts, talks, webtui docs):** the toggle is offered
+  everywhere `Doc.astro` renders — no `isPost`/`isTalk` gating. They're all
+  long-form prose, so reader view applies uniformly. Slide decks (separate
+  presentation layout) and landing/about (widget pages, not Doc.astro) are
+  excluded by construction.
 
 ## Files touched
 
@@ -174,7 +175,7 @@ rendered as a sibling of `.post-meta`, so hiding `.post-meta` never hides it.
 - Toggle on/off via all three triggers (keybind, palette, button); confirm
   `data-reader` flips and layout responds.
 - Confirm both sidebars, meta, share, pagination, related, statusline,
-  mobile-nav all vanish; prose centers at ~78ch; article frame remains.
+  mobile-nav all vanish; prose centers at 80ch; article frame remains.
 - Confirm the reader toggle button stays visible + clickable while in reader
   mode.
 - Confirm `Esc` and `zr` exit.
