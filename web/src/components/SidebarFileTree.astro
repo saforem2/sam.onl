@@ -1560,7 +1560,9 @@ const ICON_ABOUT = '\u{f1028}'
         gap: 0.75ch;
         padding-block: 0.05lh;
         padding-inline: 0.5ch;
-        color: var(--foreground2);
+        /* One tier dimmer than the post-link leaves (--foreground2) so the
+           inline heading outline reads as secondary to the page list. */
+        color: var(--foreground3);
         text-decoration: none;
         line-height: 1.3;
     }
