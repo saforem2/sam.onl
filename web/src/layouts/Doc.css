@@ -1344,7 +1344,16 @@ img {
    surrounding chrome and centers the prose in an 80ch column while
    keeping the article's box frame. No persistence — see the reader-view
    spec. The .reader-toggle button is a SIBLING of .post-meta, so hiding
-   .post-meta never hides the exit affordance. */
+   .post-meta never hides the exit affordance.
+
+   `!important`: #doc-pagination's base rule carries nested `&:has(>.prev)`
+   / `&:has(>.next)` children, and Lightning CSS's nesting flattener emits
+   that rule in a form whose effective specificity outranks a plain
+   `html[data-reader] #doc-pagination` — so the unflagged hide lost only
+   for pagination (the other group members, which have no nested :has(),
+   hid correctly). !important sidesteps the flattener quirk and matches
+   how the .recent-posts-table overrides in this file handle the same
+   issue. */
 html[data-reader] #sidebar-container,
 html[data-reader] #sidebar-resizer,
 html[data-reader] #toc-container,
@@ -1354,7 +1363,7 @@ html[data-reader] #mobile-nav,
 html[data-reader] .post-meta,
 html[data-reader] #doc-pagination,
 html[data-reader] #main-content aside {
-    display: none;
+    display: none !important;
 }
 
 html[data-reader] #main-content {
