@@ -1469,6 +1469,14 @@ html[data-reader] #doc-article {
     max-width: 90ch; /* medium (default) */
     margin-inline: auto;
 }
+/* Breathing room inside the reader column so the prose isn't tight against
+   the article's edges. Inline padding on both sides + a little top room
+   under the title. The 90ch/72ch/112ch max-widths above are the text
+   measure; this padding sits outside that, widening the article box a bit. */
+html[data-reader] #main-content {
+    padding-inline: 3ch;
+    padding-block-start: 1lh;
+}
 /* Width variants, set via data-reader-width on <html> by the width toggles
    in the reader control cluster. Medium is the default (no attr / "medium"). */
 html[data-reader][data-reader-width='narrow'] #doc-article {
