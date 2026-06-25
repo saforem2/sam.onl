@@ -52,6 +52,21 @@
     margin-inline: 2ch;
 }
 
+/* Two-pane look: drop the WebTUI box-="square" frames on the sidebar and
+   article (their border is drawn by the ::before/::after pseudo-elements;
+   suppress those, same mechanism the mobile rule uses) and use a single
+   vertical divider between the two panes instead. Cleaner, less boxed-in
+   than two full ASCII frames. */
+#sidebar::before,
+#sidebar::after,
+#doc-article::before,
+#doc-article::after {
+    display: none !important;
+}
+#sidebar {
+    border-right: 1px solid var(--background2);
+}
+
 /* Mobile: turn off the desktop "internal scroll inside the article"
    pattern. Without this, a flex-column #main-content with overflow:auto
    constrains tall children (e.g. a 41-row posts table) into a tiny
