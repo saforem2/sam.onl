@@ -607,14 +607,21 @@ h6::before {
 
 #sidebar-resizer,
 #toc-resizer {
-    flex: 0 0 0.75ch;
+    /* Wide, forgiving grab zone (a thin 7px strip is very hard to land the
+       cursor on by hand). The strip is 1.5ch and uses negative inline margins
+       to overlap the panes on both sides, so the effective draggable area is
+       generous WITHOUT adding a visible gap between the panes — the visible
+       divider is just the 1px line painted down its centre. */
+    flex: 0 0 1.5ch;
+    margin-inline: -0.75ch;
+    position: relative;
+    z-index: 4;
     align-self: stretch;
     height: auto;
     cursor: col-resize;
     margin-block: 0.5lh;
-    /* The resizer IS the visible two-pane divider: a faint 1px line painted
-       down the centre of the (wider, easier-to-grab) hit strip. Brightens to
-       the accent on hover/drag so it's clearly draggable. */
+    /* Faint 1px divider line down the centre; brightens to accent on
+       hover/drag so it reads as draggable. */
     background-image: linear-gradient(
         to right,
         transparent calc(50% - 0.5px),
