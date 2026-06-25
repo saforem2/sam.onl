@@ -1216,9 +1216,11 @@ const ICON_ABOUT = '\u{f1028}'
            nav's box-= border (just like the "top-left" label in webtui
            box examples). shear-="top" on the nav kills top padding, so
            a 0 top-margin sits the chips' top edge on the border line.
-           Slight inline nudge so they don't touch the corner. */
+           Inline start = 2ch so the chip row's left edge lines up with the
+           file-tree's icon column (the leftmost ink of the tree content
+           below), rather than floating ~1ch further left. */
         margin-block-start: 0;
-        margin-inline-start: 1ch;
+        margin-inline-start: 2ch;
         margin-block-end: 0.25lh;
 
         .sidebar-action {
@@ -1550,9 +1552,12 @@ const ICON_ABOUT = '\u{f1028}'
        a fixed box and crash into the text. Indent steps per depth. ── */
     .sidebar-toc {
         /* Override the file-tree .tree-children connector rail + indent so the
-           TOC sits as its own clean block under the active leaf. */
+           TOC sits as its own clean block under the active leaf. Indented one
+           tree-level (~2.5ch) deeper than the active page link above it so the
+           heading outline reads as nested *under* that page, not as a sibling
+           sitting flush with it. */
         margin-inline-start: 0;
-        padding-inline-start: 1.5ch;
+        padding-inline-start: 6ch;
     }
     .sidebar-toc .toc-heading {
         display: flex;
