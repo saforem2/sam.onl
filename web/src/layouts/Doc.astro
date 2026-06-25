@@ -1042,7 +1042,11 @@ const articleSchema =
         // d / u (or ctrl-d / ctrl-u) — half-page scroll with focus follow.
         // Plain d/u matches less(1) and the vim default; ctrl-d/ctrl-u is
         // mostly intercepted by the browser (bookmark / address-bar focus)
-        // but kept for muscle memory when it makes it through.
+        // but kept for muscle memory when it makes it through. Smooth-scroll
+        // a half page; don't steal focus mid-animation (vimFocusElement
+        // calls .focus() which forces an instant jump and cancels the smooth
+        // scroll). Focus the first newly-visible element after the animation
+        // settles instead.
         if (
             (e.key === 'd' || e.key === 'u') &&
             !e.metaKey &&
@@ -1055,12 +1059,12 @@ const articleSchema =
             const halfPage = scroller.clientHeight / 2
             scroller.scrollBy({
                 top: e.key === 'd' ? halfPage : -halfPage,
-                behavior: 'instant',
+                behavior: 'smooth',
             })
-            const visible = getVisibleMainElements()
-            if (visible.length > 0) {
-                vimFocusElement(visible[0])
-            }
+            // No focus-follow here: calling .focus() mid-animation scrolls the
+            // target back into view and cancels the smooth scroll (and made
+            // rapid u after d jump the wrong way). d/u is pure viewport
+            // scrolling; j/k remain for element-by-element focus navigation.
             return
         }
 
