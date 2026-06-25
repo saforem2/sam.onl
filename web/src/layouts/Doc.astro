@@ -1765,67 +1765,6 @@ const articleSchema =
     }
 </script>
 
-<!-- TOC Resize -->
-<script>
-    const tocContainer = document.getElementById(
-        'toc-container',
-    ) as HTMLElement | null
-    const tocResizer = document.getElementById(
-        'toc-resizer',
-    ) as HTMLDivElement | null
-
-    if (tocContainer && tocResizer) {
-        const setTocWidth = (widthPx: number) => {
-            tocContainer.style.setProperty('--toc-width', `${widthPx}px`)
-        }
-
-        const getBounds = () => {
-            const styles = window.getComputedStyle(tocContainer)
-            const minWidth = parseFloat(styles.minWidth)
-            const maxWidth = parseFloat(styles.maxWidth)
-            return { minWidth, maxWidth }
-        }
-
-        const storedWidth = localStorage.getItem('toc-width')
-        if (storedWidth) {
-            const widthPx = Number(storedWidth)
-            if (!Number.isNaN(widthPx)) {
-                setTocWidth(widthPx)
-            }
-        }
-
-        const onMouseMove = (event: MouseEvent) => {
-            const { right } = tocContainer.getBoundingClientRect()
-            const { minWidth, maxWidth } = getBounds()
-            const rawWidth = right - event.clientX
-            const nextWidth = Math.min(maxWidth, Math.max(minWidth, rawWidth))
-            setTocWidth(nextWidth)
-        }
-
-        const onMouseUp = () => {
-            tocResizer.classList.remove('dragging')
-            const styles = window.getComputedStyle(tocContainer)
-            const widthPx = parseFloat(styles.width)
-            if (!Number.isNaN(widthPx)) {
-                localStorage.setItem('toc-width', String(widthPx))
-            }
-            window.removeEventListener('mousemove', onMouseMove)
-            window.removeEventListener('mouseup', onMouseUp)
-        }
-
-        tocResizer.addEventListener('mousedown', (event) => {
-            if (tocContainer.classList.contains('collapsed')) {
-                return
-            }
-
-            event.preventDefault()
-            tocResizer.classList.add('dragging')
-            window.addEventListener('mousemove', onMouseMove)
-            window.addEventListener('mouseup', onMouseUp)
-        })
-    }
-</script>
-
 <!-- Sidebar Resize -->
 <script>
     const sidebarContainer = document.getElementById(
