@@ -1360,21 +1360,88 @@ html[data-reader] #toc-container,
 html[data-reader] #toc-resizer,
 html[data-reader] #vim-statusline,
 html[data-reader] #mobile-nav,
-html[data-reader] .post-meta,
 html[data-reader] #doc-pagination,
 html[data-reader] #main-content aside {
     display: none !important;
 }
 
+/* In reader mode hide the meta's first row (author/date/reading/tags) and
+   the GitHub/raw/share action icons, but KEEP the reader-toggle button as
+   the visible exit affordance. The button lives inside .post-meta-actions
+   (first child), so we hide that row's siblings + the action row's other
+   children rather than the whole .post-meta. */
+html[data-reader] .post-meta-row:not(.post-meta-actions),
+html[data-reader] .post-meta-actions > :not(.reader-toggle) {
+    display: none !important;
+}
+
+/* Readable measure with full-bleed media. Body content lives at two depths:
+   directly under #main-content (intro paragraphs, the post-description), and
+   inside each `details.heading-collapse` (everything under a ## heading,
+   flat: p / pre / ol / table-wrapper / …). Cap the typographic FLOW elements
+   (paragraphs, headings, lists, blockquotes) at 80ch centered at BOTH depths,
+   but never cap the media wrappers — code blocks, table scrollers, figures,
+   charts, mermaid — so wide content breaks out to the full freed-up width
+   instead of clipping inside the narrow column. The earlier version capped
+   the whole .heading-collapse block, which also squeezed the tables nested
+   inside it (the bug in the reader-view screenshots). */
 html[data-reader] #main-content {
+    max-width: none;
+}
+html[data-reader]
+    #main-content
+    > :is(p, h1, h2, h3, h4, h5, h6, ul, ol, dl, blockquote, .post-description),
+html[data-reader]
+    #main-content
+    .heading-collapse
+    > :is(p, h1, h2, h3, h4, h5, h6, ul, ol, dl, blockquote) {
     max-width: 80ch;
     margin-inline: auto;
 }
 
-/* Pin the toggle top-right while reading purely for placement; its
-   visibility does not depend on this (it's outside .post-meta). */
+/* Center the box-frame title over the reading column. The header lives in
+   #doc-article (full width) while the column is centered inside the nested
+   #scroll-container, so their left edges don't coincide — but centering is
+   symmetric, so both share a centerline regardless of container offset.
+   (Left-aligning the two across that container gap proved fragile.) */
+html[data-reader] #doc-article > header {
+    display: flex;
+    justify-content: center;
+}
+
+/* Action row holding the reader-toggle + GitHub/raw/share icons. Right-align
+   so the icons sit at the article's right edge (matches the prior layout where
+   .post-meta justified its rows space-between). On meta-less pages (webtui
+   docs) .post-meta-empty has only this row, so it still right-aligns the lone
+   reader button. */
+.post-meta-actions {
+    justify-content: flex-end;
+}
+.post-meta-empty {
+    justify-content: flex-end;
+    margin-block-start: 2ch;
+}
+
+/* Size the reader-toggle to match the icon-only action badges (3ch wide,
+   1lh tall, no padding, centered glyph) so it reads as a peer of the
+   GitHub/raw/share icons instead of stretching to the flex row's full
+   height (the default badge box rendered ~3lh tall). */
+.reader-toggle {
+    box-sizing: border-box;
+    width: 3ch;
+    height: 1lh;
+    padding: 0;
+    align-self: center;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* In reader mode the only surviving meta element is the reader-toggle; pin it
+   to the article's top-right corner as the exit affordance. #doc-article is
+   already position:relative (see top of file). */
 html[data-reader] .reader-toggle {
-    position: fixed;
+    position: absolute;
     top: 1lh;
     right: 1ch;
     z-index: 5;

@@ -259,127 +259,141 @@ const articleSchema =
                                 id="toc-page-title"
                                 aria-hidden="true"
                                 tabindex="-1"></span>
-                            <button
-                                type="button"
-                                class="reader-toggle"
-                                is-="badge"
-                                variant-="background2"
-                                aria-pressed="false"
-                                title="Toggle reader view (zr)"
-                                aria-label="Toggle reader view">
-                                &#xf02d;
-                            </button>
                             {
-                                (frontmatter.date || isPost || isTalk) && (
-                                    <div class="post-meta">
-                                        <div class="post-meta-row">
-                                            <span
-                                                is-="badge"
-                                                variant-="background1"
-                                                class="post-meta-item post-meta-author"
-                                                tabindex="0">
-                                                Sam Foreman
-                                            </span>
-                                            {frontmatter.date && (
-                                                <span
-                                                    is-="badge"
-                                                    variant-="background1"
-                                                    class="post-meta-item post-meta-date"
-                                                    tabindex="0">
-                                                    <span class="date-long">
-                                                        {formatDate(
-                                                            frontmatter.date,
-                                                        )}
-                                                    </span>
-                                                    <span class="date-short">
-                                                        {formatDateShort(
-                                                            frontmatter.date,
-                                                        )}
-                                                    </span>
-                                                </span>
-                                            )}
-                                            {fileModifiedDate &&
-                                                frontmatter.date &&
-                                                formatDate(fileModifiedDate) !==
-                                                    formatDate(
-                                                        frontmatter.date,
-                                                    ) && (
+                                (() => {
+                                    const hasMeta =
+                                        frontmatter.date || isPost || isTalk
+                                    return (
+                                        <div
+                                            class="post-meta"
+                                            class:list={{
+                                                'post-meta-empty': !hasMeta,
+                                            }}>
+                                            {hasMeta && (
+                                                <div class="post-meta-row">
                                                     <span
                                                         is-="badge"
                                                         variant-="background1"
-                                                        class="post-meta-item post-meta-updated"
+                                                        class="post-meta-item post-meta-author"
                                                         tabindex="0">
-                                                        updated:{' '}
-                                                        <span class="date-long">
-                                                            {formatDate(
-                                                                fileModifiedDate,
-                                                            )}
+                                                        Sam Foreman
+                                                    </span>
+                                                    {frontmatter.date && (
+                                                        <span
+                                                            is-="badge"
+                                                            variant-="background1"
+                                                            class="post-meta-item post-meta-date"
+                                                            tabindex="0">
+                                                            <span class="date-long">
+                                                                {formatDate(
+                                                                    frontmatter.date,
+                                                                )}
+                                                            </span>
+                                                            <span class="date-short">
+                                                                {formatDateShort(
+                                                                    frontmatter.date,
+                                                                )}
+                                                            </span>
                                                         </span>
-                                                        <span class="date-short">
-                                                            {formatDateShort(
-                                                                fileModifiedDate,
-                                                            )}
+                                                    )}
+                                                    {fileModifiedDate &&
+                                                        frontmatter.date &&
+                                                        formatDate(
+                                                            fileModifiedDate,
+                                                        ) !==
+                                                            formatDate(
+                                                                frontmatter.date,
+                                                            ) && (
+                                                            <span
+                                                                is-="badge"
+                                                                variant-="background1"
+                                                                class="post-meta-item post-meta-updated"
+                                                                tabindex="0">
+                                                                updated:{' '}
+                                                                <span class="date-long">
+                                                                    {formatDate(
+                                                                        fileModifiedDate,
+                                                                    )}
+                                                                </span>
+                                                                <span class="date-short">
+                                                                    {formatDateShort(
+                                                                        fileModifiedDate,
+                                                                    )}
+                                                                </span>
+                                                            </span>
+                                                        )}
+                                                    {frontmatter.date && (
+                                                        <span
+                                                            is-="badge"
+                                                            variant-="background1"
+                                                            class="post-meta-item post-meta-reading"
+                                                            tabindex="0">
+                                                            {readingTime}
                                                         </span>
+                                                    )}
+                                                    {category && (
+                                                        <a
+                                                            href={`/posts/${category}/`}
+                                                            is-="badge"
+                                                            variant-="background1"
+                                                            class="post-meta-tag"
+                                                            tabindex="0">
+                                                            {category}
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
+                                            <div class="post-meta-row post-meta-actions">
+                                                <button
+                                                    type="button"
+                                                    class="reader-toggle"
+                                                    is-="badge"
+                                                    variant-="background2"
+                                                    aria-pressed="false"
+                                                    title="Toggle reader view (zr)"
+                                                    aria-label="Toggle reader view">
+                                                    &#xf02d;
+                                                </button>
+                                                {sourceFilePath && (
+                                                    <span class="post-meta-links">
+                                                        <a
+                                                            href={`${githubBase}/blob/${currentBranch}/${sourceFilePath}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            is-="badge"
+                                                            variant-="background2"
+                                                            class="post-meta-source"
+                                                            title="View source on GitHub"
+                                                            aria-label="View source on GitHub"
+                                                            tabindex="0">
+                                                            &#xf09b;
+                                                        </a>
+                                                        <a
+                                                            href={`${githubRawBase}/${currentBranch}/${sourceFilePath}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            is-="badge"
+                                                            variant-="background2"
+                                                            class="post-meta-raw"
+                                                            title="View raw source"
+                                                            aria-label="View raw source"
+                                                            tabindex="0">
+                                                            &#xf15b;
+                                                        </a>
                                                     </span>
                                                 )}
-                                            {frontmatter.date && (
-                                                <span
-                                                    is-="badge"
-                                                    variant-="background1"
-                                                    class="post-meta-item post-meta-reading"
-                                                    tabindex="0">
-                                                    {readingTime}
-                                                </span>
-                                            )}
-                                            {category && (
-                                                <a
-                                                    href={`/posts/${category}/`}
-                                                    is-="badge"
-                                                    variant-="background1"
-                                                    class="post-meta-tag"
-                                                    tabindex="0">
-                                                    {category}
-                                                </a>
-                                            )}
+                                                {(isPost || isTalk) && (
+                                                    <ShareButtons
+                                                        title={
+                                                            frontmatter.title
+                                                        }
+                                                        url={`https://sam.onl${Astro.url.pathname}`}
+                                                    />
+                                                )}
+                                            </div>
                                         </div>
-                                        <div class="post-meta-row">
-                                            {sourceFilePath && (
-                                                <span class="post-meta-links">
-                                                    <a
-                                                        href={`${githubBase}/blob/${currentBranch}/${sourceFilePath}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        is-="badge"
-                                                        variant-="background2"
-                                                        class="post-meta-source"
-                                                        title="View source on GitHub"
-                                                        aria-label="View source on GitHub"
-                                                        tabindex="0">
-                                                        &#xf09b;
-                                                    </a>
-                                                    <a
-                                                        href={`${githubRawBase}/${currentBranch}/${sourceFilePath}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        is-="badge"
-                                                        variant-="background2"
-                                                        class="post-meta-raw"
-                                                        title="View raw source"
-                                                        aria-label="View raw source"
-                                                        tabindex="0">
-                                                        &#xf15b;
-                                                    </a>
-                                                </span>
-                                            )}
-                                            {(isPost || isTalk) && (
-                                                <ShareButtons
-                                                    title={frontmatter.title}
-                                                    url={`https://sam.onl${Astro.url.pathname}`}
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-                                )
+                                    )
+                                })()
                             }
                             {
                                 frontmatter.description && (
