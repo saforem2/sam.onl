@@ -362,27 +362,25 @@
         --ansi-bright-cyan-bg: var(--ansi0);
     }
 
-    [data-webtui-theme|='custom'],
-    [data-webtui-theme|='sam'] {
-        scrollbar-color: oklch(from var(--accent) l c h / 0.4) transparent;
-        scrollbar-width: thin;
+    /* Scrollbars: intentionally LEFT UNSTYLED at the theme root.
 
-        *::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
+       We used to paint a thin accent scrollbar here (scrollbar-color +
+       ::-webkit-scrollbar). The problem: on macOS, setting *any*
+       scrollbar-color or ::-webkit-scrollbar rule opts the browser OUT of
+       the native overlay (auto-hiding) scrollbar and into a classic,
+       always-visible one. That's why the accent bar sat there permanently
+       instead of fading when idle.
 
-        *::-webkit-scrollbar-track {
-            background: transparent;
-        }
+       A CSS "hover-reveal" workaround doesn't fix it either: scrollbar-color
+       is an *inherited* property, and a `*:hover` rule matches <body>/<html>
+       whenever the pointer is anywhere on the page — so the revealed color
+       inherits down to every scroller, i.e. effectively always-on.
 
-        *::-webkit-scrollbar-thumb {
-            background: oklch(from var(--accent) l c h / 0.4);
-            border-radius: 3px;
-        }
+       The only way to get true "visible only while scrolling, hidden when
+       idle" is to not touch scrollbars at all and let the OS overlay
+       scrollbar do its native thing. So we don't.
 
-        *::-webkit-scrollbar-thumb:hover {
-            background: oklch(from var(--accent) l c h / 0.6);
-        }
-    }
+       Component-scoped scrollers that deliberately want a persistent thin bar
+       (e.g. the landing-page widget panes) set their own scrollbar-color
+       locally — those are unaffected by this. */
 }

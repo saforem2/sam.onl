@@ -1438,22 +1438,9 @@ html[data-reader] #main-content aside {
     display: none !important;
 }
 
-/* Hide the always-on accent scrollbar in reader view. The custom theme sets
-   `scrollbar-color` globally (theme-custom/base.css), which on Blink/WebKit
-   disables the macOS overlay auto-hide — so #main-content (the scroller)
-   shows a permanent pink bar. Reader view is meant to be chrome-free: reset
-   to the native overlay scrollbar that fades when idle. The pink scrollbar
-   thumb still appears briefly while actively scrolling. */
-html[data-reader] #main-content {
-    scrollbar-width: auto;
-    scrollbar-color: auto;
-}
-html[data-reader] #main-content::-webkit-scrollbar-thumb {
-    background: transparent;
-}
-html[data-reader] #main-content:hover::-webkit-scrollbar-thumb {
-    background: oklch(from var(--accent) l c h / 0.4);
-}
+/* (The reader-view scrollbar override is gone — scrollbars are now
+   hover-reveal globally via theme-custom/base.css, so the permanent accent
+   bar no longer appears in any view.) */
 
 /* In reader mode hide the meta's first row (author/date/reading/tags) and
    the GitHub/raw/share action icons, but KEEP the reader-toggle button as
