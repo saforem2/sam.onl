@@ -215,16 +215,17 @@
 .post-meta-author,
 .post-meta-date,
 .post-meta-updated,
-.post-meta-reading,
-.post-meta-source,
-.post-meta-raw {
+.post-meta-reading {
     --badge-color: var(--background2);
     --badge-text: var(--foreground1);
 }
 
-/* Icon-only action badges (source/raw) sized + animated to match the share
-   buttons: same translate + box-shadow "pop" on hover/focus. Neutral
-   foreground accent keeps their gray identity while gaining the lift. */
+/* Icon-only action badges (source = GitHub blob, raw = raw file) sized +
+   animated to match the share buttons: tinted accent background + the same
+   translate + box-shadow "pop" on hover/focus. Each gets its own accent so
+   the action row reads as a set of distinct colored chips like the share
+   group (copy/twitter/bluesky). Kill the WebTUI badge gradient + pseudo
+   fills so the tint paints flat. */
 .post-meta-source,
 .post-meta-raw {
     box-sizing: border-box;
@@ -235,7 +236,9 @@
     border: 1px solid transparent;
     border-radius: 0;
     cursor: pointer;
-    --chip-accent: var(--foreground1);
+    background-image: none;
+    background-color: var(--badge-color);
+    color: var(--badge-text);
     transition:
         color 0.1s linear,
         background-color 0.1s linear,
@@ -243,21 +246,55 @@
         transform 0.1s ease-out,
         box-shadow 0.1s ease-out;
 
+    &::before,
+    &::after {
+        background-color: transparent;
+    }
+
     &:hover,
     &:focus-visible {
-        --badge-color: color-mix(
-            in srgb,
-            var(--background0),
-            var(--foreground1) 15%
-        );
-        color: var(--foreground0);
-        border-color: var(--foreground1);
         transform: translate(-1px, -1px);
         box-shadow: 2px 2px 0 0 var(--chip-accent);
     }
     &:active {
         transform: translate(0, 0);
         box-shadow: 1px 1px 0 0 var(--chip-accent);
+    }
+}
+
+/* GitHub source link — purple accent. */
+.post-meta-source {
+    --chip-accent: var(--purple);
+    --badge-color: color-mix(in srgb, var(--background0), var(--purple) 18%);
+    --badge-text: var(--purple);
+
+    &:hover,
+    &:focus-visible {
+        --badge-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--purple) 30%
+        );
+        color: var(--purple);
+        border-color: var(--purple);
+    }
+}
+
+/* Raw source file — orange accent. */
+.post-meta-raw {
+    --chip-accent: var(--orange);
+    --badge-color: color-mix(in srgb, var(--background0), var(--orange) 18%);
+    --badge-text: var(--orange);
+
+    &:hover,
+    &:focus-visible {
+        --badge-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--orange) 30%
+        );
+        color: var(--orange);
+        border-color: var(--orange);
     }
 }
 
@@ -1460,9 +1497,15 @@ html[data-reader] #doc-article > header {
    so the icons sit at the article's right edge (matches the prior layout where
    .post-meta justified its rows space-between). On meta-less pages (webtui
    docs) .post-meta-empty has only this row, so it still right-aligns the lone
-   reader button. */
+   reader button.
+
+   gap: 0.5ch (overriding the .post-meta-row default 1ch) so the spacing
+   BETWEEN the icon sub-groups (reader-toggle | .post-meta-links |
+   .share-buttons) matches the 0.5ch spacing WITHIN each group — all icons
+   end up evenly spaced regardless of which group they're in. */
 .post-meta-actions {
     justify-content: flex-end;
+    gap: 0.5ch;
 }
 .post-meta-empty {
     justify-content: flex-end;
