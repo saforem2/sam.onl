@@ -404,30 +404,40 @@ a.vsl-file:focus-visible {
     padding: 0 !important;
 }
 
+/* Right-side cluster: clock · pos · loc. A blue crescendo (0.1 → 0.25 → 0.5)
+   that mirrors the left side's blue NORMAL/branch chips, so the bar reads as
+   one cohesive powerline instead of three mismatched greys. Tabular numerals
+   keep the live clock + scroll-% from jittering as digits change. */
 .vsl-clock {
-    color: var(--foreground2);
+    color: var(--foreground1);
     background-color: oklch(
-        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.33
+        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.1
     );
     display: inline-flex;
     align-items: baseline;
     gap: 1ch;
+    font-variant-numeric: tabular-nums;
 }
 .vsl-clock-sep {
-    color: var(--foreground3);
-    opacity: 0.6;
+    color: var(--foreground2);
+    opacity: 0.7;
 }
 
 .vsl-pos {
     background-color: oklch(
-        from var(--foreground1) calc(l * var(--oklch-scale, 1.15)) c h / 0.5
+        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.25
     );
-    color: var(--background1);
+    color: var(--foreground1);
+    font-variant-numeric: tabular-nums;
 }
 
 .vsl-loc {
-    background-color: var(--foreground2);
-    color: var(--background2);
+    background-color: oklch(
+        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.5
+    );
+    color: var(--foreground0);
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
 }
 
 .vsl-vim-icon {
