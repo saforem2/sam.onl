@@ -115,6 +115,18 @@ const fontOptions = {
                     }
                 </row>
             </section>
+            <section class="command-section command-section-reader">
+                <span is-="badge" class="command-section-title cmd-title-green"
+                    >&#xf02d; <u>R</u>eader</span
+                >
+                <row class="command-theme-buttons" gap-="0">
+                    <button
+                        data-reader-toggle="true"
+                        class="command-theme-chip">
+                        Toggle reader view
+                    </button>
+                </row>
+            </section>
             <section class="command-section command-section-keys">
                 <span is-="badge" class="command-section-title cmd-title-orange"
                     >&#xf11c; <u>K</u>eybinds</span
@@ -153,6 +165,8 @@ const fontOptions = {
                         <div class="keybind-grid" role="list">
                             <code role="listitem">&lt;zh&gt; / &lt;zl&gt;</code>
                             <span>Toggle left/right sidebar</span>
+                            <code role="listitem">&lt;zr&gt;</code>
+                            <span>Toggle reader view</span>
                             <code role="listitem">&lt;zj&gt; / &lt;zk&gt;</code>
                             <span>Focus main/navbar</span>
                             <code role="listitem">&lt;S-h/j/k/l&gt;</code>
@@ -936,5 +950,20 @@ const fontOptions = {
         if (!btn) return
         const v = btn.getAttribute('data-font-option')
         if (v) setMonoFont(v)
+    })
+
+    // ── Reader view chip ──────────────────────────────────────────────
+    // Delegated click; the actual toggle lives in Doc.astro
+    // (window.toggleReader). Closes the command dialog on activation,
+    // matching theme/font chips.
+    document.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement)?.closest?.(
+            '[data-reader-toggle]',
+        ) as HTMLElement | null
+        if (!btn) return
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fn = (window as any).toggleReader
+        if (typeof fn === 'function') fn()
+        commandDialog.close()
     })
 </script>
