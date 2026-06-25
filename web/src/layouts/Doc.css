@@ -318,6 +318,12 @@
     gap: 0.5ch;
 }
 
+/* ── Statusline: flat lualine look ───────────────────────────────────────
+   Modeled on a real nvim lualine: one continuous near-white bar (not the
+   page white), a single saturated green mode cap, neutral body segments on a
+   light-grey fill, and green as the through-line accent (git branch, file,
+   right-hand position blocks) with semantic colors for warnings/counts.
+   Replaces the earlier washed-out blue/grey mix. */
 #vim-statusline {
     display: flex;
     align-items: center;
@@ -326,8 +332,10 @@
     height: 1lh;
     /* box-shadow: inset 0 1px 0 var(--background2), inset 0 -1px 0 var(--background2); */
     line-height: 1lh;
-    background-color: var(--background0);
-    color: var(--foreground3);
+    /* Continuous bar fill — the body sits one step off page-white so the bar
+       reads as a solid strip, like lualine's section_c background. */
+    background-color: var(--background1);
+    color: var(--foreground1);
     white-space: nowrap;
     overflow: hidden;
     z-index: 10;
@@ -346,20 +354,18 @@
 }
 
 .vsl-mode {
-    background-color: oklch(
-        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.5
-    );
-    color: var(--foreground0);
-    /* background-color: oklch(from #D3F9D8 l c h); */
-    /* background-color: oklch(from #51CF66 l c h); */
+    /* The one saturated cap — solid green, white bold text, like lualine's
+       mode section. */
+    background-color: var(--green);
+    color: oklch(from var(--background0) l c h);
     font-weight: bold;
+    letter-spacing: 0.05ch;
 }
 
 .vsl-branch {
-    background-color: oklch(
-        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
-    );
-    color: var(--foreground2);
+    /* Git segment: light-grey fill, green text + green branch icon. */
+    background-color: var(--background2);
+    color: oklch(from var(--green) calc(l * var(--oklch-scale, 0.95)) c h);
     /* Extra breathing room inside the branch chip so the nerd-font
        branch icon doesn't sit flush against the chip edge. */
     padding-inline: 1.5ch !important;
@@ -369,10 +375,13 @@
    doesn't sit flush against the chip's trailing edge. */
 .vsl-site {
     margin-inline-start: 1ch;
+    /* Site/repo icon segment, green like the git branch it sits beside. */
+    color: oklch(from var(--green) calc(l * var(--oklch-scale, 0.95)) c h);
 }
 
 .vsl-file {
-    color: var(--foreground1);
+    /* The current path — the most readable body segment, near-foreground. */
+    color: var(--foreground0);
 }
 
 /* Statusline segments that are real links — defeat the global body-link
@@ -393,9 +402,9 @@ a.vsl-site:hover,
 a.vsl-site:focus-visible,
 a.vsl-file:hover,
 a.vsl-file:focus-visible {
-    color: var(--foreground0) !important;
+    color: oklch(from var(--background0) l c h) !important;
     background-color: oklch(
-        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.4
+        from var(--green) calc(l * var(--oklch-scale, 0.95)) c h
     ) !important;
 }
 
@@ -404,38 +413,32 @@ a.vsl-file:focus-visible {
     padding: 0 !important;
 }
 
-/* Right-side cluster: clock · pos · loc. A blue crescendo (0.1 → 0.25 → 0.5)
-   that mirrors the left side's blue NORMAL/branch chips, so the bar reads as
-   one cohesive powerline instead of three mismatched greys. Tabular numerals
-   keep the live clock + scroll-% from jittering as digits change. */
+/* Right-side cluster: clock · pos · loc. Mirrors the nvim lualine right
+   sections — a neutral clock on the bar body, then two green-on-grey
+   position blocks (like lualine's `Top` / `1:1`). Green ties back to the
+   mode cap + git segments on the left. Tabular numerals keep the live clock
+   + scroll-% from jittering as digits change. */
 .vsl-clock {
     color: var(--foreground1);
-    background-color: oklch(
-        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.1
-    );
     display: inline-flex;
     align-items: baseline;
     gap: 1ch;
     font-variant-numeric: tabular-nums;
 }
 .vsl-clock-sep {
-    color: var(--foreground2);
-    opacity: 0.7;
+    color: var(--foreground3);
+    opacity: 0.8;
 }
 
 .vsl-pos {
-    background-color: oklch(
-        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.25
-    );
-    color: var(--foreground1);
+    background-color: var(--background2);
+    color: oklch(from var(--green) calc(l * var(--oklch-scale, 0.95)) c h);
     font-variant-numeric: tabular-nums;
 }
 
 .vsl-loc {
-    background-color: oklch(
-        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.5
-    );
-    color: var(--foreground0);
+    background-color: var(--background3);
+    color: oklch(from var(--green) calc(l * var(--oklch-scale, 0.95)) c h);
     font-weight: bold;
     font-variant-numeric: tabular-nums;
 }
@@ -1487,15 +1490,21 @@ html[data-reader][data-reader-width='wide'] #doc-article {
    current width. Width is capped (130ch) so it doesn't sprawl on ultrawide
    displays, and clamped to the viewport (100vw - 6ch) with a small gutter.
 
-   #main-content clips horizontally (overflow-x: hidden, set via the
-   `#scroll-container #main-content` rule above) — which would chop the
-   breakout — so in reader view we switch it to visible. The override must be
-   anchored through #scroll-container too: the base rule has two IDs (0,2,0)
-   and would otherwise beat a plain `html[data-reader] #main-content`. The page
-   still scrolls vertically via #main-content; horizontal breakout content now
-   extends into the side margins instead of being cut off. (This is why the
-   earlier negative-margin attempt failed: the margins pushed content out, but
-   overflow-x: hidden sliced it.) */
+   Mechanism: #doc-article is centered in the viewport (margin-inline: auto),
+   so its center IS the viewport center — `left: 50%; translateX(-50%)` on the
+   figure-row therefore centers it on the viewport regardless of the column's
+   current width. Width is capped (130ch) so it doesn't sprawl on ultrawide
+   displays, and clamped to the viewport (100vw - 6ch) with a small gutter.
+
+   #main-content clips horizontally, which would chop the breakout, so in
+   reader view we switch it to visible. IMPORTANT: setting overflow-x:visible
+   on #main-content forces overflow-y to compute to visible too (CSS only
+   allows `visible` on one axis if the other is also visible), so in reader
+   view #main-content stops being the vertical scroller — #scroll-container
+   (its parent) becomes the scroller instead. The doc scripts account for this
+   by resolving the *actual* scroller at runtime (see getDocScroller() in
+   Doc.astro) rather than hardcoding #main-content, so d/u scrolling, the
+   scrollspy, the progress bar and the statusline clock keep working. */
 html[data-reader] #scroll-container #main-content {
     overflow-x: visible;
 }

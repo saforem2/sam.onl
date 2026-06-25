@@ -543,7 +543,7 @@ const articleSchema =
         </row>
         <div id="vim-statusline">
             <!-- <span class="vsl-vim-icon">&#xe62b; </span> -->
-            <span class="vsl-mode">NORMAL</span>
+            <span class="vsl-mode" title="NORMAL mode">N</span>
             <a
                 class="vsl-branch"
                 href={`${githubBase}/tree/${currentBranch}`}
@@ -635,6 +635,32 @@ const articleSchema =
         })
 
     const mainContent = document.getElementById('main-content') as HTMLElement
+
+    // The element that actually scrolls the document body. Normally this is
+    // #main-content (overflow-y:auto). BUT in reader view the figure-breakout
+    // CSS sets overflow-x:visible on #main-content, which forces overflow-y to
+    // compute to visible too, so #main-content stops scrolling and its parent
+    // #scroll-container becomes the scroller. Anything that reads scrollTop /
+    // calls scrollBy / listens for 'scroll' must target whichever element is
+    // really scrolling, or it silently no-ops in reader view (the d/u keybind
+    // + scrollspy regression). Resolve it live each call so it tracks the mode.
+    ;(window as any).getDocScroller = () => {
+        const sc = document.getElementById('scroll-container')
+        const mc = document.getElementById('main-content')
+        // Prefer whichever has real vertical overflow AND a non-visible
+        // overflow-y (i.e. is an actual scroll box).
+        for (const el of [mc, sc]) {
+            if (!el) continue
+            const oy = getComputedStyle(el).overflowY
+            if (
+                (oy === 'auto' || oy === 'scroll') &&
+                el.scrollHeight > el.clientHeight + 2
+            )
+                return el
+        }
+        return mc || sc
+    }
+
     const navbar = document.getElementById('top-navbar') as HTMLElement | null
     const sidebar = document.getElementById('sidebar') as HTMLElement | null
     const tocSidebar = document.getElementById(
@@ -1030,7 +1056,9 @@ const articleSchema =
             !e.shiftKey
         ) {
             e.preventDefault()
-            const scroller = mainContent
+            // Use the live scroller (reader view scrolls #scroll-container,
+            // normal view scrolls #main-content).
+            const scroller = (window as any).getDocScroller?.() ?? mainContent
             if (!scroller) return
             const halfPage = scroller.clientHeight / 2
             scroller.scrollBy({
@@ -1379,7 +1407,9 @@ const articleSchema =
                 const titleEl = document.querySelector(
                     '#doc-article > header h1',
                 ) as HTMLElement | null
-                const mainEl = document.getElementById('main-content')
+                const mainEl =
+                    (window as any).getDocScroller?.() ??
+                    document.getElementById('main-content')
                 if (titleEl && mainEl) {
                     if (titleEl.dataset.originalHtml === undefined) {
                         titleEl.dataset.originalHtml = titleEl.innerHTML
@@ -1916,18 +1946,31 @@ const articleSchema =
 </script>
 
 <script>
-    const mainContent = document.getElementById('main-content')
     const progressBar = document.getElementById('scroll-progress')
 
-    if (mainContent && progressBar) {
-        mainContent.addEventListener('scroll', () => {
-            const scrollTop = mainContent.scrollTop
-            const scrollHeight =
-                mainContent.scrollHeight - mainContent.clientHeight
+    if (progressBar) {
+        // Listen at document level (capture) so we catch scroll from whichever
+        // element is the live scroller — #main-content normally, but
+        // #scroll-container in reader view (see getDocScroller in the first
+        // script block). Binding directly to #main-content silently stopped
+        // updating the bar in reader view.
+        const updateProgress = () => {
+            const scroller =
+                (window as any).getDocScroller?.() ??
+                document.getElementById('main-content')
+            if (!scroller) return
+            const scrollHeight = scroller.scrollHeight - scroller.clientHeight
             const progress =
-                scrollHeight > 0 ? Math.min(scrollTop / scrollHeight, 1) : 0
+                scrollHeight > 0
+                    ? Math.min(scroller.scrollTop / scrollHeight, 1)
+                    : 0
             progressBar.style.transform = `scaleX(${progress})`
+        }
+        document.addEventListener('scroll', updateProgress, {
+            passive: true,
+            capture: true,
         })
+        updateProgress()
     }
 </script>
 
@@ -1959,17 +2002,22 @@ const articleSchema =
 
 <!-- Vim statusline scroll position + clock -->
 <script>
-    const mainContent = document.getElementById('main-content')
     const posEl = document.querySelector('.vsl-pos')
     const locEl = document.querySelector('.vsl-loc')
     const clockDateEl = document.getElementById('vsl-clock-date')
     const clockTimeEl = document.getElementById('vsl-clock-time')
 
-    if (mainContent && posEl) {
+    if (posEl) {
+        // Read the live scroller (reader view scrolls #scroll-container) so the
+        // pos % / line indicator keeps updating in both modes; listen at
+        // document level (capture) to catch whichever element fires 'scroll'.
         const update = () => {
-            const scrollTop = mainContent.scrollTop
-            const scrollHeight =
-                mainContent.scrollHeight - mainContent.clientHeight
+            const scroller =
+                (window as any).getDocScroller?.() ??
+                document.getElementById('main-content')
+            if (!scroller) return
+            const scrollTop = scroller.scrollTop
+            const scrollHeight = scroller.scrollHeight - scroller.clientHeight
             if (scrollHeight <= 0) {
                 posEl.textContent = 'All'
             } else {
@@ -1977,14 +2025,17 @@ const articleSchema =
                     Math.round((scrollTop / scrollHeight) * 100) + '%'
             }
             // Approximate line number from scroll position
-            const totalLines = Math.ceil(mainContent.scrollHeight / 24)
+            const totalLines = Math.ceil(scroller.scrollHeight / 24)
             const currentLine = Math.max(
                 1,
-                Math.ceil((scrollTop / mainContent.scrollHeight) * totalLines),
+                Math.ceil((scrollTop / scroller.scrollHeight) * totalLines),
             )
             if (locEl) locEl.textContent = `${currentLine}:1`
         }
-        mainContent.addEventListener('scroll', update)
+        document.addEventListener('scroll', update, {
+            passive: true,
+            capture: true,
+        })
         update()
     }
 
