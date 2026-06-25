@@ -541,11 +541,14 @@ h6::before {
 
 #sidebar-container.collapsed {
     /* Wide enough to show the vertical #sidebar-actions icon column without
-       clipping (was 1.25lh, sized for the old vertical text toggle bar). */
-    max-width: 3.5ch;
-    width: 3.5ch;
-    min-width: 3.5ch;
-    flex-basis: 3.5ch;
+       clipping the chips' right border. The chips sit at the nav's 1ch
+       left padding and are ~27px wide; container is overflow:hidden, so it
+       needs ~left-pad + chip + buffer. 5ch clears it. (Was 1.25lh, sized
+       for the old vertical text toggle bar, which clipped the icon chips.) */
+    max-width: 5ch;
+    width: 5ch;
+    min-width: 5ch;
+    flex-basis: 5ch;
 }
 
 #sidebar-container.collapsed + #sidebar-resizer {

@@ -1192,15 +1192,9 @@ const ICON_ABOUT = '\u{f1028}'
         font-family: var(--font-family);
         line-height: 1.25;
 
-        #sidebar-toggle {
-            position: absolute;
-            bottom: 0;
-            left: 2ch;
-            right: auto;
-            z-index: 3;
-            color: var(--foreground3);
-            background-color: var(--background0);
-        }
+        /* (#sidebar-toggle was absolutely positioned at the bottom here when
+           it was a standalone bar; it now lives in #sidebar-actions as a
+           .sidebar-action and needs no special positioning.) */
 
         &:focus-within {
             --box-border-color: var(--focus-region-border);
@@ -1439,16 +1433,13 @@ const ICON_ABOUT = '\u{f1028}'
         text-decoration: none;
     }
 
+    /* Active page leaf: accent TEXT color only, no filled background. The
+       inline TOC headings below it are themselves colored (per heading
+       level), so a filled accent band on the active leaf competed with them
+       and read as busy. The accent text + the file-leaf icon is enough to
+       mark the current page. */
     .tree-entry.active {
         color: var(--accent);
-        background-color: oklch(
-            from
-                var(
-                    --accent,
-                    var(--background-active, var(--background2, #838383))
-                )
-                calc(l * var(--oklch-scale, 0.85)) c h / 0.1
-        );
     }
 
     .tree-entry.external {
