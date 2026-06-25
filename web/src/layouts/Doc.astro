@@ -2113,6 +2113,13 @@ const articleSchema =
             min-height: 1lh;
             display: flex;
             align-items: center;
+            /* Shrink the click target to just the heading text + glyph.
+               Without this the flex summary spans the full content width, so
+               clicking the empty space to the right of a heading toggles it
+               even though nothing visible is there. fit-content caps it to
+               the text; max-width keeps long headings from overflowing. */
+            width: fit-content;
+            max-width: 100%;
 
             /* (previous rule killed all ::before content here so the
                default details disclosure marker didn't ghost-render;
