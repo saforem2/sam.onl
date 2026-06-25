@@ -246,6 +246,35 @@ const articleSchema =
             </div>
             <div id="sidebar-resizer" aria-hidden="true"></div>
             <article id="doc-article" box-="square" shear-="top">
+                <div id="reader-controls" aria-hidden="true">
+                    <button
+                        type="button"
+                        class="reader-ctrl reader-width"
+                        data-reader-width-set="narrow"
+                        title="Narrow column"
+                        aria-label="Narrow column">&#xf068;</button
+                    >
+                    <button
+                        type="button"
+                        class="reader-ctrl reader-width"
+                        data-reader-width-set="medium"
+                        title="Medium column"
+                        aria-label="Medium column">&#xf0c9;</button
+                    >
+                    <button
+                        type="button"
+                        class="reader-ctrl reader-width"
+                        data-reader-width-set="wide"
+                        title="Wide column"
+                        aria-label="Wide column">&#xf067;</button
+                    >
+                    <button
+                        type="button"
+                        class="reader-ctrl reader-exit"
+                        title="Exit reader view (Esc / zr)"
+                        aria-label="Exit reader view">&#xf00d;</button
+                    >
+                </div>
                 <header>
                     <div is-="badge" variant-="background0">
                         <h1>{frontmatter.title}</h1>
@@ -348,11 +377,11 @@ const articleSchema =
                                                     type="button"
                                                     class="reader-toggle"
                                                     is-="badge"
-                                                    variant-="background2"
+                                                    size-="small"
                                                     aria-pressed="false"
                                                     title="Toggle reader view (zr)"
                                                     aria-label="Toggle reader view">
-                                                    &#xf02d;
+                                                    &#xf1ea;
                                                 </button>
                                                 {sourceFilePath && (
                                                     <span class="post-meta-links">
@@ -3029,6 +3058,27 @@ const articleSchema =
     readerBtn?.addEventListener('click', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(window as any).toggleReader()
+    })
+
+    // Reader control cluster: width toggles + exit button.
+    const readerControls = document.getElementById('reader-controls')
+    readerControls?.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement)?.closest('button')
+        if (!(btn instanceof HTMLElement)) return
+        if (btn.classList.contains('reader-exit')) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(window as any).toggleReader(false)
+            return
+        }
+        const width = btn.getAttribute('data-reader-width-set')
+        if (width) {
+            // Medium is the default (no attr); narrow/wide set the attr.
+            if (width === 'medium') {
+                readerRoot.removeAttribute('data-reader-width')
+            } else {
+                readerRoot.setAttribute('data-reader-width', width)
+            }
+        }
     })
 </script>
 

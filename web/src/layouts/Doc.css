@@ -222,7 +222,9 @@
     --badge-text: var(--foreground1);
 }
 
-/* Icon-only action badges (source/raw) sized to match the share buttons. */
+/* Icon-only action badges (source/raw) sized + animated to match the share
+   buttons: same translate + box-shadow "pop" on hover/focus. Neutral
+   foreground accent keeps their gray identity while gaining the lift. */
 .post-meta-source,
 .post-meta-raw {
     box-sizing: border-box;
@@ -230,6 +232,33 @@
     padding: 0;
     justify-content: center;
     text-align: center;
+    border: 1px solid transparent;
+    border-radius: 0;
+    cursor: pointer;
+    --chip-accent: var(--foreground1);
+    transition:
+        color 0.1s linear,
+        background-color 0.1s linear,
+        border-color 0.1s linear,
+        transform 0.1s ease-out,
+        box-shadow 0.1s ease-out;
+
+    &:hover,
+    &:focus-visible {
+        --badge-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--foreground1) 15%
+        );
+        color: var(--foreground0);
+        border-color: var(--foreground1);
+        transform: translate(-1px, -1px);
+        box-shadow: 2px 2px 0 0 var(--chip-accent);
+    }
+    &:active {
+        transform: translate(0, 0);
+        box-shadow: 1px 1px 0 0 var(--chip-accent);
+    }
 }
 
 .post-meta-links {
@@ -1365,6 +1394,23 @@ html[data-reader] #main-content aside {
     display: none !important;
 }
 
+/* Hide the always-on accent scrollbar in reader view. The custom theme sets
+   `scrollbar-color` globally (theme-custom/base.css), which on Blink/WebKit
+   disables the macOS overlay auto-hide — so #main-content (the scroller)
+   shows a permanent pink bar. Reader view is meant to be chrome-free: reset
+   to the native overlay scrollbar that fades when idle. The pink scrollbar
+   thumb still appears briefly while actively scrolling. */
+html[data-reader] #main-content {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+}
+html[data-reader] #main-content::-webkit-scrollbar-thumb {
+    background: transparent;
+}
+html[data-reader] #main-content:hover::-webkit-scrollbar-thumb {
+    background: oklch(from var(--accent) l c h / 0.4);
+}
+
 /* In reader mode hide the meta's first row (author/date/reading/tags) and
    the GitHub/raw/share action icons, but KEEP the reader-toggle button as
    the visible exit affordance. The button lives inside .post-meta-actions
@@ -1375,38 +1421,39 @@ html[data-reader] .post-meta-actions > :not(.reader-toggle) {
     display: none !important;
 }
 
-/* Readable measure with full-bleed media. Body content lives at two depths:
-   directly under #main-content (intro paragraphs, the post-description), and
-   inside each `details.heading-collapse` (everything under a ## heading,
-   flat: p / pre / ol / table-wrapper / …). Cap the typographic FLOW elements
-   (paragraphs, headings, lists, blockquotes) at 80ch centered at BOTH depths,
-   but never cap the media wrappers — code blocks, table scrollers, figures,
-   charts, mermaid — so wide content breaks out to the full freed-up width
-   instead of clipping inside the narrow column. The earlier version capped
-   the whole .heading-collapse block, which also squeezed the tables nested
-   inside it (the bug in the reader-view screenshots). */
-html[data-reader] #main-content {
-    max-width: none;
-}
-html[data-reader]
-    #main-content
-    > :is(p, h1, h2, h3, h4, h5, h6, ul, ol, dl, blockquote, .post-description),
-html[data-reader]
-    #main-content
-    .heading-collapse
-    > :is(p, h1, h2, h3, h4, h5, h6, ul, ol, dl, blockquote) {
-    max-width: 80ch;
+/* Narrow the whole article BOX, centered in the viewport. The box border,
+   its header (page title), and the content column all live inside #doc-article,
+   so narrowing the box makes everything inside line up automatically — title,
+   prose, code blocks, and tables all share the same left edge with no
+   cross-container centering math. 90ch keeps prose comfortable while fitting
+   the posts' tables without horizontal scroll; a genuinely wider table still
+   scrolls inside its own .table-scroll-wrapper (overflow-x: auto). */
+html[data-reader] #doc-article {
+    max-width: 90ch; /* medium (default) */
     margin-inline: auto;
 }
+/* Width variants, set via data-reader-width on <html> by the width toggles
+   in the reader control cluster. Medium is the default (no attr / "medium"). */
+html[data-reader][data-reader-width='narrow'] #doc-article {
+    max-width: 72ch;
+}
+html[data-reader][data-reader-width='wide'] #doc-article {
+    max-width: 112ch;
+}
 
-/* Center the box-frame title over the reading column. The header lives in
-   #doc-article (full width) while the column is centered inside the nested
-   #scroll-container, so their left edges don't coincide — but centering is
-   symmetric, so both share a centerline regardless of container offset.
-   (Left-aligning the two across that container gap proved fragile.) */
+/* Drop the WebTUI box-="square" frame in reader view — it's drawn via the
+   ::before/::after decoration on #doc-article. Reader view is meant to be
+   chrome-free, so the bordered frame reads as clutter here. */
+html[data-reader] #doc-article::before,
+html[data-reader] #doc-article::after {
+    display: none !important;
+}
+
+/* Left-align the title inside the (now borderless) box header so it sits flush
+   with the column's left edge rather than centered in the header band. */
 html[data-reader] #doc-article > header {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 /* Action row holding the reader-toggle + GitHub/raw/share icons. Right-align
@@ -1422,10 +1469,10 @@ html[data-reader] #doc-article > header {
     margin-block-start: 2ch;
 }
 
-/* Size the reader-toggle to match the icon-only action badges (3ch wide,
-   1lh tall, no padding, centered glyph) so it reads as a peer of the
-   GitHub/raw/share icons instead of stretching to the flex row's full
-   height (the default badge box rendered ~3lh tall). */
+/* Reader-toggle: sized + styled to match the share buttons (see
+   ShareButtons.astro). 3ch x 1lh icon badge with a green accent, tinted
+   background, and the same translate + box-shadow "pop" on hover/focus.
+   Kill the WebTUI badge gradient + pseudo fills so the tint paints flat. */
 .reader-toggle {
     box-sizing: border-box;
     width: 3ch;
@@ -1435,14 +1482,121 @@ html[data-reader] #doc-article > header {
     align-items: center;
     justify-content: center;
     text-align: center;
+    font-family: var(--font-family);
+    font-size: 1em;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 0;
+    --chip-accent: var(--green);
+    --badge-color: color-mix(in srgb, var(--background0), var(--green) 18%);
+    --badge-text: var(--green);
+    background-image: none;
+    background-color: var(--badge-color);
+    color: var(--badge-text);
+    transition:
+        color 0.1s linear,
+        background-color 0.1s linear,
+        border-color 0.1s linear,
+        transform 0.1s ease-out,
+        box-shadow 0.1s ease-out;
+
+    &::before,
+    &::after {
+        background-color: transparent;
+    }
+
+    &:hover,
+    &:focus-visible {
+        --badge-color: color-mix(in srgb, var(--background0), var(--green) 30%);
+        color: var(--green);
+        border-color: var(--green);
+        transform: translate(-1px, -1px);
+        box-shadow: 2px 2px 0 0 var(--chip-accent);
+    }
+    &:active {
+        transform: translate(0, 0);
+        box-shadow: 1px 1px 0 0 var(--chip-accent);
+    }
 }
 
-/* In reader mode the only surviving meta element is the reader-toggle; pin it
-   to the article's top-right corner as the exit affordance. #doc-article is
-   already position:relative (see top of file). */
+/* Reader control cluster: width toggles + exit. Hidden outside reader view;
+   in reader view it's a fixed cluster pinned to the article's top-right
+   corner (replacing the in-flow .reader-toggle, which we hide). Fixed (not
+   absolute) so it stays put while the column scrolls. */
+#reader-controls {
+    display: none;
+}
 html[data-reader] .reader-toggle {
-    position: absolute;
+    display: none;
+}
+html[data-reader] #reader-controls {
+    display: inline-flex;
+    gap: 0.25ch;
+    position: fixed;
     top: 1lh;
-    right: 1ch;
-    z-index: 5;
+    right: 1.5ch;
+    z-index: 6;
+}
+
+/* Each control button: same icon-badge sizing + hover-pop as the action
+   icons, neutral accent. The active width variant gets a filled accent. */
+.reader-ctrl {
+    box-sizing: border-box;
+    width: 2.5ch;
+    height: 1lh;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-family);
+    font-size: 0.9em;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 0;
+    /* Plain by default — no fill. Only the ACTIVE width variant gets the
+       green fill (rule below); inactive controls read as quiet icons. */
+    background-color: transparent;
+    color: var(--foreground2);
+    --chip-accent: var(--green);
+    transition:
+        color 0.1s linear,
+        background-color 0.1s linear,
+        border-color 0.1s linear,
+        transform 0.1s ease-out,
+        box-shadow 0.1s ease-out;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--green);
+        border-color: var(--green);
+        transform: translate(-1px, -1px);
+        box-shadow: 2px 2px 0 0 var(--chip-accent);
+    }
+    &:active {
+        transform: translate(0, 0);
+        box-shadow: 1px 1px 0 0 var(--chip-accent);
+    }
+}
+
+/* Active width variant: green foreground (not a fill) so the current width
+   reads at a glance while staying visually quiet, like the inactive icons. */
+html[data-reader]:not([data-reader-width])
+    .reader-width[data-reader-width-set='medium'],
+html[data-reader][data-reader-width='narrow']
+    .reader-width[data-reader-width-set='narrow'],
+html[data-reader][data-reader-width='medium']
+    .reader-width[data-reader-width-set='medium'],
+html[data-reader][data-reader-width='wide']
+    .reader-width[data-reader-width-set='wide'] {
+    color: var(--green);
+}
+
+/* Exit button leans red on hover to signal "close". */
+.reader-exit {
+    --chip-accent: var(--red);
+    &:hover,
+    &:focus-visible {
+        color: var(--red);
+        border-color: var(--red);
+    }
 }
