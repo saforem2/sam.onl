@@ -1289,15 +1289,39 @@ const articleSchema =
         let headingElements = buildHeadingElements()
 
         const setActiveTocLink = (activeId: string) => {
-            // Flat list of heading links in the sidebar tree; just toggle the
-            // active class. (The old right-column reveal of sub-headings under
-            // the active H2 is gone — every heading is always shown in the
-            // tree now.)
-            tocLinks.forEach((link) => {
+            // Find which H2 section owns the active heading: if the active link
+            // is itself a depth-2, that's the section; otherwise walk backwards
+            // to the nearest preceding depth-2.
+            let activeSectionIdx = -1
+            const activeIdx = tocLinks.findIndex(
+                (l) => l.dataset.headingSlug === activeId,
+            )
+            if (activeIdx !== -1) {
+                for (let i = activeIdx; i >= 0; i--) {
+                    if (tocLinks[i].dataset.depth === '2') {
+                        activeSectionIdx = i
+                        break
+                    }
+                }
+            }
+
+            // Toggle .active on the current heading, and .toc-section-open on
+            // every depth-3+ subheading belonging to the active H2 section so
+            // only that section's subheadings are revealed.
+            let currentSectionIdx = -1
+            tocLinks.forEach((link, i) => {
+                if (link.dataset.depth === '2') currentSectionIdx = i
                 link.classList.toggle(
                     'active',
                     link.dataset.headingSlug === activeId,
                 )
+                if (link.dataset.depth !== '2') {
+                    link.classList.toggle(
+                        'toc-section-open',
+                        currentSectionIdx === activeSectionIdx &&
+                            activeSectionIdx !== -1,
+                    )
+                }
             })
         }
 
