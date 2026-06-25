@@ -1337,3 +1337,36 @@ img {
 .recent-posts-table :first-child > tr:first-child > :is(td, th) {
     padding-top: 0 !important;
 }
+
+/* ── Reader view ──────────────────────────────────────────────────────
+   Per-page distraction-free mode, toggled by html[data-reader] (set by
+   the toggleReader() script in Doc.astro). Pure CSS overlay: hides the
+   surrounding chrome and centers the prose in an 80ch column while
+   keeping the article's box frame. No persistence — see the reader-view
+   spec. The .reader-toggle button is a SIBLING of .post-meta, so hiding
+   .post-meta never hides the exit affordance. */
+html[data-reader] #sidebar-container,
+html[data-reader] #sidebar-resizer,
+html[data-reader] #toc-container,
+html[data-reader] #toc-resizer,
+html[data-reader] #vim-statusline,
+html[data-reader] #mobile-nav,
+html[data-reader] .post-meta,
+html[data-reader] #doc-pagination,
+html[data-reader] #main-content aside {
+    display: none;
+}
+
+html[data-reader] #main-content {
+    max-width: 80ch;
+    margin-inline: auto;
+}
+
+/* Pin the toggle top-right while reading purely for placement; its
+   visibility does not depend on this (it's outside .post-meta). */
+html[data-reader] .reader-toggle {
+    position: fixed;
+    top: 1lh;
+    right: 1ch;
+    z-index: 5;
+}
