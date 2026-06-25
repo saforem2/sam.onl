@@ -8,6 +8,21 @@ import {
     sidebarHiddenCategories,
 } from '@/utils/content'
 
+// Current page's heading outline (table of contents), passed from Doc.astro.
+// Rendered into a hidden <template> below; a client script clones it as tree
+// children under the active page leaf so the TOC lives in this sidebar
+// instead of a separate right-hand column.
+type TocLine = {
+    depth: number
+    text: string
+    slug: string
+    treePrefix: string
+}
+const { tocLines = [] } = Astro.props as { tocLines?: TocLine[] }
+// Headings only — drop the depth-1 page-title entry (the active leaf itself
+// already represents the page). Keep depth >= 2.
+const tocHeadings = tocLines.filter((h) => h.depth >= 2)
+
 const allCategories = makeSortedCategoryEntries().filter(
     ([slug]) => !sidebarHiddenCategories.has(slug),
 )
@@ -1132,6 +1147,34 @@ const ICON_ABOUT = '\u{f1028}'
             class="key-bracket">]</span
         >
     </button>
+    {
+        tocHeadings.length > 0 && (
+            <template id="sidebar-toc-template">
+                <div class="tree-children sidebar-toc">
+                    {tocHeadings.map((h, i) => (
+                        <a
+                            href={`#${h.slug}`}
+                            class:list={[
+                                'tree-file',
+                                'tree-entry',
+                                'toc-heading',
+                                `depth-${h.depth}`,
+                            ]}
+                            data-heading-slug={h.slug}
+                            data-last={
+                                i === tocHeadings.length - 1 ? '' : undefined
+                            }>
+                            <span class="tree-line" />
+                            <span class="tree-icon toc-hash">
+                                {'#'.repeat(h.depth)}
+                            </span>
+                            <span class="tree-label">{h.text}</span>
+                        </a>
+                    ))}
+                </div>
+            </template>
+        )
+    }
 </nav>
 
 <style>
@@ -1520,6 +1563,63 @@ const ICON_ABOUT = '\u{f1028}'
         color: var(--foreground3);
     }
 
+    /* ── Inline TOC: the current page's headings, cloned under the active
+       leaf as tree children. They reuse .tree-file / .tree-entry sizing;
+       these rules add the per-depth indent and the `#`/`##`/`###` hash
+       marker in place of the file icon. ── */
+    .sidebar-toc .toc-heading {
+        /* slightly dimmer than file leaves so the outline reads as secondary */
+        color: var(--foreground2);
+    }
+    .sidebar-toc .toc-hash {
+        display: inline-block;
+        flex-shrink: 0;
+        margin-inline-end: 0.5ch;
+        text-align: right;
+        color: var(--foreground3);
+        font-size: 0.85em;
+    }
+    /* Depth indent: h2 flush with the tree-children edge, deeper headings
+       step in. depth-2 = 0, depth-3 = 2ch, depth-4 = 4ch, … */
+    .sidebar-toc .toc-heading.depth-3 {
+        padding-inline-start: 2ch;
+    }
+    .sidebar-toc .toc-heading.depth-4 {
+        padding-inline-start: 4ch;
+    }
+    .sidebar-toc .toc-heading.depth-5 {
+        padding-inline-start: 6ch;
+    }
+    .sidebar-toc .toc-heading.depth-6 {
+        padding-inline-start: 8ch;
+    }
+    /* Active heading (set by the scrollspy in Doc.astro) — colored by level. */
+    .sidebar-toc .toc-heading.active {
+        color: var(--foreground0);
+        background-color: oklch(
+            from var(--accent, #838383) calc(l * var(--oklch-scale, 0.85)) c h /
+                0.1
+        );
+    }
+    .sidebar-toc .toc-heading.depth-2.active {
+        color: var(--h2);
+    }
+    .sidebar-toc .toc-heading.depth-3.active {
+        color: var(--h3);
+    }
+    .sidebar-toc .toc-heading.depth-4.active {
+        color: var(--h4);
+    }
+    .sidebar-toc .toc-heading.depth-5.active {
+        color: var(--h5);
+    }
+    .sidebar-toc .toc-heading.depth-6.active {
+        color: var(--h6);
+    }
+    .sidebar-toc .toc-heading.active .toc-hash {
+        color: inherit;
+    }
+
     /* ── Tree label (the text) ── */
 
     .tree-label {
@@ -1574,6 +1674,34 @@ const ICON_ABOUT = '\u{f1028}'
 
 <script>
     import { applyVimNavigation, isUserTyping } from '@/utils/vim'
+
+    // ── Inline TOC: clone the page's heading outline (rendered into
+    //    #sidebar-toc-template by Astro) as tree children directly under the
+    //    active page leaf, so the table of contents lives in this sidebar
+    //    instead of a separate right-hand column. The cloned links keep their
+    //    data-heading-slug so the scrollspy in Doc.astro highlights the active
+    //    heading here. ──
+    {
+        const tocTemplate = document.getElementById(
+            'sidebar-toc-template',
+        ) as HTMLTemplateElement | null
+        const activeLeaf = document.querySelector(
+            '#category-list a.tree-entry.active',
+        )
+        if (tocTemplate && activeLeaf && activeLeaf.parentElement) {
+            const frag = tocTemplate.content.cloneNode(true) as DocumentFragment
+            // Insert the .tree-children block right after the active leaf.
+            activeLeaf.after(frag)
+            // Make sure every ancestor <details> is open so the headings (and
+            // the active leaf) are visible on load.
+            let p = activeLeaf.parentElement
+            while (p) {
+                if (p instanceof HTMLDetailsElement) p.open = true
+                if (p.id === 'sidebar') break
+                p = p.parentElement
+            }
+        }
+    }
 
     // Sidebar action buttons
     document

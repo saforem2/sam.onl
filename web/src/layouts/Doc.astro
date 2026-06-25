@@ -242,7 +242,7 @@ const articleSchema =
         <Filter />
         <row self-="grow" gap-="0" id="doc-columns">
             <div id="sidebar-container" class="mobile-hidden">
-                <Sidebar />
+                <Sidebar {tocLines} />
             </div>
             <div id="sidebar-resizer" aria-hidden="true"></div>
             <article id="doc-article" box-="square" shear-="top">
@@ -524,63 +524,6 @@ const articleSchema =
                     </div>
                 </row>
             </article>
-            {
-                tocHeadings.length > 0 && (
-                    <>
-                        <div id="toc-resizer" aria-hidden="true" />
-                        <aside
-                            id="toc-container"
-                            class="mobile-hidden collapsed">
-                            <nav
-                                box-="square"
-                                shear-="top"
-                                id="toc-sidebar"
-                                aria-label="Table of contents">
-                                <div id="toc-list-container">
-                                    <ul id="toc-list">
-                                        {tocLines.map((heading) => (
-                                            <li>
-                                                <a
-                                                    href={`#${heading.slug}`}
-                                                    class={`toc-link depth-${heading.depth}`}
-                                                    data-heading-slug={
-                                                        heading.slug
-                                                    }>
-                                                    <span
-                                                        class="toc-tree-prefix"
-                                                        data-tree-prefix={
-                                                            heading.treePrefix
-                                                        }
-                                                        aria-hidden="true"
-                                                    />
-                                                    <span>{heading.text}</span>
-                                                </a>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                                <button
-                                    id="toc-toggle"
-                                    type="button"
-                                    size-="small"
-                                    aria-expanded="false"
-                                    aria-controls="toc-container"
-                                    aria-label="Collapse right sidebar (zl)">
-                                    <>
-                                        <span class="key-z">z</span>
-                                        <span class="key-bracket">[</span>
-                                    </>
-                                    <>
-                                        <span class="key-l">l</span>
-                                        <span class="key-bracket">]</span>
-                                    </>
-                                    &rsaquo;
-                                </button>
-                            </nav>
-                        </aside>
-                    </>
-                )
-            }
         </row>
         <div id="vim-statusline">
             <!-- <span class="vsl-vim-icon">&#xe62b; </span> -->
@@ -641,16 +584,6 @@ const articleSchema =
                 &#xeb86; Menu
             </button>
             <button size-="small" id="docs-button">&#xf15b; Docs</button>
-            {
-                tocHeadings.length > 0 && (
-                    <button
-                        size-="small"
-                        variant-="background1"
-                        id="toc-button">
-                        &#xf0c9; TOC
-                    </button>
-                )
-            }
         </div>
     </column>
 </Layout>
@@ -1331,66 +1264,58 @@ const articleSchema =
     const scrollContainer = document.getElementById(
         'scroll-container',
     ) as HTMLElement | null
-    const tocLinks = Array.from(
-        document.querySelectorAll('#toc-list a[data-heading-slug]'),
+    // The TOC now lives in the left sidebar as tree children under the active
+    // page leaf (cloned from #sidebar-toc-template by SidebarFileTree's
+    // script). The links carry data-heading-slug, so the scrollspy works the
+    // same — it just queries the sidebar location instead of the old
+    // #toc-list. The script may run before the sidebar finishes cloning, so
+    // re-query lazily inside the sync if the first pass found nothing.
+    let tocLinks = Array.from(
+        document.querySelectorAll('#sidebar .sidebar-toc a[data-heading-slug]'),
     ) as HTMLAnchorElement[]
 
-    if (scrollContainer && tocLinks.length > 0) {
-        const headingElements = tocLinks
-            .map((link) => {
-                const slug = link.dataset.headingSlug
-                if (!slug) return null
-                return document.getElementById(slug)
-            })
-            .filter(
-                (element): element is HTMLElement =>
-                    element instanceof HTMLElement,
-            )
+    if (scrollContainer) {
+        const buildHeadingElements = () =>
+            tocLinks
+                .map((link) => {
+                    const slug = link.dataset.headingSlug
+                    if (!slug) return null
+                    return document.getElementById(slug)
+                })
+                .filter(
+                    (element): element is HTMLElement =>
+                        element instanceof HTMLElement,
+                )
+        let headingElements = buildHeadingElements()
 
         const setActiveTocLink = (activeId: string) => {
-            // Find the active link and its parent H2 section
-            let activeH2Slug: string | null = null
-            for (const link of tocLinks) {
-                if (link.dataset.headingSlug === activeId) {
-                    // Walk backwards to find the owning H2
-                    if (link.classList.contains('depth-2')) {
-                        activeH2Slug = activeId
-                    } else {
-                        // Search backwards through tocLinks for nearest depth-2
-                        const idx = tocLinks.indexOf(link)
-                        for (let i = idx - 1; i >= 0; i--) {
-                            if (tocLinks[i].classList.contains('depth-2')) {
-                                activeH2Slug =
-                                    tocLinks[i].dataset.headingSlug ?? null
-                                break
-                            }
-                        }
-                    }
-                    break
-                }
-            }
-
-            // Update active class and reveal sub-headings for active H2 section
-            let currentH2Slug: string | null = null
+            // Flat list of heading links in the sidebar tree; just toggle the
+            // active class. (The old right-column reveal of sub-headings under
+            // the active H2 is gone — every heading is always shown in the
+            // tree now.)
             tocLinks.forEach((link) => {
-                const slug = link.dataset.headingSlug
-                link.classList.toggle('active', slug === activeId)
-
-                if (link.classList.contains('depth-2')) {
-                    currentH2Slug = slug ?? null
-                }
-
-                const li = link.parentElement
-                if (li && !link.classList.contains('depth-2')) {
-                    li.classList.toggle(
-                        'toc-visible',
-                        currentH2Slug === activeH2Slug,
-                    )
-                }
+                link.classList.toggle(
+                    'active',
+                    link.dataset.headingSlug === activeId,
+                )
             })
         }
 
         const syncActiveHeading = () => {
+            // The sidebar clones the heading links from a <template> in its own
+            // script; if that hadn't run when this listener was wired up,
+            // re-query now so the scrollspy picks them up.
+            if (tocLinks.length === 0) {
+                tocLinks = Array.from(
+                    document.querySelectorAll(
+                        '#sidebar .sidebar-toc a[data-heading-slug]',
+                    ),
+                ) as HTMLAnchorElement[]
+                if (tocLinks.length > 0)
+                    headingElements = buildHeadingElements()
+            }
+            if (headingElements.length === 0) return
+
             const containerTop = scrollContainer.getBoundingClientRect().top
             let activeHeading = headingElements[0]
 
@@ -1406,7 +1331,7 @@ const articleSchema =
             if (activeHeading) {
                 setActiveTocLink(activeHeading.id)
                 const activeLink = document.querySelector(
-                    '#toc-list a.active',
+                    '#sidebar .sidebar-toc a.active',
                 ) as HTMLAnchorElement | null
                 activeLink?.scrollIntoView({ block: 'nearest' })
 
