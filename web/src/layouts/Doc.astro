@@ -102,6 +102,12 @@ const currentPath = Astro.url.pathname.endsWith('/')
     : `${Astro.url.pathname}/`
 const isPost = currentPath.startsWith('/posts/')
 const isTalk = currentPath.startsWith('/talks/')
+const isAbout = currentPath === '/about/'
+// Action buttons (reader / github source / raw / copy / share) appear on
+// every Doc-layout page EXCEPT the /about/ landing page (slide decks use a
+// different layout and never reach here). Share buttons in particular only
+// make sense off the about page.
+const showActions = !isAbout
 
 // Derive category from URL path (e.g. /posts/auroragpt/foo → "auroragpt")
 const pathSegments = currentPath.split('/').filter(Boolean)
@@ -112,6 +118,7 @@ const category =
 
 // Source file path for GitHub links
 import { stat } from 'node:fs/promises'
+import { join } from 'node:path'
 
 const sourceFile = sortedPages.find((p) => compareUrlPaths(p.id, currentPath))
 const sourceId = sourceFile?.id ?? ''
@@ -120,24 +127,33 @@ const sourceId = sourceFile?.id ?? ''
 // probe the filesystem for .mdx first then .md so GitHub/raw links
 // resolve to the real file (a hardcoded .mdx fallback used to 404 for
 // the 3 .md posts in the repo).
+//
+// Resolve against process.cwd() (the `web/` workspace dir — astro runs
+// dev AND build from there) rather than `import.meta.url`: at build time
+// this module is bundled, so import.meta.url points into a temp/.astro
+// location and the old `../pages/...` relative stat always missed —
+// which is why the source/raw GitHub buttons silently vanished in
+// production while working in dev. cwd is stable in both.
+const pagesDir = join(process.cwd(), 'src', 'pages')
 async function resolveSourceFile(id: string): Promise<string | null> {
     if (!id) return null
     if (id.endsWith('.md') || id.endsWith('.mdx')) {
         return `web/src/pages/${id}`
     }
-    for (const ext of ['mdx', 'md'] as const) {
-        const rel = `web/src/pages/${id}/index.${ext}`
+    // Two on-disk shapes: dir-style `id/index.{mdx,md}` (posts, talks) and
+    // flat `id.{mdx,md}` (webtui docs like webtui/start/intro.md). Probe both.
+    const candidates = [
+        ['mdx', `${id}/index.mdx`],
+        ['md', `${id}/index.md`],
+        ['mdx', `${id}.mdx`],
+        ['md', `${id}.md`],
+    ] as const
+    for (const [, rel] of candidates) {
         try {
-            // Doc.astro lives at web/src/layouts/, so `../pages/...`
-            // (NOT `../src/pages/...`) is the right relative path.
-            const resolved = new URL(
-                `../pages/${id}/index.${ext}`,
-                import.meta.url,
-            ).pathname
-            await stat(resolved)
-            return rel
+            await stat(join(pagesDir, rel))
+            return `web/src/pages/${rel}`
         } catch {
-            // try next extension
+            // try next candidate
         }
     }
     return null
@@ -150,11 +166,11 @@ const githubRawBase = 'https://raw.githubusercontent.com/saforem2/sam.onl'
 let fileModifiedDate: Date | null = null
 if (sourceFilePath) {
     try {
-        const resolvedPath = new URL(
-            `../${sourceFilePath.replace('web/', '')}`,
-            import.meta.url,
-        ).pathname
-        const fileStat = await stat(resolvedPath)
+        // sourceFilePath is repo-relative ("web/src/pages/..."); strip the
+        // leading "web/" to get the workspace-relative path under cwd.
+        const fileStat = await stat(
+            join(process.cwd(), sourceFilePath.replace(/^web\//, '')),
+        )
         fileModifiedDate = fileStat.mtime
     } catch {
         // File not found, skip
@@ -372,52 +388,52 @@ const articleSchema =
                                                     )}
                                                 </div>
                                             )}
-                                            <div class="post-meta-row post-meta-actions">
-                                                <button
-                                                    type="button"
-                                                    class="reader-toggle"
-                                                    is-="badge"
-                                                    size-="small"
-                                                    aria-pressed="false"
-                                                    title="Toggle reader view (zr)"
-                                                    aria-label="Toggle reader view">
-                                                    &#xf1ea;
-                                                </button>
-                                                {sourceFilePath && (
-                                                    <span class="post-meta-links">
-                                                        <a
-                                                            href={`${githubBase}/blob/${currentBranch}/${sourceFilePath}`}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            is-="badge"
-                                                            class="post-meta-source"
-                                                            title="View source on GitHub"
-                                                            aria-label="View source on GitHub"
-                                                            tabindex="0">
-                                                            &#xe65b;
-                                                        </a>
-                                                        <a
-                                                            href={`${githubRawBase}/${currentBranch}/${sourceFilePath}`}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            is-="badge"
-                                                            class="post-meta-raw"
-                                                            title="View raw source"
-                                                            aria-label="View raw source"
-                                                            tabindex="0">
-                                                            &#xf0224;
-                                                        </a>
-                                                    </span>
-                                                )}
-                                                {(isPost || isTalk) && (
+                                            {showActions && (
+                                                <div class="post-meta-row post-meta-actions">
+                                                    <button
+                                                        type="button"
+                                                        class="reader-toggle"
+                                                        is-="badge"
+                                                        size-="small"
+                                                        aria-pressed="false"
+                                                        title="Toggle reader view (zr)"
+                                                        aria-label="Toggle reader view">
+                                                        &#xf1ea;
+                                                    </button>
+                                                    {sourceFilePath && (
+                                                        <span class="post-meta-links">
+                                                            <a
+                                                                href={`${githubBase}/blob/${currentBranch}/${sourceFilePath}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                is-="badge"
+                                                                class="post-meta-source"
+                                                                title="View source on GitHub"
+                                                                aria-label="View source on GitHub"
+                                                                tabindex="0">
+                                                                &#xe65b;
+                                                            </a>
+                                                            <a
+                                                                href={`${githubRawBase}/${currentBranch}/${sourceFilePath}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                is-="badge"
+                                                                class="post-meta-raw"
+                                                                title="View raw source"
+                                                                aria-label="View raw source"
+                                                                tabindex="0">
+                                                                &#xf0224;
+                                                            </a>
+                                                        </span>
+                                                    )}
                                                     <ShareButtons
                                                         title={
                                                             frontmatter.title
                                                         }
                                                         url={`https://sam.onl${Astro.url.pathname}`}
                                                     />
-                                                )}
-                                            </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )
                                 })()
