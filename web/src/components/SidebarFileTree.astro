@@ -1216,11 +1216,14 @@ const ICON_ABOUT = '\u{f1028}'
            nav's box-= border (just like the "top-left" label in webtui
            box examples). shear-="top" on the nav kills top padding, so
            a 0 top-margin sits the chips' top edge on the border line.
-           Inline start = 2ch so the chip row's left edge lines up with the
-           file-tree's icon column (the leftmost ink of the tree content
-           below), rather than floating ~1ch further left. */
+           Inline start tuned so the first chip's GLYPH (not its box edge)
+           lines up with the file-tree icon column below. The chip has a 1px
+           border + ~0.75ch inner padding, so the glyph sits ~0.85ch inside
+           the box; pulling the row to ~1.15ch lands that glyph on the icon
+           column. (Aligning the box edge — 2ch — left the glyph visibly
+           indented past the folder icons.) */
         margin-block-start: 0;
-        margin-inline-start: 2ch;
+        margin-inline-start: 1.15ch;
         margin-block-end: 0.25lh;
 
         .sidebar-action {
@@ -1557,7 +1560,12 @@ const ICON_ABOUT = '\u{f1028}'
            heading outline reads as nested *under* that page, not as a sibling
            sitting flush with it. */
         margin-inline-start: 0;
-        padding-inline-start: 6ch;
+        /* Indent the heading hashes ~1.5ch past the active page link's text so
+           the outline reads as nested under that page — one modest step, not
+           a deep jump. (6ch landed the hashes ~3 columns over, way too far;
+           1.5ch sat them flush with the link; 3.5ch landed flush with the
+           link's text — this 5ch gives a clear ~1.5ch step past it.) */
+        padding-inline-start: 5ch;
     }
     .sidebar-toc .toc-heading {
         display: flex;
