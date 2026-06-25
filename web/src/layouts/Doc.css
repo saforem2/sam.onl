@@ -549,12 +549,14 @@ h6::before {
     display: flex;
     /* Default to auto (fit the tree's natural width) instead of a fixed 32ch;
        the resizer sets an explicit px value on --sidebar-width when dragged.
-       min-width lowered to 12ch so the sidebar can actually be dragged narrow
-       — at the old 21ch (~190px) it clamped almost immediately and felt
-       stuck/unresponsive. */
+       min-width: 25ch — wide enough to contain the natural content (file tree
+       + nested TOC headings, ~24ch). The container is overflow:visible, so a
+       narrower floor lets the rows spill past the right edge and overlap the
+       article text, which reads as a stray dark vertical seam at the boundary.
+       Keeping the floor at/above content width prevents that collision. */
     width: var(--sidebar-width, auto);
     max-width: 100vw;
-    min-width: 12ch;
+    min-width: 25ch;
     flex: 0 0 var(--sidebar-width, auto);
     margin-left: 1ch;
 }
