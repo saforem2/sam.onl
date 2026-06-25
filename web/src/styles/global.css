@@ -806,6 +806,17 @@
         margin-left: 3ch;
     }
 
+    /* Blank line before a top-level list so it reads as a discrete block
+       instead of fusing with the intro paragraph above it (e.g. "The
+       default flow:" immediately followed by the numbered steps). Scope to
+       lists that are NOT nested inside an <li> so sublists stay tight.
+       `!important` because the heading-collapse content reset applies a
+       `margin: 0 !important` to its children that an unflagged rule can't
+       beat; mirrors how other overrides in this codebase handle that reset. */
+    #main-content :is(ol, ul):not(li > ol):not(li > ul):not(li ol):not(li ul) {
+        margin-block-start: 1lh !important;
+    }
+
     /* GFM task-list checkboxes — `- [ ] item` / `- [x] item`. Render as
        a TUI "[ ]" / "[x]" chip in monospace. Browsers also accept clicks
        on these (a rehype plugin strips the `disabled` attribute that GFM
