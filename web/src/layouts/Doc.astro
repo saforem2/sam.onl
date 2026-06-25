@@ -259,6 +259,16 @@ const articleSchema =
                                 id="toc-page-title"
                                 aria-hidden="true"
                                 tabindex="-1"></span>
+                            <button
+                                type="button"
+                                class="reader-toggle"
+                                is-="badge"
+                                variant-="background2"
+                                aria-pressed="false"
+                                title="Toggle reader view (zr)"
+                                aria-label="Toggle reader view">
+                                &#xf02d;
+                            </button>
                             {
                                 (frontmatter.date || isPost || isTalk) && (
                                     <div class="post-meta">
@@ -1040,7 +1050,7 @@ const articleSchema =
             return
         }
 
-        // Esc — unfocus the currently focused element
+        // Esc — exit reader view first if active, else unfocus.
         if (
             e.key === 'Escape' &&
             !e.ctrlKey &&
@@ -1048,6 +1058,12 @@ const articleSchema =
             !e.altKey &&
             !e.shiftKey
         ) {
+            if (document.documentElement.hasAttribute('data-reader')) {
+                e.preventDefault()
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ;(window as any).toggleReader(false)
+                return
+            }
             const active = document.activeElement
             if (
                 active instanceof HTMLElement &&
@@ -2956,6 +2972,39 @@ const articleSchema =
     } else {
         setupSlideDeckLazyMount()
     }
+</script>
+
+<!-- Reader View -->
+<script>
+    const readerRoot = document.documentElement
+    const readerBtn = document.querySelector('.reader-toggle')
+
+    const syncReaderButton = () => {
+        if (!(readerBtn instanceof HTMLElement)) return
+        const on = readerRoot.hasAttribute('data-reader')
+        readerBtn.setAttribute('aria-pressed', String(on))
+    }
+
+    // Exposed on window so the command-palette chip (Filter.astro) and
+    // the zr chord (Sidebar-Toggle script) can call the same toggle.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(window as any).toggleReader = (force?: boolean) => {
+        const next =
+            force === undefined
+                ? !readerRoot.hasAttribute('data-reader')
+                : force
+        if (next) {
+            readerRoot.setAttribute('data-reader', '')
+        } else {
+            readerRoot.removeAttribute('data-reader')
+        }
+        syncReaderButton()
+    }
+
+    readerBtn?.addEventListener('click', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(window as any).toggleReader()
+    })
 </script>
 
 <style is:global>
