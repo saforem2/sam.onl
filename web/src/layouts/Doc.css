@@ -54,17 +54,14 @@
 
 /* Two-pane look: drop the WebTUI box-="square" frames on the sidebar and
    article (their border is drawn by the ::before/::after pseudo-elements;
-   suppress those, same mechanism the mobile rule uses) and use a single
-   vertical divider between the two panes instead. Cleaner, less boxed-in
-   than two full ASCII frames. */
+   suppress those, same mechanism the mobile rule uses). The single vertical
+   divider between the panes is drawn by the #sidebar-resizer itself (see
+   below) so the visible line IS the draggable handle — no separate border. */
 #sidebar::before,
 #sidebar::after,
 #doc-article::before,
 #doc-article::after {
     display: none !important;
-}
-#sidebar {
-    border-right: 1px solid var(--background2);
 }
 
 /* Mobile: turn off the desktop "internal scroll inside the article"
@@ -610,22 +607,36 @@ h6::before {
 
 #sidebar-resizer,
 #toc-resizer {
-    flex: 0 0 0.5ch;
+    flex: 0 0 0.75ch;
     align-self: stretch;
     height: auto;
     cursor: col-resize;
     margin-block: 0.5lh;
+    /* The resizer IS the visible two-pane divider: a faint 1px line painted
+       down the centre of the (wider, easier-to-grab) hit strip. Brightens to
+       the accent on hover/drag so it's clearly draggable. */
+    background-image: linear-gradient(
+        to right,
+        transparent calc(50% - 0.5px),
+        var(--background2) calc(50% - 0.5px),
+        var(--background2) calc(50% + 0.5px),
+        transparent calc(50% + 0.5px)
+    );
+    background-repeat: no-repeat;
+    transition: background-image 0.1s linear;
 }
 
 #sidebar-resizer:hover,
 #sidebar-resizer.dragging,
 #toc-resizer:hover,
 #toc-resizer.dragging {
-    background: var(--background0);
-    border-color: var(--foreground2);
-    background: var(--accent);
-    border-left: 1px solid var(--accent);
-    border-right: 1px solid var(--accent);
+    background-image: linear-gradient(
+        to right,
+        transparent calc(50% - 1px),
+        var(--accent) calc(50% - 1px),
+        var(--accent) calc(50% + 1px),
+        transparent calc(50% + 1px)
+    );
 }
 
 #toc-container {
