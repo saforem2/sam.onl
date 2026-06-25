@@ -318,7 +318,7 @@ const ICON_ABOUT = '\u{f1028}'
             id="command-button-sidebar"
             class="sidebar-action"
             title="Open command menu (?)"
-            aria-label="Open command menu">&#xf0e7;</button
+            aria-label="Open command menu">&#xf120;</button
         >
         <a
             href="https://github.com/saforem2/sam.onl"
@@ -331,6 +331,15 @@ const ICON_ABOUT = '\u{f1028}'
         >
         <button id="search-button-sidebar" class="sidebar-action" title="Search"
             >&#xf002;</button
+        >
+        <button
+            id="sidebar-toggle"
+            class="sidebar-action"
+            type="button"
+            aria-expanded="true"
+            aria-controls="sidebar-container"
+            title="Collapse sidebar (zh)"
+            aria-label="Collapse left sidebar (zh)">&#xf344;</button
         >
     </div>
     <div id="category-container">
@@ -1135,18 +1144,6 @@ const ICON_ABOUT = '\u{f1028}'
             }
         </div>
     </div>
-    <button
-        id="sidebar-toggle"
-        type="button"
-        size-="small"
-        aria-expanded="true"
-        aria-controls="sidebar-container"
-        aria-label="Collapse left sidebar (zh)">
-        <span class="key-bracket"></span>&lsaquo;<span class="key-z">z</span
-        ><span class="key-bracket">[</span><span class="key-h">h</span><span
-            class="key-bracket">]</span
-        >
-    </button>
     {
         tocHeadings.length > 0 && (
             <template id="sidebar-toc-template">

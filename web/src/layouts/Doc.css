@@ -492,7 +492,10 @@ h6::before {
     margin-inline-end: 1ch;
 }
 
-#sidebar-toggle,
+/* #sidebar-toggle now lives in the top #sidebar-actions row as a plain
+   .sidebar-action icon button (collapse-left / hamburger glyph), so it
+   inherits that styling. The old bottom-bar rules (#toc-toggle below)
+   belong to the removed right-TOC column. */
 #toc-toggle {
     display: flex;
     align-items: center;
@@ -523,26 +526,6 @@ h6::before {
     color: var(--accent);
 }
 
-#sidebar-toggle::after {
-    content: '';
-    flex-grow: 1;
-    margin-inline-start: 1ch;
-    height: 1lh;
-    background-image: linear-gradient(
-        0deg,
-        transparent 0,
-        transparent calc(0.5lh - 1px),
-        currentColor calc(0.5lh - 1px),
-        currentColor calc(0.5lh + 1px),
-        transparent calc(0.5lh + 1px),
-        transparent
-    );
-}
-
-#sidebar-toggle:hover {
-    color: var(--cyan);
-}
-
 #toc-toggle:hover {
     color: var(--yellow);
 }
@@ -557,10 +540,12 @@ h6::before {
 }
 
 #sidebar-container.collapsed {
-    max-width: 1.25lh;
-    width: 1.25lh;
-    min-width: 1.25lh;
-    flex-basis: 1.25lh;
+    /* Wide enough to show the vertical #sidebar-actions icon column without
+       clipping (was 1.25lh, sized for the old vertical text toggle bar). */
+    max-width: 3.5ch;
+    width: 3.5ch;
+    min-width: 3.5ch;
+    flex-basis: 3.5ch;
 }
 
 #sidebar-container.collapsed + #sidebar-resizer {
@@ -571,31 +556,9 @@ h6::before {
     overflow: hidden;
 }
 
-#sidebar-container.collapsed #sidebar-toggle {
-    left: 0;
-    right: 0;
-    bottom: 0;
-    min-width: 0;
-    max-inline-size: none;
-    width: 1lh;
-    height: 7ch;
-    margin-left: 0;
-    padding: 0;
-    writing-mode: vertical-rl;
-    transform: none;
-    background-color: var(--background2);
-    color: var(--button-primary);
-    margin-inline-start: 1.4ch;
-    /* line-height: 1.6; */
-}
-
-#sidebar-container.collapsed #sidebar-toggle::after {
-    display: none;
-}
-
-/* #sidebar-container.collapsed #sidebar-toggle code { */
-/*     font-size: 0.9em; */
-/* } */
+/* (Collapsed-state #sidebar-toggle vertical-bar rules removed — the toggle
+   is now a .sidebar-action in the top row, which the collapsed
+   #sidebar-actions column rule already stacks + keeps reachable.) */
 
 /* #sidebar-resizer { */
 /*     flex: 0 0 0.5ch; */

@@ -1457,8 +1457,10 @@ const articleSchema =
     const setSidebarToggleLabel = (collapsed: boolean) => {
         if (!sidebarToggle) return
 
-        const arrow = collapsed ? '&uarr;' : '&larr;'
-        sidebarToggle.innerHTML = `${arrow}<span class="key-z">z</span>[<span class="key-h">h</span>]`
+        // The toggle now lives in the top action row as an icon button:
+        // collapse-to-left-edge glyph when open, hamburger when collapsed.
+        // (Was a bottom bar with a `‹z[h]` text label.)
+        sidebarToggle.innerHTML = collapsed ? '' : ''
 
         sidebarToggle.setAttribute(
             'aria-label',
@@ -1466,6 +1468,7 @@ const articleSchema =
                 ? 'Expand left sidebar (zh)'
                 : 'Collapse left sidebar (zh)',
         )
+        sidebarToggle.setAttribute('aria-expanded', String(!collapsed))
     }
 
     const setTocToggleLabel = (collapsed: boolean) => {
