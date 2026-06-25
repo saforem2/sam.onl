@@ -1465,6 +1465,40 @@ html[data-reader][data-reader-width='wide'] #doc-article {
     max-width: 112ch;
 }
 
+/* ── Figure breakout in reader view ──────────────────────────────────────
+   Reader view narrows the article to a comfortable text measure (72/90/112ch),
+   which crams wide figures (side-by-side charts, big diagrams) into the prose
+   column. Let an author-tagged `.figure-row` escape that column and use the
+   free margin space on either side, centered on the viewport.
+
+   Mechanism: #doc-article is centered in the viewport (margin-inline: auto),
+   so its center IS the viewport center — `left: 50%; translateX(-50%)` on the
+   figure-row therefore centers it on the viewport regardless of the column's
+   current width. Width is capped (130ch) so it doesn't sprawl on ultrawide
+   displays, and clamped to the viewport (100vw - 6ch) with a small gutter.
+
+   #main-content clips horizontally (overflow-x: hidden, set via the
+   `#scroll-container #main-content` rule above) — which would chop the
+   breakout — so in reader view we switch it to visible. The override must be
+   anchored through #scroll-container too: the base rule has two IDs (0,2,0)
+   and would otherwise beat a plain `html[data-reader] #main-content`. The page
+   still scrolls vertically via #main-content; horizontal breakout content now
+   extends into the side margins instead of being cut off. (This is why the
+   earlier negative-margin attempt failed: the margins pushed content out, but
+   overflow-x: hidden sliced it.) */
+html[data-reader] #scroll-container #main-content {
+    overflow-x: visible;
+}
+html[data-reader] #doc-article {
+    overflow-x: visible;
+}
+html[data-reader] .figure-row {
+    width: min(130ch, 100vw - 6ch);
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 /* Drop the WebTUI box-="square" frame in reader view — it's drawn via the
    ::before/::after decoration on #doc-article. Reader view is meant to be
    chrome-free, so the bordered frame reads as clutter here. */
