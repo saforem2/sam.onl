@@ -1884,6 +1884,14 @@ html[data-webtui-theme='catppuccin-latte'] {
         padding: 0;
     }
 
+    /* CSL bibliography (#refs) — hanging indent so each entry's continuation
+       lines sit indented under its first line, via the `text-indent: <len>
+       hanging` one-liner (continuation lines indent, first line flush). */
+    #refs p,
+    #refs .csl-entry {
+        text-indent: 4ch hanging;
+    }
+
     /* Local overrides of upstream WebTUI typography defaults.
        Kept here instead of editing packages/css/* directly so the
        monorepo packages stay clean and upstream-syncable. */
