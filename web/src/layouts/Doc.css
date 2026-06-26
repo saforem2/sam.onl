@@ -366,8 +366,9 @@
 
 .vsl-file {
     /* The current path — green foreground on the normal bar bg, sitting just
-       after the green cap. */
+       after the green cap, with a little breathing room from it. */
     color: oklch(from var(--green) calc(l * var(--oklch-scale, 0.95)) c h);
+    padding-inline-start: 1ch;
 }
 
 /* Statusline segments that are real links — defeat the global body-link
@@ -413,12 +414,31 @@ a.vsl-file:focus-visible {
     color: var(--foreground1);
     display: inline-flex;
     align-items: baseline;
-    gap: 1ch;
+    gap: 0.75ch;
     font-variant-numeric: tabular-nums;
+    /* Soft blue chip so the date/time reads as its own block, distinct from
+       the green pos/loc chips that follow. */
+    background-color: oklch(
+        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.12
+    );
 }
+/* Calendar glyph before the date, clock glyph before the time (Nerd Font,
+   verified present in the subset). Tinted blue to match the clock chip. */
+#vsl-clock-date::before,
+#vsl-clock-time::before {
+    font-family: 'Symbols Nerd Font', monospace;
+    color: oklch(from var(--blue) calc(l * var(--oklch-scale, 0.95)) c h);
+    margin-inline-end: 0.5ch;
+}
+#vsl-clock-date::before {
+    content: '\f133'; /* calendar */
+}
+#vsl-clock-time::before {
+    content: '\f017'; /* clock */
+}
+/* The · separator is redundant now that each side has its own icon. */
 .vsl-clock-sep {
-    color: var(--foreground3);
-    opacity: 0.8;
+    display: none;
 }
 
 .vsl-pos {
