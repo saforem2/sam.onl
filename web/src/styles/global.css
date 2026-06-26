@@ -1892,6 +1892,42 @@ html[data-webtui-theme='catppuccin-latte'] {
         text-indent: 4ch hanging;
     }
 
+    /* In-content WebTUI box-= boxes (e.g. the demo/example boxes in the
+       webtui docs): tactile hover/focus lift + hard TUI shadow in the box's
+       own border color, matching the .callout / sidebar-action treatment.
+       Scoped to #main-content and explicitly NOT the article shell
+       (#doc-article) — the page chrome shouldn't react to hover. Callouts
+       have their own hover rule, so exclude them too.
+
+       Written as FLAT selectors (no & nesting) — Lightning CSS's nesting
+       flattener mangles `&:hover` inside a compound :is()/:not() parent (see
+       prior occurrences in this file), which silently dropped this rule. */
+    #main-content [box-~='square']:not(#doc-article):not(.callout),
+    #main-content [box-~='round']:not(#doc-article):not(.callout),
+    #main-content [box-~='double']:not(#doc-article):not(.callout) {
+        transition:
+            transform 120ms ease-out,
+            box-shadow 120ms ease-out;
+    }
+    #main-content
+        [box-~='square']:not(#doc-article):not(.callout):is(
+            :hover,
+            :focus-within
+        ),
+    #main-content
+        [box-~='round']:not(#doc-article):not(.callout):is(
+            :hover,
+            :focus-within
+        ),
+    #main-content
+        [box-~='double']:not(#doc-article):not(.callout):is(
+            :hover,
+            :focus-within
+        ) {
+        transform: translate(-1px, -1px);
+        box-shadow: 2px 2px 0 0 var(--box-border-color, var(--background3));
+    }
+
     /* Local overrides of upstream WebTUI typography defaults.
        Kept here instead of editing packages/css/* directly so the
        monorepo packages stay clean and upstream-syncable. */
