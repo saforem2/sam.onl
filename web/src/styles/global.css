@@ -724,10 +724,13 @@
         text-indent: 0 !important;
         white-space: nowrap;
     }
-    /* Drop the marker glyph's hanging-indent offset so content sits right
-       after it on the same line. */
+    /* Inline callouts show only the title — drop the +/x marker glyph and the
+       (now empty) summary so just the body content (e.g. a link) renders. */
     .callout-inline > summary::before {
-        margin-inline: 0 0.5ch !important;
+        content: none !important;
+    }
+    .callout-inline > summary:empty {
+        display: none !important;
     }
     /* Body parts inline, margins stripped so they don't break the row. */
     .callout-inline > :not(summary) {

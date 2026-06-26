@@ -185,10 +185,16 @@ const rehypeGitHubCallouts = () => {
                 .map((f) => f.trim().toLowerCase())
                 .filter(Boolean)
             const calloutTitle = markerMatch[4]?.trim()
-            const summaryText =
-                calloutTitle ||
-                calloutTitleByType[calloutType] ||
-                toTitleCase(rawType)
+            const isInline = calloutFlags.includes('inline')
+            // Inline callouts show ONLY the title/body — suppress the auto
+            // type-label fallback ("Important", "Note", …) so a bare
+            // `[!TYPE|inline] …` doesn't prepend the type name. A normal
+            // callout still gets the type label when no explicit title.
+            const summaryText = isInline
+                ? calloutTitle || ''
+                : calloutTitle ||
+                  calloutTitleByType[calloutType] ||
+                  toTitleCase(rawType)
 
             // Three blockquote shapes we need to handle:
             //   (a) `> [!NOTE] body on same line`    → single <p>, single text node
@@ -259,6 +265,12 @@ const rehypeGitHubCallouts = () => {
                     },
                     ...node.children,
                 ],
+            }
+
+            // Inline callouts have no meaningful collapsed state (just a
+            // one-line title/link), so always render them open.
+            if (isInline) {
+                detailsNode.properties.open = true
             }
 
             if (markerMatch[3] === '+') {
