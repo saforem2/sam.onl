@@ -411,45 +411,34 @@ a.vsl-file:focus-visible {
    mode cap + git segments on the left. Tabular numerals keep the live clock
    + scroll-% from jittering as digits change. */
 .vsl-clock {
-    color: var(--foreground1);
     display: inline-flex;
     align-items: baseline;
     gap: 0.75ch;
     font-variant-numeric: tabular-nums;
-    /* Soft blue chip so the date/time reads as its own block, distinct from
-       the green pos/loc chips that follow. */
+    /* Soft blue chip; date/time text in a stronger blue. */
     background-color: oklch(
         from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.12
     );
-}
-/* Calendar glyph before the date, clock glyph before the time (Nerd Font,
-   verified present in the subset). Tinted blue to match the clock chip. */
-#vsl-clock-date::before,
-#vsl-clock-time::before {
-    font-family: 'Symbols Nerd Font', monospace;
     color: oklch(from var(--blue) calc(l * var(--oklch-scale, 0.95)) c h);
-    margin-inline-end: 0.5ch;
 }
-#vsl-clock-date::before {
-    content: '\f133'; /* calendar */
-}
-#vsl-clock-time::before {
-    content: '\f017'; /* clock */
-}
-/* The · separator is redundant now that each side has its own icon. */
 .vsl-clock-sep {
-    display: none;
+    color: oklch(from var(--blue) calc(l * var(--oklch-scale, 0.95)) c h);
+    opacity: 0.5;
 }
 
+/* pos (scroll %) — purple chip. */
 .vsl-pos {
-    background-color: var(--background2);
-    color: oklch(from var(--green) calc(l * var(--oklch-scale, 0.95)) c h);
+    background-color: oklch(
+        from var(--purple) calc(l * var(--oklch-scale, 1.15)) c h / 0.15
+    );
+    color: oklch(from var(--purple) calc(l * var(--oklch-scale, 0.95)) c h);
     font-variant-numeric: tabular-nums;
 }
 
+/* loc (line:col) — solid green cap, mirroring the sam.onl cap on the left. */
 .vsl-loc {
-    background-color: var(--background3);
-    color: oklch(from var(--green) calc(l * var(--oklch-scale, 0.95)) c h);
+    background-color: var(--green);
+    color: oklch(from var(--background0) l c h);
     font-weight: bold;
     font-variant-numeric: tabular-nums;
 }
