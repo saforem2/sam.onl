@@ -1688,7 +1688,10 @@ html[data-webtui-theme='catppuccin-latte'] {
        overflow-x: auto still acts as a fallback when a cell
        truly can't wrap further. */
     #main-content table {
-        width: 100%;
+        /* width: auto so tables size to their content rather than always
+           stretching edge-to-edge. max-width: 100% + the cell-wrap rules
+           below still keep wide tables inside the scroll wrapper on mobile. */
+        width: auto;
         max-width: 100%;
     }
     #main-content table th,

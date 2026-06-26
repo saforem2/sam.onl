@@ -1644,13 +1644,12 @@ Full list at [/projects](/projects).
 
 <style>{`
 .recent-posts-table {
-    /* width: fit-content sized the table to content's max-content,
-       which pushed long titles past the mobile viewport. 100% +
-       table-layout: auto + per-cell overflow-wrap lets the browser
-       distribute width naturally between 2-col (Posts: Date+Title)
-       and 3-col (Talks: Date+Title+Location) tables, while letting
-       long titles break mid-token instead of overflowing. */
-    width: 100%;
+    /* width: auto sizes the table to its content instead of stretching
+       full-width. max-width: 100% + table-layout: auto + per-cell
+       overflow-wrap still keep long titles from overflowing the mobile
+       viewport (they break mid-token, and the scroll wrapper is the final
+       fallback). (Was width: 100%, which always stretched edge-to-edge.) */
+    width: auto;
     max-width: 100%;
     border-collapse: collapse;
 }
