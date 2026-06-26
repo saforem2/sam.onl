@@ -1220,6 +1220,12 @@ const ICON_ABOUT = '\u{f1028}'
         margin-block-start: 0;
         margin-inline-start: 0ch;
         margin-block-end: 0.25lh;
+        /* Solid background + a touch of padding so the chip row reads as a
+           distinct toolbar against the sidebar, at near-full opacity. */
+        background: var(--background0);
+        padding-inline: 1ch;
+        padding-block: 1ch;
+        opacity: 0.8;
 
         .sidebar-action {
             all: unset;
@@ -1237,7 +1243,9 @@ const ICON_ABOUT = '\u{f1028}'
                used elsewhere. */
             padding: 0.2lh 0.75ch;
             min-width: 3ch;
-            color: var(--foreground2);
+            /* Full-strength icon color so the action chips read clearly
+               (was --foreground2, a dim grey). */
+            color: var(--foreground0);
             background-color: color-mix(
                 in oklch,
                 var(--background0),

@@ -591,7 +591,11 @@ h6::before {
 }
 
 #sidebar-container.collapsed {
-    overflow: hidden;
+    /* overflow: visible so the collapsed action chips (and their hover lift /
+       border) aren't clipped at the 5ch container edge. The file tree is
+       hidden in the collapsed state, so nothing else leaks out — verified
+       no element overflows the container's right edge. */
+    overflow: visible;
 }
 
 /* (Collapsed-state #sidebar-toggle vertical-bar rules removed — the toggle
