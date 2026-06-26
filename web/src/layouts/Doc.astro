@@ -629,6 +629,7 @@ const articleSchema =
     // calls scrollBy / listens for 'scroll' must target whichever element is
     // really scrolling, or it silently no-ops in reader view (the d/u keybind
     // + scrollspy regression). Resolve it live each call so it tracks the mode.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(window as any).getDocScroller = () => {
         const sc = document.getElementById('scroll-container')
         const mc = document.getElementById('main-content')
@@ -1043,6 +1044,7 @@ const articleSchema =
             e.preventDefault()
             // Use the live scroller (reader view scrolls #scroll-container,
             // normal view scrolls #main-content).
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const scroller = (window as any).getDocScroller?.() ?? mainContent
             if (!scroller) return
             const halfPage = scroller.clientHeight / 2
@@ -1393,6 +1395,7 @@ const articleSchema =
                     '#doc-article > header h1',
                 ) as HTMLElement | null
                 const mainEl =
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (window as any).getDocScroller?.() ??
                     document.getElementById('main-content')
                 if (titleEl && mainEl) {
@@ -1941,6 +1944,7 @@ const articleSchema =
         // updating the bar in reader view.
         const updateProgress = () => {
             const scroller =
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (window as any).getDocScroller?.() ??
                 document.getElementById('main-content')
             if (!scroller) return
@@ -1998,6 +2002,7 @@ const articleSchema =
         // document level (capture) to catch whichever element fires 'scroll'.
         const update = () => {
             const scroller =
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (window as any).getDocScroller?.() ??
                 document.getElementById('main-content')
             if (!scroller) return

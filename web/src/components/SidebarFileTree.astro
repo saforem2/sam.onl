@@ -1148,7 +1148,7 @@ const ICON_ABOUT = '\u{f1028}'
         tocHeadings.length > 0 && (
             <template id="sidebar-toc-template">
                 <div class="tree-children sidebar-toc">
-                    {tocHeadings.map((h, i) => (
+                    {tocHeadings.map((h) => (
                         <a
                             href={`#${h.slug}`}
                             class:list={['toc-heading', `depth-${h.depth}`]}
