@@ -142,7 +142,7 @@ function remapColor(color, map) {
     return hit ?? color // leave unmapped colors as-is (preserves coverage)
 }
 
-function buildTheme(base, { name, displayName, type, palette, map }) {
+function buildTheme(base, { name, displayName, type, palette, map, extra }) {
     const clone = JSON.parse(JSON.stringify(base))
     clone.name = name
     clone.displayName = displayName
@@ -165,8 +165,33 @@ function buildTheme(base, { name, displayName, type, palette, map }) {
         if (tc.settings.background)
             tc.settings.background = remapColor(tc.settings.background, map)
     }
+
+    // Append extra tokenColors AFTER the base ones (later wins in TextMate) to
+    // fill coverage gaps in the source theme. min-light leaves
+    // `variable.language` (self / this / cls, super, etc.) at the default
+    // foreground, whereas one-dark-pro colors it — so under the light themes a
+    // bare `self.x` reads as uncolored. Add the rule so light matches dark.
+    if (extra && extra.length) {
+        clone.tokenColors = (clone.tokenColors || []).concat(extra)
+    }
     return clone
 }
+
+// Light coverage fill: color the special language variables (self/this/cls/...)
+// the way one-dark-pro does for dark. Match the role/hue intent — keep it the
+// same hue family as the dark theme's `variable.language` (red).
+const LIGHT_EXTRA = [
+    {
+        name: 'Special variable (self/this/cls) — coverage fill',
+        scope: [
+            'variable.language',
+            'variable.language.self',
+            'variable.language.special.self',
+            'variable.language.this',
+        ],
+        settings: { foreground: LIGHT.red },
+    },
+]
 
 // Ship all four variants (role + hue, light + dark) as selectable themes so
 // they can be compared side by side in the picker.
@@ -179,6 +204,7 @@ const candidates = [
         type: 'light',
         palette: LIGHT,
         map: LIGHT_ROLE,
+        extra: LIGHT_EXTRA,
     },
     {
         file: 'nvim-light-hue.json',
@@ -188,6 +214,7 @@ const candidates = [
         type: 'light',
         palette: LIGHT,
         map: LIGHT_HUE,
+        extra: LIGHT_EXTRA,
     },
     {
         file: 'nvim-dark-role.json',
