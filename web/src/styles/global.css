@@ -1011,6 +1011,22 @@ html[data-webtui-theme='catppuccin-latte'] .dark-content {
     display: none !important;
 }
 
+/* Neovim themes have clear light/dark semantics, so wire the
+   light-content/dark-content toggles (nvim-light shows light assets,
+   nvim-dark shows dark). */
+html[data-webtui-theme='nvim-light'] .light-content {
+    display: revert !important;
+}
+html[data-webtui-theme='nvim-light'] .dark-content {
+    display: none !important;
+}
+html[data-webtui-theme='nvim-dark'] .light-content {
+    display: none !important;
+}
+html[data-webtui-theme='nvim-dark'] .dark-content {
+    display: revert !important;
+}
+
 html[data-webtui-theme='custom-light'] .astro-code {
     --pre-background: oklch(from var(--code-bg, #f8f8f8) l c h);
     background-color: var(--pre-background) !important;
@@ -1076,6 +1092,29 @@ html[data-webtui-theme='sam-dark'] .astro-code span {
     font-weight: var(--shiki-sam-dark-font-weight) !important;
     text-decoration: var(--shiki-sam-dark-text-decoration) !important;
     --pre-background: var(--shiki-sam-dark-bg, #282828);
+    background-color: var(--pre-background) !important;
+}
+
+/* Neovim Light/Dark Shiki themes — onelight (onedarkpro) + cyberdream,
+   transcribed from the user's nvim auto_dark_mode.lua. Same activation
+   mechanism as the sam-* themes: --shiki-nvim-light-* / --shiki-nvim-dark-*
+   CSS vars baked into each code block at build by shikiConfig.themes. */
+html[data-webtui-theme='nvim-light'] .astro-code,
+html[data-webtui-theme='nvim-light'] .astro-code span {
+    color: var(--shiki-nvim-light) !important;
+    font-style: var(--shiki-nvim-light-font-style) !important;
+    font-weight: var(--shiki-nvim-light-font-weight) !important;
+    text-decoration: var(--shiki-nvim-light-text-decoration) !important;
+    --pre-background: var(--shiki-nvim-light-bg, #ffffff);
+    background-color: var(--pre-background) !important;
+}
+html[data-webtui-theme='nvim-dark'] .astro-code,
+html[data-webtui-theme='nvim-dark'] .astro-code span {
+    color: var(--shiki-nvim-dark) !important;
+    font-style: var(--shiki-nvim-dark-font-style) !important;
+    font-weight: var(--shiki-nvim-dark-font-weight) !important;
+    text-decoration: var(--shiki-nvim-dark-text-decoration) !important;
+    --pre-background: var(--shiki-nvim-dark-bg, #1c1c1c);
     background-color: var(--pre-background) !important;
 }
 

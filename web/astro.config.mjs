@@ -51,6 +51,11 @@ import { createCssVariablesTheme } from 'shiki'
 // proposal, which Vite/Node 22+ support.
 import samLight from './src/shiki-themes/sam-light.json' with { type: 'json' }
 import samDark from './src/shiki-themes/sam-dark.json' with { type: 'json' }
+// Neovim-mirrored themes: nvim-light = onelight (onedarkpro), nvim-dark =
+// cyberdream — both transcribed from the user's live nvim auto_dark_mode.lua
+// (palette + custom highlight overrides). See src/shiki-themes/nvim-*.json.
+import nvimLight from './src/shiki-themes/nvim-light.json' with { type: 'json' }
+import nvimDark from './src/shiki-themes/nvim-dark.json' with { type: 'json' }
 
 const oneLight = createCssVariablesTheme({
     name: 'one-light',
@@ -66,7 +71,7 @@ const catpuccinMocha = createCssVariablesTheme({
     fontStyle: true,
 })
 const highlighter = await createHighlighter({
-    themes: [oneLight, catpuccinMocha, samLight, samDark],
+    themes: [oneLight, catpuccinMocha, samLight, samDark, nvimLight, nvimDark],
 })
 
 // import oneLight from 'shiki/themes/one-light.json'
@@ -325,6 +330,9 @@ export default defineConfig({
                 // Toggle via the theme picker → "sam-light" / "sam-dark".
                 'sam-light': samLight,
                 'sam-dark': samDark,
+                // Neovim-mirrored syntax themes (onelight / cyberdream).
+                'nvim-light': nvimLight,
+                'nvim-dark': nvimDark,
             },
             colorReplacements: {
                 'one-light': {
