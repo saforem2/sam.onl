@@ -141,7 +141,11 @@ const calloutTitleByType = {
     success: 'Success',
 }
 
-const calloutMarkerPattern = /^\s*\[!([a-zA-Z]+)\]([+-])?\s*(.*)$/
+// [!TYPE] marker, with optional `|flag` modifiers inside the brackets
+// (e.g. `[!IMPORTANT|inline]`) and the usual trailing `+`/`-` fold state.
+//   [1] type   [2] pipe-separated flags (or undefined)   [3] +/-   [4] rest
+const calloutMarkerPattern =
+    /^\s*\[!([a-zA-Z]+)((?:\|[a-zA-Z-]+)*)\]([+-])?\s*(.*)$/
 
 const toTitleCase = (value) =>
     value.length > 0 ? `${value[0].toUpperCase()}${value.slice(1)}` : value
@@ -175,7 +179,12 @@ const rehypeGitHubCallouts = () => {
 
             const rawType = markerMatch[1].toLowerCase()
             const calloutType = calloutTypeAliases[rawType] ?? rawType
-            const calloutTitle = markerMatch[3]?.trim()
+            // Flags after the type, e.g. `[!NOTE|inline]` → ['inline'].
+            const calloutFlags = (markerMatch[2] || '')
+                .split('|')
+                .map((f) => f.trim().toLowerCase())
+                .filter(Boolean)
+            const calloutTitle = markerMatch[4]?.trim()
             const summaryText =
                 calloutTitle ||
                 calloutTitleByType[calloutType] ||
@@ -229,12 +238,16 @@ const rehypeGitHubCallouts = () => {
                 node.children.splice(paragraphIndex, 1)
             }
 
+            const calloutClasses = ['callout', `callout-${calloutType}`]
+            if (calloutFlags.includes('inline'))
+                calloutClasses.push('callout-inline')
+
             const detailsNode = {
                 type: 'element',
                 tagName: 'details',
                 properties: {
                     'is-': 'accordion',
-                    className: ['callout', `callout-${calloutType}`],
+                    className: calloutClasses,
                     'data-callout': calloutType,
                 },
                 children: [
@@ -248,7 +261,7 @@ const rehypeGitHubCallouts = () => {
                 ],
             }
 
-            if (markerMatch[2] === '+') {
+            if (markerMatch[3] === '+') {
                 detailsNode.properties.open = true
             }
 

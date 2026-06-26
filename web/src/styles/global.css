@@ -706,6 +706,40 @@
         --callout-color: var(--green, #1da811);
     }
 
+    /* Single-line callout (authored as `[!TYPE|inline]`): the marker glyph,
+       summary, and body all sit on ONE line — no hanging indent, no wrap.
+       Use for compact label/link chips (e.g. a repo badge). The body often
+       carries the real content (e.g. a link), so it's laid out inline rather
+       than hidden; an empty placeholder body just collapses to nothing. */
+    .callout-inline {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5ch;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        margin-block: 0.25lh;
+    }
+    .callout-inline > summary {
+        display: inline;
+        text-indent: 0 !important;
+        white-space: nowrap;
+    }
+    /* Drop the marker glyph's hanging-indent offset so content sits right
+       after it on the same line. */
+    .callout-inline > summary::before {
+        margin-inline: 0 0.5ch !important;
+    }
+    /* Body parts inline, margins stripped so they don't break the row. */
+    .callout-inline > :not(summary) {
+        display: inline;
+        margin: 0 !important;
+    }
+    /* An empty/whitespace-only body paragraph (a `> &nbsp;` placeholder)
+       shouldn't reserve space. */
+    .callout-inline > p:empty {
+        display: none !important;
+    }
+
     details[is-~='accordion']:is(
             .callout,
             .callout-tip,
