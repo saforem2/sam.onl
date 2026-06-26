@@ -355,20 +355,19 @@
 
 .vsl-site {
     /* First section = the saturated cap (formerly NORMAL mode, then branch —
-       both removed): solid green fill, bold bg-colored text, like lualine's
-       mode segment. Holds the repo icon + "sam.onl". */
+       both removed): solid green fill, medium-weight bg-colored text, like
+       lualine's mode segment. Holds the repo icon + "sam.onl". */
     background-color: var(--green);
     color: oklch(from var(--background0) l c h);
-    font-weight: bold;
+    font-weight: 500;
     letter-spacing: 0.05ch;
-    padding-inline: 1.5ch !important;
+    padding-inline: 1ch !important;
 }
 
 .vsl-file {
     /* The current path — green foreground on the normal bar bg, sitting just
        after the green cap. */
     color: oklch(from var(--green) calc(l * var(--oklch-scale, 0.95)) c h);
-    margin-inline-start: 1ch;
 }
 
 /* Statusline segments that are real links — defeat the global body-link
