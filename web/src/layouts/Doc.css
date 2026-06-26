@@ -355,9 +355,12 @@
 
 .vsl-site {
     /* First section = the saturated cap (formerly NORMAL mode, then branch —
-       both removed): solid green fill, medium-weight bg-colored text, like
-       lualine's mode segment. Holds the repo icon + "sam.onl". */
-    background-color: var(--green);
+       both removed): lightened-green fill, medium-weight bg-colored text, like
+       lualine's mode segment. Holds the repo icon + "sam.onl". The matching
+       lightened green caps both ends of the bar (see .vsl-loc). NB: literal
+       1.1 multiplier, not var(--oklch-scale) — that var resolves to 1 on the
+       active themes, so the var form would be a no-op. */
+    background-color: oklch(from var(--green) calc(l * 1.1) c h);
     color: oklch(from var(--background0) l c h);
     font-weight: 500;
     letter-spacing: 0.05ch;
@@ -437,7 +440,9 @@ a.vsl-file:focus-visible {
 
 /* loc (line:col) — solid green cap, mirroring the sam.onl cap on the left. */
 .vsl-loc {
-    background-color: var(--green);
+    /* Lightened-green cap mirroring the .vsl-site cap on the far left, so the
+       bar is bookended by matching green ends (literal 1.1, see .vsl-site). */
+    background-color: oklch(from var(--green) calc(l * 1.1) c h);
     color: oklch(from var(--background0) l c h);
     font-weight: bold;
     font-variant-numeric: tabular-nums;
