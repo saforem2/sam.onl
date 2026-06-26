@@ -1467,29 +1467,24 @@ html[data-reader] .post-meta-actions > :not(.reader-toggle) {
    cross-container centering math. 90ch keeps prose comfortable while fitting
    the posts' tables without horizontal scroll; a genuinely wider table still
    scrolls inside its own .table-scroll-wrapper (overflow-x: auto). */
+/* Column width is driven by --reader-width (set inline on #doc-article by the
+   − / + stepper in the reader control cluster, persisted to localStorage),
+   defaulting to 90ch. The stepper clamps it to roughly 56–128ch. */
 html[data-reader] #doc-article {
-    max-width: 90ch; /* medium (default) */
+    max-width: var(--reader-width, 90ch);
     margin-inline: auto;
 }
 /* Breathing room inside the reader column so the prose isn't tight against
    the article's edges. Inline padding on both sides + a little top room
-   under the title. The 90ch/72ch/112ch max-widths above are the text
-   measure; this padding sits outside that, widening the article box a bit. */
+   under the title. The --reader-width max-width above is the text measure;
+   this padding sits outside that, widening the article box a bit. */
 html[data-reader] #main-content {
     padding-inline: 3ch;
     padding-block-start: 1lh;
 }
-/* Width variants, set via data-reader-width on <html> by the width toggles
-   in the reader control cluster. Medium is the default (no attr / "medium"). */
-html[data-reader][data-reader-width='narrow'] #doc-article {
-    max-width: 72ch;
-}
-html[data-reader][data-reader-width='wide'] #doc-article {
-    max-width: 112ch;
-}
 
 /* ── Figure breakout in reader view ──────────────────────────────────────
-   Reader view narrows the article to a comfortable text measure (72/90/112ch),
+   Reader view narrows the article to a comfortable text measure (--reader-width),
    which crams wide figures (side-by-side charts, big diagrams) into the prose
    column. Let an author-tagged `.figure-row` escape that column and use the
    free margin space on either side, centered on the viewport.
@@ -1671,17 +1666,12 @@ html[data-reader] #reader-controls {
     }
 }
 
-/* Active width variant: green foreground (not a fill) so the current width
-   reads at a glance while staying visually quiet, like the inactive icons. */
-html[data-reader]:not([data-reader-width])
-    .reader-width[data-reader-width-set='medium'],
-html[data-reader][data-reader-width='narrow']
-    .reader-width[data-reader-width-set='narrow'],
-html[data-reader][data-reader-width='medium']
-    .reader-width[data-reader-width-set='medium'],
-html[data-reader][data-reader-width='wide']
-    .reader-width[data-reader-width-set='wide'] {
-    color: var(--green);
+/* Width stepper at a range end: dimmed + non-interactive (the JS sets
+   [disabled] when --reader-width hits its min/max). */
+.reader-width[disabled] {
+    opacity: 0.3;
+    pointer-events: none;
+    cursor: default;
 }
 
 /* Exit button leans red on hover to signal "close". */

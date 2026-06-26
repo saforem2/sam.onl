@@ -266,23 +266,16 @@ const articleSchema =
                     <button
                         type="button"
                         class="reader-ctrl reader-width"
-                        data-reader-width-set="narrow"
-                        title="Narrow column"
-                        aria-label="Narrow column">&#xf068;</button
+                        data-reader-width-step="-1"
+                        title="Narrower column"
+                        aria-label="Narrower column">&#xf068;</button
                     >
                     <button
                         type="button"
                         class="reader-ctrl reader-width"
-                        data-reader-width-set="medium"
-                        title="Medium column"
-                        aria-label="Medium column">&#xf0c9;</button
-                    >
-                    <button
-                        type="button"
-                        class="reader-ctrl reader-width"
-                        data-reader-width-set="wide"
-                        title="Wide column"
-                        aria-label="Wide column">&#xf067;</button
+                        data-reader-width-step="1"
+                        title="Wider column"
+                        aria-label="Wider column">&#xf067;</button
                     >
                     <button
                         type="button"
@@ -3023,8 +3016,49 @@ const articleSchema =
         ;(window as any).toggleReader()
     })
 
-    // Reader control cluster: width toggles + exit button.
+    // Reader control cluster: width stepper (− / +) + exit button.
+    // Column width is a continuous value in `ch`, driven by the
+    // `--reader-width` custom property on #doc-article (the CSS falls back to
+    // 90ch when unset). The − / + buttons step it by READER_WIDTH_STEP within
+    // [READER_WIDTH_MIN, READER_WIDTH_MAX]; the chosen width persists in
+    // localStorage so it carries across pages and reloads.
+    const READER_WIDTH_MIN = 56
+    const READER_WIDTH_MAX = 128
+    const READER_WIDTH_STEP = 8
+    const READER_WIDTH_DEFAULT = 90
+    const READER_WIDTH_KEY = 'reader-width-ch'
+    const docArticle = document.getElementById('doc-article')
     const readerControls = document.getElementById('reader-controls')
+
+    const clampReaderWidth = (n: number) =>
+        Math.min(READER_WIDTH_MAX, Math.max(READER_WIDTH_MIN, n))
+
+    const readReaderWidth = () => {
+        const stored = Number(localStorage.getItem(READER_WIDTH_KEY))
+        return Number.isFinite(stored) && stored > 0
+            ? clampReaderWidth(stored)
+            : READER_WIDTH_DEFAULT
+    }
+
+    const applyReaderWidth = (ch: number) => {
+        const w = clampReaderWidth(ch)
+        docArticle?.style.setProperty('--reader-width', `${w}ch`)
+        localStorage.setItem(READER_WIDTH_KEY, String(w))
+        // Disable the buttons at the range ends so it's clear there's no
+        // further travel.
+        readerControls
+            ?.querySelector('[data-reader-width-step="-1"]')
+            ?.toggleAttribute('disabled', w <= READER_WIDTH_MIN)
+        readerControls
+            ?.querySelector('[data-reader-width-step="1"]')
+            ?.toggleAttribute('disabled', w >= READER_WIDTH_MAX)
+    }
+
+    // Apply the persisted width up front so the column is right on first paint
+    // of reader view (the value is harmless outside reader view — the CSS only
+    // consumes --reader-width under html[data-reader]).
+    applyReaderWidth(readReaderWidth())
+
     readerControls?.addEventListener('click', (e) => {
         const btn = (e.target as HTMLElement)?.closest('button')
         if (!(btn instanceof HTMLElement)) return
@@ -3033,14 +3067,11 @@ const articleSchema =
             ;(window as any).toggleReader(false)
             return
         }
-        const width = btn.getAttribute('data-reader-width-set')
-        if (width) {
-            // Medium is the default (no attr); narrow/wide set the attr.
-            if (width === 'medium') {
-                readerRoot.removeAttribute('data-reader-width')
-            } else {
-                readerRoot.setAttribute('data-reader-width', width)
-            }
+        const step = btn.getAttribute('data-reader-width-step')
+        if (step) {
+            applyReaderWidth(
+                readReaderWidth() + Number(step) * READER_WIDTH_STEP,
+            )
         }
     })
 </script>
