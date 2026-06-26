@@ -1012,18 +1012,18 @@ html[data-webtui-theme='catppuccin-latte'] .dark-content {
 }
 
 /* Neovim themes have clear light/dark semantics, so wire the
-   light-content/dark-content toggles (nvim-light shows light assets,
-   nvim-dark shows dark). */
-html[data-webtui-theme='nvim-light'] .light-content {
+   light-content/dark-content toggles. The *= matchers cover both palette
+   variants (nvim-light-role / nvim-light-hue, nvim-dark-role / nvim-dark-hue). */
+html[data-webtui-theme*='nvim-light'] .light-content {
     display: revert !important;
 }
-html[data-webtui-theme='nvim-light'] .dark-content {
+html[data-webtui-theme*='nvim-light'] .dark-content {
     display: none !important;
 }
-html[data-webtui-theme='nvim-dark'] .light-content {
+html[data-webtui-theme*='nvim-dark'] .light-content {
     display: none !important;
 }
-html[data-webtui-theme='nvim-dark'] .dark-content {
+html[data-webtui-theme*='nvim-dark'] .dark-content {
     display: revert !important;
 }
 
@@ -1095,26 +1095,44 @@ html[data-webtui-theme='sam-dark'] .astro-code span {
     background-color: var(--pre-background) !important;
 }
 
-/* Neovim Light/Dark Shiki themes — onelight (onedarkpro) + cyberdream,
-   transcribed from the user's nvim auto_dark_mode.lua. Same activation
-   mechanism as the sam-* themes: --shiki-nvim-light-* / --shiki-nvim-dark-*
-   CSS vars baked into each code block at build by shikiConfig.themes. */
-html[data-webtui-theme='nvim-light'] .astro-code,
-html[data-webtui-theme='nvim-light'] .astro-code span {
-    color: var(--shiki-nvim-light) !important;
-    font-style: var(--shiki-nvim-light-font-style) !important;
-    font-weight: var(--shiki-nvim-light-font-weight) !important;
-    text-decoration: var(--shiki-nvim-light-text-decoration) !important;
-    --pre-background: var(--shiki-nvim-light-bg, #ffffff);
+/* Neovim Shiki themes — onelight (light) / cyberdream (dark), generated from
+   the default themes in two palette-swap variants (role / hue). Same activation
+   mechanism as the sam-* themes: --shiki-<key>-* CSS vars baked into each code
+   block at build by shikiConfig.themes. */
+html[data-webtui-theme='nvim-light-role'] .astro-code,
+html[data-webtui-theme='nvim-light-role'] .astro-code span {
+    color: var(--shiki-nvim-light-role) !important;
+    font-style: var(--shiki-nvim-light-role-font-style) !important;
+    font-weight: var(--shiki-nvim-light-role-font-weight) !important;
+    text-decoration: var(--shiki-nvim-light-role-text-decoration) !important;
+    --pre-background: var(--shiki-nvim-light-role-bg, #ffffff);
     background-color: var(--pre-background) !important;
 }
-html[data-webtui-theme='nvim-dark'] .astro-code,
-html[data-webtui-theme='nvim-dark'] .astro-code span {
-    color: var(--shiki-nvim-dark) !important;
-    font-style: var(--shiki-nvim-dark-font-style) !important;
-    font-weight: var(--shiki-nvim-dark-font-weight) !important;
-    text-decoration: var(--shiki-nvim-dark-text-decoration) !important;
-    --pre-background: var(--shiki-nvim-dark-bg, #1c1c1c);
+html[data-webtui-theme='nvim-light-hue'] .astro-code,
+html[data-webtui-theme='nvim-light-hue'] .astro-code span {
+    color: var(--shiki-nvim-light-hue) !important;
+    font-style: var(--shiki-nvim-light-hue-font-style) !important;
+    font-weight: var(--shiki-nvim-light-hue-font-weight) !important;
+    text-decoration: var(--shiki-nvim-light-hue-text-decoration) !important;
+    --pre-background: var(--shiki-nvim-light-hue-bg, #ffffff);
+    background-color: var(--pre-background) !important;
+}
+html[data-webtui-theme='nvim-dark-role'] .astro-code,
+html[data-webtui-theme='nvim-dark-role'] .astro-code span {
+    color: var(--shiki-nvim-dark-role) !important;
+    font-style: var(--shiki-nvim-dark-role-font-style) !important;
+    font-weight: var(--shiki-nvim-dark-role-font-weight) !important;
+    text-decoration: var(--shiki-nvim-dark-role-text-decoration) !important;
+    --pre-background: var(--shiki-nvim-dark-role-bg, #1c1c1c);
+    background-color: var(--pre-background) !important;
+}
+html[data-webtui-theme='nvim-dark-hue'] .astro-code,
+html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
+    color: var(--shiki-nvim-dark-hue) !important;
+    font-style: var(--shiki-nvim-dark-hue-font-style) !important;
+    font-weight: var(--shiki-nvim-dark-hue-font-weight) !important;
+    text-decoration: var(--shiki-nvim-dark-hue-text-decoration) !important;
+    --pre-background: var(--shiki-nvim-dark-hue-bg, #1c1c1c);
     background-color: var(--pre-background) !important;
 }
 

@@ -371,12 +371,14 @@
     color-scheme: dark;
 }
 
-/* Neovim Light/Dark — same arrangement: reuse the custom-light/custom-dark
-   page chrome (the base.css selectors list nvim-light/nvim-dark alongside
-   sam-*), with the nvim-* Shiki theme for code blocks. */
-[data-webtui-theme='nvim-light'] {
+/* Neovim themes (role / hue variants) — reuse the custom-light/custom-dark page
+   chrome (the base.css selectors list the nvim-*-{role,hue} keys alongside
+   sam-*), with the nvim Shiki theme for code blocks. */
+[data-webtui-theme='nvim-light-role'],
+[data-webtui-theme='nvim-light-hue'] {
     color-scheme: light;
 }
-[data-webtui-theme='nvim-dark'] {
+[data-webtui-theme='nvim-dark-role'],
+[data-webtui-theme='nvim-dark-hue'] {
     color-scheme: dark;
 }
