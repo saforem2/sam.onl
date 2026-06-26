@@ -353,41 +353,27 @@
     padding: 0 1ch;
 }
 
-.vsl-mode {
-    /* The one saturated cap — solid green, white bold text, like lualine's
-       mode section. */
+.vsl-site {
+    /* First section = the saturated cap (formerly NORMAL mode, then branch —
+       both removed): solid green fill, bold bg-colored text, like lualine's
+       mode segment. Holds the repo icon + "sam.onl". */
     background-color: var(--green);
     color: oklch(from var(--background0) l c h);
     font-weight: bold;
     letter-spacing: 0.05ch;
-}
-
-.vsl-branch {
-    /* Git segment: light-grey fill, green text + green branch icon. */
-    background-color: var(--background2);
-    color: oklch(from var(--green) calc(l * var(--oklch-scale, 0.95)) c h);
-    /* Extra breathing room inside the branch chip so the nerd-font
-       branch icon doesn't sit flush against the chip edge. */
     padding-inline: 1.5ch !important;
 }
 
-/* Push the GitHub-icon segment off the branch chip so the icon
-   doesn't sit flush against the chip's trailing edge. */
-.vsl-site {
-    margin-inline-start: 1ch;
-    /* Site/repo icon segment, green like the git branch it sits beside. */
-    color: oklch(from var(--green) calc(l * var(--oklch-scale, 0.95)) c h);
-}
-
 .vsl-file {
-    /* The current path — the most readable body segment, near-foreground. */
-    color: var(--foreground0);
+    /* The current path — green foreground on the normal bar bg, sitting just
+       after the green cap. */
+    color: oklch(from var(--green) calc(l * var(--oklch-scale, 0.95)) c h);
+    margin-inline-start: 1ch;
 }
 
 /* Statusline segments that are real links — defeat the global body-link
    reverse-video flash and underline so they look the same as the
    non-link segments at rest, just clickable. */
-a.vsl-branch,
 a.vsl-site,
 a.vsl-file {
     text-decoration: none !important;
@@ -396,10 +382,16 @@ a.vsl-file {
         background-color 100ms linear,
         color 100ms linear;
 }
-a.vsl-branch:hover,
-a.vsl-branch:focus-visible,
+/* Site is the solid green cap; on hover brighten the fill a touch (already
+   green, so a green-bg hover would read as no change). */
 a.vsl-site:hover,
-a.vsl-site:focus-visible,
+a.vsl-site:focus-visible {
+    color: oklch(from var(--background0) l c h) !important;
+    background-color: oklch(
+        from var(--green) calc(l * var(--oklch-scale, 1.1)) c h
+    ) !important;
+}
+/* Path link hover: fill green, invert text. */
 a.vsl-file:hover,
 a.vsl-file:focus-visible {
     color: oklch(from var(--background0) l c h) !important;
