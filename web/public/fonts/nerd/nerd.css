@@ -1,9 +1,20 @@
-/* Self-hosted, subset Symbols Nerd Font. ~252KB vs 950KB upstream. */
+/* Self-hosted, subset Symbols Nerd Font. ~264KB vs 950KB upstream.
+ *
+ * NO local() src on purpose. This is a *curated subset* whose glyph
+ * coverage (incl. the high Material-Design F0xxx range used by the
+ * sidebar tree icons) differs from whatever "Symbols Nerd Font" a
+ * visitor may have installed system-wide. A local() reference lets an
+ * OUTDATED installed copy shadow this file and render our newer glyphs
+ * as tofu — which is exactly what happened. Always force the web subset.
+ *
+ * The ?v= query is a content tag: bump it (to a fresh hash of the woff2)
+ * whenever the subset is regenerated, so returning visitors don't keep a
+ * stale copy. Required because /fonts/*.woff2 is served `immutable` with
+ * max-age=1yr (see public/_headers) under a non-content-hashed filename.
+ */
 @font-face {
     font-family: 'Symbols Nerd Font';
-    src:
-        local('SymbolsNerdFont-Regular'),
-        url('/fonts/nerd/SymbolsNerdFont-Regular.woff2') format('woff2');
+    src: url('/fonts/nerd/SymbolsNerdFont-Regular.woff2?v=d7a2bbb8') format('woff2');
     font-display: swap;
     font-style: normal;
     font-weight: 400;
