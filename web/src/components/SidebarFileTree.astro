@@ -1570,7 +1570,7 @@ const ICON_ABOUT = '\u{f1028}'
         align-items: baseline;
         gap: 0.75ch;
         padding-block: 0.05lh;
-        padding-inline: 0.5ch;
+        padding-inline: 0;
         /* One tier dimmer than the post-link leaves (--foreground2) so the
            inline heading outline reads as secondary to the page list. */
         color: var(--foreground3);
@@ -1592,30 +1592,28 @@ const ICON_ABOUT = '\u{f1028}'
         text-overflow: ellipsis;
         white-space: nowrap;
     }
-    /* Depth indent: each level's `#` marker lines up under the FIRST CHARACTER
-       of its parent's title, so the outline reads like nested markdown:
+    /* Depth indent: each level's `#` marker sits roughly under the first
+       character of its parent's title, so the outline reads like nested
+       markdown:
 
            ## Heading 2
-              ### Heading 3
-                  #### Heading 4
+           ### Heading 3
+              #### Heading 4
 
-       That means child.padding = parent.padding + parent's hash-marker width +
-       the 0.75ch hash→text gap. The marker is rendered at 0.8em with
-       -0.05ch tracking, and each deeper level has one more `#`, so the step
-       GROWS (+3, +4, +5ch) rather than being constant. Values measured to
-       land the child `#` exactly on the parent's first title glyph; depth-2
-       stays at the 0.5ch row inset. */
+       depth-2 is flush (the row base is 0 inset); each deeper level steps in
+       by ~3ch (one `#` worth of marker + the hash→text gap), growing slightly
+       at the deepest levels since each adds another `#`. */
     .sidebar-toc .toc-heading.depth-3 {
-        padding-inline-start: 2.5ch;
+        padding-inline-start: 3ch;
     }
     .sidebar-toc .toc-heading.depth-4 {
-        padding-inline-start: 5.5ch;
+        padding-inline-start: 6ch;
     }
     .sidebar-toc .toc-heading.depth-5 {
-        padding-inline-start: 9.5ch;
+        padding-inline-start: 10ch;
     }
     .sidebar-toc .toc-heading.depth-6 {
-        padding-inline-start: 14.5ch;
+        padding-inline-start: 14ch;
     }
 
     /* Collapse depth-3+ subheadings by default; reveal only the ones whose
