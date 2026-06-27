@@ -454,14 +454,13 @@ a.vsl-file:focus-visible {
     font-variant-numeric: tabular-nums;
 }
 
-/* loc (line:col) — green chip in the same dim-tint / bright-text style as
-   the date/time/pos chips (was an opaque reverse: solid green bg + near-white
-   text). */
+/* loc (line:col) — solid green cap, the right-hand bookend matching the
+   sam.onl cap on the left (see .vsl-site). The two solid green ends frame
+   the dim info chips between them, lualine-style (mode block left, location
+   block right). */
 .vsl-loc {
-    background-color: oklch(
-        from var(--green) calc(l * var(--oklch-scale, 1.15)) c h / 0.075
-    );
-    color: oklch(from var(--green) calc(l * var(--oklch-scale, 0.95)) c h);
+    background-color: oklch(from var(--green) calc(l * 1.1) c h);
+    color: oklch(from var(--background0) l c h);
     font-weight: bold;
     font-variant-numeric: tabular-nums;
 }
