@@ -1171,6 +1171,15 @@ html[data-webtui-theme='custom-light'] .astro-code span[style*='#C2C3C5'] {
     color: #6a6e76 !important;
 }
 
+/* Recolor min-light's amber #FF9800 (function params / variables — n_steps,
+   start, end, kind, …) to the warmer red-orange #FF5722, matching the site
+   palette's --orange. Same inline-style hook as the comment override above;
+   shikiConfig.colorReplacements wasn't honored for the bundled min-light
+   theme, so this CSS hook is the reliable route. */
+html[data-webtui-theme='custom-light'] .astro-code span[style*='#FF9800'] {
+    color: #ff5722 !important;
+}
+
 html[data-webtui-theme='custom-dark'] .astro-code span {
     color: var(--shiki-custom-dark) !important;
     font-style: var(--shiki-custom-dark-font-style) !important;
