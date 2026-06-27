@@ -413,37 +413,55 @@ a.vsl-file:focus-visible {
    position blocks (like lualine's `Top` / `1:1`). Green ties back to the
    mode cap + git segments on the left. Tabular numerals keep the live clock
    + scroll-% from jittering as digits change. */
+/* Date/time: two adjacent chips — date purple, time orange — each a pale
+   same-hue tint with saturated same-hue text (the colored-square icon
+   style). The wrapper just lays them out; the inner spans carry the color. */
 .vsl-clock {
     display: inline-flex;
     align-items: baseline;
-    gap: 0.75ch;
+    gap: 0;
     font-variant-numeric: tabular-nums;
-    /* Soft blue chip; date/time text in a stronger blue. */
-    background-color: oklch(
-        from var(--blue) calc(l * var(--oklch-scale, 1.15)) c h / 0.12
-    );
-    color: oklch(from var(--blue) calc(l * var(--oklch-scale, 0.95)) c h);
+    /* Kill the 1ch the `#vim-statusline > span` rule adds — the inner
+       date/time chips carry their own padding, and the trailing 1ch was
+       leaving a gap between the orange time chip and the pink pos chip. */
+    padding-inline: 0 !important;
 }
-.vsl-clock-sep {
-    color: oklch(from var(--blue) calc(l * var(--oklch-scale, 0.95)) c h);
-    opacity: 0.5;
-}
-
-/* pos (scroll %) — purple chip. */
-.vsl-pos {
+#vsl-clock-date {
+    padding-inline: 0.75ch;
     background-color: oklch(
         from var(--purple) calc(l * var(--oklch-scale, 1.15)) c h / 0.15
     );
     color: oklch(from var(--purple) calc(l * var(--oklch-scale, 0.95)) c h);
+}
+#vsl-clock-time {
+    padding-inline: 0.75ch;
+    background-color: oklch(
+        from var(--orange) calc(l * var(--oklch-scale, 1.15)) c h / 0.15
+    );
+    color: oklch(from var(--orange) calc(l * var(--oklch-scale, 0.95)) c h);
+}
+/* Separator no longer needed (the two chips abut); hidden if still emitted. */
+.vsl-clock-sep {
+    display: none;
+}
+
+/* pos (scroll %) — pink chip. */
+.vsl-pos {
+    background-color: oklch(
+        from var(--pink) calc(l * var(--oklch-scale, 1.15)) c h / 0.15
+    );
+    color: oklch(from var(--pink) calc(l * var(--oklch-scale, 0.95)) c h);
     font-variant-numeric: tabular-nums;
 }
 
-/* loc (line:col) — solid green cap, mirroring the sam.onl cap on the left. */
+/* loc (line:col) — green chip in the same dim-tint / bright-text style as
+   the date/time/pos chips (was an opaque reverse: solid green bg + near-white
+   text). */
 .vsl-loc {
-    /* Lightened-green cap mirroring the .vsl-site cap on the far left, so the
-       bar is bookended by matching green ends (literal 1.1, see .vsl-site). */
-    background-color: oklch(from var(--green) calc(l * 1.1) c h);
-    color: oklch(from var(--background0) l c h);
+    background-color: oklch(
+        from var(--green) calc(l * var(--oklch-scale, 1.15)) c h / 0.15
+    );
+    color: oklch(from var(--green) calc(l * var(--oklch-scale, 0.95)) c h);
     font-weight: bold;
     font-variant-numeric: tabular-nums;
 }
