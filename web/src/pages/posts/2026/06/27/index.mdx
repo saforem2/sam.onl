@@ -1,0 +1,526 @@
+---
+layout: '@/layouts/Doc.astro'
+title: 'Local AI Apps on ALCF Argo: One Tunnel, Every Client'
+date: 2026-06-27
+date-created: 2026-06-27
+date-modified: today
+description: 'Wiring Claude Code, OpenCode, and the Hermes One desktop app through a single SSH tunnel to ALCF''s Argo gateway — using argo-shim and an llm-rosetta translation layer to make every model (Claude and GPT) reachable from any client.'
+---
+
+ALCF's [Argo][argo] gateway exposes frontier models (Claude, GPT, Gemini)
+through an internal endpoint that's only reachable from inside the lab network.
+I wanted to use those models from *local* desktop apps on my Mac —
+[Claude Code][claude-code], [OpenCode][opencode], and the
+[Hermes One][hermes] desktop app — without exposing ports, juggling API keys,
+or paying a third-party provider.
+
+This post documents the full stack I ended up with: a single SSH tunnel, a tiny
+auth/format shim, and an API-translation gateway that lets *any* OpenAI- or
+Anthropic-format client reach *any* Argo model. Everything runs on
+`127.0.0.1`, bills through ALCF, and survives token rotation.
+
+[argo]: https://www.alcf.anl.gov/
+[claude-code]: https://docs.claude.com/en/docs/claude-code
+[opencode]: https://opencode.ai
+[hermes]: https://github.com/NousResearch/hermes-agent
+
+> **TL;DR**: `argo-shim` turns an SSH tunnel into a localhost Anthropic
+> endpoint. `llm-rosetta` translates OpenAI ⇆ Anthropic so OpenAI-only clients
+> can use it too. Point Claude Code, OpenCode, and Hermes at the right local
+> port and everything just works.
+
+## The problem
+
+Argo speaks the **Anthropic Messages API** for Claude models
+(`/v1/messages`) and the **OpenAI Chat Completions API** for GPT/Gemini
+(`/v1/chat/completions`), authenticated with an `x-api-key` header. But:
+
+1. The endpoint (`apps.inside.anl.gov`) is only reachable through an SSH jump
+   host behind MFA.
+2. Different clients want different things: Claude Code speaks Anthropic;
+   OpenCode and Hermes speak OpenAI; some send `Authorization: Bearer`, some
+   send `x-api-key`.
+3. Argo's OpenAI endpoint has two undocumented quirks (more on those later)
+   that make it return `HTTP 500` unless you massage the request.
+
+The end-state architecture solves all of this with two small local services:
+
+```c
+┌─────────────┐   ┌─────────────┐   ┌──────────────┐   ┌─────────────┐
+│ Claude Code │   │  OpenCode   │   │  Hermes One  │   │   vtcode    │
+└──────┬──────┘   └──────┬──────┘   └──────┬───────┘   └──────┬──────┘
+       │ Anthropic       │ OpenAI          │ OpenAI           │ Anthropic
+       │ /v1/messages    │ /chat/...       │ /chat/...        │ /v1/messages
+       │                 │                 │                  │
+       │           ┌─────▼─────────────────▼──────┐           │
+       │           │   llm-rosetta gateway :8765  │           │
+       │           │   OpenAI ⇆ Anthropic xlate   │           │
+       │           └─────┬─────────────────┬──────┘           │
+       │                 │ Anthropic       │ OpenAI           │
+       ▼                 ▼                  ▼                 ▼
+┌────────────────────────────────────────────────────────────────┐
+│            argo-shim :25940   (auth + format fixups)           │
+└───────────────────────────────┬────────────────────────────────┘
+                                │  SSH tunnel :25939
+                                ▼
+                    ALCF Argo  (apps.inside.anl.gov)
+```
+
+- **Claude Code** and **vtcode** speak Anthropic natively → straight to
+  `argo-shim`.
+- **OpenCode** and **Hermes** speak OpenAI → through `llm-rosetta`, which
+  translates to Anthropic for Claude models and forwards OpenAI requests
+  for GPT models.
+
+## The pieces
+
+### `argo-shim` — tunnel + auth + fixups
+
+[`argo-shim`][argo-shim] (by [n-getty][n-getty]) is a single-file Python proxy
+that:
+
+1. Manages an SSH tunnel to `apps.inside.anl.gov:443`.
+2. Listens on `127.0.0.1:25940` and rewrites any path to `/argoapi/...`
+   before forwarding upstream.
+3. Authenticates local clients with a random token it writes into
+   `~/.claude/settings.json` (so Claude Code picks it up automatically).
+
+[argo-shim]: https://github.com/n-getty/argo-shim
+[n-getty]: https://github.com/n-getty
+
+To make the OpenAI path work and let OpenAI-format clients authenticate, I made
+two small additive patches (covered in [Gotchas](#gotchas) below) — both since
+[contributed upstream](#contributing-back). Neither touches the Anthropic
+`/v1/messages` path that Claude Code uses.
+
+### `llm-rosetta` + the gateway
+
+[`llm-rosetta`][rosetta] (by [Oaklight][oaklight]) is an LLM API translation
+layer with an optional HTTP gateway. It converts between OpenAI Chat
+Completions, Anthropic Messages, and Google GenAI formats via a central
+intermediate representation. The gateway routes by model name:
+
+- A request for `claude-*` → translated **OpenAI → Anthropic** → posted to
+  `argo-shim`'s `/v1/messages` (which Argo serves).
+- A request for `gpt-*` / `o*` → forwarded as **OpenAI Chat Completions** to
+  `argo-shim`'s `/argoapi/v1/chat/completions`.
+
+[rosetta]: https://github.com/Oaklight/llm-rosetta
+[oaklight]: https://github.com/Oaklight
+
+### Hermes + the Hermes One desktop app
+
+[Hermes][hermes] is a tool-calling agent. The **Hermes One** desktop app
+(Electron) spawns a local backend that reads `~/.hermes/config.yaml`. Point its
+`custom` provider at the rosetta gateway and you get every Argo model in a
+native chat UI.
+
+## Reproducing it
+
+Everything below assumes **macOS** with [`uv`][uv] installed and working SSH
+access to the ALCF jump host.
+
+[uv]: https://docs.astral.sh/uv/
+
+### 1. Install and start `argo-shim`
+
+```bash
+# A recent argo-shim already includes the bearer-auth + user-injection support
+# (see "Contributing back"). Install from PyPI, or from a local checkout.
+uv tool install argo-shim
+
+# If your ALCF username differs from your local login name, tell the shim:
+export CELS_USERNAME=<your-alcf-username>
+
+# Start it (creates the SSH tunnel, writes a token to ~/.claude/settings.json)
+argo-shim
+```
+
+`argo-shim` listens on `127.0.0.1:25940`, derives a per-user port for the SSH
+tunnel, and prints the token. Each restart **rotates** the token — important
+later.
+
+Quick sanity check (the token lives in `~/.claude/settings.json`):
+
+```bash
+TOKEN=$(python3 -c "import json;print(json.load(open('$HOME/.claude/settings.json'))['apiKeyHelper'].split()[-1])")
+
+# Claude via Anthropic Messages — should return JSON
+curl -sS -H "x-api-key: $TOKEN" -H "anthropic-version: 2023-06-01" \
+  -H "content-type: application/json" \
+  http://127.0.0.1:25940/argoapi/v1/messages \
+  -d '{"model":"Claude Sonnet 4.5","max_tokens":20,
+       "messages":[{"role":"user","content":"say hi"}]}'
+```
+
+### 2. Claude Code (Anthropic, native)
+
+Claude Code needs no extra config — `argo-shim` writes the base URL and token
+into `~/.claude/settings.json` for you:
+
+```json
+{
+  "apiKeyHelper": "echo <ROTATING_TOKEN>",
+  "env": {
+    "ANTHROPIC_BASE_URL": "http://127.0.0.1:25940/argoapi"
+  }
+}
+```
+
+That's it. `claude` now routes through Argo.
+
+### 3. OpenCode (OpenAI-format, via a custom provider)
+
+OpenCode reads `~/.config/opencode/opencode.json`. Add an Anthropic-compatible
+custom provider pointed at the shim (OpenCode's `@ai-sdk/anthropic` sends
+`x-api-key`, which the shim wants):
+
+```json
+{
+  "provider": {
+    "argo": {
+      "npm": "@ai-sdk/anthropic",
+      "name": "Argo (via argo-shim)",
+      "options": {
+        "baseURL": "http://127.0.0.1:25940/argoapi/v1",
+        "apiKey": "{env:ARGO_SHIM_TOKEN}",
+        "headers": { "anthropic-version": "2023-06-01" }
+      },
+      "models": {
+        "claudeopus48": { "name": "claude-4.8-opus" }
+      }
+    }
+  }
+}
+```
+
+Export the token so `{env:ARGO_SHIM_TOKEN}` resolves (see
+[Token rotation](#token-rotation) for a helper that does this automatically):
+
+```bash
+export ARGO_SHIM_TOKEN=$(python3 -c "import json;print(json.load(open('$HOME/.claude/settings.json'))['apiKeyHelper'].split()[-1])")
+```
+
+### 4. `llm-rosetta` gateway (for OpenAI-only clients)
+
+Install the gateway:
+
+```bash
+uv tool install "llm-rosetta[gateway]"
+```
+
+Create `~/.config/llm-rosetta-gateway/config.jsonc`. Two providers, both
+pointing at the shim:
+
+```jsonc
+{
+  "providers": {
+    // Claude models: Anthropic Messages format.
+    // base_url has NO /v1 — the anthropic template appends /v1/messages.
+    "argo": {
+      "type": "anthropic",
+      "api_key": "<ROTATING_TOKEN>",
+      "base_url": "http://127.0.0.1:25940"
+    },
+    // GPT/o models: OpenAI Chat Completions.
+    // base_url includes /argoapi/v1 — the template appends /chat/completions.
+    "argo-openai": {
+      "type": "openai_chat",
+      "api_key": "<ROTATING_TOKEN>",
+      "base_url": "http://127.0.0.1:25940/argoapi/v1"
+    }
+  },
+  "models": {
+    // Register each model in BOTH forms clients send: bare ("claude-opus-4-8")
+    // and vendor-prefixed ("anthropic/claude-opus-4-8"). Declare `capabilities`
+    // explicitly — the default is ["text"], which makes rosetta strip images.
+    "claude-opus-4-8":            { "provider": "argo",        "upstream_model": "Claude Opus 4.8", "capabilities": ["text", "vision", "tools", "reasoning"] },
+    "anthropic/claude-opus-4-8":  { "provider": "argo",        "upstream_model": "Claude Opus 4.8", "capabilities": ["text", "vision", "tools", "reasoning"] },
+    "gpt-5.5":                    { "provider": "argo-openai", "upstream_model": "GPT-5.5",          "capabilities": ["text", "vision", "tools", "reasoning"] },
+    "openai/gpt-5.5":             { "provider": "argo-openai", "upstream_model": "GPT-5.5",          "capabilities": ["text", "vision", "tools", "reasoning"] }
+    // … repeat for every model you want …
+  },
+  // No server.api_key — the gateway binds to 127.0.0.1 only, so no auth needed.
+  "server": { "host": "127.0.0.1", "port": 8765 }
+}
+```
+
+Start it:
+
+```bash
+llm-rosetta-gateway --no-banner   # listens on 127.0.0.1:8765
+```
+
+Test the translation (OpenAI request in, Claude answer out):
+
+```bash
+curl -sS http://127.0.0.1:8765/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"claude-opus-4-8",
+       "messages":[{"role":"user","content":"say hi"}],"max_tokens":20}'
+```
+
+The gateway also ships a web admin panel at
+`http://127.0.0.1:8765/admin/` with live metrics and request logs.
+
+> **Heads up**: the admin panel's "import models" button re-discovers Argo's
+> full model list and writes entries that *don't work* (Gemini 500s upstream;
+> spaced display-names get mapped to the wrong provider). Manage the model list
+> from the config file instead — I keep a [regen script](#a-regen-script) for
+> exactly this.
+
+### 5. Hermes One desktop app
+
+Hermes' backend reads `~/.hermes/config.yaml`. Point its `custom` provider at
+the rosetta gateway:
+
+```yaml
+model:
+  base_url: "http://127.0.0.1:8765/v1"
+  default: "claude-opus-4-7"
+  provider: "custom"
+```
+
+Because the rosetta gateway runs **no-auth** (loopback only), no API key is
+needed — Hermes' "API Key required for remote endpoints, optional for
+localhost" note applies.
+
+In the desktop app: **Settings → Providers → Local / Others**, set:
+
+| Field        | Value                          |
+| ------------ | ------------------------------ |
+| **Model**    | `claude-opus-4-7`              |
+| **Base URL** | `http://127.0.0.1:8765/v1`     |
+| **API Key**  | *(optional — gateway is open)* |
+
+Click **Done**, restart the app, start a New Chat. 🎉
+
+## Gotchas
+
+These are the non-obvious problems I hit. Two of them needed small,
+**additive** patches to `argo-shim` — the Anthropic `/v1/messages` path Claude
+Code uses is untouched (those two are now [upstream](#contributing-back)). The
+rest were configuration or upstream-app quirks.
+
+### 1. OpenAI models need a `user` field
+
+Argo's `/chat/completions` returns a bare `HTTP 500` for GPT/Gemini requests…
+*unless* you include a `user` field set to a valid ALCF username. With it, the
+500 turns into a real completion. The fix: have the shim auto-inject it.
+
+```python
+# In argo-shim, alongside the existing /messages handling:
+if method == "POST" and body and "/chat/completions" in self.path:
+    req = json.loads(body)
+    if isinstance(req, dict) and not (req.get("user") or "").strip():
+        req["user"] = ARGO_USER          # $ARGO_USER / $CELS_USERNAME / login
+        body = json.dumps(req).encode()
+```
+
+This one took a while to find: `curl` worked but the real clients all returned
+500. The difference was that none of my `curl` tests happened to send a `user`
+field that Argo accepted — once I tried a valid ALCF username, GPT-4o, GPT-5,
+and the o-series all came alive.
+
+### 2. OpenAI clients send `Authorization: Bearer`, not `x-api-key`
+
+The shim originally accepted only `x-api-key`. rosetta's `openai_chat`
+provider authenticates with `Authorization: Bearer <key>`. Teach the shim to
+accept both:
+
+```python
+client_key = self.headers.get("x-api-key", "")
+if not client_key:
+    auth = self.headers.get("Authorization", "")
+    if auth.lower().startswith("bearer "):
+        client_key = auth[7:].strip()
+```
+
+### 3. The de-stream rabbit hole (that upstream already solved)
+
+Worth documenting because I burned real time here. The shim **forces
+`stream=true`** on `/messages` (to dodge a Vertex timeout on long non-stream
+requests), so a non-streaming client like rosetta gets SSE when it expects a
+single JSON body. The shim therefore has to *collapse* the SSE back into one
+Messages object.
+
+I wrote that collapse logic from scratch — and then hit a second trap: rosetta's
+HTTP client sends `Accept-Encoding: gzip`, so Argo **gzip-compresses the SSE**,
+and my collapser was parsing gzipped bytes as text and silently failing. (`curl`
+worked the whole time because it doesn't send `Accept-Encoding`.)
+
+The lesson: **check upstream first.** Current `argo-shim` already does this
+correctly — it has a `_reassemble_sse_to_message` helper *and* strips
+`accept-encoding` before forwarding, so Argo never gzips in the first place. My
+hand-rolled gunzip-and-collapse was solving a problem that didn't exist on a
+current checkout. If you're reproducing this, just use a recent `argo-shim` and
+none of it is needed.
+
+### 4. Hermes' `custom` provider and model-name prefixes
+
+Two Hermes-specific quirks:
+
+- The `custom` provider **doesn't read `CUSTOM_API_KEY`** for the actual
+  request — only an inline `api_key` in `config.yaml` (which the desktop UI
+  *strips* on save). Running the gateway no-auth sidesteps this entirely.
+- Hermes prepends a vendor prefix to model names
+  (`anthropic/claude-opus-4-8`), then matches that exact string against the
+  endpoint's `/v1/models` list. So the gateway must register **both** the bare
+  and vendor-prefixed forms of every model — hence the duplicated entries in
+  the config above.
+
+### 5. The capabilities default silently drops images
+
+The rosetta admin panel showed every model with a single `text` capability
+badge, even though Claude and GPT-4o obviously do vision. I assumed it was
+cosmetic — it isn't.
+
+If a model entry doesn't declare a `capabilities` list, rosetta defaults it to
+`["text"]`. And a model **without `"vision"` has images stripped from the
+request** before it's forwarded upstream (`enforce_vision()` replaces them with
+text placeholders). So pasting an image into Hermes would have silently dropped
+it — no error, just a model that "couldn't see" the image.
+
+The fix is to declare real capabilities per model in the gateway config:
+
+```jsonc
+"claude-opus-4-8": {
+  "provider": "argo",
+  "upstream_model": "Claude Opus 4.8",
+  "capabilities": ["text", "vision", "tools", "reasoning"]
+}
+```
+
+My [regen script](#a-regen-script) now sets these per model family (Claude 4.x
+and the GPT-5/o-series get `text + vision + tools + reasoning`; GPT-4o/4.1 get
+`text + vision + tools`). After regenerating, images flow through to Argo
+instead of being quietly discarded.
+
+### 6. Duplicated responses in Hermes One
+
+After everything worked, Hermes One started showing **every reply twice** —
+once as a slightly-reworded partial, then again in full. My first instinct was
+that the proxy chain was double-emitting.
+
+It wasn't. I tested the rosetta gateway directly — streaming, non-streaming, and
+a fresh non-stream call — and every response came back **clean and singular**.
+The shim and Argo were innocent. The duplication only appeared *inside the
+Hermes desktop renderer*, and only for chatty tool-calling turns (the offending
+turn had `tool_turns=10`).
+
+The culprit was Hermes' `display.interim_assistant_messages: true`, which
+renders the model's *interim commentary between tool calls* **and** the final
+answer. With a verbose reasoning model (GPT-5.5) those two are near-identical,
+so you see the reply twice with slightly different wording. The fix is one line
+in `~/.hermes/config.yaml`:
+
+```yaml
+display:
+  interim_assistant_messages: false
+```
+
+The meta-lesson, again: when something looks broken, **bisect the layers**.
+A two-minute `curl` against the gateway saved me from "fixing" a proxy that was
+working perfectly.
+
+### 7. Gemini doesn't work
+
+Even with the `user` field, Argo's Gemini models return
+`'NoneType' object is not iterable` (an upstream bug). Claude and GPT/o-series
+work; Gemini is omitted from my config.
+
+## Token rotation
+
+Every `argo-shim` restart mints a new token. To keep everything in sync I use
+a couple of zsh helpers (in `~/.config/zsh/functions.zsh`):
+
+```bash
+# Re-export the live shim token into the env vars various clients read.
+refresh-argo-token() {
+  local token
+  token=$(python3 -c "import json;print(json.load(open('$HOME/.claude/settings.json'))['apiKeyHelper'].split()[-1])")
+  export ARGO_SHIM_TOKEN="$token"          # OpenCode, vtcode
+  export ANTHROPIC_API_KEY="$token"        # anything Anthropic-native
+  export ANTHROPIC_BASE_URL="http://127.0.0.1:25940/v1"
+}
+
+# Start/stop/restart the rosetta gateway; auto-syncs the new token into its
+# config on every (re)start.
+rosetta-gateway() { ...  }  # start|stop|restart|status|sync-key|regen-models|log
+```
+
+So the startup ritual after a reboot is just:
+
+```bash
+argo-shim                 # in a terminal — creates tunnel, rotates token
+refresh-argo-token        # sync token into env
+rosetta-gateway restart   # sync token into rosetta config + reload
+# then open the Hermes One app
+```
+
+### A regen script
+
+Because the admin UI keeps re-polluting the model list, I keep a script that
+regenerates a known-good `config.jsonc` from small Python maps of
+`{ alias: (argo_model_id, capabilities) }` — registering bare + vendor-prefixed
+forms, attaching the right capabilities (so images aren't stripped), pulling
+the live token, and restarting the gateway:
+
+```bash
+rosetta-gateway regen-models   # rebuild model list + restart
+```
+
+Editing the model maps at the top of that script is the one place to add or
+remove models.
+
+## Contributing back
+
+Two of the four changes I'd made to `argo-shim` turned out to be genuinely
+new and broadly useful, so they went back upstream as
+[a PR][argo-pr]:
+
+1. **Accept `Authorization: Bearer <token>`** in addition to `x-api-key`, so
+   any OpenAI-format client can authenticate to the shim.
+2. **Auto-inject the `user` field** on `/chat/completions`, so OpenAI/Gemini
+   models stop returning `HTTP 500`. The value resolves from `$ARGO_USER`, then
+   `$CELS_USERNAME`, then the login user — no hardcoded usernames.
+
+[argo-pr]: https://github.com/n-getty/argo-shim/pull/9
+
+The other two changes I *didn't* submit, and that distinction is the useful
+part:
+
+- The **de-stream + gzip handling** was already solved upstream (see
+  [Gotcha #3](#3-the-de-stream-rabbit-hole-that-upstream-already-solved)) — I'd
+  reimplemented an existing feature against a stale local branch.
+- The **hardcoded ALCF username** default was specific to my machine and not
+  shippable; the upstreamed version is env-driven.
+
+A nice footnote: the PR got an automated review flagging a real edge case — a
+non-dict JSON body (e.g. a top-level array) would crash the handler, since the
+injection code assumed `req.get(...)` always worked. Guarding on
+`isinstance(req, dict)` and treating a blank `user` as missing made it robust.
+That's the `isinstance` check you see in the snippet above.
+
+Moral: before patching someone else's tool, sync with upstream and scope your
+diff to what's actually new. I'd have saved myself the entire gzip rabbit hole.
+
+## Wrapping up
+
+The result: **Claude Code, OpenCode, vtcode, and the Hermes One desktop app**
+all talking to ALCF Argo through a single SSH tunnel — every Claude and GPT
+model available in each, billed through ALCF, with nothing exposed beyond
+`127.0.0.1`.
+
+The two reusable building blocks are worth calling out:
+
+- **[`argo-shim`][argo-shim]** turns a finicky, MFA-gated internal endpoint
+  into a clean localhost API — plus the small auth/format fixups that make
+  every client and every model reachable.
+- **[`llm-rosetta`][rosetta]** is the universal adapter: any client format in,
+  any provider format out. It's what lets OpenAI-only apps use Anthropic models
+  (and vice versa) without the app knowing anything changed.
+
+If you're at a lab with a similar internal gateway, this pattern — *tunnel →
+auth/format shim → translation gateway → point every client at localhost* —
+generalizes cleanly.
