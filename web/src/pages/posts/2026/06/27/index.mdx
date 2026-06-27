@@ -263,11 +263,11 @@ curl -sS http://127.0.0.1:8765/v1/chat/completions \
 The gateway also ships a web admin panel at
 `http://127.0.0.1:8765/admin/` with live metrics and request logs.
 
-> **Heads up**: the admin panel's "import models" button re-discovers Argo's
-> full model list and writes entries that *don't work* (Gemini 500s upstream;
-> spaced display-names get mapped to the wrong provider). Manage the model list
-> from the config file instead — I keep a [regen script](#a-regen-script) for
-> exactly this.
+> **Heads up**: the admin panel's **Fetch from Provider** button re-discovers
+> Argo's full model list and writes entries that *don't work* (Gemini 500s
+> upstream; spaced display-names get mapped to the wrong provider). Manage the
+> model list from the config file instead — I keep a
+> [regen script](#a-regen-script) for exactly this.
 
 ### 5. Hermes One desktop app
 
@@ -440,8 +440,10 @@ rosetta-gateway restart   # sync token into rosetta config + reload
 
 ### A regen script
 
-Because the admin UI keeps re-polluting the model list, I keep a script that
-regenerates a known-good `config.jsonc` from small Python maps of
+Clicking the admin panel's **Fetch from Provider** button re-pollutes the model
+list (it re-discovers Argo's full set and writes broken entries — see the
+heads-up above), so whenever that happens I keep a script that regenerates a
+known-good `config.jsonc` from small Python maps of
 `{ alias: (argo_model_id, capabilities) }` — registering bare + vendor-prefixed
 forms, attaching the right capabilities (so images aren't stripped), pulling
 the live token, and restarting the gateway:
