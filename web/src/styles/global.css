@@ -1652,6 +1652,19 @@ p:has(> img) {
     }
 }
 
+/* svgbob diagrams (rendered ASCII art, /posts/svgbob). Self-contained SVGs
+   embedded as <img>; the colors are baked in (fixed #838383 grey, legible on
+   both themes — matches the original site, no theme-reactive recolor). Scale
+   to the content column and stay aspect-true; centered. The tall showcase
+   diagram (760x7520) is intentionally shown full-height per author request,
+   so no max-height cap here. */
+.svgbob-figure {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-inline: auto;
+}
+
 html[data-webtui-theme|='catppuccin'] {
     --callout-bg: oklch(
         from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c h /
