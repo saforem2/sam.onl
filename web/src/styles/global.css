@@ -217,6 +217,14 @@
             'Liberation Mono', 'Courier New', monospace;
         --font-stack: var(--font-stack-miosevka-qp);
         --font-family: var(--font-stack), 'Symbols Nerd Font';
+        /* Font used inside code blocks / inline code. Defaults to the
+           chosen mono stack; the QP picker overrides it to Term below so
+           ASCII art and column alignment stay mono even when prose uses
+           the quasi-proportional QP. Code-block rules reference THIS, not
+           --font-family, so the override actually wins (the unlayered
+           emoji-fallback rule on pre.astro-code would otherwise beat the
+           layered overlay and force QP into code blocks). */
+        --code-font-family: var(--font-stack), 'Symbols Nerd Font';
         --font-size: clamp(0.95rem, 0.6rem + 1vw, 1.0625rem);
         /* --line-height: 1.5; */
         --line-height: initial;
@@ -263,13 +271,22 @@
     }
     :root[data-mono-font='miosevka-qp'] {
         --font-stack: var(--font-stack-miosevka-qp);
+        /* QP is quasi-proportional — gorgeous for prose, but ASCII art
+           and column alignment need mono metrics. Point the code font at
+           Term so codeblocks/inline-code/kbd stay mono while prose is QP.
+           Every other picker (Term/Iosevka/Victor/system) is already mono,
+           so --code-font-family just inherits their --font-stack. */
+        --code-font-family:
+            var(--font-stack-miosevka-term), 'Symbols Nerd Font';
     }
-    /* mIosevka-QP is quasi-proportional — beautiful for prose, but
-       monospace alignment matters in codeblocks, kbd glyphs, and
-       inline `code`. Overlay Term (mono-metrics) onto those. */
-    :root[data-mono-font='miosevka-qp']
-        :is(pre, code, kbd, samp, var, .astro-code) {
-        font-family: var(--font-stack-miosevka-term), 'Symbols Nerd Font';
+    /* Apply the code font to all code-bearing elements. References
+       --code-font-family (not --font-family) so the QP→Term swap above
+       takes effect; mode-agnostic because the variable carries the
+       per-font logic. NB: pre.astro-code gets its font from the unlayered
+       rule near the emoji @font-face (it must also use --code-font-family,
+       since an unlayered rule beats this layered one). */
+    :is(pre, code, kbd, samp, var, .astro-code) {
+        font-family: var(--code-font-family);
     }
     :root[data-mono-font='system'] {
         --font-stack: var(--font-stack-system);
@@ -1350,8 +1367,11 @@ pre.astro-code span.line {
 pre.astro-code,
 pre.astro-code code,
 pre.astro-code .line {
+    /* --code-font-family (NOT --font-family) so QP mode renders code in
+       Term. This rule is unlayered and so beats the layered overlay in
+       @layer base — it must carry the code font itself or QP leaks in. */
     font-family:
-        var(--font-family), 'inline-emoji-shrink', 'Apple Color Emoji',
+        var(--code-font-family), 'inline-emoji-shrink', 'Apple Color Emoji',
         'Segoe UI Emoji', 'Noto Color Emoji';
 }
 
