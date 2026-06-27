@@ -215,16 +215,18 @@
         --font-stack-system:
             ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas,
             'Liberation Mono', 'Courier New', monospace;
+        /* Two independent font axes, each set by its own picker / attribute:
+             body  → --font-stack      via [data-mono-font]   (default QP)
+             code  → --code-font-family via [data-code-font]   (default Term)
+           Code-block rules reference --code-font-family (NOT --font-family),
+           so the two never bleed into each other. 'Symbols Nerd Font' is
+           appended to both so icons render regardless of either choice. */
         --font-stack: var(--font-stack-miosevka-qp);
         --font-family: var(--font-stack), 'Symbols Nerd Font';
-        /* Font used inside code blocks / inline code. Defaults to the
-           chosen mono stack; the QP picker overrides it to Term below so
-           ASCII art and column alignment stay mono even when prose uses
-           the quasi-proportional QP. Code-block rules reference THIS, not
-           --font-family, so the override actually wins (the unlayered
-           emoji-fallback rule on pre.astro-code would otherwise beat the
-           layered overlay and force QP into code blocks). */
-        --code-font-family: var(--font-stack), 'Symbols Nerd Font';
+        /* Code default = Term (mono metrics for ASCII / column alignment),
+           independent of the body font. Overridden by [data-code-font]. */
+        --code-font-family:
+            var(--font-stack-miosevka-term), 'Symbols Nerd Font';
         --font-size: clamp(0.95rem, 0.6rem + 1vw, 1rem);
         /* --line-height: 1.5; */
         --line-height: initial;
@@ -256,9 +258,10 @@
         --focus-rail-size: 0pt;
         --focus-region-border: var(--foreground0);
     }
-    /* Mono-font picker — sets --font-stack (the user-visible part);
-       'Symbols Nerd Font' is always appended via --font-family so icons
-       keep rendering regardless of which mono font is chosen. */
+    /* ── BODY font axis — [data-mono-font] sets --font-stack. All 5 fonts.
+       'Symbols Nerd Font' is appended via --font-family so icons render
+       regardless of choice. (Attribute kept named data-mono-font so the
+       slides picker + returning visitors' stored key keep working.) */
     :root[data-mono-font='iosevka'] {
         --font-stack: var(--font-stack-iosevka);
     }
@@ -271,25 +274,35 @@
     }
     :root[data-mono-font='miosevka-qp'] {
         --font-stack: var(--font-stack-miosevka-qp);
-        /* QP is quasi-proportional — gorgeous for prose, but ASCII art
-           and column alignment need mono metrics. Point the code font at
-           Term so codeblocks/inline-code/kbd stay mono while prose is QP.
-           Every other picker (Term/Iosevka/Victor/system) is already mono,
-           so --code-font-family just inherits their --font-stack. */
-        --code-font-family:
-            var(--font-stack-miosevka-term), 'Symbols Nerd Font';
-    }
-    /* Apply the code font to all code-bearing elements. References
-       --code-font-family (not --font-family) so the QP→Term swap above
-       takes effect; mode-agnostic because the variable carries the
-       per-font logic. NB: pre.astro-code gets its font from the unlayered
-       rule near the emoji @font-face (it must also use --code-font-family,
-       since an unlayered rule beats this layered one). */
-    :is(pre, code, kbd, samp, var, .astro-code) {
-        font-family: var(--code-font-family);
     }
     :root[data-mono-font='system'] {
         --font-stack: var(--font-stack-system);
+    }
+
+    /* ── CODE font axis — [data-code-font] sets --code-font-family,
+       independent of the body font. True-monospace fonts only (no QP — it
+       breaks ASCII / column alignment). Base :root default is Term. */
+    :root[data-code-font='iosevka'] {
+        --code-font-family: var(--font-stack-iosevka), 'Symbols Nerd Font';
+    }
+    :root[data-code-font='victor-mono'] {
+        --code-font-family: var(--font-stack-victor-mono), 'Symbols Nerd Font';
+    }
+    :root[data-code-font='miosevka-term'] {
+        --code-font-family:
+            var(--font-stack-miosevka-term), 'Symbols Nerd Font';
+    }
+    :root[data-code-font='system'] {
+        --code-font-family: var(--font-stack-system), 'Symbols Nerd Font';
+    }
+
+    /* Apply the code font to all code-bearing elements. References
+       --code-font-family (not --font-family) so it's fully independent of
+       the body pick. NB: pre.astro-code also gets --code-font-family via the
+       unlayered rule near the emoji @font-face (an unlayered rule beats this
+       layered one), so both must use this var. */
+    :is(pre, code, kbd, samp, var, .astro-code) {
+        font-family: var(--code-font-family);
     }
     ::highlight(vim) {
         background-color: var(--foreground0);

@@ -73,13 +73,25 @@ const ogImage = ogSlug
                 localStorage.setItem('webtui-theme', migratedTheme)
             }
 
-            // Mono-font preference (default: mIosevka-QP — quasi-
-            // proportional for prose; mIosevka-Term overlays onto code
-            // blocks via the [data-mono-font='miosevka-qp'] rule in
-            // global.css).
-            const storedMono =
+            // Font preferences — two independent axes, set before paint to
+            // avoid FOUC. Body font (default mIosevka-QP, quasi-proportional
+            // for prose) via data-mono-font; code font (default mIosevka-Term,
+            // mono metrics for ASCII/alignment) via data-code-font. Returning
+            // visitors only have 'mono-font' stored; 'code-font' defaults to
+            // term, matching the old QP-body behavior. See the two-axis CSS in
+            // global.css.
+            const storedBodyFont =
                 localStorage.getItem('mono-font') ?? 'miosevka-qp'
-            document.documentElement.setAttribute('data-mono-font', storedMono)
+            document.documentElement.setAttribute(
+                'data-mono-font',
+                storedBodyFont,
+            )
+            const storedCodeFont =
+                localStorage.getItem('code-font') ?? 'miosevka-term'
+            document.documentElement.setAttribute(
+                'data-code-font',
+                storedCodeFont,
+            )
         </script>
         <meta name="generator" content={Astro.generator} />
         <title>{pageTitle}</title>
