@@ -1858,7 +1858,14 @@ const ICON_ABOUT = '\u{f1028}'
 
         applyVimNavigation(
             sidebar,
-            '#category-list > a:not(.hidden), details:not(.hidden)[open] a:not(.hidden), details:not(.hidden) summary',
+            // The action-row buttons (Home / command / GitHub / RSS / Search /
+            // collapse) come FIRST so j/k step through them before the tree —
+            // they live in #sidebar-actions, above #category-list in the DOM,
+            // so they're naturally first in the flat nav list. Without them in
+            // the query, focusing a toolbar button left j/k with no index in
+            // the list, so it reset to the first tree item (sam.onl) instead of
+            // moving to the next button.
+            '#sidebar-actions a[href]:not([disabled]), #sidebar-actions button:not([disabled]), #category-list > a:not(.hidden), details:not(.hidden)[open] a:not(.hidden), details:not(.hidden) summary',
             (element) => {
                 if (lastInteractionWasPointer) {
                     return
