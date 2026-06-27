@@ -336,27 +336,7 @@ if not client_key:
         client_key = auth[7:].strip()
 ```
 
-### 3. The de-stream rabbit hole (that upstream already solved)
-
-Worth documenting because I burned real time here. The shim **forces
-`stream=true`** on `/messages` (to dodge a Vertex timeout on long non-stream
-requests), so a non-streaming client like rosetta gets SSE when it expects a
-single JSON body. The shim therefore has to *collapse* the SSE back into one
-Messages object.
-
-I wrote that collapse logic from scratch — and then hit a second trap: rosetta's
-HTTP client sends `Accept-Encoding: gzip`, so Argo **gzip-compresses the SSE**,
-and my collapser was parsing gzipped bytes as text and silently failing. (`curl`
-worked the whole time because it doesn't send `Accept-Encoding`.)
-
-The lesson: **check upstream first.** Current `argo-shim` already does this
-correctly — it has a `_reassemble_sse_to_message` helper *and* strips
-`accept-encoding` before forwarding, so Argo never gzips in the first place. My
-hand-rolled gunzip-and-collapse was solving a problem that didn't exist on a
-current checkout. If you're reproducing this, just use a recent `argo-shim` and
-none of it is needed.
-
-### 4. Hermes' `custom` provider and model-name prefixes
+### 3. Hermes' `custom` provider and model-name prefixes
 
 Two Hermes-specific quirks:
 
@@ -369,7 +349,7 @@ Two Hermes-specific quirks:
   and vendor-prefixed forms of every model — hence the duplicated entries in
   the config above.
 
-### 5. The capabilities default silently drops images
+### 4. The capabilities default silently drops images
 
 The rosetta admin panel showed every model with a single `text` capability
 badge, even though Claude and GPT-4o obviously do vision. I assumed it was
@@ -396,7 +376,7 @@ and the GPT-5/o-series get `text + vision + tools + reasoning`; GPT-4o/4.1 get
 `text + vision + tools`). After regenerating, images flow through to Argo
 instead of being quietly discarded.
 
-### 6. Duplicated responses in Hermes One
+### 5. Duplicated responses in Hermes One
 
 After everything worked, Hermes One started showing **every reply twice** —
 once as a slightly-reworded partial, then again in full. My first instinct was
@@ -423,7 +403,7 @@ The meta-lesson, again: when something looks broken, **bisect the layers**.
 A two-minute `curl` against the gateway saved me from "fixing" a proxy that was
 working perfectly.
 
-### 7. Gemini doesn't work
+### 6. Gemini doesn't work
 
 Even with the `user` field, Argo's Gemini models return
 `'NoneType' object is not iterable` (an upstream bug). Claude and GPT/o-series
@@ -475,9 +455,8 @@ remove models.
 
 ## Contributing back
 
-Two of the four changes I'd made to `argo-shim` turned out to be genuinely
-new and broadly useful, so they went back upstream as
-[a PR][argo-pr]:
+Two of the fixes I'd made to `argo-shim` turned out to be genuinely new and
+broadly useful, so they went back upstream as [a PR][argo-pr]:
 
 1. **Accept `Authorization: Bearer <token>`** in addition to `x-api-key`, so
    any OpenAI-format client can authenticate to the shim.
@@ -487,23 +466,11 @@ new and broadly useful, so they went back upstream as
 
 [argo-pr]: https://github.com/n-getty/argo-shim/pull/9
 
-The other two changes I *didn't* submit, and that distinction is the useful
-part:
-
-- The **de-stream + gzip handling** was already solved upstream (see
-  [Gotcha #3](#3-the-de-stream-rabbit-hole-that-upstream-already-solved)) — I'd
-  reimplemented an existing feature against a stale local branch.
-- The **hardcoded ALCF username** default was specific to my machine and not
-  shippable; the upstreamed version is env-driven.
-
 A nice footnote: the PR got an automated review flagging a real edge case — a
 non-dict JSON body (e.g. a top-level array) would crash the handler, since the
 injection code assumed `req.get(...)` always worked. Guarding on
 `isinstance(req, dict)` and treating a blank `user` as missing made it robust.
 That's the `isinstance` check you see in the snippet above.
-
-Moral: before patching someone else's tool, sync with upstream and scope your
-diff to what's actually new. I'd have saved myself the entire gzip rabbit hole.
 
 ## Wrapping up
 
