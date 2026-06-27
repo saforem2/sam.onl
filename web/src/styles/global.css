@@ -926,10 +926,10 @@
         -webkit-appearance: none;
         display: inline-block;
         position: relative;
-        /* Width sized for "[x]" in monospace; the bracket-checkmark
-           "[✓]" combo widens because U+2713 falls back to a non-mono
-           font with wider advance — chars rendered side-by-side
-           naturally pick up that width without needing extra. */
+        /* Width sized for the 3-char "[ ]" / "[x]" chip. The checked
+           "[✓]" wants 4ch (✓ is double-width in Iosevka QP); it's
+           pulled back to 3ch with letter-spacing on :checked::before
+           so every row keeps this same 3ch bracket column. */
         width: 3ch;
         height: 1lh;
         margin: 0 0.5ch 0 0;
@@ -963,13 +963,16 @@
         font-variant-numeric: tabular-nums;
     }
     .task-list-item input[type='checkbox']:checked::before {
-        /* Nerd Font check glyph (U+F00C, Font Awesome 'check') instead
-           of the literal 'x' character — reads more like a real
-           checkbox without the wider advance issues of U+2713 ✓.
-           Requires a Nerd-Font-patched mono (Iosevka Nerd Font etc).
-           Falls back to '[x]' on unpatched fonts (won't render the
-           glyph, just the brackets — better than a missing tofu). */
-        content: '[\f00c]';
+        /* Literal check mark U+2713 ✓ in brackets, green for completion.
+           Caveat: in Iosevka QP, ✓ has a 2ch advance (it's drawn
+           double-width), so `[✓]` is naturally 4ch and would overflow
+           the 3ch box — pushing the brackets out of line with unchecked
+           `[ ]` rows. Negative letter-spacing snugs it back to ~3ch so
+           the chip matches `[ ]`/`[x]` width and the bracket column
+           stays straight. (letter-spacing only tightens advances; it
+           doesn't distort the glyphs the way scaleX would.) */
+        content: '[✓]';
+        letter-spacing: -0.33ch;
         color: var(--green, #4caf50);
         font-weight: var(--font-weight-bold);
     }
