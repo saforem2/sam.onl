@@ -964,17 +964,29 @@
     }
     .task-list-item input[type='checkbox']:checked::before {
         /* Literal check mark U+2713 ✓ in brackets, green for completion.
-           Caveat: in Iosevka QP, ✓ has a 2ch advance (it's drawn
-           double-width), so `[✓]` is naturally 4ch and would overflow
-           the 3ch box — pushing the brackets out of line with unchecked
-           `[ ]` rows. Negative letter-spacing snugs it back to ~3ch so
-           the chip matches `[ ]`/`[x]` width and the bracket column
-           stays straight. (letter-spacing only tightens advances; it
-           doesn't distort the glyphs the way scaleX would.) */
+           The bracket-column tightening for quasi-proportional fonts is
+           applied separately below (only the QP font draws ✓ double-
+           width); every true-monospace font renders `[✓]` at a clean 3ch
+           already, so it gets no letter-spacing. */
         content: '[✓]';
-        letter-spacing: -0.33ch;
         color: var(--green, #4caf50);
         font-weight: var(--font-weight-bold);
+    }
+    /* QP only: ✓ has a 2ch advance in mIosevka-QP (quasi-proportional),
+       so `[✓]` is naturally 4ch and would overflow the 3ch box and push
+       the bracket column out of line with unchecked `[ ]` rows. Snug it
+       back to ~3ch. letter-spacing only tightens advances — no glyph
+       distortion (unlike scaleX). Scoped to QP (the default font, set via
+       the inline script) + the no-JS absent case; Term/Iosevka/Victor/
+       system are true-mono (✓ = 1ch, `[✓]` already 3ch) and must NOT be
+       tightened or the brackets crowd the check. */
+    :root:not([data-mono-font])
+        .task-list-item
+        input[type='checkbox']:checked::before,
+    :root[data-mono-font='miosevka-qp']
+        .task-list-item
+        input[type='checkbox']:checked::before {
+        letter-spacing: -0.33ch;
     }
     .task-list-item input[type='checkbox']:focus-visible::before {
         text-decoration: underline;
