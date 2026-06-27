@@ -1434,7 +1434,13 @@ const ICON_ABOUT = '\u{f1028}'
 
     .tree-entry:focus-visible,
     .tree-entry[data-vim-focused='true'] {
-        background-color: var(--focus-bg-strong);
+        /* Darkened accent tint at low alpha + a 1pt accent ring (the outline
+           inherits the accent `color` set just below). The old
+           --focus-bg-strong was accent at 0.025 alpha — so faint the focused
+           row was nearly indistinguishable from hover; this makes keyboard /
+           vim focus clearly visible. */
+        background-color: oklch(from var(--accent) calc(l * 0.85) c h / 0.075);
+        outline: 1pt solid;
         color: var(--focus-fg);
         text-decoration: none;
     }
