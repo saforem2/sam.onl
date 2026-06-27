@@ -1592,18 +1592,30 @@ const ICON_ABOUT = '\u{f1028}'
         text-overflow: ellipsis;
         white-space: nowrap;
     }
-    /* Depth indent: h2 flush, each deeper level steps in 1.5ch. */
+    /* Depth indent: each level's `#` marker lines up under the FIRST CHARACTER
+       of its parent's title, so the outline reads like nested markdown:
+
+           ## Heading 2
+              ### Heading 3
+                  #### Heading 4
+
+       That means child.padding = parent.padding + parent's hash-marker width +
+       the 0.75ch hash→text gap. The marker is rendered at 0.8em with
+       -0.05ch tracking, and each deeper level has one more `#`, so the step
+       GROWS (+3, +4, +5ch) rather than being constant. Values measured to
+       land the child `#` exactly on the parent's first title glyph; depth-2
+       stays at the 0.5ch row inset. */
     .sidebar-toc .toc-heading.depth-3 {
-        padding-inline-start: 2ch;
+        padding-inline-start: 2.5ch;
     }
     .sidebar-toc .toc-heading.depth-4 {
-        padding-inline-start: 3.5ch;
+        padding-inline-start: 5.5ch;
     }
     .sidebar-toc .toc-heading.depth-5 {
-        padding-inline-start: 5ch;
+        padding-inline-start: 9.5ch;
     }
     .sidebar-toc .toc-heading.depth-6 {
-        padding-inline-start: 6.5ch;
+        padding-inline-start: 14.5ch;
     }
 
     /* Collapse depth-3+ subheadings by default; reveal only the ones whose
