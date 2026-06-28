@@ -28,8 +28,7 @@ const docHeadings = docPages
     .map((page) => ({
         headings:
             (page.rendered?.metadata?.headings as
-                | Array<MarkdownHeading>
-                | undefined) ?? [],
+                Array<MarkdownHeading> | undefined) ?? [],
         title: page.data.title,
         id: page.id,
     }))
