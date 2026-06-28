@@ -354,14 +354,15 @@
 }
 
 .vsl-site {
-    /* First section = the saturated cap (formerly NORMAL mode, then branch —
-       both removed): lightened-green fill, medium-weight bg-colored text, like
-       lualine's mode segment. Holds the repo icon + "sam.onl". The matching
-       lightened green caps both ends of the bar (see .vsl-loc). NB: literal
-       1.1 multiplier, not var(--oklch-scale) — that var resolves to 1 on the
-       active themes, so the var form would be a no-op. */
-    background-color: oklch(from var(--green) calc(l * 1.1) c h);
-    color: oklch(from var(--background0) l c h);
+    /* First section (formerly NORMAL mode / branch): the left bookend, holding
+       the repo icon + "sam.onl". Uses the same dim-tint / bright-text chip
+       style as the date/time/pos chips, but neutral grey — so the end-caps no
+       longer starkly contrast with the rest of the bar (matching .vsl-loc on
+       the right). */
+    background-color: oklch(
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.1
+    );
+    color: oklch(from var(--foreground1) l c h);
     font-weight: 500;
     letter-spacing: 0.05ch;
     padding-inline: 1ch !important;
@@ -454,13 +455,15 @@ a.vsl-file:focus-visible {
     font-variant-numeric: tabular-nums;
 }
 
-/* loc (line:col) — solid green cap, the right-hand bookend matching the
-   sam.onl cap on the left (see .vsl-site). The two solid green ends frame
-   the dim info chips between them, lualine-style (mode block left, location
-   block right). */
+/* loc (line:col) — the right-hand bookend matching the sam.onl cap on the
+   left (see .vsl-site): neutral grey in the same dim-tint / bright-text chip
+   style as the rest of the bar, so the end-caps sit with the other badges
+   instead of contrasting against them. */
 .vsl-loc {
-    background-color: oklch(from var(--green) calc(l * 1.1) c h);
-    color: oklch(from var(--background0) l c h);
+    background-color: oklch(
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.1
+    );
+    color: oklch(from var(--foreground1) l c h);
     font-weight: bold;
     font-variant-numeric: tabular-nums;
 }
