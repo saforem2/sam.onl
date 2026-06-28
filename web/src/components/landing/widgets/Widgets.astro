@@ -625,19 +625,24 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
                 scroll-margin-block-start: 1lh;
             }
 
+            /* Single-column order: intro, then work / posts / talks, with the
+               last.fm (#stats-widget) player moved to the END — on desktop it
+               sits top-right next to the intro, but stacked it's a tall, busy
+               track list, so it reads better after the content sections than
+               wedged between intro and work. */
             #intro-widget {
                 order: 1;
             }
-            #stats-widget {
+            .work-widget {
                 order: 2;
             }
-            .work-widget {
+            .posts-widget {
                 order: 3;
             }
-            .posts-widget {
+            .talks-widget {
                 order: 4;
             }
-            .talks-widget {
+            #stats-widget {
                 order: 5;
             }
         }
