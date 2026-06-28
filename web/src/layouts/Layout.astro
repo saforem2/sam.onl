@@ -21,12 +21,17 @@ const ogImage = ogSlug
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
 
-        <!-- Google Analytics -->
-        <script
-            is:inline
-            async
-            src="https://www.googletagmanager.com/gtag/js?id=G-RD883HJ1J2"
-        ></script>
+        <!-- Google Analytics.
+             The dataLayer shim + gtag('config') run inline (they only
+             push to an array, ~0ms), so any early events queue
+             immediately. The 166 KB gtag.js fetch itself is deferred to
+             window 'load' (idle-callback fallback) instead of an async
+             <head> script: as an async head script it still landed
+             142ms of main-thread work inside the LCP window and competed
+             with first paint. Loading it after the page is interactive
+             keeps analytics fully intact (gtag.js drains the queued
+             dataLayer entries when it arrives) while taking it out of
+             the critical render path. -->
         <script is:inline>
             // GA's reference snippet REQUIRES the Arguments object
             // (gtag.js inspects each dataLayer entry via [0]/[1] on the
@@ -41,6 +46,29 @@ const ogImage = ogSlug
             gtag('js', new Date())
             gtag('config', 'G-RD883HJ1J2')
             /* eslint-enable prefer-rest-params */
+
+            // Defer the gtag.js download until the page is loaded/idle so
+            // it doesn't compete with LCP. Guarded so it only injects once.
+            var loadGtag = function () {
+                if (window.__gtagLoaded) return
+                window.__gtagLoaded = true
+                var s = document.createElement('script')
+                s.async = true
+                s.src =
+                    'https://www.googletagmanager.com/gtag/js?id=G-RD883HJ1J2'
+                document.head.appendChild(s)
+            }
+            if (document.readyState === 'complete') {
+                // Page already loaded (e.g. bfcache restore): schedule idle.
+                ;(window.requestIdleCallback || window.setTimeout)(loadGtag, 1)
+            } else {
+                window.addEventListener('load', function () {
+                    ;(window.requestIdleCallback || window.setTimeout)(
+                        loadGtag,
+                        1,
+                    )
+                })
+            }
         </script>
 
         <script is:inline>
