@@ -1772,11 +1772,6 @@ html[data-webtui-theme='catppuccin'] {
    `[data-webtui-theme|='catppuccin']` block doesn't reach here, so
    we set --h2 and --h3 explicitly. Other heading levels inherit
    the global fallback (orange/green/etc.). */
-html[data-webtui-theme='custom-dark'] {
-    --h2: var(--blue);
-    --h3: var(--green);
-}
-
 /* webtui's catppuccin pack paints h1-h6 with hardcoded palette refs
    (h1=red, h2=peach, …) which makes the heading text disagree with
    our `##`/`###` ::before prefixes (those use --h1..--h6 and pick up
