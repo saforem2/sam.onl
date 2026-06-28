@@ -369,9 +369,9 @@
 }
 
 .vsl-file {
-    /* The current path — green foreground on the normal bar bg, sitting just
-       after the green cap, with a little breathing room from it. */
-    color: oklch(from var(--green) calc(l * var(--oklch-scale, 0.95)) c h);
+    /* The current path — the bar's single pop of color: the theme accent. Every
+       other segment is greyscale, so the path is the focal point. */
+    color: oklch(from var(--accent) calc(l * var(--oklch-scale, 0.95)) c h);
     padding-inline-start: 1ch;
 }
 
@@ -386,21 +386,20 @@ a.vsl-file {
         background-color 100ms linear,
         color 100ms linear;
 }
-/* Site is the solid green cap; on hover brighten the fill a touch (already
-   green, so a green-bg hover would read as no change). */
+/* Site cap hover: brighten the grey fill a touch. */
 a.vsl-site:hover,
 a.vsl-site:focus-visible {
-    color: oklch(from var(--background0) l c h) !important;
+    color: oklch(from var(--foreground0) l c h) !important;
     background-color: oklch(
-        from var(--green) calc(l * var(--oklch-scale, 1.1)) c h
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
     ) !important;
 }
-/* Path link hover: fill green, invert text. */
+/* Path link hover: fill with the accent, invert text. */
 a.vsl-file:hover,
 a.vsl-file:focus-visible {
     color: oklch(from var(--background0) l c h) !important;
     background-color: oklch(
-        from var(--green) calc(l * var(--oklch-scale, 0.95)) c h
+        from var(--accent) calc(l * var(--oklch-scale, 0.95)) c h
     ) !important;
 }
 
@@ -409,14 +408,12 @@ a.vsl-file:focus-visible {
     padding: 0 !important;
 }
 
-/* Right-side cluster: clock · pos · loc. Mirrors the nvim lualine right
-   sections — a neutral clock on the bar body, then two green-on-grey
-   position blocks (like lualine's `Top` / `1:1`). Green ties back to the
-   mode cap + git segments on the left. Tabular numerals keep the live clock
-   + scroll-% from jittering as digits change. */
-/* Date/time: two adjacent chips — date purple, time orange — each a pale
-   same-hue tint with saturated same-hue text (the colored-square icon
-   style). The wrapper just lays them out; the inner spans carry the color. */
+/* Right-side cluster: clock (date · time) · pos · loc. All greyscale — the
+   info tier of the bar. Each is a faint grey-tint chip with brighter grey
+   text, a tier dimmer than the end-caps so the bar reads as
+   cap → info → info → cap by tone (lualine section_a/b/c). The only color on
+   the whole bar is the accent-colored path on the left. Tabular numerals keep
+   the live clock + scroll-% from jittering as digits change. */
 .vsl-clock {
     display: inline-flex;
     align-items: baseline;
@@ -424,34 +421,33 @@ a.vsl-file:focus-visible {
     font-variant-numeric: tabular-nums;
     /* Kill the 1ch the `#vim-statusline > span` rule adds — the inner
        date/time chips carry their own padding, and the trailing 1ch was
-       leaving a gap between the orange time chip and the pink pos chip. */
+       leaving a gap between the time chip and the pos chip. */
     padding-inline: 0 !important;
 }
-#vsl-clock-date {
-    padding-inline: 0.75ch;
-    background-color: oklch(
-        from var(--purple) calc(l * var(--oklch-scale, 1.15)) c h / 0.075
-    );
-    color: oklch(from var(--purple) calc(l * var(--oklch-scale, 0.95)) c h);
-}
+#vsl-clock-date,
 #vsl-clock-time {
     padding-inline: 0.75ch;
     background-color: oklch(
-        from var(--orange) calc(l * var(--oklch-scale, 1.15)) c h / 0.075
+        from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.15
     );
-    color: oklch(from var(--orange) calc(l * var(--oklch-scale, 0.95)) c h);
+    color: oklch(from var(--foreground2) l c h);
+}
+/* Date a hair brighter than time so the two abutting chips are distinguishable
+   without a separator. */
+#vsl-clock-date {
+    color: oklch(from var(--foreground1) l c h);
 }
 /* Separator no longer needed (the two chips abut); hidden if still emitted. */
 .vsl-clock-sep {
     display: none;
 }
 
-/* pos (scroll %) — pink chip. */
+/* pos (scroll %) — grey chip, same info tier as the clock. */
 .vsl-pos {
     background-color: oklch(
-        from var(--pink) calc(l * var(--oklch-scale, 1.15)) c h / 0.075
+        from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.15
     );
-    color: oklch(from var(--pink) calc(l * var(--oklch-scale, 0.95)) c h);
+    color: oklch(from var(--foreground2) l c h);
     font-variant-numeric: tabular-nums;
 }
 
