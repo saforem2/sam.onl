@@ -424,42 +424,46 @@ a.vsl-file:focus-visible {
        leaving a gap between the time chip and the pos chip. */
     padding-inline: 0 !important;
 }
-#vsl-clock-date,
+/* Right-cluster tonal staircase: date → time → pos → loc step from the most
+   MUTED to the most PROMINENT, building toward the 1:1 bookend on the right.
+   Text contrast climbs fg3 → fg2 → fg1 → fg0 (these adapt per theme — fg3 is
+   lowest-contrast, fg0 highest), and the chip background tint deepens slightly
+   in step. All neutral grey; the only color on the bar is the accent path. */
+#vsl-clock-date {
+    padding-inline: 0.75ch;
+    background-color: oklch(
+        from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.08
+    );
+    color: oklch(from var(--foreground3) l c h);
+}
 #vsl-clock-time {
     padding-inline: 0.75ch;
     background-color: oklch(
-        from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.15
+        from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.12
     );
     color: oklch(from var(--foreground2) l c h);
-}
-/* Date a hair brighter than time so the two abutting chips are distinguishable
-   without a separator. */
-#vsl-clock-date {
-    color: oklch(from var(--foreground1) l c h);
 }
 /* Separator no longer needed (the two chips abut); hidden if still emitted. */
 .vsl-clock-sep {
     display: none;
 }
 
-/* pos (scroll %) — grey chip, same info tier as the clock. */
+/* pos (scroll %) — third step up. */
 .vsl-pos {
     background-color: oklch(
-        from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.15
+        from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.16
     );
-    color: oklch(from var(--foreground2) l c h);
+    color: oklch(from var(--foreground1) l c h);
     font-variant-numeric: tabular-nums;
 }
 
-/* loc (line:col) — the right-hand bookend matching the sam.onl cap on the
-   left (see .vsl-site): neutral grey in the same dim-tint / bright-text chip
-   style as the rest of the bar, so the end-caps sit with the other badges
-   instead of contrasting against them. */
+/* loc (line:col) — the brightest/boldest step, the right-hand bookend
+   anchoring the bar (the left bookend, sam.onl, stays a softer grey cap). */
 .vsl-loc {
     background-color: oklch(
-        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.1
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
     );
-    color: oklch(from var(--foreground1) l c h);
+    color: oklch(from var(--foreground0) l c h);
     font-weight: bold;
     font-variant-numeric: tabular-nums;
 }
