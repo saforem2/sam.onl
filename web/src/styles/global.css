@@ -744,11 +744,13 @@
     .callout-inline {
         display: flex;
         align-items: baseline;
-        /* Tight icon→text gap. The MDI glyphs have built-in padding inside
-           their 24×24 viewBox, so the visible glyph already sits inset within
-           its 1em mask box — a larger flex gap on top of that read as too much
-           space before the text. */
-        gap: 0.25ch;
+        /* Icon→text spacing is handled by a negative margin-inline-end on the
+           ::before icon (below), not by flex gap: the MDI glyphs carry built-in
+           padding inside their 24×24 viewBox, so the visible glyph sits inset
+           within its 1em mask box. A flex gap stacks ON TOP of that intrinsic
+           pad and read as too much space, so gap is 0 and the icon's negative
+           margin pulls the text back over the glyph's empty right edge. */
+        gap: 0;
         flex-wrap: nowrap;
         white-space: nowrap;
         margin-block: 0.25lh;
@@ -791,6 +793,9 @@
         width: 1em;
         height: 1em;
         flex-shrink: 0;
+        /* Pull the following text left over the glyph's intrinsic right padding
+           (the MDI viewBox inset) so the icon→text gap reads tight. */
+        margin-inline-end: -0.3em;
         transform: translateY(0.12em); /* optical baseline nudge */
         background-color: var(--callout-color);
         mask-repeat: no-repeat;
