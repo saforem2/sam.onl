@@ -4,14 +4,14 @@ title: 'Local AI Apps on ALCF Argo: One Tunnel, Every Client'
 date: 2026-06-27
 date-created: 2026-06-27
 date-modified: today
-description: 'Wiring Claude Code, OpenCode, and the Hermes One desktop app through a single SSH tunnel to ALCF''s Argo gateway — using argo-shim and an llm-rosetta translation layer to make every model (Claude and GPT) reachable from any client.'
+description: 'Wiring Claude Code, OpenCode, and the Hermes One desktop app through a single SSH tunnel to ALCF''s Argo gateway, using argo-shim and an llm-rosetta translation layer to make every model (Claude and GPT) reachable from any client.'
 ---
 
 ALCF's [Argo][argo] gateway exposes frontier models (Claude, GPT, Gemini)
 through an internal endpoint that's only reachable from inside the lab network.
-I wanted to use those models from *local* desktop apps on my Mac —
-[Claude Code][claude-code], [OpenCode][opencode], and the
-[Hermes One][hermes] desktop app — without exposing ports, juggling API keys,
+I wanted to use those models from *local* desktop apps on my Mac
+([Claude Code][claude-code], [OpenCode][opencode], and the
+[Hermes One][hermes] desktop app) without exposing ports, juggling API keys,
 or paying a third-party provider.
 
 This post documents the full stack I ended up with: a single SSH tunnel, a tiny
@@ -74,7 +74,7 @@ The end-state architecture solves all of this with two small local services:
 
 ## The pieces
 
-### `argo-shim` — tunnel + auth + fixups
+### `argo-shim`: tunnel + auth + fixups
 
 [`argo-shim`][argo-shim] (by [n-getty][n-getty]) is a single-file Python proxy
 that:
@@ -89,7 +89,7 @@ that:
 [n-getty]: https://github.com/n-getty
 
 To make the OpenAI path work and let OpenAI-format clients authenticate, I made
-two small additive patches (covered in [Gotchas](#gotchas) below) — both since
+two small additive patches (covered in [Gotchas](#gotchas) below), both since
 [contributed upstream](#contributing-back). Neither touches the Anthropic
 `/v1/messages` path that Claude Code uses.
 
@@ -137,15 +137,15 @@ argo-shim
 ```
 
 `argo-shim` listens on `127.0.0.1:25940`, derives a per-user port for the SSH
-tunnel, and prints the token. Each restart **rotates** the token — important
-later.
+tunnel, and prints the token. Each restart **rotates** the token (important
+later).
 
 Quick sanity check (the token lives in `~/.claude/settings.json`):
 
 ```bash
 TOKEN=$(python3 -c "import json;print(json.load(open('$HOME/.claude/settings.json'))['apiKeyHelper'].split()[-1])")
 
-# Claude via Anthropic Messages — should return JSON
+# Claude via Anthropic Messages: should return JSON
 curl -sS -H "x-api-key: $TOKEN" -H "anthropic-version: 2023-06-01" \
   -H "content-type: application/json" \
   http://127.0.0.1:25940/argoapi/v1/messages \
@@ -155,7 +155,7 @@ curl -sS -H "x-api-key: $TOKEN" -H "anthropic-version: 2023-06-01" \
 
 ### 2. Claude Code (Anthropic, native)
 
-Claude Code needs no extra config — `argo-shim` writes the base URL and token
+Claude Code needs no extra config; `argo-shim` writes the base URL and token
 into `~/.claude/settings.json` for you:
 
 ```json
@@ -216,14 +216,14 @@ pointing at the shim:
 {
   "providers": {
     // Claude models: Anthropic Messages format.
-    // base_url has NO /v1 — the anthropic template appends /v1/messages.
+    // base_url has NO /v1: the anthropic template appends /v1/messages.
     "argo": {
       "type": "anthropic",
       "api_key": "<ROTATING_TOKEN>",
       "base_url": "http://127.0.0.1:25940"
     },
     // GPT/o models: OpenAI Chat Completions.
-    // base_url includes /argoapi/v1 — the template appends /chat/completions.
+    // base_url includes /argoapi/v1: the template appends /chat/completions.
     "argo-openai": {
       "type": "openai_chat",
       "api_key": "<ROTATING_TOKEN>",
@@ -233,14 +233,14 @@ pointing at the shim:
   "models": {
     // Register each model in BOTH forms clients send: bare ("claude-opus-4-8")
     // and vendor-prefixed ("anthropic/claude-opus-4-8"). Declare `capabilities`
-    // explicitly — the default is ["text"], which makes rosetta strip images.
+    // explicitly: the default is ["text"], which makes rosetta strip images.
     "claude-opus-4-8":            { "provider": "argo",        "upstream_model": "Claude Opus 4.8", "capabilities": ["text", "vision", "tools", "reasoning"] },
     "anthropic/claude-opus-4-8":  { "provider": "argo",        "upstream_model": "Claude Opus 4.8", "capabilities": ["text", "vision", "tools", "reasoning"] },
     "gpt-5.5":                    { "provider": "argo-openai", "upstream_model": "GPT-5.5",          "capabilities": ["text", "vision", "tools", "reasoning"] },
     "openai/gpt-5.5":             { "provider": "argo-openai", "upstream_model": "GPT-5.5",          "capabilities": ["text", "vision", "tools", "reasoning"] }
     // … repeat for every model you want …
   },
-  // No server.api_key — the gateway binds to 127.0.0.1 only, so no auth needed.
+  // No server.api_key: the gateway binds to 127.0.0.1 only, so no auth needed.
   "server": { "host": "127.0.0.1", "port": 8765 }
 }
 ```
@@ -266,7 +266,7 @@ The gateway also ships a web admin panel at
 > **Heads up**: the admin panel's **Fetch from Provider** button re-discovers
 > Argo's full model list and writes entries that *don't work* (Gemini 500s
 > upstream; spaced display-names get mapped to the wrong provider). Manage the
-> model list from the config file instead — I keep a
+> model list from the config file instead. I keep a
 > [regen script](#a-regen-script) for exactly this.
 
 ### 5. Hermes One desktop app
@@ -282,7 +282,7 @@ model:
 ```
 
 Because the rosetta gateway runs **no-auth** (loopback only), no API key is
-needed — Hermes' "API Key required for remote endpoints, optional for
+needed. Hermes' "API Key required for remote endpoints, optional for
 localhost" note applies.
 
 In the desktop app: **Settings → Providers → Local / Others**, set:
@@ -291,14 +291,14 @@ In the desktop app: **Settings → Providers → Local / Others**, set:
 | ------------ | ------------------------------ |
 | **Model**    | `claude-opus-4-7`              |
 | **Base URL** | `http://127.0.0.1:8765/v1`     |
-| **API Key**  | *(optional — gateway is open)* |
+| **API Key**  | *(optional, gateway is open)* |
 
 Click **Done**, restart the app, start a New Chat. 🎉
 
 ## Gotchas
 
 These are the non-obvious problems I hit. Two of them needed small,
-**additive** patches to `argo-shim` — the Anthropic `/v1/messages` path Claude
+**additive** patches to `argo-shim`: the Anthropic `/v1/messages` path Claude
 Code uses is untouched (those two are now [upstream](#contributing-back)). The
 rest were configuration or upstream-app quirks.
 
@@ -319,7 +319,7 @@ if method == "POST" and body and "/chat/completions" in self.path:
 
 This one took a while to find: `curl` worked but the real clients all returned
 500. The difference was that none of my `curl` tests happened to send a `user`
-field that Argo accepted — once I tried a valid ALCF username, GPT-4o, GPT-5,
+field that Argo accepted. Once I tried a valid ALCF username, GPT-4o, GPT-5,
 and the o-series all came alive.
 
 ### 2. OpenAI clients send `Authorization: Bearer`, not `x-api-key`
@@ -341,25 +341,25 @@ if not client_key:
 Two Hermes-specific quirks:
 
 - The `custom` provider **doesn't read `CUSTOM_API_KEY`** for the actual
-  request — only an inline `api_key` in `config.yaml` (which the desktop UI
+  request: only an inline `api_key` in `config.yaml` (which the desktop UI
   *strips* on save). Running the gateway no-auth sidesteps this entirely.
 - Hermes prepends a vendor prefix to model names
   (`anthropic/claude-opus-4-8`), then matches that exact string against the
   endpoint's `/v1/models` list. So the gateway must register **both** the bare
-  and vendor-prefixed forms of every model — hence the duplicated entries in
+  and vendor-prefixed forms of every model, hence the duplicated entries in
   the config above.
 
 ### 4. The capabilities default silently drops images
 
 The rosetta admin panel showed every model with a single `text` capability
 badge, even though Claude and GPT-4o obviously do vision. I assumed it was
-cosmetic — it isn't.
+cosmetic. It isn't.
 
 If a model entry doesn't declare a `capabilities` list, rosetta defaults it to
 `["text"]`. And a model **without `"vision"` has images stripped from the
 request** before it's forwarded upstream (`enforce_vision()` replaces them with
 text placeholders). So pasting an image into Hermes would have silently dropped
-it — no error, just a model that "couldn't see" the image.
+it: no error, just a model that "couldn't see" the image.
 
 The fix is to declare real capabilities per model in the gateway config:
 
@@ -378,12 +378,12 @@ instead of being quietly discarded.
 
 ### 5. Duplicated responses in Hermes One
 
-After everything worked, Hermes One started showing **every reply twice** —
+After everything worked, Hermes One started showing **every reply twice**:
 once as a slightly-reworded partial, then again in full. My first instinct was
 that the proxy chain was double-emitting.
 
-It wasn't. I tested the rosetta gateway directly — streaming, non-streaming, and
-a fresh non-stream call — and every response came back **clean and singular**.
+It wasn't. I tested the rosetta gateway directly: streaming, non-streaming, and
+a fresh non-stream call, and every response came back **clean and singular**.
 The shim and Argo were innocent. The duplication only appeared *inside the
 Hermes desktop renderer*, and only for chatty tool-calling turns (the offending
 turn had `tool_turns=10`).
@@ -432,7 +432,7 @@ rosetta-gateway() { ...  }  # start|stop|restart|status|sync-key|regen-models|lo
 So the startup ritual after a reboot is just:
 
 ```bash
-argo-shim                 # in a terminal — creates tunnel, rotates token
+argo-shim                 # in a terminal: creates tunnel, rotates token
 refresh-argo-token        # sync token into env
 rosetta-gateway restart   # sync token into rosetta config + reload
 # then open the Hermes One app
@@ -441,10 +441,10 @@ rosetta-gateway restart   # sync token into rosetta config + reload
 ### A regen script
 
 Clicking the admin panel's **Fetch from Provider** button re-pollutes the model
-list (it re-discovers Argo's full set and writes broken entries — see the
+list (it re-discovers Argo's full set and writes broken entries; see the
 heads-up above), so whenever that happens I keep a script that regenerates a
 known-good `config.jsonc` from small Python maps of
-`{ alias: (argo_model_id, capabilities) }` — registering bare + vendor-prefixed
+`{ alias: (argo_model_id, capabilities) }`: registering bare + vendor-prefixed
 forms, attaching the right capabilities (so images aren't stripped), pulling
 the live token, and restarting the gateway:
 
@@ -464,11 +464,11 @@ workarounds, so they went back upstream as [a PR][argo-pr]:
    any OpenAI-format client can authenticate to the shim.
 2. **Auto-inject the `user` field** on `/chat/completions`, so OpenAI/Gemini
    models stop returning `HTTP 500`. The value resolves from `$ARGO_USER`, then
-   `$CELS_USERNAME`, then the login user — no hardcoded usernames.
+   `$CELS_USERNAME`, then the login user: no hardcoded usernames.
 
 [argo-pr]: https://github.com/n-getty/argo-shim/pull/9
 
-A nice footnote: the PR got an automated review flagging a real edge case — a
+A nice footnote: the PR got an automated review flagging a real edge case: a
 non-dict JSON body (e.g. a top-level array) would crash the handler, since the
 injection code assumed `req.get(...)` always worked. Guarding on
 `isinstance(req, dict)` and treating a blank `user` as missing made it robust.
@@ -477,19 +477,19 @@ That's the `isinstance` check you see in the snippet above.
 ## Wrapping up
 
 The result: **Claude Code, OpenCode, vtcode, and the Hermes One desktop app**
-all talking to ALCF Argo through a single SSH tunnel — every Claude and GPT
+all talking to ALCF Argo through a single SSH tunnel, with every Claude and GPT
 model available in each, billed through ALCF, with nothing exposed beyond
 `127.0.0.1`.
 
 The two reusable building blocks are worth calling out:
 
 - **[`argo-shim`][argo-shim]** turns a finicky, MFA-gated internal endpoint
-  into a clean localhost API — plus the small auth/format fixups that make
+  into a clean localhost API, plus the small auth/format fixups that make
   every client and every model reachable.
 - **[`llm-rosetta`][rosetta]** is the universal adapter: any client format in,
   any provider format out. It's what lets OpenAI-only apps use Anthropic models
   (and vice versa) without the app knowing anything changed.
 
-If you're at a lab with a similar internal gateway, this pattern — *tunnel →
-auth/format shim → translation gateway → point every client at localhost* —
+If you're at a lab with a similar internal gateway, this pattern (*tunnel →
+auth/format shim → translation gateway → point every client at localhost*)
 generalizes cleanly.
