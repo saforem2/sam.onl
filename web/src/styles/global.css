@@ -374,74 +374,32 @@
         vertical-align: baseline;
     }
 
+    /* Headings carry NO hover/focus/active background of their own. They each
+       used to tint a faint same-hue bg on :hover/:focus-visible, but when you
+       vim-navigate (j/k) onto a heading that tint collided with the vim-focus
+       ring/box-shadow and muddied which item was actually selected. Dropping it
+       lets the vim-focus indicator be the sole highlight. (Heading text color
+       is unchanged.) */
     h1 {
         font-size: clamp(1.4rem, 1rem + 2vw, 2rem);
         color: oklch(from var(--h1, var(--red)) l c h);
-        &:hover,
-        &:focus-visible {
-            background-color: oklch(
-                from var(--h1, var(--red)) calc(l * var(--oklch-scale, 0.85)) c
-                    h / 0.1
-            );
-        }
     }
-    h1:hover,
-    h1:focus-visible {
-        text-decoration: none !important;
-        background-color: oklch(
-            from var(--h1, var(--red)) calc(l * var(--oklch-scale, 0.85)) c h /
-                0.1
-        );
-    }
-
     h2 {
         font-size: clamp(1.2rem, 0.9rem + 1.5vw, 1.6rem);
         color: oklch(from var(--h2, var(--orange)) l c h);
-        &:hover,
-        &:focus-visible {
-            background-color: oklch(
-                from var(--h2, var(--orange)) calc(l * var(--oklch-scale, 0.85))
-                    c h / 0.1
-            ) !important;
-        }
     }
-
     h3 {
         font-size: clamp(1.05rem, 0.8rem + 1vw, 1.35rem);
         color: oklch(from var(--h3, var(--green)) l c h);
-        &:hover,
-        &:focus-visible {
-            background-color: oklch(
-                from var(--h3, var(--green)) calc(l * 0.85) c h / 0.1
-            );
-        }
     }
     h4 {
         color: oklch(from var(--h4, #50fa7b) l c h);
-        &:hover,
-        &:focus-visible {
-            background-color: oklch(
-                from var(--h4, #50fa7b) calc(l * 0.85) c h / 0.1
-            );
-        }
     }
     h5 {
         color: oklch(from var(--h5, #fd971f) l c h);
-        &:hover,
-        &:focus-visible {
-            background-color: oklch(
-                from var(--h5, #fd971f) calc(l * 0.85) c h / 0.1
-            );
-        }
     }
     h6 {
         color: oklch(from var(--h6, #f92672) l c h);
-        &:hover,
-        &:focus-visible {
-            background-color: oklch(
-                from var(--h6, #f92672) calc(l * 0.85) c h / 0.1
-            );
-        }
     }
 
     body,
