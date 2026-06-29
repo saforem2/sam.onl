@@ -241,9 +241,18 @@
             from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
                 h / 0.5
         );
+        /* The in-article focus indicator (Doc.css) paints these as an
+           accent left-rail + tint + 1px ring on the vim/keyboard-focused
+           block. They used to be near-invisible (bg 0.025, border 0.05,
+           rail 0pt) so the only real signal was the text recoloring —
+           the sidebar already had to override the same too-faint values
+           locally (see SidebarFileTree.astro). Bumped here so the focus
+           reads on its own: a real 2pt accent rail (the editor
+           "cursorline gutter" look), a visible-but-quiet wash, and a
+           ring that defines the block edge. */
         --focus-bg-strong: oklch(
             from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
-                h / 0.025
+                h / 0.07
         );
         --focus-hover-bg: oklch(
             from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
@@ -252,10 +261,10 @@
         --focus-fg: var(--accent, var(--red));
         --focus-border: oklch(
             from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
-                h / 0.05
+                h / 0.25
         );
         --focus-marker: var(--accent, var(--red));
-        --focus-rail-size: 0pt;
+        --focus-rail-size: 2pt;
         --focus-region-border: var(--foreground0);
     }
     /* ── BODY font axis — [data-mono-font] sets --font-stack. All 5 fonts.
