@@ -341,7 +341,7 @@ const rehypeMarkdownTabIndex = () => {
 // https://astro.build/config
 export default defineConfig({
     devToolbar: { enabled: false },
-    site: 'https://sam.onl',
+    site: 'https://samf.sh',
     compressHTML: false,
     markdown: {
         remarkPlugins: [remarkMath],
