@@ -408,64 +408,38 @@ a.vsl-file:focus-visible {
     padding: 0 !important;
 }
 
-/* Right-side cluster: clock (date · time) · pos · loc. All greyscale — the
-   info tier of the bar. Each is a faint grey-tint chip with brighter grey
-   text, a tier dimmer than the end-caps so the bar reads as
-   cap → info → info → cap by tone (lualine section_a/b/c). The only color on
-   the whole bar is the accent-colored path on the left. Tabular numerals keep
+/* Right-side cluster: clock (date · time) · pos · loc. The clock is one quiet
+   grey chip; pos and loc step up in contrast toward the right, so the bar reads
+   cap → info → info → solid-cap (lualine section_c/b/a). Tabular numerals keep
    the live clock + scroll-% from jittering as digits change. */
 .vsl-clock {
+    color: var(--foreground2);
+    background-color: oklch(
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.33
+    );
     display: inline-flex;
     align-items: baseline;
-    gap: 0;
+    gap: 1ch;
     font-variant-numeric: tabular-nums;
-    /* Kill the 1ch the `#vim-statusline > span` rule adds — the inner
-       date/time chips carry their own padding, and the trailing 1ch was
-       leaving a gap between the time chip and the pos chip. */
-    padding-inline: 0 !important;
 }
-/* Right-cluster tonal staircase: date → time → pos → loc step from the most
-   MUTED to the most PROMINENT, building toward the 1:1 bookend on the right.
-   Text contrast climbs fg3 → fg2 → fg1 → fg0 (these adapt per theme — fg3 is
-   lowest-contrast, fg0 highest), and the chip background tint deepens slightly
-   in step. All neutral grey; the only color on the bar is the accent path. */
-#vsl-clock-date {
-    padding-inline: 0.75ch;
-    background-color: oklch(
-        from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.08
-    );
-    color: oklch(from var(--foreground3) l c h);
-}
-#vsl-clock-time {
-    padding-inline: 0.75ch;
-    background-color: oklch(
-        from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.12
-    );
-    color: oklch(from var(--foreground2) l c h);
-}
-/* Separator no longer needed (the two chips abut); hidden if still emitted. */
 .vsl-clock-sep {
-    display: none;
+    color: var(--foreground3);
+    opacity: 0.6;
 }
 
-/* pos (scroll %) — third step up. */
+/* pos (scroll %) — a stronger near-inverted chip. */
 .vsl-pos {
     background-color: oklch(
-        from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.16
+        from var(--foreground1) calc(l * var(--oklch-scale, 1.15)) c h / 0.5
     );
-    color: oklch(from var(--foreground1) l c h);
+    color: var(--background1);
     font-variant-numeric: tabular-nums;
 }
 
-/* loc (line:col) — the right-hand bookend, styled to MATCH the sam.onl cap on
-   the left (.vsl-site): same grey tint bg + foreground1 text + medium weight,
-   so the two ends frame the bar symmetrically. */
+/* loc (line:col) — the solid right-hand bookend. */
 .vsl-loc {
-    background-color: oklch(
-        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.1
-    );
-    color: oklch(from var(--foreground1) l c h);
-    font-weight: 500;
+    background-color: var(--foreground2);
+    color: var(--background2);
     font-variant-numeric: tabular-nums;
 }
 
