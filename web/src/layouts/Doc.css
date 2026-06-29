@@ -408,14 +408,17 @@ a.vsl-file:focus-visible {
     padding: 0 !important;
 }
 
-/* Right-side cluster: clock (date · time) · pos · loc. The clock is one quiet
-   grey chip; pos and loc step up in contrast toward the right, so the bar reads
-   cap → info → info → solid-cap (lualine section_c/b/a). Tabular numerals keep
-   the live clock + scroll-% from jittering as digits change. */
+/* Right-side cluster: clock (date · time) · pos · loc. Tones ramp the OTHER way
+   from the old crescendo — lightest at the clock (left-most, nearest centre),
+   brightening through pos, and ending in a loc cap that is an exact twin of the
+   .vsl-site / "sam.onl" cap on the far left. So the bar is symmetric: identical
+   grey caps bookend each end, with the info chips fading toward the middle.
+   Tabular numerals keep the live clock + scroll-% from jittering. */
 .vsl-clock {
-    color: var(--foreground2);
+    /* Faintest chip: lowest tint, dimmest (foreground3) text. */
+    color: oklch(from var(--foreground3) l c h);
     background-color: oklch(
-        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.33
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.04
     );
     display: inline-flex;
     align-items: baseline;
@@ -427,19 +430,24 @@ a.vsl-file:focus-visible {
     opacity: 0.6;
 }
 
-/* pos (scroll %) — a stronger near-inverted chip. */
+/* pos (scroll %) — middle step: a touch more tint, foreground2 text. */
 .vsl-pos {
     background-color: oklch(
-        from var(--foreground1) calc(l * var(--oklch-scale, 1.15)) c h / 0.5
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.07
     );
-    color: var(--background1);
+    color: oklch(from var(--foreground2) l c h);
     font-variant-numeric: tabular-nums;
 }
 
-/* loc (line:col) — the solid right-hand bookend. */
+/* loc (line:col) — the right-hand cap, styled to MATCH .vsl-site exactly so the
+   two far ends frame the bar symmetrically. Keep these values in sync with
+   .vsl-site above. */
 .vsl-loc {
-    background-color: var(--foreground2);
-    color: var(--background2);
+    background-color: oklch(
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.1
+    );
+    color: oklch(from var(--foreground1) l c h);
+    font-weight: 500;
     font-variant-numeric: tabular-nums;
 }
 
