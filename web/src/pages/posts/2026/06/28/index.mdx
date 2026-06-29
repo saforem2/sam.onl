@@ -41,46 +41,51 @@ the source of truth. That is a real tradeoff, covered below.
 
 ## Lighthouse
 
-Same machine, same session, desktop preset, median of repeated runs against the
-live production sites. I compared the home page and a representative post that
-exists on both sites (`/posts/2025/11/12/`).
+Rather than cherry-pick one page, I took the 52 routes that exist on both sites
+and **measured 8 of them at random**, each on desktop and mobile, against the
+live production sites in the same session. The eight: `/posts/dope-slides`,
+`/posts/jupyter/test`, `/posts/svgbob`, `/projects`, `/talks/2025/10/15`,
+`/talks/llms-at-scale`, `/talks/llms-on-polaris`, `/talks/openskai25/ai4science`.
 
-### Home page
+Performance scores (green ≥ 90, amber 50-89, red < 50, Lighthouse's own bands):
 
-| Category       | samforeman.me (Quarto) | sam.onl (Astro) |
-| :------------- | :--------------------: | :-------------: |
-| Performance    |           92           |     **99**      |
-| Accessibility  |           81           |     **89**      |
-| Best Practices |           93           |     **100**     |
-| SEO            |           92           |     **100**     |
+| Page                           |                   Desktop old                    |                   Desktop new                   |                  Mobile old                   |                    Mobile new                    |
+| :----------------------------- | :----------------------------------------------: | :---------------------------------------------: | :-------------------------------------------: | :----------------------------------------------: |
+| `/posts/dope-slides`           |   <span style="color: var(--yellow)">84</span>   |   <span style="color: var(--green)">95</span>   |   <span style="color: var(--red)">38</span>   |   <span style="color: var(--yellow)">77</span>   |
+| `/posts/jupyter/test`          |   <span style="color: var(--yellow)">72</span>   |   <span style="color: var(--green)">95</span>   |   <span style="color: var(--red)">28</span>   |   <span style="color: var(--yellow)">67</span>   |
+| `/posts/svgbob`                |   <span style="color: var(--yellow)">67</span>   |   <span style="color: var(--green)">99</span>   | <span style="color: var(--yellow)">57</span>  |   <span style="color: var(--yellow)">81</span>   |
+| `/projects`                    |   <span style="color: var(--yellow)">69</span>   |  <span style="color: var(--yellow)">68</span>   | <span style="color: var(--yellow)">51</span>  |   <span style="color: var(--yellow)">87</span>   |
+| `/talks/2025/10/15`            |   <span style="color: var(--yellow)">85</span>   |   <span style="color: var(--green)">99</span>   |                      n/a                      |   <span style="color: var(--yellow)">67</span>   |
+| `/talks/llms-at-scale`         |   <span style="color: var(--yellow)">86</span>   |   <span style="color: var(--green)">99</span>   | <span style="color: var(--yellow)">52</span>  |   <span style="color: var(--yellow)">67</span>   |
+| `/talks/llms-on-polaris`       |   <span style="color: var(--yellow)">83</span>   |   <span style="color: var(--green)">99</span>   |   <span style="color: var(--red)">48</span>   |   <span style="color: var(--yellow)">63</span>   |
+| `/talks/openskai25/ai4science` |   <span style="color: var(--yellow)">71</span>   |  <span style="color: var(--yellow)">75</span>   |   <span style="color: var(--red)">49</span>   |   <span style="color: var(--yellow)">75</span>   |
+| **Mean**                       | <span style="color: var(--yellow)">**77**</span> | <span style="color: var(--green)">**91**</span> | <span style="color: var(--red)">**46**</span> | <span style="color: var(--yellow)">**73**</span> |
 
-### A representative post
+The new site is faster on **every** page on mobile, and on all but one on desktop
+(`/projects` is a statistical tie). The mean lift is +14 on desktop and **+27 on
+mobile**, where the old Quarto pages were routinely in the red.
 
-| Category       | samforeman.me (Quarto) | sam.onl (Astro) |
-| :------------- | :--------------------: | :-------------: |
-| Performance    |           72           |     **87**      |
-| Accessibility  |           76           |     **87**      |
-| Best Practices |           74           |     **100**     |
-| SEO            |           92           |     **100**     |
+A few honest caveats:
 
-The new site wins on every axis, but the honest caveats matter:
-
-- These are **desktop** numbers. On the throttled mobile profile (slow 4G + a
-  4&times; CPU slowdown) both sites score lower, and the new site's mobile
-  performance wobbles run-to-run because the largest paint is text gated on a web
-  font. The desktop score is the one that reflects how the site loads on a real
-  connection.
-- Lighthouse is **point-in-time**, sensitive to network and CPU contention at the
-  moment of the run. Treat single-digit differences as noise; the
-  Best-Practices and SEO jumps (driven by structured metadata, correct headers,
-  and no third-party console noise) are the durable wins.
+- **Mobile is the throttled profile** (slow 4G + a 4&times; CPU slowdown), which
+  is why even the new site sits in amber there. The point is the relative jump,
+  not the absolute mobile number.
+- **Lighthouse is point-in-time**, sensitive to CPU/network contention at the
+  moment of the run (these ran on a busy shared machine). Treat single-digit
+  gaps as noise; the durable signal is the consistent old&nbsp;&rarr;&nbsp;new
+  lift across a random sample, not any one cell. (`/talks/2025/10/15` old-mobile
+  is `n/a`: that one run failed to produce a score.)
+- This table is performance only. On the full category sweep the new site also
+  scores **100 on Best Practices and SEO** across the board (up from the low 90s
+  and, on posts, the 70s), driven by structured metadata, correct caching
+  headers, and no third-party console noise.
 
 ## Build time
 
-|        | Command                                |         Time         |
-| :----- | :------------------------------------- | :------------------: |
-| Quarto | `quarto render --no-clean`             | 7&nbsp;min 49&nbsp;s |
-| Astro  | `bun run build` (cold, caches cleared) |    **99&nbsp;s**     |
+|        | Command                                |                            Time                             |
+| :----- | :------------------------------------- | :---------------------------------------------------------: |
+| Quarto | `quarto render --no-clean`             | <span style="color: var(--red)">7&nbsp;min 49&nbsp;s</span> |
+| Astro  | `bun run build` (cold, caches cleared) |   <span style="color: var(--green)">**99&nbsp;s**</span>    |
 
 This is not a pure apples-to-apples race: Quarto's time includes _executing_
 notebooks, which Astro does not do. Quarto caches executed output (its `freeze`
@@ -91,10 +96,10 @@ anyway.
 
 ## Site size
 
-|                  | Built site  | HTML pages |    Framework assets     |     CSS     |     JS      |
-| :--------------- | :---------: | :--------: | :---------------------: | :---------: | :---------: |
-| Quarto (`docs/`) | 851&nbsp;MB |    100     | `site_libs` 152&nbsp;MB | 128&nbsp;MB | 8.5&nbsp;MB |
-| Astro (`dist/`)  | 523&nbsp;MB |    145     |   `_astro` 17&nbsp;MB   | 0.3&nbsp;MB | 4.8&nbsp;MB |
+|                  | Built site  | HTML pages |                        Framework assets                        |                         CSS                          |                          JS                          |
+| :--------------- | :---------: | :--------: | :------------------------------------------------------------: | :--------------------------------------------------: | :--------------------------------------------------: |
+| Quarto (`docs/`) | 851&nbsp;MB |    100     | <span style="color: var(--red)">`site_libs` 152&nbsp;MB</span> |  <span style="color: var(--red)">128&nbsp;MB</span>  |                     8.5&nbsp;MB                      |
+| Astro (`dist/`)  | 523&nbsp;MB |    145     |  <span style="color: var(--green)">`_astro` 17&nbsp;MB</span>  | <span style="color: var(--green)">0.3&nbsp;MB</span> | <span style="color: var(--green)">4.8&nbsp;MB</span> |
 
 Two things deserve a caveat so the numbers are not misleading:
 
@@ -113,10 +118,10 @@ Two things deserve a caveat so the numbers are not misleading:
 What a visitor actually downloads for the HTML document (the new site serves
 Brotli/gzip from Cloudflare):
 
-| Page |   Quarto (raw / gzip)    |      Astro (raw / gzip)      |
-| :--- | :----------------------: | :--------------------------: |
-| Home | 288&nbsp;KB / 56&nbsp;KB | 255&nbsp;KB / **33&nbsp;KB** |
-| Post | 182&nbsp;KB / 34&nbsp;KB |   305&nbsp;KB / 31&nbsp;KB   |
+| Page |                       Quarto (raw / gzip)                       |                          Astro (raw / gzip)                           |
+| :--- | :-------------------------------------------------------------: | :-------------------------------------------------------------------: |
+| Home | 288&nbsp;KB / <span style="color: var(--red)">56&nbsp;KB</span> | 255&nbsp;KB / <span style="color: var(--green)">**33&nbsp;KB**</span> |
+| Post |                    182&nbsp;KB / 34&nbsp;KB                     |   305&nbsp;KB / <span style="color: var(--green)">31&nbsp;KB</span>   |
 
 The home page compresses to about 60% of the old size. The post's raw HTML is
 actually larger on the new site (more inline content), but it still gzips a touch
