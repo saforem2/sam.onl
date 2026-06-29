@@ -46,11 +46,14 @@ and **measured 8 of them at random**, each on desktop and mobile, against the
 live production sites in the same session. The eight: `/posts/dope-slides`,
 `/posts/jupyter/test`, `/posts/svgbob`, `/projects`, `/talks/2025/10/15`,
 `/talks/llms-at-scale`, `/talks/llms-on-polaris`, `/talks/openskai25/ai4science`.
+The home page (`/`) is listed first as a reference; it is not part of the random
+sample, so it is excluded from the mean.
 
 Performance scores (green ≥ 90, amber 50-89, red < 50, Lighthouse's own bands):
 
 | Page                           |                   Desktop old                    |                   Desktop new                   |                  Mobile old                   |                    Mobile new                    |
 | :----------------------------- | :----------------------------------------------: | :---------------------------------------------: | :-------------------------------------------: | :----------------------------------------------: |
+| `/` (home)                     |   <span style="color: var(--yellow)">84</span>   |   <span style="color: var(--green)">96</span>   | <span style="color: var(--yellow)">51</span>  |   <span style="color: var(--yellow)">84</span>   |
 | `/posts/dope-slides`           |   <span style="color: var(--yellow)">84</span>   |   <span style="color: var(--green)">95</span>   |   <span style="color: var(--red)">38</span>   |   <span style="color: var(--yellow)">77</span>   |
 | `/posts/jupyter/test`          |   <span style="color: var(--yellow)">72</span>   |   <span style="color: var(--green)">95</span>   |   <span style="color: var(--red)">28</span>   |   <span style="color: var(--yellow)">67</span>   |
 | `/posts/svgbob`                |   <span style="color: var(--yellow)">67</span>   |   <span style="color: var(--green)">99</span>   | <span style="color: var(--yellow)">57</span>  |   <span style="color: var(--yellow)">81</span>   |
