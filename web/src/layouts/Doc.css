@@ -1205,6 +1205,13 @@ h6::before {
                the title span below is re-pinned to the link color so only
                the border greys out, not the text. */
             color: var(--background3);
+            /* Keep the tactile hover shadow (global.css) the SAME color as
+               the box border. Without this it falls back to --background3,
+               so on hover the border turned accent but the shadow stayed
+               grey, reading as a detached mismatched drop-shadow. Tracking
+               currentColor makes the lift one solid color: grey at rest,
+               accent on hover. */
+            --box-border-color: currentColor;
             /* The destination title keeps the link color (the box's color
                is now grey for the border). */
             & span[pad-] {
