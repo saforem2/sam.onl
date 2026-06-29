@@ -558,8 +558,8 @@ const { pathname: urlPath } = Astro.url
             )[data-vim-focused='true']:focus {
             background-color: var(--focus-bg);
             color: var(--focus-fg);
-            outline: 1px solid var(--focus-border);
-            outline-offset: -1px;
+            outline: var(--focus-ring-size) solid var(--focus-marker);
+            outline-offset: calc(-1 * var(--focus-ring-size));
             text-decoration: none;
         }
 

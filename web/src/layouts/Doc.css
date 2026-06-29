@@ -1068,10 +1068,8 @@ h6::before {
 #toc-list a[data-vim-focused='true']:focus {
     background-color: var(--focus-bg-strong);
     color: var(--focus-fg);
-    box-shadow:
-        inset var(--focus-rail-size) 0 0 0 var(--focus-marker),
-        inset 0 0 0 1px var(--focus-border);
-    outline: none;
+    outline: var(--focus-ring-size) solid var(--focus-marker);
+    outline-offset: calc(-1 * var(--focus-ring-size));
     text-decoration: none;
 }
 
@@ -1163,42 +1161,21 @@ h6::before {
             transition:
                 background-color 100ms linear,
                 color 100ms linear,
-                box-shadow 100ms linear;
-        }
-
-        /* Reserve a small left gutter on flush-left BLOCK focusables so the
-           focus rail (an inset box-shadow, see below) lands beside the text
-           instead of painting over the first glyph of every line.
-
-           Why padding only, and no negative margin to "cancel" it:
-           #main-content has overflow-x: hidden, which clips anything left of
-           its content edge. A negative margin would pull the block (and its
-           rail) left into that clipped zone, so the rail would simply vanish.
-           Plain padding keeps the rail at the visible left edge and shifts the
-           text right by the gutter instead. The shift is uniform across all
-           interactive prose (~0.35ch + the 2pt rail) and headings track with
-           it, so vertical alignment of the text column is preserved; the only
-           effect is a sliver of left breathing room.
-
-           Scoped deliberately:
-           - NOT inline a[href]: prose links are inline and would otherwise
-             gain a mid-sentence indent.
-           - NOT blockquote / .callout / [is-~='pre'] / pre: these already
-             carry their own inline padding (e.g. blockquote has 1.5ch beside
-             its quote bar) that is wider than the rail, so the rail already
-             falls in their padding; overriding it would tighten their text
-             against the bar. Only the zero-padding blocks (paragraphs, list
-             items, summaries, meta rows) need the reserved gutter. */
-        :is([tabindex='0']:not(a[href]), summary):not(blockquote):not(
-                .callout
-            ):not([is-~='pre']):not(pre) {
-            padding-inline-start: calc(var(--focus-rail-size) + 0.25ch);
+                outline-color 100ms linear;
         }
 
         /* :is([tabindex='0'], summary):hover { */
         /*     background-color: var(--focus-hover-bg); */
         /* } */
 
+        /* A single outline ring around the focused block, drawn with a
+           negative offset so it sits just inside the element's edge. outline
+           paints in its own layer (not the box model), so unlike the old inset
+           "rail" box-shadow it never overlaps the first glyph of flush-left
+           text and never needs a reserved left gutter — the gutter padding was
+           what extended code-block / figure backgrounds and left a stray grey
+           line beside the line numbers. The faint wash + accent text remain
+           for emphasis. */
         :is([tabindex='0'], a[href], summary):not(.icon-flex a):not(
                 .footnote-popover > summary
             ):not(.footnote-popover summary *):focus-visible,
@@ -1207,10 +1184,8 @@ h6::before {
             ):not(.footnote-popover summary *)[data-vim-focused='true']:focus {
             background-color: var(--focus-bg-strong);
             color: var(--focus-fg);
-            box-shadow:
-                inset var(--focus-rail-size) 0 0 0 var(--focus-marker),
-                inset 0 0 0 1px var(--focus-border);
-            outline: none;
+            outline: var(--focus-ring-size) solid var(--focus-marker);
+            outline-offset: calc(-1 * var(--focus-ring-size));
             text-decoration: none;
         }
 
