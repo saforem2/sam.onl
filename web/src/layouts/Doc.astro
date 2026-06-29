@@ -1409,7 +1409,20 @@ const articleSchema =
                 const activeLink = document.querySelector(
                     '#sidebar .sidebar-toc a.active',
                 ) as HTMLAnchorElement | null
-                activeLink?.scrollIntoView({ block: 'nearest' })
+                // Keep the active TOC link in view WITHIN the sidebar's own
+                // scroll box — but only when the sidebar actually is an
+                // independent scroller (desktop). At <=768px the layout stacks
+                // and the whole document scrolls (#main-content goes
+                // overflow:visible / static), so the sidebar sits in normal
+                // flow; calling scrollIntoView there walks up to the document
+                // and yanks the page back as you scroll. Guard on the mobile
+                // layout and skip the auto-scroll entirely.
+                const mc = document.getElementById('main-content')
+                const isStacked =
+                    !mc || getComputedStyle(mc).overflowY === 'visible'
+                if (activeLink && !isStacked) {
+                    activeLink.scrollIntoView({ block: 'nearest' })
+                }
 
                 // Update the article border label with the active heading
                 const titleEl = document.querySelector(
