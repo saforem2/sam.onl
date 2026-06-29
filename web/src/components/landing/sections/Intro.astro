@@ -554,32 +554,16 @@ const total = variants.length
             opacity: 1;
         }
 
-        /* Widget focus styles for vim navigation.
-           Selectors mirror the opacity-highlight rule above exactly
-           (plain :focus, [data-vim-focused], :has(:focus)) so the box
-           treatment always travels with the opacity bump. The earlier
-           version gated this on :focus-visible, which a programmatic
-           .focus() (the on-load focusMainRegion call lands here) does
-           not satisfy, so the focused intro widget showed a bare grey
-           edge. Accent-blue border + a faint blue wash + the tactile
-           offset shadow used on box hover read as a selected card. */
-        :global(#widgets-grid.intro-in-grid [tabindex='0']:focus),
+        /* Widget focus styles for vim navigation */
+        :global(#widgets-grid.intro-in-grid [tabindex='0']:focus-visible),
         :global(
-            #widgets-grid.intro-in-grid [tabindex='0'][data-vim-focused='true']
+            #widgets-grid.intro-in-grid
+                [tabindex='0'][data-vim-focused='true']:focus
         ),
         :global(#widgets-grid.intro-in-grid [tabindex='0']:has(:focus)) {
-            --box-border-color: var(--blue);
+            --box-border-color: var(--foreground0);
             outline: none;
             z-index: 1;
-            background-color: oklch(
-                from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h / 0.06
-            );
-            box-shadow: 2px 2px 0 0
-                oklch(
-                    from var(--blue) calc(l * var(--oklch-scale, 0.85)) c h /
-                        0.5
-                );
-            transform: translate(-1px, -1px);
         }
 
         :global(
