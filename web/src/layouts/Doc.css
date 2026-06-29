@@ -368,18 +368,33 @@
     padding-inline: 1ch !important;
 }
 
+/* The path — now a container for per-segment breadcrumb crumbs (.vsl-crumb)
+   joined by "/" separators (.vsl-crumb-sep). Linked crumbs (real routes) take
+   the blue site link colour; non-link crumbs + separators are neutral grey, so
+   colour alone signals which segments are clickable. */
 .vsl-file {
-    /* The current path — the bar's single pop of color: the theme accent. Every
-       other segment is greyscale, so the path is the focal point. */
-    color: oklch(from var(--accent) calc(l * var(--oklch-scale, 0.95)) c h);
     padding-inline-start: 1ch;
+    display: inline-flex;
+    align-items: baseline;
+}
+/* Plain (non-link) segments: neutral grey. */
+.vsl-crumb {
+    color: oklch(from var(--foreground2) l c h);
+}
+/* Separators dimmer still so the segment names read as the content. */
+.vsl-crumb-sep {
+    color: oklch(from var(--foreground3) l c h / 0.7);
+}
+/* Linked segments: the blue site link colour (--url) marks them clickable. */
+a.vsl-crumb {
+    color: oklch(from var(--url) calc(l * var(--oklch-scale, 0.95)) c h);
 }
 
 /* Statusline segments that are real links — defeat the global body-link
-   reverse-video flash and underline so they look the same as the
-   non-link segments at rest, just clickable. */
+   reverse-video flash and underline so they look the same at rest, just
+   clickable. */
 a.vsl-site,
-a.vsl-file {
+a.vsl-crumb {
     text-decoration: none !important;
     cursor: pointer;
     transition:
@@ -394,12 +409,12 @@ a.vsl-site:focus-visible {
         from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
     ) !important;
 }
-/* Path link hover: fill with the accent, invert text. */
-a.vsl-file:hover,
-a.vsl-file:focus-visible {
+/* Crumb link hover: fill with the link colour, invert text. */
+a.vsl-crumb:hover,
+a.vsl-crumb:focus-visible {
     color: oklch(from var(--background0) l c h) !important;
     background-color: oklch(
-        from var(--accent) calc(l * var(--oklch-scale, 0.95)) c h
+        from var(--url) calc(l * var(--oklch-scale, 0.95)) c h
     ) !important;
 }
 

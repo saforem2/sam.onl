@@ -3,7 +3,7 @@ import Sidebar from '@/components/SidebarFileTree.astro'
 import Filter from '@/components/Filter.astro'
 import Layout from '@/layouts/Layout.astro'
 import { makeSidebarOrderedPages } from '@/utils/content'
-import { compareUrlPaths } from '@/utils/url'
+import { compareUrlPaths, splitPathChunks } from '@/utils/url'
 import { getReadingTime } from '@/utils/readingTime'
 import ShareButtons from '@/components/ShareButtons.astro'
 import { getCollection } from 'astro:content'
@@ -161,6 +161,22 @@ async function resolveSourceFile(id: string): Promise<string | null> {
 const sourceFilePath = await resolveSourceFile(sourceId)
 const githubBase = 'https://github.com/saforem2/sam.onl'
 const githubRawBase = 'https://raw.githubusercontent.com/saforem2/sam.onl'
+
+// Statusline path breadcrumbs. Each URL segment becomes its own crumb linking
+// to its cumulative site path — but only when that path is a real route. The
+// collection ids (index-stripped, slash-joined, e.g. "posts/2026/05/01") are
+// exactly a cumulative segment list joined by "/", so a Set of ids is the
+// route-existence oracle. Many intermediate paths don't exist as pages
+// (/posts/2026/, most /posts/YYYY/MM/), so those crumbs render as plain text.
+const routeIds = new Set(sortedPages.map((p) => p.id))
+const crumbSegments = splitPathChunks(Astro.url.pathname)
+const breadcrumbs = crumbSegments.map((seg, i) => {
+    const id = crumbSegments.slice(0, i + 1).join('/')
+    return {
+        seg,
+        href: routeIds.has(id) ? `/${id}/` : null,
+    }
+})
 
 // Get file last-modified date
 let fileModifiedDate: Date | null = null
@@ -544,30 +560,35 @@ const articleSchema =
                 &#xea84; sam.onl
             </a>
             {
-                /* Always show the URL pathname (e.g. "/about") rather
-                   than the source file path. The earlier branch that
-                   surfaced web/src/pages/.../index.mdx resolved
-                   differently in dev vs prod (the runtime stat probe
-                   succeeded on localhost where the source tree is on
-                   disk, but failed on Netlify where the serverless
-                   bundle doesn't ship the page sources at the
-                   resolved URL). One label everywhere. Trailing
-                   slash stripped so "/about/" reads as "/about". */
-                (() => {
-                    const path = Astro.url.pathname.replace(/\/$/, '') || '/'
-                    return sourceFilePath ? (
-                        <a
-                            class="vsl-file"
-                            href={`${githubBase}/blob/${currentBranch}/${sourceFilePath}`}
-                            target="_blank"
-                            title={`View ${sourceFilePath} on GitHub`}>
-                            {path}
-                        </a>
-                    ) : (
-                        <span class="vsl-file">{path}</span>
-                    )
-                })()
+                /* Path as clickable breadcrumbs. Each segment links to its
+               cumulative SITE path when that page exists (see `breadcrumbs`
+               in the frontmatter); segments with no route render as plain
+               text. The leading "/" per crumb keeps it reading as one
+               contiguous path. Root ("/") shows a single non-link slash. */
             }
+            <span class="vsl-file">
+                {
+                    breadcrumbs.length === 0 ? (
+                        <span class="vsl-crumb">/</span>
+                    ) : (
+                        breadcrumbs.map(({ seg, href }) => (
+                            <>
+                                <span class="vsl-crumb-sep">/</span>
+                                {href ? (
+                                    <a
+                                        class="vsl-crumb"
+                                        href={href}
+                                        title={`Go to ${href}`}>
+                                        {seg}
+                                    </a>
+                                ) : (
+                                    <span class="vsl-crumb">{seg}</span>
+                                )}
+                            </>
+                        ))
+                    )
+                }
+            </span>
             <span class="vsl-spacer"></span>
             <span class="vsl-keys">
                 <span id="vsl-last-key"></span>
