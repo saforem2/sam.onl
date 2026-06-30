@@ -72,7 +72,7 @@ The end-state architecture solves all of this with one local front door
  ┊                                      ▼
  ┊                       ┌─────────────────────────────┐
  ┊                       │  llm-rosetta gateway :8765  │
- ┊                       │   OpenAI ⇆ Anthropic xlate  │
+ ┊                       │      OpenAI ⇆ Anthropic     │
  ┊                       └───────┬─────────────┬───────┘
  ┊                   Argo        │             │ ALCF Inference
  ┊               Claude, GPT/o   │             │ Sophia, Metis
@@ -248,14 +248,14 @@ OpenAI-compatible endpoint:
         // base_url has NO /v1: the anthropic template appends /v1/messages.
         "argo": {
             "type": "anthropic",
-            "api_key": "<ROTATING_TOKEN>",
+            "api_key": "${ARGO_SHIM_TOKEN}",
             "base_url": "http://127.0.0.1:25940",
         },
         // GPT/o models: OpenAI Chat Completions.
         // base_url includes /argoapi/v1: the template appends /chat/completions.
         "argo-openai": {
             "type": "openai_chat",
-            "api_key": "<ROTATING_TOKEN>",
+            "api_key": "${ARGO_SHIM_TOKEN}",
             "base_url": "http://127.0.0.1:25940/argoapi/v1",
         },
         // ALCF Inference Endpoints: already OpenAI-compatible.
@@ -364,9 +364,9 @@ The gateway also ships a web admin panel at
 `http://127.0.0.1:8765/admin/` with live metrics and request logs.
 
 > **Heads up**: the admin panel's **Fetch from Provider** button re-discovers
-> Argo's full model list and writes entries that _don't work_ (Gemini 500s
-> upstream; spaced display-names get mapped to the wrong provider). Manage the
-> model list from the config file instead. I keep a
+> Argo's full model list and writes entries that _don't work_ (some Gemini
+> variants still 500 upstream; spaced display-names get mapped to the wrong
+> provider). Manage the model list from the config file instead. I keep a
 > [regen script](#a-regen-script) for exactly this.
 
 ### 5. Hermes One desktop app
@@ -523,42 +523,106 @@ Or, after an `argo-shim` restart, do the whole thing:
 argo-rosetta-sync --with-inference
 ```
 
-### 7. Gemini doesn't work
+### 7. Gemini is partially available
 
-Even with the `user` field, Argo's Gemini models return
-`'NoneType' object is not iterable` (an upstream bug). Claude and GPT/o-series
-work; Gemini is omitted from my config.
+I originally thought Gemini was completely broken because I kept hitting
+`'NoneType' object is not iterable` after fixing the `user` field. Re-testing
+more carefully showed a more nuanced picture.
+
+Important distinction: **these are Argo Gemini models, not Google GenAI API
+models.** Argo exposes them through its OpenAI-compatible
+`/chat/completions` endpoint, so in rosetta they use the `openai_chat`
+provider type, not the `google` provider type.
+
+- `Gemini 2.5 Pro` works through Argo's OpenAI `/chat/completions` path.
+- `Gemini 2.5 Flash` works too.
+- `Gemini 3.5 Flash` also works.
+- `Gemini 3.1 Flash Lite` works **only if the request omits `max_tokens` or
+  uses `max_completion_tokens`**; with the usual OpenAI-style `max_tokens` field
+  it still returns the upstream `NoneType` 500.
+
+So the config includes the working models as `gemini-2.5-pro`,
+`gemini-2.5-flash`, `gemini-3.5-flash`, and their `google/...` aliases, while
+omitting `Gemini 3.1 Flash Lite` until I add a model-specific request transform.
 
 ## Token rotation
 
 Every `argo-shim` restart mints a new token. To keep everything in sync I use
-a couple of zsh helpers (in `~/.config/zsh/functions.zsh`):
+shell helpers in `~/.config/zsh/functions.zsh`. These are the actual pieces you
+need, not magic commands hidden elsewhere.
 
 ```bash
 # Re-export the live shim token into the env vars various clients read.
 refresh-argo-token() {
+  local settings="$HOME/.claude/settings.json"
   local token
-  token=$(python3 -c "import json;print(json.load(open('$HOME/.claude/settings.json'))['apiKeyHelper'].split()[-1])")
-  export ARGO_SHIM_TOKEN="$token"          # OpenCode, vtcode
-  export ANTHROPIC_API_KEY="$token"        # anything Anthropic-native
+  token=$(python3 -c "import json; print(json.load(open('$settings'))['apiKeyHelper'].split()[-1])") || return 1
+  export ARGO_SHIM_TOKEN="$token"          # OpenCode, vtcode, direct shim clients
+  export ANTHROPIC_API_KEY="$token"        # Anthropic-native clients
   export ANTHROPIC_BASE_URL="http://127.0.0.1:25940/v1"
+  print "ARGO_SHIM_TOKEN refreshed (${token:0:8}…)"
 }
 
-# Start/stop/restart the rosetta gateway; auto-syncs the new Argo token into
-# its config on every (re)start.
-rosetta-gateway() { ...  }  # start|stop|restart|status|sync-key|regen-models|log
+# Point Claude Code at rosetta, not directly at argo-shim, so Claude Code
+# traffic appears in the rosetta dashboard. argo-shim rewrites Claude settings
+# back to :25940/argoapi on startup, so run this after starting argo-shim.
+route-claude-through-rosetta() {
+  python3 - <<'PY'
+import json, pathlib
+p = pathlib.Path.home() / ".claude" / "settings.json"
+d = json.load(open(p))
+env = d.setdefault("env", {})
+env["ANTHROPIC_BASE_URL"] = "http://127.0.0.1:8765"
+for key in ("NO_PROXY", "no_proxy"):
+    vals = [x.strip() for x in env.get(key, "").split(",") if x.strip()]
+    for val in ("localhost", "127.0.0.1"):
+        if val not in vals:
+            vals.append(val)
+    env[key] = ",".join(vals)
+p.write_text(json.dumps(d, indent=2) + "\n")
+PY
+}
 
-# Export a fresh Globus access token for ALCF Inference Endpoints. Must be set
-# before starting/restarting rosetta if you want alcf-sophia/alcf-metis models.
-alcf-inference-token() { ... }
+# Export a fresh Globus access token for ALCF Inference Endpoints. First run may
+# require an interactive browser auth flow (see below).
+alcf-inference-token() {
+  local helper="$HOME/.config/llm-rosetta-gateway/inference_auth_token.py"
+  mkdir -p "$(dirname "$helper")"
+  if [[ ! -r "$helper" ]]; then
+    curl -fsSL "https://raw.githubusercontent.com/argonne-lcf/inference-endpoints/refs/heads/main/inference_auth_token.py" -o "$helper" || return 1
+  fi
+  local token
+  token=$(uv run --with globus-sdk --with openai "$helper" get_access_token) || return 1
+  export ALCF_INFERENCE_TOKEN="$token"
+  print "ALCF_INFERENCE_TOKEN refreshed (${token:0:8}…)"
+}
+
+# Minimal rosetta restart helper. My full version also has start/stop/status,
+# but this is the essential part: regenerate config if needed, then restart.
+rosetta-gateway-restart() {
+  pkill -f llm-rosetta-gateway 2>/dev/null || true
+  sleep 1
+  nohup llm-rosetta-gateway --no-banner >> "$HOME/.hermes/logs/rosetta-gateway.log" 2>&1 &
+}
+
+# One-shot recovery after starting/restarting argo-shim.
+argo-rosetta-sync() {
+  refresh-argo-token || return 1
+  [[ "$1" == "--with-inference" ]] && alcf-inference-token
+  # If you keep a regen script, run it here. Otherwise ensure config.jsonc uses
+  # the current $ARGO_SHIM_TOKEN / $ALCF_INFERENCE_TOKEN before restarting.
+  rosetta-gateway-restart || return 1
+  route-claude-through-rosetta || return 1
+}
 ```
 
-So the startup ritual after a reboot is just:
+So the startup ritual after a reboot is:
 
 ```bash
-argo-shim                 # in a terminal: creates tunnel, rotates token
-refresh-argo-token        # sync Argo token into env
-rosetta-gateway restart   # sync Argo token into rosetta config + reload
+argo-shim                    # in a terminal: creates tunnel, rotates token
+refresh-argo-token           # sync Argo token into env
+rosetta-gateway-restart      # restart rosetta after config/token changes
+route-claude-through-rosetta # optional: send Claude Code through rosetta too
 # then open the Hermes One app
 ```
 
