@@ -2036,21 +2036,23 @@ html[data-webtui-theme='catppuccin-latte'] {
             transform 120ms ease-out,
             box-shadow 120ms ease-out;
     }
+    /* The pagination links (.next/.prev) are box-= boxes too, but they get
+       their own flat-fill hover in Doc.css instead of this tactile lift
+       (the translate + offset shadow read as a clumsy detached shadow on a
+       wide block). Exclude them here so Doc.css's hover isn't out-specified
+       (this selector carries two IDs via :not(#doc-article)). */
     #main-content
-        [box-~='square']:not(#doc-article):not(.callout):is(
-            :hover,
-            :focus-within
-        ),
+        [box-~='square']:not(#doc-article):not(.callout):not(.next):not(
+            .prev
+        ):is(:hover, :focus-within),
     #main-content
-        [box-~='round']:not(#doc-article):not(.callout):is(
-            :hover,
-            :focus-within
-        ),
+        [box-~='round']:not(#doc-article):not(.callout):not(.next):not(
+            .prev
+        ):is(:hover, :focus-within),
     #main-content
-        [box-~='double']:not(#doc-article):not(.callout):is(
-            :hover,
-            :focus-within
-        ) {
+        [box-~='double']:not(#doc-article):not(.callout):not(.next):not(
+            .prev
+        ):is(:hover, :focus-within) {
         transform: translate(-1px, -1px);
         box-shadow: 2px 2px 0 0 var(--box-border-color, var(--background3));
     }
