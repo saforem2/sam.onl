@@ -43,7 +43,7 @@ export const sidebarHiddenCategories = new Set(['docs'])
 // <a href="/talks" data-active={isOn === 'talks'}>󰐨 Talks</a>
 // <a href="/more" data-active={isOn === 'more'}> More</a>
 // <!-- <a href="/projects" data-active={isOn === 'projects'}>  Projects </a> -->
-// <a href="https://github.com/saforem2/sam.onl" target="_blank"
+// <a href="https://github.com/saforem2/samf.sh" target="_blank"
 //     > Github</a
 // >
 // <button id="theme-button" size-="small">  </button>
