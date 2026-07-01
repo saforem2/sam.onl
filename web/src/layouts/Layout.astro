@@ -58,15 +58,26 @@ const ogImage = ogSlug
                     'https://www.googletagmanager.com/gtag/js?id=G-RD883HJ1J2'
                 document.head.appendChild(s)
             }
+            // requestIdleCallback's 2nd arg is an IdleRequestOptions object
+            // ({ timeout }), NOT a number — passing a bare `1` throws a
+            // TypeError, which previously killed the loader before it ran
+            // (gtag.js never injected, so no analytics were ever sent on
+            // any browser that supports rIC). Call each API with its
+            // correct signature, and always pass a timeout so a page that
+            // never goes idle still loads analytics.
+            const scheduleIdle = function (fn) {
+                if (window.requestIdleCallback) {
+                    window.requestIdleCallback(fn, { timeout: 3000 })
+                } else {
+                    window.setTimeout(fn, 1)
+                }
+            }
             if (document.readyState === 'complete') {
                 // Page already loaded (e.g. bfcache restore): schedule idle.
-                ;(window.requestIdleCallback || window.setTimeout)(loadGtag, 1)
+                scheduleIdle(loadGtag)
             } else {
                 window.addEventListener('load', function () {
-                    ;(window.requestIdleCallback || window.setTimeout)(
-                        loadGtag,
-                        1,
-                    )
+                    scheduleIdle(loadGtag)
                 })
             }
         </script>
