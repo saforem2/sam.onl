@@ -49,10 +49,10 @@ const ogImage = ogSlug
 
             // Defer the gtag.js download until the page is loaded/idle so
             // it doesn't compete with LCP. Guarded so it only injects once.
-            var loadGtag = function () {
+            const loadGtag = function () {
                 if (window.__gtagLoaded) return
                 window.__gtagLoaded = true
-                var s = document.createElement('script')
+                const s = document.createElement('script')
                 s.async = true
                 s.src =
                     'https://www.googletagmanager.com/gtag/js?id=G-RD883HJ1J2'
