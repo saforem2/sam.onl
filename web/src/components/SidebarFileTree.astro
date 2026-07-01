@@ -1696,6 +1696,22 @@ const ICON_ABOUT = '\u{f1028}'
         color: var(--foreground0);
     }
 
+    /* Keyboard / vim focus on an inline TOC heading. Without this the
+       heading receives focus + data-vim-focused on `j`/`k` but shows no
+       visible indicator (the only heading that looked focused was the
+       scrollspy `.active` one, by coincidence of its tint). Mirror the
+       .tree-entry focus ring above so headings are just as clearly
+       selectable. outline-offset pulls the ring inside the row so it
+       isn't clipped at the sidebar's edge. */
+    .sidebar-toc .toc-heading:focus-visible,
+    .sidebar-toc .toc-heading[data-vim-focused='true'] {
+        background-color: oklch(from var(--accent) calc(l * 0.85) c h / 0.075);
+        outline: 1pt solid var(--accent);
+        outline-offset: -1pt;
+        color: var(--focus-fg);
+        text-decoration: none;
+    }
+
     /* ── Tree label (the text) ── */
 
     .tree-label {
