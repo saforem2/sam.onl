@@ -54,15 +54,27 @@ const themeOptions = {
     'custom-dark': 'Dark',
     catppuccin: 'Catppuccin Mocha',
     'catppuccin-latte': 'Catppuccin Latte',
-    'sam-light': 'sam.onl Light',
-    'sam-dark': 'sam.onl Dark',
+    'sam-light': 'samf.sh Light',
+    'sam-dark': 'samf.sh Dark',
+    'nvim-light-role': 'Neovim Light (role)',
+    'nvim-light-hue': 'Neovim Light (hue)',
+    'nvim-dark-role': 'Neovim Dark (role)',
+    'nvim-dark-hue': 'Neovim Dark (hue)',
 }
 
-const fontOptions = {
+// Body font: all 5 (incl. the quasi-proportional QP).
+const bodyFontOptions = {
     iosevka: 'Iosevka',
     'victor-mono': 'Victor Mono',
     'miosevka-term': 'mIosevka-Term',
     'miosevka-qp': 'mIosevka-QP',
+    system: 'System',
+}
+// Code font: true-monospace only — no QP (it breaks ASCII / column alignment).
+const codeFontOptions = {
+    iosevka: 'Iosevka',
+    'victor-mono': 'Victor Mono',
+    'miosevka-term': 'mIosevka-Term',
     system: 'System',
 }
 ---
@@ -102,11 +114,29 @@ const fontOptions = {
                 <span is-="badge" class="command-section-title cmd-title-blue"
                     >&#xf031; Font</span
                 >
+                <span is-="badge" class="keybind-group-title font-row-label"
+                    >Body</span
+                >
                 <row class="command-theme-buttons" gap-="0">
                     {
-                        Object.entries(fontOptions).map(([key, value]) => (
+                        Object.entries(bodyFontOptions).map(([key, value]) => (
                             <button
-                                data-font-option={key}
+                                data-body-font-option={key}
+                                aria-selected="false"
+                                class="command-theme-chip command-font-chip">
+                                {value}
+                            </button>
+                        ))
+                    }
+                </row>
+                <span is-="badge" class="keybind-group-title font-row-label"
+                    >Code</span
+                >
+                <row class="command-theme-buttons" gap-="0">
+                    {
+                        Object.entries(codeFontOptions).map(([key, value]) => (
+                            <button
+                                data-code-font-option={key}
                                 aria-selected="false"
                                 class="command-theme-chip command-font-chip">
                                 {value}
@@ -153,7 +183,7 @@ const fontOptions = {
                             <span>Next/previous heading</span>
                             <code role="listitem">{'}'} / {'{'}</code>
                             <span>Next/previous block</span>
-                            <code role="listitem">&#x2303;D / &#x2303;U</code>
+                            <code role="listitem">d / u</code>
                             <span>Half-page down/up</span>
                         </div>
                     </div>
@@ -203,9 +233,9 @@ const fontOptions = {
                             >History</span
                         >
                         <div class="keybind-grid" role="list">
-                            <code role="listitem">&#x2303;N</code>
+                            <code role="listitem">n</code>
                             <span>Next document</span>
-                            <code role="listitem">&#x2303;B</code>
+                            <code role="listitem">b</code>
                             <span>Previous document</span>
                             <code role="listitem">&#x2303;O</code>
                             <span>History back</span>
@@ -620,8 +650,12 @@ const fontOptions = {
         'custom-dark': 'Dark',
         catppuccin: 'Catppuccin Mocha',
         'catppuccin-latte': 'Catppuccin Latte',
-        'sam-light': 'sam.onl Light',
-        'sam-dark': 'sam.onl Dark',
+        'sam-light': 'samf.sh Light',
+        'sam-dark': 'samf.sh Dark',
+        'nvim-light-role': 'Neovim Light (role)',
+        'nvim-light-hue': 'Neovim Light (hue)',
+        'nvim-dark-role': 'Neovim Dark (role)',
+        'nvim-dark-hue': 'Neovim Dark (hue)',
     }
 
     let activeLink: HTMLAnchorElement | null =
@@ -926,30 +960,63 @@ const fontOptions = {
         })
     })
 
-    // ── Mono font picker ──────────────────────────────────────────────
-    // Delegated click so we catch font chips from any container (this
-    // dialog, SlideHelpDialog, etc.). Lives here in Filter.astro so it
-    // ships on every page that uses the command dialog (Doc layout etc.).
-    const fontStorageKey = 'mono-font'
-    const setMonoFont = (font: string) => {
-        document.documentElement.setAttribute('data-mono-font', font)
+    // ── Font pickers (two independent axes) ───────────────────────────
+    // Body font → data-mono-font + localStorage 'mono-font' (default qp).
+    // Code font → data-code-font + localStorage 'code-font'  (default term).
+    // Delegated click so we catch chips from any container (this dialog,
+    // SlideHelpDialog, etc.). Lives in Filter.astro so it ships on every
+    // page that uses the command dialog (Doc layout etc.).
+    const setFontAxis = (
+        attr: string,
+        storageKey: string,
+        optionAttr: string,
+        font: string,
+    ) => {
+        document.documentElement.setAttribute(attr, font)
         document
-            .querySelectorAll<HTMLElement>('[data-font-option]')
+            .querySelectorAll<HTMLElement>(`[${optionAttr}]`)
             .forEach((btn) => {
-                const v = btn.getAttribute('data-font-option')
+                const v = btn.getAttribute(optionAttr)
                 btn.setAttribute('aria-selected', String(v === font))
                 btn.setAttribute('data-active', String(v === font))
             })
-        localStorage.setItem(fontStorageKey, font)
+        localStorage.setItem(storageKey, font)
     }
-    setMonoFont(localStorage.getItem(fontStorageKey) ?? 'miosevka-qp')
+    const setBodyFont = (font: string) =>
+        setFontAxis(
+            'data-mono-font',
+            'mono-font',
+            'data-body-font-option',
+            font,
+        )
+    const setCodeFont = (font: string) =>
+        setFontAxis(
+            'data-code-font',
+            'code-font',
+            'data-code-font-option',
+            font,
+        )
+
+    setBodyFont(localStorage.getItem('mono-font') ?? 'miosevka-qp')
+    setCodeFont(localStorage.getItem('code-font') ?? 'miosevka-term')
+
     document.addEventListener('click', (e) => {
-        const btn = (e.target as HTMLElement)?.closest?.(
-            '[data-font-option]',
+        const target = e.target as HTMLElement
+        const bodyBtn = target?.closest?.(
+            '[data-body-font-option]',
         ) as HTMLElement | null
-        if (!btn) return
-        const v = btn.getAttribute('data-font-option')
-        if (v) setMonoFont(v)
+        if (bodyBtn) {
+            const v = bodyBtn.getAttribute('data-body-font-option')
+            if (v) setBodyFont(v)
+            return
+        }
+        const codeBtn = target?.closest?.(
+            '[data-code-font-option]',
+        ) as HTMLElement | null
+        if (codeBtn) {
+            const v = codeBtn.getAttribute('data-code-font-option')
+            if (v) setCodeFont(v)
+        }
     })
 
     // ── Reader view chip ──────────────────────────────────────────────

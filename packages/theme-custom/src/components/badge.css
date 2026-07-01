@@ -1,7 +1,17 @@
 @layer components {
     [data-webtui-theme|='custom'],
-    [data-webtui-theme|='sam'] {
+    [data-webtui-theme|='sam'],
+    [data-webtui-theme|='nvim'] {
         [is-~='badge'] {
+            /* Quieter "background1" badge: a flat page-bg fill with dim text,
+               so these read as subtle chips (meta pills, the menu button)
+               rather than a raised tile. (Base uses --background1 fill +
+               --foreground0 text.) */
+            &[variant-='background1'] {
+                --badge-color: var(--background0);
+                --badge-text: var(--foreground3);
+            }
+
             &[variant-='red'] {
                 --badge-color: var(--red);
                 --badge-text: var(--background0);

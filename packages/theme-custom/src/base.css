@@ -1,6 +1,8 @@
 @layer base {
     [data-webtui-theme='custom-light'],
-    [data-webtui-theme='sam-light'] {
+    [data-webtui-theme='sam-light'],
+    [data-webtui-theme='nvim-light-role'],
+    [data-webtui-theme='nvim-light-hue'] {
         --oklch-scale: 0.85;
         --pre-line-height: 1.3;
         --text: #666666;
@@ -93,7 +95,9 @@
     }
 
     [data-webtui-theme='custom-dark'],
-    [data-webtui-theme='sam-dark'] {
+    [data-webtui-theme='sam-dark'],
+    [data-webtui-theme='nvim-dark-role'],
+    [data-webtui-theme='nvim-dark-hue'] {
         --oklch-scale: 1.15;
         --pre-background: transparent;
         --pre-line-height: 1.3;
@@ -106,9 +110,14 @@
         /* --h2: oklch(from #FDDC69 calc(l * 1.05) calc(c * 1.35) h); */
         /* --h2: oklch(from #FFD8A8 calc(l * 1.05) calc(c * 1.35) h); */
         /* --h1: oklch(from #FF8787 calc(l * 1.05) calc(c * 1.35) h); */
+        /* Heading hues (canonical — the site no longer overrides these in
+           global.css). h2=blue, h3=green to match what pages actually used.
+           Each is lifted in L and saturated ×1.35 EXCEPT the green (h3), which
+           is left at its base chroma: a×1.35 green read overly stark next to
+           the softer code-block green, so h3 keeps `c`. */
         --h1: oklch(from var(--accent) calc(l * 1.05) calc(c * 1.35) h);
-        --h2: oklch(from #a5d6a7 calc(l * 1.05) calc(c * 1.35) h);
-        --h3: oklch(from #90caf9 calc(l * 1.05) calc(c * 1.35) h);
+        --h2: oklch(from #90caf9 calc(l * 1.05) calc(c * 1.35) h);
+        --h3: oklch(from #a5d6a7 calc(l * 1.05) c h);
         --h4: oklch(from #b39ddb calc(l * 1.05) calc(c * 1.35) h);
         --h5: oklch(from #fff59d calc(l * 1.05) calc(c * 1.35) h);
         --h6: oklch(from #80cbc4 calc(l * 1.05) calc(c * 1.35) h);
@@ -149,15 +158,24 @@
         --rosewater: oklch(from #f4dbd6 l c h);
         --flamingo: oklch(from #f0c6c6 l c h);
         --bright-red: oklch(from #fa5252 l c h);
+        /* Accents harmonized to a common band (oklch L≈0.71–0.85, C≈0.13–0.18)
+           so the row reads as one set:
+             - yellow was pure #ffff00 (L0.97/C0.21) — glaring; → #fcc419
+               (L0.85/C0.17) amber-gold, in-band.
+             - teal was #8bd5ca (L0.82/C0.08) — pale and too close to aqua;
+               → #38d9a9 (L0.79/C0.15, hue 168) so it's saturated AND clearly
+               separated from aqua (hue 214).
+             - --aqua had two declarations (#84d6eb then #00b8d4 won); de-duped
+               to the single #00b8d4.
+           Other accents already sit in the band, so their hues are unchanged. */
         --red: oklch(from #ff6b6b l c h);
         --peach: oklch(from #f5a97f l c h);
         --orange: oklch(from #fd971f l c h);
-        --yellow: oklch(from #ffff00 l c h);
+        --yellow: oklch(from #fcc419 l c h);
         --lime: oklch(from #82c91e l c h);
         --green: oklch(from #40c057 l c h);
-        --teal: oklch(from #8bd5ca l c h);
+        --teal: oklch(from #38d9a9 l c h);
         --sky: oklch(from #91d7e3 l c h);
-        --aqua: oklch(#84d6eb l c h);
         --sapphire: oklch(from #7dc4e4 l c h);
         --blue: oklch(from #29b6f6 l c h);
         --purple: oklch(from #ae81ff l c h);
@@ -362,27 +380,25 @@
         --ansi-bright-cyan-bg: var(--ansi0);
     }
 
-    [data-webtui-theme|='custom'],
-    [data-webtui-theme|='sam'] {
-        scrollbar-color: oklch(from var(--accent) l c h / 0.4) transparent;
-        scrollbar-width: thin;
+    /* Scrollbars: intentionally LEFT UNSTYLED at the theme root.
 
-        *::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
+       We used to paint a thin accent scrollbar here (scrollbar-color +
+       ::-webkit-scrollbar). The problem: on macOS, setting *any*
+       scrollbar-color or ::-webkit-scrollbar rule opts the browser OUT of
+       the native overlay (auto-hiding) scrollbar and into a classic,
+       always-visible one. That's why the accent bar sat there permanently
+       instead of fading when idle.
 
-        *::-webkit-scrollbar-track {
-            background: transparent;
-        }
+       A CSS "hover-reveal" workaround doesn't fix it either: scrollbar-color
+       is an *inherited* property, and a `*:hover` rule matches <body>/<html>
+       whenever the pointer is anywhere on the page — so the revealed color
+       inherits down to every scroller, i.e. effectively always-on.
 
-        *::-webkit-scrollbar-thumb {
-            background: oklch(from var(--accent) l c h / 0.4);
-            border-radius: 3px;
-        }
+       The only way to get true "visible only while scrolling, hidden when
+       idle" is to not touch scrollbars at all and let the OS overlay
+       scrollbar do its native thing. So we don't.
 
-        *::-webkit-scrollbar-thumb:hover {
-            background: oklch(from var(--accent) l c h / 0.6);
-        }
-    }
+       Component-scoped scrollers that deliberately want a persistent thin bar
+       (e.g. the landing-page widget panes) set their own scrollbar-color
+       locally — those are unaffected by this. */
 }

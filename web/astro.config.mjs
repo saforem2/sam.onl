@@ -51,6 +51,17 @@ import { createCssVariablesTheme } from 'shiki'
 // proposal, which Vite/Node 22+ support.
 import samLight from './src/shiki-themes/sam-light.json' with { type: 'json' }
 import samDark from './src/shiki-themes/sam-dark.json' with { type: 'json' }
+// Neovim-mirrored themes: nvim-light = onelight (onedarkpro), nvim-dark =
+// cyberdream — both transcribed from the user's live nvim auto_dark_mode.lua
+// (palette + custom highlight overrides). See src/shiki-themes/nvim-*.json.
+// Neovim-mirrored syntax themes — onelight (light) / cyberdream (dark), each in
+// two palette-swap variants generated from the default themes by
+// scripts/gen-nvim-themes.mjs: "role" maps by semantic role, "hue" keeps the
+// default theme's structure shifted to the nearest nvim hue.
+import nvimLightRole from './src/shiki-themes/nvim-light-role.json' with { type: 'json' }
+import nvimLightHue from './src/shiki-themes/nvim-light-hue.json' with { type: 'json' }
+import nvimDarkRole from './src/shiki-themes/nvim-dark-role.json' with { type: 'json' }
+import nvimDarkHue from './src/shiki-themes/nvim-dark-hue.json' with { type: 'json' }
 
 const oneLight = createCssVariablesTheme({
     name: 'one-light',
@@ -66,7 +77,16 @@ const catpuccinMocha = createCssVariablesTheme({
     fontStyle: true,
 })
 const highlighter = await createHighlighter({
-    themes: [oneLight, catpuccinMocha, samLight, samDark],
+    themes: [
+        oneLight,
+        catpuccinMocha,
+        samLight,
+        samDark,
+        nvimLightRole,
+        nvimLightHue,
+        nvimDarkRole,
+        nvimDarkHue,
+    ],
 })
 
 // import oneLight from 'shiki/themes/one-light.json'
@@ -121,7 +141,11 @@ const calloutTitleByType = {
     success: 'Success',
 }
 
-const calloutMarkerPattern = /^\s*\[!([a-zA-Z]+)\]([+-])?\s*(.*)$/
+// [!TYPE] marker, with optional `|flag` modifiers inside the brackets
+// (e.g. `[!IMPORTANT|inline]`) and the usual trailing `+`/`-` fold state.
+//   [1] type   [2] pipe-separated flags (or undefined)   [3] +/-   [4] rest
+const calloutMarkerPattern =
+    /^\s*\[!([a-zA-Z]+)((?:\|[a-zA-Z-]+)*)\]([+-])?\s*(.*)$/
 
 const toTitleCase = (value) =>
     value.length > 0 ? `${value[0].toUpperCase()}${value.slice(1)}` : value
@@ -155,11 +179,22 @@ const rehypeGitHubCallouts = () => {
 
             const rawType = markerMatch[1].toLowerCase()
             const calloutType = calloutTypeAliases[rawType] ?? rawType
-            const calloutTitle = markerMatch[3]?.trim()
-            const summaryText =
-                calloutTitle ||
-                calloutTitleByType[calloutType] ||
-                toTitleCase(rawType)
+            // Flags after the type, e.g. `[!NOTE|inline]` → ['inline'].
+            const calloutFlags = (markerMatch[2] || '')
+                .split('|')
+                .map((f) => f.trim().toLowerCase())
+                .filter(Boolean)
+            const calloutTitle = markerMatch[4]?.trim()
+            const isInline = calloutFlags.includes('inline')
+            // Inline callouts show ONLY the title/body — suppress the auto
+            // type-label fallback ("Important", "Note", …) so a bare
+            // `[!TYPE|inline] …` doesn't prepend the type name. A normal
+            // callout still gets the type label when no explicit title.
+            const summaryText = isInline
+                ? calloutTitle || ''
+                : calloutTitle ||
+                  calloutTitleByType[calloutType] ||
+                  toTitleCase(rawType)
 
             // Three blockquote shapes we need to handle:
             //   (a) `> [!NOTE] body on same line`    → single <p>, single text node
@@ -209,12 +244,16 @@ const rehypeGitHubCallouts = () => {
                 node.children.splice(paragraphIndex, 1)
             }
 
+            const calloutClasses = ['callout', `callout-${calloutType}`]
+            if (calloutFlags.includes('inline'))
+                calloutClasses.push('callout-inline')
+
             const detailsNode = {
                 type: 'element',
                 tagName: 'details',
                 properties: {
                     'is-': 'accordion',
-                    className: ['callout', `callout-${calloutType}`],
+                    className: calloutClasses,
                     'data-callout': calloutType,
                 },
                 children: [
@@ -228,7 +267,13 @@ const rehypeGitHubCallouts = () => {
                 ],
             }
 
-            if (markerMatch[2] === '+') {
+            // Inline callouts have no meaningful collapsed state (just a
+            // one-line title/link), so always render them open.
+            if (isInline) {
+                detailsNode.properties.open = true
+            }
+
+            if (markerMatch[3] === '+') {
                 detailsNode.properties.open = true
             }
 
@@ -296,7 +341,7 @@ const rehypeMarkdownTabIndex = () => {
 // https://astro.build/config
 export default defineConfig({
     devToolbar: { enabled: false },
-    site: 'https://sam.onl',
+    site: 'https://samf.sh',
     compressHTML: false,
     markdown: {
         remarkPlugins: [remarkMath],
@@ -325,6 +370,12 @@ export default defineConfig({
                 // Toggle via the theme picker → "sam-light" / "sam-dark".
                 'sam-light': samLight,
                 'sam-dark': samDark,
+                // Neovim-mirrored syntax themes (onelight / cyberdream), two
+                // palette-swap variants each (role / hue).
+                'nvim-light-role': nvimLightRole,
+                'nvim-light-hue': nvimLightHue,
+                'nvim-dark-role': nvimDarkRole,
+                'nvim-dark-hue': nvimDarkHue,
             },
             colorReplacements: {
                 'one-light': {

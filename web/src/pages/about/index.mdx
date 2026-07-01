@@ -54,7 +54,7 @@ Pre-Training group] for the [AuroraGPT] project.
 <div style="width: round(48%, 1ch);">
 
 <div class="flex-container icon-flex" style="flex-direction: row; gap: 1ch; margin-block-end: 1lh;">
-<a href="https://sam.onl" size-="small">&#xef85;</a>
+<a href="https://samf.sh" size-="small">&#xef85;</a>
 <a href="https://github.com/saforem2" target="_blank" size-="small">&#xe65b;</a>
 <a href="https://twitter.com/saforem2" target="_blank" size-="small">&#xeb72;</a>
 <a href="https://bsky.app/profile/samforeman.bsky.social" target="_blank" size-="small">&#xe28e;</a>
@@ -253,7 +253,7 @@ Pre-Training group] for the [AuroraGPT] project.
 >     class="slide-deck reveal-full-page"
 >     sandbox="allow-scripts allow-same-origin"
 >     loading="lazy"
->     src="https://sam.onl/talks/2026/06/03/"
+>     src="https://samf.sh/talks/2026/06/03/"
 >     title="Production Pre-Training at Scale: The Good, the Bad, and the Restarts"
 >     align="center"
 >     frameborder="0"
@@ -1644,13 +1644,12 @@ Full list at [/projects](/projects).
 
 <style>{`
 .recent-posts-table {
-    /* width: fit-content sized the table to content's max-content,
-       which pushed long titles past the mobile viewport. 100% +
-       table-layout: auto + per-cell overflow-wrap lets the browser
-       distribute width naturally between 2-col (Posts: Date+Title)
-       and 3-col (Talks: Date+Title+Location) tables, while letting
-       long titles break mid-token instead of overflowing. */
-    width: 100%;
+    /* width: auto sizes the table to its content instead of stretching
+       full-width. max-width: 100% + table-layout: auto + per-cell
+       overflow-wrap still keep long titles from overflowing the mobile
+       viewport (they break mid-token, and the scroll wrapper is the final
+       fallback). (Was width: 100%, which always stretched edge-to-edge.) */
+    width: auto;
     max-width: 100%;
     border-collapse: collapse;
 }

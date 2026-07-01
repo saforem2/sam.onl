@@ -249,18 +249,24 @@ const total = variants.length
             <>
                 <Filter />
                 <div id="vim-statusline">
-                    <span class="vsl-mode">NORMAL</span>
-                    <span class="vsl-branch">&#xe725; main</span>
-                    <span class="vsl-author">Sam Foreman</span>
-                    <span class="vsl-site">sam.onl</span>
+                    <a
+                        class="vsl-site"
+                        href="https://github.com/saforem2/samf.sh"
+                        target="_blank"
+                        title="Source repository on GitHub">
+                        &#xea84; samf.sh
+                    </a>
+                    <span class="vsl-file">/</span>
                     <span class="vsl-spacer" />
                     <span class="vsl-keys">
                         <span id="vsl-last-key" />
                     </span>
                     <span class="vsl-clock">
-                        <span id="vsl-clock-text" />
+                        <span id="vsl-clock-date" />
+                        <span class="vsl-clock-sep">·</span>
+                        <span id="vsl-clock-time" />
                     </span>
-                    <span class="vsl-pos">Top</span>
+                    <span class="vsl-pos">All</span>
                     <span class="vsl-loc">1:1</span>
                 </div>
             </>
@@ -270,14 +276,18 @@ const total = variants.length
     <script>
         import { isUserTyping } from '@/utils/vim'
 
-        const clockEl = document.getElementById('vsl-clock-text')
+        const clockDateEl = document.getElementById('vsl-clock-date')
+        const clockTimeEl = document.getElementById('vsl-clock-time')
         const lastKeyEl = document.getElementById('vsl-last-key')
 
-        if (clockEl) {
+        // Live clock — date and time in separate spans (matches the Doc-layout
+        // statusline so the home bar renders identically).
+        if (clockDateEl && clockTimeEl) {
             const pad = (n: number) => String(n).padStart(2, '0')
             const tick = () => {
                 const d = new Date()
-                clockEl.textContent = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+                clockDateEl.textContent = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+                clockTimeEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}`
             }
             tick()
             setInterval(tick, 10_000)

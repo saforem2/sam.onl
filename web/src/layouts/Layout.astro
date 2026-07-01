@@ -11,8 +11,8 @@ const { ogSlug, description, title } = Astro.props as Props
 const pageDescription = description || "Sam Foreman's Personal Website"
 const pageTitle = title || 'Sam Foreman'
 const ogImage = ogSlug
-    ? `https://sam.onl/og/${ogSlug}.png`
-    : 'https://sam.onl/social-card.png'
+    ? `https://samf.sh/og/${ogSlug}.png`
+    : 'https://samf.sh/social-card.png'
 ---
 
 <!doctype html>
@@ -21,12 +21,17 @@ const ogImage = ogSlug
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
 
-        <!-- Google Analytics -->
-        <script
-            is:inline
-            async
-            src="https://www.googletagmanager.com/gtag/js?id=G-RD883HJ1J2"
-        ></script>
+        <!-- Google Analytics.
+             The dataLayer shim + gtag('config') run inline (they only
+             push to an array, ~0ms), so any early events queue
+             immediately. The 166 KB gtag.js fetch itself is deferred to
+             window 'load' (idle-callback fallback) instead of an async
+             <head> script: as an async head script it still landed
+             142ms of main-thread work inside the LCP window and competed
+             with first paint. Loading it after the page is interactive
+             keeps analytics fully intact (gtag.js drains the queued
+             dataLayer entries when it arrives) while taking it out of
+             the critical render path. -->
         <script is:inline>
             // GA's reference snippet REQUIRES the Arguments object
             // (gtag.js inspects each dataLayer entry via [0]/[1] on the
@@ -41,6 +46,29 @@ const ogImage = ogSlug
             gtag('js', new Date())
             gtag('config', 'G-RD883HJ1J2')
             /* eslint-enable prefer-rest-params */
+
+            // Defer the gtag.js download until the page is loaded/idle so
+            // it doesn't compete with LCP. Guarded so it only injects once.
+            const loadGtag = function () {
+                if (window.__gtagLoaded) return
+                window.__gtagLoaded = true
+                const s = document.createElement('script')
+                s.async = true
+                s.src =
+                    'https://www.googletagmanager.com/gtag/js?id=G-RD883HJ1J2'
+                document.head.appendChild(s)
+            }
+            if (document.readyState === 'complete') {
+                // Page already loaded (e.g. bfcache restore): schedule idle.
+                ;(window.requestIdleCallback || window.setTimeout)(loadGtag, 1)
+            } else {
+                window.addEventListener('load', function () {
+                    ;(window.requestIdleCallback || window.setTimeout)(
+                        loadGtag,
+                        1,
+                    )
+                })
+            }
         </script>
 
         <script is:inline>
@@ -73,13 +101,25 @@ const ogImage = ogSlug
                 localStorage.setItem('webtui-theme', migratedTheme)
             }
 
-            // Mono-font preference (default: mIosevka-QP — quasi-
-            // proportional for prose; mIosevka-Term overlays onto code
-            // blocks via the [data-mono-font='miosevka-qp'] rule in
-            // global.css).
-            const storedMono =
+            // Font preferences — two independent axes, set before paint to
+            // avoid FOUC. Body font (default mIosevka-QP, quasi-proportional
+            // for prose) via data-mono-font; code font (default mIosevka-Term,
+            // mono metrics for ASCII/alignment) via data-code-font. Returning
+            // visitors only have 'mono-font' stored; 'code-font' defaults to
+            // term, matching the old QP-body behavior. See the two-axis CSS in
+            // global.css.
+            const storedBodyFont =
                 localStorage.getItem('mono-font') ?? 'miosevka-qp'
-            document.documentElement.setAttribute('data-mono-font', storedMono)
+            document.documentElement.setAttribute(
+                'data-mono-font',
+                storedBodyFont,
+            )
+            const storedCodeFont =
+                localStorage.getItem('code-font') ?? 'miosevka-term'
+            document.documentElement.setAttribute(
+                'data-code-font',
+                storedCodeFont,
+            )
         </script>
         <meta name="generator" content={Astro.generator} />
         <title>{pageTitle}</title>
@@ -117,10 +157,10 @@ const ogImage = ogSlug
 
         <!-- Misc Metadata -->
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://sam.onl" />
+        <meta property="og:url" content="https://samf.sh" />
         <meta name="twitter:site" content="@saforem2" />
         <meta name="twitter:creator" content="@saforem2" />
-        <meta name="twitter:url" content="https://sam.onl" />
+        <meta name="twitter:url" content="https://samf.sh" />
         <meta
             name="keywords"
             content="blog,machine learning,deep learning,artificial intelligence,supercomputing,programming,technology,sam foreman"
@@ -475,7 +515,7 @@ const ogImage = ogSlug
                 '@context': 'https://schema.org',
                 '@type': 'WebSite',
                 name: 'Sam Foreman',
-                url: 'https://sam.onl',
+                url: 'https://samf.sh',
                 author: {
                     '@type': 'Person',
                     name: 'Sam Foreman',
@@ -484,7 +524,7 @@ const ogImage = ogSlug
                         '@type': 'Organization',
                         name: 'Argonne National Laboratory',
                     },
-                    url: 'https://sam.onl',
+                    url: 'https://samf.sh',
                 },
             })}
         />

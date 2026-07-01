@@ -3,7 +3,7 @@ import Sidebar from '@/components/SidebarFileTree.astro'
 import Filter from '@/components/Filter.astro'
 import Layout from '@/layouts/Layout.astro'
 import { makeSidebarOrderedPages } from '@/utils/content'
-import { compareUrlPaths } from '@/utils/url'
+import { compareUrlPaths, splitPathChunks } from '@/utils/url'
 import { getReadingTime } from '@/utils/readingTime'
 import ShareButtons from '@/components/ShareButtons.astro'
 import { getCollection } from 'astro:content'
@@ -102,6 +102,12 @@ const currentPath = Astro.url.pathname.endsWith('/')
     : `${Astro.url.pathname}/`
 const isPost = currentPath.startsWith('/posts/')
 const isTalk = currentPath.startsWith('/talks/')
+const isAbout = currentPath === '/about/'
+// Action buttons (reader / github source / raw / copy / share) appear on
+// every Doc-layout page EXCEPT the /about/ landing page (slide decks use a
+// different layout and never reach here). Share buttons in particular only
+// make sense off the about page.
+const showActions = !isAbout
 
 // Derive category from URL path (e.g. /posts/auroragpt/foo → "auroragpt")
 const pathSegments = currentPath.split('/').filter(Boolean)
@@ -112,6 +118,7 @@ const category =
 
 // Source file path for GitHub links
 import { stat } from 'node:fs/promises'
+import { join } from 'node:path'
 
 const sourceFile = sortedPages.find((p) => compareUrlPaths(p.id, currentPath))
 const sourceId = sourceFile?.id ?? ''
@@ -120,41 +127,66 @@ const sourceId = sourceFile?.id ?? ''
 // probe the filesystem for .mdx first then .md so GitHub/raw links
 // resolve to the real file (a hardcoded .mdx fallback used to 404 for
 // the 3 .md posts in the repo).
+//
+// Resolve against process.cwd() (the `web/` workspace dir — astro runs
+// dev AND build from there) rather than `import.meta.url`: at build time
+// this module is bundled, so import.meta.url points into a temp/.astro
+// location and the old `../pages/...` relative stat always missed —
+// which is why the source/raw GitHub buttons silently vanished in
+// production while working in dev. cwd is stable in both.
+const pagesDir = join(process.cwd(), 'src', 'pages')
 async function resolveSourceFile(id: string): Promise<string | null> {
     if (!id) return null
     if (id.endsWith('.md') || id.endsWith('.mdx')) {
         return `web/src/pages/${id}`
     }
-    for (const ext of ['mdx', 'md'] as const) {
-        const rel = `web/src/pages/${id}/index.${ext}`
+    // Two on-disk shapes: dir-style `id/index.{mdx,md}` (posts, talks) and
+    // flat `id.{mdx,md}` (webtui docs like webtui/start/intro.md). Probe both.
+    const candidates = [
+        ['mdx', `${id}/index.mdx`],
+        ['md', `${id}/index.md`],
+        ['mdx', `${id}.mdx`],
+        ['md', `${id}.md`],
+    ] as const
+    for (const [, rel] of candidates) {
         try {
-            // Doc.astro lives at web/src/layouts/, so `../pages/...`
-            // (NOT `../src/pages/...`) is the right relative path.
-            const resolved = new URL(
-                `../pages/${id}/index.${ext}`,
-                import.meta.url,
-            ).pathname
-            await stat(resolved)
-            return rel
+            await stat(join(pagesDir, rel))
+            return `web/src/pages/${rel}`
         } catch {
-            // try next extension
+            // try next candidate
         }
     }
     return null
 }
 const sourceFilePath = await resolveSourceFile(sourceId)
-const githubBase = 'https://github.com/saforem2/sam.onl'
-const githubRawBase = 'https://raw.githubusercontent.com/saforem2/sam.onl'
+const githubBase = 'https://github.com/saforem2/samf.sh'
+const githubRawBase = 'https://raw.githubusercontent.com/saforem2/samf.sh'
+
+// Statusline path breadcrumbs. Each URL segment becomes its own crumb linking
+// to its cumulative site path — but only when that path is a real route. The
+// collection ids (index-stripped, slash-joined, e.g. "posts/2026/05/01") are
+// exactly a cumulative segment list joined by "/", so a Set of ids is the
+// route-existence oracle. Many intermediate paths don't exist as pages
+// (/posts/2026/, most /posts/YYYY/MM/), so those crumbs render as plain text.
+const routeIds = new Set(sortedPages.map((p) => p.id))
+const crumbSegments = splitPathChunks(Astro.url.pathname)
+const breadcrumbs = crumbSegments.map((seg, i) => {
+    const id = crumbSegments.slice(0, i + 1).join('/')
+    return {
+        seg,
+        href: routeIds.has(id) ? `/${id}/` : null,
+    }
+})
 
 // Get file last-modified date
 let fileModifiedDate: Date | null = null
 if (sourceFilePath) {
     try {
-        const resolvedPath = new URL(
-            `../${sourceFilePath.replace('web/', '')}`,
-            import.meta.url,
-        ).pathname
-        const fileStat = await stat(resolvedPath)
+        // sourceFilePath is repo-relative ("web/src/pages/..."); strip the
+        // leading "web/" to get the workspace-relative path under cwd.
+        const fileStat = await stat(
+            join(process.cwd(), sourceFilePath.replace(/^web\//, '')),
+        )
         fileModifiedDate = fileStat.mtime
     } catch {
         // File not found, skip
@@ -218,7 +250,7 @@ const articleSchema =
               author: {
                   '@type': 'Person',
                   name: 'Sam Foreman',
-                  url: 'https://sam.onl',
+                  url: 'https://samf.sh',
               },
               description: frontmatter.description ?? '',
           })
@@ -242,10 +274,32 @@ const articleSchema =
         <Filter />
         <row self-="grow" gap-="0" id="doc-columns">
             <div id="sidebar-container" class="mobile-hidden">
-                <Sidebar />
+                <Sidebar {tocLines} />
             </div>
             <div id="sidebar-resizer" aria-hidden="true"></div>
             <article id="doc-article" box-="square" shear-="top">
+                <div id="reader-controls" aria-hidden="true">
+                    <button
+                        type="button"
+                        class="reader-ctrl reader-width"
+                        data-reader-width-step="-1"
+                        title="Narrower column"
+                        aria-label="Narrower column">&#xf068;</button
+                    >
+                    <button
+                        type="button"
+                        class="reader-ctrl reader-width"
+                        data-reader-width-step="1"
+                        title="Wider column"
+                        aria-label="Wider column">&#xf067;</button
+                    >
+                    <button
+                        type="button"
+                        class="reader-ctrl reader-exit"
+                        title="Exit reader view (Esc / zr)"
+                        aria-label="Exit reader view">&#xf00d;</button
+                    >
+                </div>
                 <header>
                     <div is-="badge" variant-="background0">
                         <h1>{frontmatter.title}</h1>
@@ -259,127 +313,139 @@ const articleSchema =
                                 id="toc-page-title"
                                 aria-hidden="true"
                                 tabindex="-1"></span>
-                            <button
-                                type="button"
-                                class="reader-toggle"
-                                is-="badge"
-                                variant-="background2"
-                                aria-pressed="false"
-                                title="Toggle reader view (zr)"
-                                aria-label="Toggle reader view">
-                                &#xf02d;
-                            </button>
                             {
-                                (frontmatter.date || isPost || isTalk) && (
-                                    <div class="post-meta">
-                                        <div class="post-meta-row">
-                                            <span
-                                                is-="badge"
-                                                variant-="background1"
-                                                class="post-meta-item post-meta-author"
-                                                tabindex="0">
-                                                Sam Foreman
-                                            </span>
-                                            {frontmatter.date && (
-                                                <span
-                                                    is-="badge"
-                                                    variant-="background1"
-                                                    class="post-meta-item post-meta-date"
-                                                    tabindex="0">
-                                                    <span class="date-long">
-                                                        {formatDate(
-                                                            frontmatter.date,
-                                                        )}
-                                                    </span>
-                                                    <span class="date-short">
-                                                        {formatDateShort(
-                                                            frontmatter.date,
-                                                        )}
-                                                    </span>
-                                                </span>
-                                            )}
-                                            {fileModifiedDate &&
-                                                frontmatter.date &&
-                                                formatDate(fileModifiedDate) !==
-                                                    formatDate(
-                                                        frontmatter.date,
-                                                    ) && (
+                                (() => {
+                                    const hasMeta =
+                                        frontmatter.date || isPost || isTalk
+                                    return (
+                                        <div
+                                            class="post-meta"
+                                            class:list={{
+                                                'post-meta-empty': !hasMeta,
+                                            }}>
+                                            {hasMeta && (
+                                                <div class="post-meta-row">
                                                     <span
                                                         is-="badge"
                                                         variant-="background1"
-                                                        class="post-meta-item post-meta-updated"
+                                                        class="post-meta-item post-meta-author"
                                                         tabindex="0">
-                                                        updated:{' '}
-                                                        <span class="date-long">
-                                                            {formatDate(
-                                                                fileModifiedDate,
-                                                            )}
-                                                        </span>
-                                                        <span class="date-short">
-                                                            {formatDateShort(
-                                                                fileModifiedDate,
-                                                            )}
-                                                        </span>
+                                                        Sam Foreman
                                                     </span>
-                                                )}
-                                            {frontmatter.date && (
-                                                <span
-                                                    is-="badge"
-                                                    variant-="background1"
-                                                    class="post-meta-item post-meta-reading"
-                                                    tabindex="0">
-                                                    {readingTime}
-                                                </span>
+                                                    {frontmatter.date && (
+                                                        <span
+                                                            is-="badge"
+                                                            variant-="background1"
+                                                            class="post-meta-item post-meta-date"
+                                                            tabindex="0">
+                                                            <span class="date-long">
+                                                                {formatDate(
+                                                                    frontmatter.date,
+                                                                )}
+                                                            </span>
+                                                            <span class="date-short">
+                                                                {formatDateShort(
+                                                                    frontmatter.date,
+                                                                )}
+                                                            </span>
+                                                        </span>
+                                                    )}
+                                                    {fileModifiedDate &&
+                                                        frontmatter.date &&
+                                                        formatDate(
+                                                            fileModifiedDate,
+                                                        ) !==
+                                                            formatDate(
+                                                                frontmatter.date,
+                                                            ) && (
+                                                            <span
+                                                                is-="badge"
+                                                                variant-="background1"
+                                                                class="post-meta-item post-meta-updated"
+                                                                tabindex="0">
+                                                                updated:{' '}
+                                                                <span class="date-long">
+                                                                    {formatDate(
+                                                                        fileModifiedDate,
+                                                                    )}
+                                                                </span>
+                                                                <span class="date-short">
+                                                                    {formatDateShort(
+                                                                        fileModifiedDate,
+                                                                    )}
+                                                                </span>
+                                                            </span>
+                                                        )}
+                                                    {frontmatter.date && (
+                                                        <span
+                                                            is-="badge"
+                                                            variant-="background1"
+                                                            class="post-meta-item post-meta-reading"
+                                                            tabindex="0">
+                                                            {readingTime}
+                                                        </span>
+                                                    )}
+                                                    {category && (
+                                                        <a
+                                                            href={`/posts/${category}/`}
+                                                            is-="badge"
+                                                            variant-="background1"
+                                                            class="post-meta-tag"
+                                                            tabindex="0">
+                                                            {category}
+                                                        </a>
+                                                    )}
+                                                </div>
                                             )}
-                                            {category && (
-                                                <a
-                                                    href={`/posts/${category}/`}
-                                                    is-="badge"
-                                                    variant-="background1"
-                                                    class="post-meta-tag"
-                                                    tabindex="0">
-                                                    {category}
-                                                </a>
+                                            {showActions && (
+                                                <div class="post-meta-row post-meta-actions">
+                                                    <button
+                                                        type="button"
+                                                        class="reader-toggle"
+                                                        is-="badge"
+                                                        size-="small"
+                                                        aria-pressed="false"
+                                                        title="Toggle reader view (zr)"
+                                                        aria-label="Toggle reader view">
+                                                        &#xf1ea;
+                                                    </button>
+                                                    {sourceFilePath && (
+                                                        <span class="post-meta-links">
+                                                            <a
+                                                                href={`${githubBase}/blob/${currentBranch}/${sourceFilePath}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                is-="badge"
+                                                                class="post-meta-source"
+                                                                title="View source on GitHub"
+                                                                aria-label="View source on GitHub"
+                                                                tabindex="0">
+                                                                &#xe65b;
+                                                            </a>
+                                                            <a
+                                                                href={`${githubRawBase}/${currentBranch}/${sourceFilePath}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                is-="badge"
+                                                                class="post-meta-raw"
+                                                                title="View raw source"
+                                                                aria-label="View raw source"
+                                                                tabindex="0">
+                                                                &#xf0224;
+                                                            </a>
+                                                        </span>
+                                                    )}
+                                                    <ShareButtons
+                                                        title={
+                                                            frontmatter.title
+                                                        }
+                                                        url={`https://samf.sh${Astro.url.pathname}`}
+                                                    />
+                                                </div>
                                             )}
                                         </div>
-                                        <div class="post-meta-row">
-                                            {sourceFilePath && (
-                                                <span class="post-meta-links">
-                                                    <a
-                                                        href={`${githubBase}/blob/${currentBranch}/${sourceFilePath}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        is-="badge"
-                                                        variant-="background2"
-                                                        class="post-meta-source"
-                                                        title="View source on GitHub"
-                                                        aria-label="View source on GitHub"
-                                                        tabindex="0">
-                                                        &#xf09b;
-                                                    </a>
-                                                    <a
-                                                        href={`${githubRawBase}/${currentBranch}/${sourceFilePath}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        is-="badge"
-                                                        variant-="background2"
-                                                        class="post-meta-raw"
-                                                        title="View raw source"
-                                                        aria-label="View raw source"
-                                                        tabindex="0">
-                                                        &#xf15b;
-                                                    </a>
-                                                </span>
-                                            )}
-                                            {(isPost || isTalk) && (
-                                                <ShareButtons
-                                                    title={frontmatter.title}
-                                                    url={`https://sam.onl${Astro.url.pathname}`}
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-                                )
+                                    )
+                                })()
                             }
                             {
                                 frontmatter.description && (
@@ -483,106 +549,46 @@ const articleSchema =
                     </div>
                 </row>
             </article>
-            {
-                tocHeadings.length > 0 && (
-                    <>
-                        <div id="toc-resizer" aria-hidden="true" />
-                        <aside
-                            id="toc-container"
-                            class="mobile-hidden collapsed">
-                            <nav
-                                box-="square"
-                                shear-="top"
-                                id="toc-sidebar"
-                                aria-label="Table of contents">
-                                <div id="toc-list-container">
-                                    <ul id="toc-list">
-                                        {tocLines.map((heading) => (
-                                            <li>
-                                                <a
-                                                    href={`#${heading.slug}`}
-                                                    class={`toc-link depth-${heading.depth}`}
-                                                    data-heading-slug={
-                                                        heading.slug
-                                                    }>
-                                                    <span
-                                                        class="toc-tree-prefix"
-                                                        data-tree-prefix={
-                                                            heading.treePrefix
-                                                        }
-                                                        aria-hidden="true"
-                                                    />
-                                                    <span>{heading.text}</span>
-                                                </a>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                                <button
-                                    id="toc-toggle"
-                                    type="button"
-                                    size-="small"
-                                    aria-expanded="false"
-                                    aria-controls="toc-container"
-                                    aria-label="Collapse right sidebar (zl)">
-                                    <>
-                                        <span class="key-z">z</span>
-                                        <span class="key-bracket">[</span>
-                                    </>
-                                    <>
-                                        <span class="key-l">l</span>
-                                        <span class="key-bracket">]</span>
-                                    </>
-                                    &rsaquo;
-                                </button>
-                            </nav>
-                        </aside>
-                    </>
-                )
-            }
         </row>
         <div id="vim-statusline">
             <!-- <span class="vsl-vim-icon">&#xe62b; </span> -->
-            <span class="vsl-mode">NORMAL</span>
-            <a
-                class="vsl-branch"
-                href={`${githubBase}/tree/${currentBranch}`}
-                target="_blank"
-                title={`View branch ${currentBranch} on GitHub`}>
-                &#xe725; {currentBranch}
-            </a>
             <a
                 class="vsl-site"
                 href={githubBase}
                 target="_blank"
                 title="Source repository on GitHub">
-                &#xea84; sam.onl
+                &#xea84; samf.sh
             </a>
             {
-                /* Always show the URL pathname (e.g. "/about") rather
-                   than the source file path. The earlier branch that
-                   surfaced web/src/pages/.../index.mdx resolved
-                   differently in dev vs prod (the runtime stat probe
-                   succeeded on localhost where the source tree is on
-                   disk, but failed on Netlify where the serverless
-                   bundle doesn't ship the page sources at the
-                   resolved URL). One label everywhere. Trailing
-                   slash stripped so "/about/" reads as "/about". */
-                (() => {
-                    const path = Astro.url.pathname.replace(/\/$/, '') || '/'
-                    return sourceFilePath ? (
-                        <a
-                            class="vsl-file"
-                            href={`${githubBase}/blob/${currentBranch}/${sourceFilePath}`}
-                            target="_blank"
-                            title={`View ${sourceFilePath} on GitHub`}>
-                            {path}
-                        </a>
-                    ) : (
-                        <span class="vsl-file">{path}</span>
-                    )
-                })()
+                /* Path as clickable breadcrumbs. Each segment links to its
+               cumulative SITE path when that page exists (see `breadcrumbs`
+               in the frontmatter); segments with no route render as plain
+               text. The leading "/" per crumb keeps it reading as one
+               contiguous path. Root ("/") shows a single non-link slash. */
             }
+            <span class="vsl-file">
+                {
+                    breadcrumbs.length === 0 ? (
+                        <span class="vsl-crumb">/</span>
+                    ) : (
+                        breadcrumbs.map(({ seg, href }) => (
+                            <>
+                                <span class="vsl-crumb-sep">/</span>
+                                {href ? (
+                                    <a
+                                        class="vsl-crumb"
+                                        href={href}
+                                        title={`Go to ${href}`}>
+                                        {seg}
+                                    </a>
+                                ) : (
+                                    <span class="vsl-crumb">{seg}</span>
+                                )}
+                            </>
+                        ))
+                    )
+                }
+            </span>
             <span class="vsl-spacer"></span>
             <span class="vsl-keys">
                 <span id="vsl-last-key"></span>
@@ -600,16 +606,6 @@ const articleSchema =
                 &#xeb86; Menu
             </button>
             <button size-="small" id="docs-button">&#xf15b; Docs</button>
-            {
-                tocHeadings.length > 0 && (
-                    <button
-                        size-="small"
-                        variant-="background1"
-                        id="toc-button">
-                        &#xf0c9; TOC
-                    </button>
-                )
-            }
         </div>
     </column>
 </Layout>
@@ -645,6 +641,33 @@ const articleSchema =
         })
 
     const mainContent = document.getElementById('main-content') as HTMLElement
+
+    // The element that actually scrolls the document body. Normally this is
+    // #main-content (overflow-y:auto). BUT in reader view the figure-breakout
+    // CSS sets overflow-x:visible on #main-content, which forces overflow-y to
+    // compute to visible too, so #main-content stops scrolling and its parent
+    // #scroll-container becomes the scroller. Anything that reads scrollTop /
+    // calls scrollBy / listens for 'scroll' must target whichever element is
+    // really scrolling, or it silently no-ops in reader view (the d/u keybind
+    // + scrollspy regression). Resolve it live each call so it tracks the mode.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(window as any).getDocScroller = () => {
+        const sc = document.getElementById('scroll-container')
+        const mc = document.getElementById('main-content')
+        // Prefer whichever has real vertical overflow AND a non-visible
+        // overflow-y (i.e. is an actual scroll box).
+        for (const el of [mc, sc]) {
+            if (!el) continue
+            const oy = getComputedStyle(el).overflowY
+            if (
+                (oy === 'auto' || oy === 'scroll') &&
+                el.scrollHeight > el.clientHeight + 2
+            )
+                return el
+        }
+        return mc || sc
+    }
+
     const navbar = document.getElementById('top-navbar') as HTMLElement | null
     const sidebar = document.getElementById('sidebar') as HTMLElement | null
     const tocSidebar = document.getElementById(
@@ -1028,7 +1051,11 @@ const articleSchema =
         // d / u (or ctrl-d / ctrl-u) — half-page scroll with focus follow.
         // Plain d/u matches less(1) and the vim default; ctrl-d/ctrl-u is
         // mostly intercepted by the browser (bookmark / address-bar focus)
-        // but kept for muscle memory when it makes it through.
+        // but kept for muscle memory when it makes it through. Smooth-scroll
+        // a half page; don't steal focus mid-animation (vimFocusElement
+        // calls .focus() which forces an instant jump and cancels the smooth
+        // scroll). Focus the first newly-visible element after the animation
+        // settles instead.
         if (
             (e.key === 'd' || e.key === 'u') &&
             !e.metaKey &&
@@ -1036,17 +1063,20 @@ const articleSchema =
             !e.shiftKey
         ) {
             e.preventDefault()
-            const scroller = mainContent
+            // Use the live scroller (reader view scrolls #scroll-container,
+            // normal view scrolls #main-content).
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const scroller = (window as any).getDocScroller?.() ?? mainContent
             if (!scroller) return
             const halfPage = scroller.clientHeight / 2
             scroller.scrollBy({
                 top: e.key === 'd' ? halfPage : -halfPage,
-                behavior: 'instant',
+                behavior: 'smooth',
             })
-            const visible = getVisibleMainElements()
-            if (visible.length > 0) {
-                vimFocusElement(visible[0])
-            }
+            // No focus-follow here: calling .focus() mid-animation scrolls the
+            // target back into view and cancels the smooth scroll (and made
+            // rapid u after d jump the wrong way). d/u is pure viewport
+            // scrolling; j/k remain for element-by-element focus navigation.
             return
         }
 
@@ -1286,66 +1316,82 @@ const articleSchema =
     const scrollContainer = document.getElementById(
         'scroll-container',
     ) as HTMLElement | null
-    const tocLinks = Array.from(
-        document.querySelectorAll('#toc-list a[data-heading-slug]'),
+    // The TOC now lives in the left sidebar as tree children under the active
+    // page leaf (cloned from #sidebar-toc-template by SidebarFileTree's
+    // script). The links carry data-heading-slug, so the scrollspy works the
+    // same — it just queries the sidebar location instead of the old
+    // #toc-list. The script may run before the sidebar finishes cloning, so
+    // re-query lazily inside the sync if the first pass found nothing.
+    let tocLinks = Array.from(
+        document.querySelectorAll('#sidebar .sidebar-toc a[data-heading-slug]'),
     ) as HTMLAnchorElement[]
 
-    if (scrollContainer && tocLinks.length > 0) {
-        const headingElements = tocLinks
-            .map((link) => {
-                const slug = link.dataset.headingSlug
-                if (!slug) return null
-                return document.getElementById(slug)
-            })
-            .filter(
-                (element): element is HTMLElement =>
-                    element instanceof HTMLElement,
-            )
+    if (scrollContainer) {
+        const buildHeadingElements = () =>
+            tocLinks
+                .map((link) => {
+                    const slug = link.dataset.headingSlug
+                    if (!slug) return null
+                    return document.getElementById(slug)
+                })
+                .filter(
+                    (element): element is HTMLElement =>
+                        element instanceof HTMLElement,
+                )
+        let headingElements = buildHeadingElements()
 
         const setActiveTocLink = (activeId: string) => {
-            // Find the active link and its parent H2 section
-            let activeH2Slug: string | null = null
-            for (const link of tocLinks) {
-                if (link.dataset.headingSlug === activeId) {
-                    // Walk backwards to find the owning H2
-                    if (link.classList.contains('depth-2')) {
-                        activeH2Slug = activeId
-                    } else {
-                        // Search backwards through tocLinks for nearest depth-2
-                        const idx = tocLinks.indexOf(link)
-                        for (let i = idx - 1; i >= 0; i--) {
-                            if (tocLinks[i].classList.contains('depth-2')) {
-                                activeH2Slug =
-                                    tocLinks[i].dataset.headingSlug ?? null
-                                break
-                            }
-                        }
+            // Find which H2 section owns the active heading: if the active link
+            // is itself a depth-2, that's the section; otherwise walk backwards
+            // to the nearest preceding depth-2.
+            let activeSectionIdx = -1
+            const activeIdx = tocLinks.findIndex(
+                (l) => l.dataset.headingSlug === activeId,
+            )
+            if (activeIdx !== -1) {
+                for (let i = activeIdx; i >= 0; i--) {
+                    if (tocLinks[i].dataset.depth === '2') {
+                        activeSectionIdx = i
+                        break
                     }
-                    break
                 }
             }
 
-            // Update active class and reveal sub-headings for active H2 section
-            let currentH2Slug: string | null = null
-            tocLinks.forEach((link) => {
-                const slug = link.dataset.headingSlug
-                link.classList.toggle('active', slug === activeId)
-
-                if (link.classList.contains('depth-2')) {
-                    currentH2Slug = slug ?? null
-                }
-
-                const li = link.parentElement
-                if (li && !link.classList.contains('depth-2')) {
-                    li.classList.toggle(
-                        'toc-visible',
-                        currentH2Slug === activeH2Slug,
+            // Toggle .active on the current heading, and .toc-section-open on
+            // every depth-3+ subheading belonging to the active H2 section so
+            // only that section's subheadings are revealed.
+            let currentSectionIdx = -1
+            tocLinks.forEach((link, i) => {
+                if (link.dataset.depth === '2') currentSectionIdx = i
+                link.classList.toggle(
+                    'active',
+                    link.dataset.headingSlug === activeId,
+                )
+                if (link.dataset.depth !== '2') {
+                    link.classList.toggle(
+                        'toc-section-open',
+                        currentSectionIdx === activeSectionIdx &&
+                            activeSectionIdx !== -1,
                     )
                 }
             })
         }
 
         const syncActiveHeading = () => {
+            // The sidebar clones the heading links from a <template> in its own
+            // script; if that hadn't run when this listener was wired up,
+            // re-query now so the scrollspy picks them up.
+            if (tocLinks.length === 0) {
+                tocLinks = Array.from(
+                    document.querySelectorAll(
+                        '#sidebar .sidebar-toc a[data-heading-slug]',
+                    ),
+                ) as HTMLAnchorElement[]
+                if (tocLinks.length > 0)
+                    headingElements = buildHeadingElements()
+            }
+            if (headingElements.length === 0) return
+
             const containerTop = scrollContainer.getBoundingClientRect().top
             let activeHeading = headingElements[0]
 
@@ -1361,15 +1407,31 @@ const articleSchema =
             if (activeHeading) {
                 setActiveTocLink(activeHeading.id)
                 const activeLink = document.querySelector(
-                    '#toc-list a.active',
+                    '#sidebar .sidebar-toc a.active',
                 ) as HTMLAnchorElement | null
-                activeLink?.scrollIntoView({ block: 'nearest' })
+                // Keep the active TOC link in view WITHIN the sidebar's own
+                // scroll box — but only when the sidebar actually is an
+                // independent scroller (desktop). At <=768px the layout stacks
+                // and the whole document scrolls (#main-content goes
+                // overflow:visible / static), so the sidebar sits in normal
+                // flow; calling scrollIntoView there walks up to the document
+                // and yanks the page back as you scroll. Guard on the mobile
+                // layout and skip the auto-scroll entirely.
+                const mc = document.getElementById('main-content')
+                const isStacked =
+                    !mc || getComputedStyle(mc).overflowY === 'visible'
+                if (activeLink && !isStacked) {
+                    activeLink.scrollIntoView({ block: 'nearest' })
+                }
 
                 // Update the article border label with the active heading
                 const titleEl = document.querySelector(
                     '#doc-article > header h1',
                 ) as HTMLElement | null
-                const mainEl = document.getElementById('main-content')
+                const mainEl =
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (window as any).getDocScroller?.() ??
+                    document.getElementById('main-content')
                 if (titleEl && mainEl) {
                     if (titleEl.dataset.originalHtml === undefined) {
                         titleEl.dataset.originalHtml = titleEl.innerHTML
@@ -1447,8 +1509,10 @@ const articleSchema =
     const setSidebarToggleLabel = (collapsed: boolean) => {
         if (!sidebarToggle) return
 
-        const arrow = collapsed ? '&uarr;' : '&larr;'
-        sidebarToggle.innerHTML = `${arrow}<span class="key-z">z</span>[<span class="key-h">h</span>]`
+        // The toggle now lives in the top action row as an icon button:
+        // collapse-to-left-edge glyph when open, hamburger when collapsed.
+        // (Was a bottom bar with a `‹z[h]` text label.)
+        sidebarToggle.innerHTML = collapsed ? '' : ''
 
         sidebarToggle.setAttribute(
             'aria-label',
@@ -1456,6 +1520,7 @@ const articleSchema =
                 ? 'Expand left sidebar (zh)'
                 : 'Collapse left sidebar (zh)',
         )
+        sidebarToggle.setAttribute('aria-expanded', String(!collapsed))
     }
 
     const setTocToggleLabel = (collapsed: boolean) => {
@@ -1795,67 +1860,6 @@ const articleSchema =
     }
 </script>
 
-<!-- TOC Resize -->
-<script>
-    const tocContainer = document.getElementById(
-        'toc-container',
-    ) as HTMLElement | null
-    const tocResizer = document.getElementById(
-        'toc-resizer',
-    ) as HTMLDivElement | null
-
-    if (tocContainer && tocResizer) {
-        const setTocWidth = (widthPx: number) => {
-            tocContainer.style.setProperty('--toc-width', `${widthPx}px`)
-        }
-
-        const getBounds = () => {
-            const styles = window.getComputedStyle(tocContainer)
-            const minWidth = parseFloat(styles.minWidth)
-            const maxWidth = parseFloat(styles.maxWidth)
-            return { minWidth, maxWidth }
-        }
-
-        const storedWidth = localStorage.getItem('toc-width')
-        if (storedWidth) {
-            const widthPx = Number(storedWidth)
-            if (!Number.isNaN(widthPx)) {
-                setTocWidth(widthPx)
-            }
-        }
-
-        const onMouseMove = (event: MouseEvent) => {
-            const { right } = tocContainer.getBoundingClientRect()
-            const { minWidth, maxWidth } = getBounds()
-            const rawWidth = right - event.clientX
-            const nextWidth = Math.min(maxWidth, Math.max(minWidth, rawWidth))
-            setTocWidth(nextWidth)
-        }
-
-        const onMouseUp = () => {
-            tocResizer.classList.remove('dragging')
-            const styles = window.getComputedStyle(tocContainer)
-            const widthPx = parseFloat(styles.width)
-            if (!Number.isNaN(widthPx)) {
-                localStorage.setItem('toc-width', String(widthPx))
-            }
-            window.removeEventListener('mousemove', onMouseMove)
-            window.removeEventListener('mouseup', onMouseUp)
-        }
-
-        tocResizer.addEventListener('mousedown', (event) => {
-            if (tocContainer.classList.contains('collapsed')) {
-                return
-            }
-
-            event.preventDefault()
-            tocResizer.classList.add('dragging')
-            window.addEventListener('mousemove', onMouseMove)
-            window.addEventListener('mouseup', onMouseUp)
-        })
-    }
-</script>
-
 <!-- Sidebar Resize -->
 <script>
     const sidebarContainer = document.getElementById(
@@ -1964,18 +1968,32 @@ const articleSchema =
 </script>
 
 <script>
-    const mainContent = document.getElementById('main-content')
     const progressBar = document.getElementById('scroll-progress')
 
-    if (mainContent && progressBar) {
-        mainContent.addEventListener('scroll', () => {
-            const scrollTop = mainContent.scrollTop
-            const scrollHeight =
-                mainContent.scrollHeight - mainContent.clientHeight
+    if (progressBar) {
+        // Listen at document level (capture) so we catch scroll from whichever
+        // element is the live scroller — #main-content normally, but
+        // #scroll-container in reader view (see getDocScroller in the first
+        // script block). Binding directly to #main-content silently stopped
+        // updating the bar in reader view.
+        const updateProgress = () => {
+            const scroller =
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (window as any).getDocScroller?.() ??
+                document.getElementById('main-content')
+            if (!scroller) return
+            const scrollHeight = scroller.scrollHeight - scroller.clientHeight
             const progress =
-                scrollHeight > 0 ? Math.min(scrollTop / scrollHeight, 1) : 0
+                scrollHeight > 0
+                    ? Math.min(scroller.scrollTop / scrollHeight, 1)
+                    : 0
             progressBar.style.transform = `scaleX(${progress})`
+        }
+        document.addEventListener('scroll', updateProgress, {
+            passive: true,
+            capture: true,
         })
+        updateProgress()
     }
 </script>
 
@@ -2007,17 +2025,23 @@ const articleSchema =
 
 <!-- Vim statusline scroll position + clock -->
 <script>
-    const mainContent = document.getElementById('main-content')
     const posEl = document.querySelector('.vsl-pos')
     const locEl = document.querySelector('.vsl-loc')
     const clockDateEl = document.getElementById('vsl-clock-date')
     const clockTimeEl = document.getElementById('vsl-clock-time')
 
-    if (mainContent && posEl) {
+    if (posEl) {
+        // Read the live scroller (reader view scrolls #scroll-container) so the
+        // pos % / line indicator keeps updating in both modes; listen at
+        // document level (capture) to catch whichever element fires 'scroll'.
         const update = () => {
-            const scrollTop = mainContent.scrollTop
-            const scrollHeight =
-                mainContent.scrollHeight - mainContent.clientHeight
+            const scroller =
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (window as any).getDocScroller?.() ??
+                document.getElementById('main-content')
+            if (!scroller) return
+            const scrollTop = scroller.scrollTop
+            const scrollHeight = scroller.scrollHeight - scroller.clientHeight
             if (scrollHeight <= 0) {
                 posEl.textContent = 'All'
             } else {
@@ -2025,14 +2049,17 @@ const articleSchema =
                     Math.round((scrollTop / scrollHeight) * 100) + '%'
             }
             // Approximate line number from scroll position
-            const totalLines = Math.ceil(mainContent.scrollHeight / 24)
+            const totalLines = Math.ceil(scroller.scrollHeight / 24)
             const currentLine = Math.max(
                 1,
-                Math.ceil((scrollTop / mainContent.scrollHeight) * totalLines),
+                Math.ceil((scrollTop / scroller.scrollHeight) * totalLines),
             )
             if (locEl) locEl.textContent = `${currentLine}:1`
         }
-        mainContent.addEventListener('scroll', update)
+        document.addEventListener('scroll', update, {
+            passive: true,
+            capture: true,
+        })
         update()
     }
 
@@ -2180,6 +2207,13 @@ const articleSchema =
             min-height: 1lh;
             display: flex;
             align-items: center;
+            /* Shrink the click target to just the heading text + glyph.
+               Without this the flex summary spans the full content width, so
+               clicking the empty space to the right of a heading toggles it
+               even though nothing visible is there. fit-content caps it to
+               the text; max-width keeps long headings from overflowing. */
+            width: fit-content;
+            max-width: 100%;
 
             /* (previous rule killed all ::before content here so the
                default details disclosure marker didn't ghost-render;
@@ -3011,6 +3045,65 @@ const articleSchema =
     readerBtn?.addEventListener('click', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(window as any).toggleReader()
+    })
+
+    // Reader control cluster: width stepper (− / +) + exit button.
+    // Column width is a continuous value in `ch`, driven by the
+    // `--reader-width` custom property on #doc-article (the CSS falls back to
+    // 90ch when unset). The − / + buttons step it by READER_WIDTH_STEP within
+    // [READER_WIDTH_MIN, READER_WIDTH_MAX]; the chosen width persists in
+    // localStorage so it carries across pages and reloads.
+    const READER_WIDTH_MIN = 56
+    const READER_WIDTH_MAX = 128
+    const READER_WIDTH_STEP = 8
+    const READER_WIDTH_DEFAULT = 90
+    const READER_WIDTH_KEY = 'reader-width-ch'
+    const docArticle = document.getElementById('doc-article')
+    const readerControls = document.getElementById('reader-controls')
+
+    const clampReaderWidth = (n: number) =>
+        Math.min(READER_WIDTH_MAX, Math.max(READER_WIDTH_MIN, n))
+
+    const readReaderWidth = () => {
+        const stored = Number(localStorage.getItem(READER_WIDTH_KEY))
+        return Number.isFinite(stored) && stored > 0
+            ? clampReaderWidth(stored)
+            : READER_WIDTH_DEFAULT
+    }
+
+    const applyReaderWidth = (ch: number) => {
+        const w = clampReaderWidth(ch)
+        docArticle?.style.setProperty('--reader-width', `${w}ch`)
+        localStorage.setItem(READER_WIDTH_KEY, String(w))
+        // Disable the buttons at the range ends so it's clear there's no
+        // further travel.
+        readerControls
+            ?.querySelector('[data-reader-width-step="-1"]')
+            ?.toggleAttribute('disabled', w <= READER_WIDTH_MIN)
+        readerControls
+            ?.querySelector('[data-reader-width-step="1"]')
+            ?.toggleAttribute('disabled', w >= READER_WIDTH_MAX)
+    }
+
+    // Apply the persisted width up front so the column is right on first paint
+    // of reader view (the value is harmless outside reader view — the CSS only
+    // consumes --reader-width under html[data-reader]).
+    applyReaderWidth(readReaderWidth())
+
+    readerControls?.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement)?.closest('button')
+        if (!(btn instanceof HTMLElement)) return
+        if (btn.classList.contains('reader-exit')) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(window as any).toggleReader(false)
+            return
+        }
+        const step = btn.getAttribute('data-reader-width-step')
+        if (step) {
+            applyReaderWidth(
+                readReaderWidth() + Number(step) * READER_WIDTH_STEP,
+            )
+        }
     })
 </script>
 

@@ -8,6 +8,21 @@ import {
     sidebarHiddenCategories,
 } from '@/utils/content'
 
+// Current page's heading outline (table of contents), passed from Doc.astro.
+// Rendered into a hidden <template> below; a client script clones it as tree
+// children under the active page leaf so the TOC lives in this sidebar
+// instead of a separate right-hand column.
+type TocLine = {
+    depth: number
+    text: string
+    slug: string
+    treePrefix: string
+}
+const { tocLines = [] } = Astro.props as { tocLines?: TocLine[] }
+// Headings only — drop the depth-1 page-title entry (the active leaf itself
+// already represents the page). Keep depth >= 2.
+const tocHeadings = tocLines.filter((h) => h.depth >= 2)
+
 const allCategories = makeSortedCategoryEntries().filter(
     ([slug]) => !sidebarHiddenCategories.has(slug),
 )
@@ -303,10 +318,10 @@ const ICON_ABOUT = '\u{f1028}'
             id="command-button-sidebar"
             class="sidebar-action"
             title="Open command menu (?)"
-            aria-label="Open command menu">&#xf0e7;</button
+            aria-label="Open command menu">&#xf120;</button
         >
         <a
-            href="https://github.com/saforem2/sam.onl"
+            href="https://github.com/saforem2/samf.sh"
             target="_blank"
             class="sidebar-action"
             title="GitHub">&#xe65b;</a
@@ -317,11 +332,20 @@ const ICON_ABOUT = '\u{f1028}'
         <button id="search-button-sidebar" class="sidebar-action" title="Search"
             >&#xf002;</button
         >
+        <button
+            id="sidebar-toggle"
+            class="sidebar-action"
+            type="button"
+            aria-expanded="true"
+            aria-controls="sidebar-container"
+            title="Collapse sidebar (zh)"
+            aria-label="Collapse left sidebar (zh)">&#xf344;</button
+        >
     </div>
     <div id="category-container">
         <div id="category-list" class="file-tree">
             <a href="/" class="tree-root" data-slug="root"
-                ><span class="tree-icon root-icon">{ICON_FOLDER_OPEN}</span> sam.onl</a
+                ><span class="tree-icon root-icon">{ICON_FOLDER_OPEN}</span> samf.sh</a
             >
             {
                 categories.map(([slug, pages], catIdx) => {
@@ -1120,18 +1144,26 @@ const ICON_ABOUT = '\u{f1028}'
             }
         </div>
     </div>
-    <button
-        id="sidebar-toggle"
-        type="button"
-        size-="small"
-        aria-expanded="true"
-        aria-controls="sidebar-container"
-        aria-label="Collapse left sidebar (zh)">
-        <span class="key-bracket"></span>&lsaquo;<span class="key-z">z</span
-        ><span class="key-bracket">[</span><span class="key-h">h</span><span
-            class="key-bracket">]</span
-        >
-    </button>
+    {
+        tocHeadings.length > 0 && (
+            <template id="sidebar-toc-template">
+                <div class="tree-children sidebar-toc">
+                    {tocHeadings.map((h) => (
+                        <a
+                            href={`#${h.slug}`}
+                            class:list={['toc-heading', `depth-${h.depth}`]}
+                            data-heading-slug={h.slug}
+                            data-depth={h.depth}>
+                            <span class="toc-hash" aria-hidden="true">
+                                {'#'.repeat(h.depth)}
+                            </span>
+                            <span class="toc-text">{h.text}</span>
+                        </a>
+                    ))}
+                </div>
+            </template>
+        )
+    }
 </nav>
 
 <style>
@@ -1160,15 +1192,9 @@ const ICON_ABOUT = '\u{f1028}'
         font-family: var(--font-family);
         line-height: 1.25;
 
-        #sidebar-toggle {
-            position: absolute;
-            bottom: 0;
-            left: 2ch;
-            right: auto;
-            z-index: 3;
-            color: var(--foreground3);
-            background-color: var(--background0);
-        }
+        /* (#sidebar-toggle was absolutely positioned at the bottom here when
+           it was a standalone bar; it now lives in #sidebar-actions as a
+           .sidebar-action and needs no special positioning.) */
 
         &:focus-within {
             --box-border-color: var(--focus-region-border);
@@ -1190,10 +1216,12 @@ const ICON_ABOUT = '\u{f1028}'
            nav's box-= border (just like the "top-left" label in webtui
            box examples). shear-="top" on the nav kills top padding, so
            a 0 top-margin sits the chips' top edge on the border line.
-           Slight inline nudge so they don't touch the corner. */
+           Inline start 0 so the chip row sits flush at the nav's left edge. */
         margin-block-start: 0;
-        margin-inline-start: 1ch;
-        margin-block-end: 0.25lh;
+        margin-inline-start: 0ch;
+        /* Solid background so the chip row reads as a distinct toolbar
+           against the sidebar. */
+        background: var(--background0);
 
         .sidebar-action {
             all: unset;
@@ -1211,7 +1239,9 @@ const ICON_ABOUT = '\u{f1028}'
                used elsewhere. */
             padding: 0.2lh 0.75ch;
             min-width: 3ch;
-            color: var(--foreground2);
+            /* Full-strength icon color so the action chips read clearly
+               (was --foreground2, a dim grey). */
+            color: var(--foreground0);
             background-color: color-mix(
                 in oklch,
                 var(--background0),
@@ -1241,6 +1271,7 @@ const ICON_ABOUT = '\u{f1028}'
                 border-color 0.1s linear,
                 transform 0.1s ease-out,
                 box-shadow 0.1s ease-out;
+            opacity: 50%;
 
             /* Tactile hover: nudge 1px up-left and drop a hard-offset
                TUI-style shadow in the per-button accent color so the
@@ -1251,6 +1282,7 @@ const ICON_ABOUT = '\u{f1028}'
                 color: var(--foreground0);
                 transform: translate(-1px, -1px);
                 box-shadow: 2px 2px 0 0 var(--chip-accent);
+                opacity: 100% !important;
             }
 
             /* Pressed: snap back to flat with a smaller shadow so the
@@ -1402,21 +1434,24 @@ const ICON_ABOUT = '\u{f1028}'
 
     .tree-entry:focus-visible,
     .tree-entry[data-vim-focused='true'] {
-        background-color: var(--focus-bg-strong);
+        /* Darkened accent tint at low alpha + a 1pt accent ring (the outline
+           inherits the accent `color` set just below). The old
+           --focus-bg-strong was accent at 0.025 alpha — so faint the focused
+           row was nearly indistinguishable from hover; this makes keyboard /
+           vim focus clearly visible. */
+        background-color: oklch(from var(--accent) calc(l * 0.85) c h / 0.075);
+        outline: 1pt solid;
         color: var(--focus-fg);
         text-decoration: none;
     }
 
+    /* Active page leaf: accent TEXT color only, no filled background. The
+       inline TOC headings below it are themselves colored (per heading
+       level), so a filled accent band on the active leaf competed with them
+       and read as busy. The accent text + the file-leaf icon is enough to
+       mark the current page. */
     .tree-entry.active {
         color: var(--accent);
-        background-color: oklch(
-            from
-                var(
-                    --accent,
-                    var(--background-active, var(--background2, #838383))
-                )
-                calc(l * var(--oklch-scale, 0.85)) c h / 0.1
-        );
     }
 
     .tree-entry.external {
@@ -1520,6 +1555,135 @@ const ICON_ABOUT = '\u{f1028}'
         color: var(--foreground3);
     }
 
+    /* ── Inline TOC: the current page's headings, cloned under the active
+       leaf. A clean indented list (no tree connectors — those imply real
+       file-tree structure and read as janky here). Each row is `## label`
+       with an auto-width hash marker so 2- and 3-char markers don't overflow
+       a fixed box and crash into the text. Indent steps per depth. ── */
+    .sidebar-toc {
+        /* Override the file-tree .tree-children connector rail + indent so the
+           TOC sits as its own clean block under the active leaf. Indented one
+           tree-level (~2.5ch) deeper than the active page link above it so the
+           heading outline reads as nested *under* that page, not as a sibling
+           sitting flush with it. */
+        margin-inline-start: 0;
+        /* Indent the heading hashes a modest step in from the active page
+           link so the outline reads as nested under that page. */
+        padding-inline-start: 2ch;
+    }
+    .sidebar-toc .toc-heading {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75ch;
+        padding-block: 0.05lh;
+        padding-inline: 0;
+        /* One tier dimmer than the post-link leaves (--foreground2) so the
+           inline heading outline reads as secondary to the page list. */
+        color: var(--foreground3);
+        text-decoration: none;
+        line-height: 1.3;
+    }
+    .sidebar-toc .toc-hash {
+        flex-shrink: 0;
+        /* auto width — no fixed box to overflow; right-aligned so the deeper
+           markers (##, ###) stay visually anchored to the label. */
+        color: var(--foreground3);
+        font-size: 0.8em;
+        letter-spacing: -0.05ch;
+        opacity: 0.7;
+    }
+    .sidebar-toc .toc-text {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    /* Depth indent: each level's `#` marker sits roughly under the first
+       character of its parent's title, so the outline reads like nested
+       markdown:
+
+           ## Heading 2
+           ### Heading 3
+              #### Heading 4
+
+       depth-2 is flush (the row base is 0 inset); each deeper level steps in
+       by ~3ch (one `#` worth of marker + the hash→text gap), growing slightly
+       at the deepest levels since each adds another `#`. */
+    .sidebar-toc .toc-heading.depth-3 {
+        padding-inline-start: 3ch;
+    }
+    .sidebar-toc .toc-heading.depth-4 {
+        padding-inline-start: 6ch;
+    }
+    .sidebar-toc .toc-heading.depth-5 {
+        padding-inline-start: 10ch;
+    }
+    .sidebar-toc .toc-heading.depth-6 {
+        padding-inline-start: 14ch;
+    }
+
+    /* Collapse depth-3+ subheadings by default; reveal only the ones whose
+       parent H2 section is currently in focus (the scrollspy in Doc.astro
+       toggles .toc-section-open on those rows). Keeps the outline compact —
+       you see all the H2s plus the subheadings for wherever you're reading. */
+    .sidebar-toc .toc-heading:is(.depth-3, .depth-4, .depth-5, .depth-6) {
+        display: none;
+    }
+    .sidebar-toc
+        .toc-heading.toc-section-open:is(
+            .depth-3,
+            .depth-4,
+            .depth-5,
+            .depth-6
+        ) {
+        display: flex;
+    }
+
+    /* Active heading (set by the scrollspy) — colored by level, with the
+       level-matched dim background (the heading's own color at 10% alpha),
+       exactly like the in-content `## heading` hover/target highlight in
+       global.css. (Was a generic accent-pink tint regardless of level.) */
+    .sidebar-toc .toc-heading.depth-2.active {
+        color: var(--h2);
+        background-color: oklch(
+            from var(--h2, var(--orange)) calc(l * var(--oklch-scale, 0.85)) c
+                h / 0.1
+        );
+    }
+    .sidebar-toc .toc-heading.depth-3.active {
+        color: var(--h3);
+        background-color: oklch(
+            from var(--h3, var(--green)) calc(l * var(--oklch-scale, 0.85)) c
+                h / 0.1
+        );
+    }
+    .sidebar-toc .toc-heading.depth-4.active {
+        color: var(--h4);
+        background-color: oklch(
+            from var(--h4, #50fa7b) calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+        );
+    }
+    .sidebar-toc .toc-heading.depth-5.active {
+        color: var(--h5);
+        background-color: oklch(
+            from var(--h5, #fd971f) calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+        );
+    }
+    .sidebar-toc .toc-heading.depth-6.active {
+        color: var(--h6);
+        background-color: oklch(
+            from var(--h6, #f44336) calc(l * var(--oklch-scale, 0.85)) c h / 0.1
+        );
+    }
+    .sidebar-toc .toc-heading.active .toc-hash {
+        color: inherit;
+        opacity: 1;
+    }
+    .sidebar-toc .toc-heading:hover {
+        background-color: var(--focus-hover-bg, var(--background1));
+        color: var(--foreground0);
+    }
+
     /* ── Tree label (the text) ── */
 
     .tree-label {
@@ -1574,6 +1738,34 @@ const ICON_ABOUT = '\u{f1028}'
 
 <script>
     import { applyVimNavigation, isUserTyping } from '@/utils/vim'
+
+    // ── Inline TOC: clone the page's heading outline (rendered into
+    //    #sidebar-toc-template by Astro) as tree children directly under the
+    //    active page leaf, so the table of contents lives in this sidebar
+    //    instead of a separate right-hand column. The cloned links keep their
+    //    data-heading-slug so the scrollspy in Doc.astro highlights the active
+    //    heading here. ──
+    {
+        const tocTemplate = document.getElementById(
+            'sidebar-toc-template',
+        ) as HTMLTemplateElement | null
+        const activeLeaf = document.querySelector(
+            '#category-list a.tree-entry.active',
+        )
+        if (tocTemplate && activeLeaf && activeLeaf.parentElement) {
+            const frag = tocTemplate.content.cloneNode(true) as DocumentFragment
+            // Insert the .tree-children block right after the active leaf.
+            activeLeaf.after(frag)
+            // Make sure every ancestor <details> is open so the headings (and
+            // the active leaf) are visible on load.
+            let p = activeLeaf.parentElement
+            while (p) {
+                if (p instanceof HTMLDetailsElement) p.open = true
+                if (p.id === 'sidebar') break
+                p = p.parentElement
+            }
+        }
+    }
 
     // Sidebar action buttons
     document
@@ -1666,7 +1858,14 @@ const ICON_ABOUT = '\u{f1028}'
 
         applyVimNavigation(
             sidebar,
-            '#category-list > a:not(.hidden), details:not(.hidden)[open] a:not(.hidden), details:not(.hidden) summary',
+            // The action-row buttons (Home / command / GitHub / RSS / Search /
+            // collapse) come FIRST so j/k step through them before the tree —
+            // they live in #sidebar-actions, above #category-list in the DOM,
+            // so they're naturally first in the flat nav list. Without them in
+            // the query, focusing a toolbar button left j/k with no index in
+            // the list, so it reset to the first tree item (sam.onl) instead of
+            // moving to the next button.
+            '#sidebar-actions a[href]:not([disabled]), #sidebar-actions button:not([disabled]), #category-list > a:not(.hidden), details:not(.hidden)[open] a:not(.hidden), details:not(.hidden) summary',
             (element) => {
                 if (lastInteractionWasPointer) {
                     return

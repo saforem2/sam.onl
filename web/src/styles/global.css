@@ -153,9 +153,9 @@
         color: #1db954;
     }
 
-    &[href*='sam.onl']:hover,
-    &[href*='sam.onl']:focus-visible,
-    &[href*='sam.onl'][data-vim-focused='true'] {
+    &[href*='samf.sh']:hover,
+    &[href*='samf.sh']:focus-visible,
+    &[href*='samf.sh'][data-vim-focused='true'] {
         --chip-accent: var(--accent, var(--blue));
         background-color: color-mix(
             in srgb,
@@ -215,9 +215,19 @@
         --font-stack-system:
             ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas,
             'Liberation Mono', 'Courier New', monospace;
+        /* Two independent font axes, each set by its own picker / attribute:
+             body  → --font-stack      via [data-mono-font]   (default QP)
+             code  → --code-font-family via [data-code-font]   (default Term)
+           Code-block rules reference --code-font-family (NOT --font-family),
+           so the two never bleed into each other. 'Symbols Nerd Font' is
+           appended to both so icons render regardless of either choice. */
         --font-stack: var(--font-stack-miosevka-qp);
         --font-family: var(--font-stack), 'Symbols Nerd Font';
-        --font-size: clamp(0.95rem, 0.6rem + 1vw, 1.0625rem);
+        /* Code default = Term (mono metrics for ASCII / column alignment),
+           independent of the body font. Overridden by [data-code-font]. */
+        --code-font-family:
+            var(--font-stack-miosevka-term), 'Symbols Nerd Font';
+        --font-size: clamp(0.95rem, 0.6rem + 1vw, 1rem);
         /* --line-height: 1.5; */
         --line-height: initial;
         --font-family-sans-serif: var(--font-family);
@@ -231,26 +241,32 @@
             from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
                 h / 0.5
         );
+        /* The in-article focus indicator (Doc.css) draws a single accent
+           outline ring around the vim/keyboard-focused block, plus a faint
+           accent wash (--focus-bg-strong) and accent text (--focus-fg). It
+           used to use an inset "rail" box-shadow, but that overlapped
+           flush-left text and needed a reserved left gutter, which in turn
+           extended code-block backgrounds; a plain outline avoids all of
+           that since it paints outside the box model. --focus-bg-strong was
+           also once near-invisible (0.025 alpha, the only signal being the
+           text recolor); 0.07 reads as a quiet but present highlight. */
         --focus-bg-strong: oklch(
             from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
-                h / 0.025
+                h / 0.07
         );
         --focus-hover-bg: oklch(
             from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
                 h / 0.1
         );
         --focus-fg: var(--accent, var(--red));
-        --focus-border: oklch(
-            from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c
-                h / 0.05
-        );
         --focus-marker: var(--accent, var(--red));
-        --focus-rail-size: 0pt;
-        --focus-region-border: var(--foreground0);
+        --focus-ring-size: 1px;
+        --focus-region-border: var(--foreground2);
     }
-    /* Mono-font picker — sets --font-stack (the user-visible part);
-       'Symbols Nerd Font' is always appended via --font-family so icons
-       keep rendering regardless of which mono font is chosen. */
+    /* ── BODY font axis — [data-mono-font] sets --font-stack. All 5 fonts.
+       'Symbols Nerd Font' is appended via --font-family so icons render
+       regardless of choice. (Attribute kept named data-mono-font so the
+       slides picker + returning visitors' stored key keep working.) */
     :root[data-mono-font='iosevka'] {
         --font-stack: var(--font-stack-iosevka);
     }
@@ -264,15 +280,34 @@
     :root[data-mono-font='miosevka-qp'] {
         --font-stack: var(--font-stack-miosevka-qp);
     }
-    /* mIosevka-QP is quasi-proportional — beautiful for prose, but
-       monospace alignment matters in codeblocks, kbd glyphs, and
-       inline `code`. Overlay Term (mono-metrics) onto those. */
-    :root[data-mono-font='miosevka-qp']
-        :is(pre, code, kbd, samp, var, .astro-code) {
-        font-family: var(--font-stack-miosevka-term), 'Symbols Nerd Font';
-    }
     :root[data-mono-font='system'] {
         --font-stack: var(--font-stack-system);
+    }
+
+    /* ── CODE font axis — [data-code-font] sets --code-font-family,
+       independent of the body font. True-monospace fonts only (no QP — it
+       breaks ASCII / column alignment). Base :root default is Term. */
+    :root[data-code-font='iosevka'] {
+        --code-font-family: var(--font-stack-iosevka), 'Symbols Nerd Font';
+    }
+    :root[data-code-font='victor-mono'] {
+        --code-font-family: var(--font-stack-victor-mono), 'Symbols Nerd Font';
+    }
+    :root[data-code-font='miosevka-term'] {
+        --code-font-family:
+            var(--font-stack-miosevka-term), 'Symbols Nerd Font';
+    }
+    :root[data-code-font='system'] {
+        --code-font-family: var(--font-stack-system), 'Symbols Nerd Font';
+    }
+
+    /* Apply the code font to all code-bearing elements. References
+       --code-font-family (not --font-family) so it's fully independent of
+       the body pick. NB: pre.astro-code also gets --code-font-family via the
+       unlayered rule near the emoji @font-face (an unlayered rule beats this
+       layered one), so both must use this var. */
+    :is(pre, code, kbd, samp, var, .astro-code) {
+        font-family: var(--code-font-family);
     }
     ::highlight(vim) {
         background-color: var(--foreground0);
@@ -344,74 +379,32 @@
         vertical-align: baseline;
     }
 
+    /* Headings carry NO hover/focus/active background of their own. They each
+       used to tint a faint same-hue bg on :hover/:focus-visible, but when you
+       vim-navigate (j/k) onto a heading that tint collided with the vim-focus
+       ring/box-shadow and muddied which item was actually selected. Dropping it
+       lets the vim-focus indicator be the sole highlight. (Heading text color
+       is unchanged.) */
     h1 {
         font-size: clamp(1.4rem, 1rem + 2vw, 2rem);
         color: oklch(from var(--h1, var(--red)) l c h);
-        &:hover,
-        &:focus-visible {
-            background-color: oklch(
-                from var(--h1, var(--red)) calc(l * var(--oklch-scale, 0.85)) c
-                    h / 0.1
-            );
-        }
     }
-    h1:hover,
-    h1:focus-visible {
-        text-decoration: none !important;
-        background-color: oklch(
-            from var(--h1, var(--red)) calc(l * var(--oklch-scale, 0.85)) c h /
-                0.1
-        );
-    }
-
     h2 {
         font-size: clamp(1.2rem, 0.9rem + 1.5vw, 1.6rem);
         color: oklch(from var(--h2, var(--orange)) l c h);
-        &:hover,
-        &:focus-visible {
-            background-color: oklch(
-                from var(--h2, var(--orange)) calc(l * var(--oklch-scale, 0.85))
-                    c h / 0.1
-            ) !important;
-        }
     }
-
     h3 {
         font-size: clamp(1.05rem, 0.8rem + 1vw, 1.35rem);
         color: oklch(from var(--h3, var(--green)) l c h);
-        &:hover,
-        &:focus-visible {
-            background-color: oklch(
-                from var(--h3, var(--green)) calc(l * 0.85) c h / 0.1
-            );
-        }
     }
     h4 {
         color: oklch(from var(--h4, #50fa7b) l c h);
-        &:hover,
-        &:focus-visible {
-            background-color: oklch(
-                from var(--h4, #50fa7b) calc(l * 0.85) c h / 0.1
-            );
-        }
     }
     h5 {
         color: oklch(from var(--h5, #fd971f) l c h);
-        &:hover,
-        &:focus-visible {
-            background-color: oklch(
-                from var(--h5, #fd971f) calc(l * 0.85) c h / 0.1
-            );
-        }
     }
     h6 {
         color: oklch(from var(--h6, #f92672) l c h);
-        &:hover,
-        &:focus-visible {
-            background-color: oklch(
-                from var(--h6, #f92672) calc(l * 0.85) c h / 0.1
-            );
-        }
     }
 
     body,
@@ -706,6 +699,104 @@
         --callout-color: var(--green, #1da811);
     }
 
+    /* Single-line callout (authored as `[!TYPE|inline]`): the marker glyph,
+       summary, and body all sit on ONE line — no hanging indent, no wrap.
+       Use for compact label/link chips (e.g. a repo badge). The body often
+       carries the real content (e.g. a link), so it's laid out inline rather
+       than hidden; an empty placeholder body just collapses to nothing. */
+    .callout-inline {
+        display: flex;
+        align-items: baseline;
+        /* Icon→text spacing is handled by a negative margin-inline-end on the
+           ::before icon (below), not by flex gap: the MDI glyphs carry built-in
+           padding inside their 24×24 viewBox, so the visible glyph sits inset
+           within its 1em mask box. A flex gap stacks ON TOP of that intrinsic
+           pad and read as too much space, so gap is 0 and the icon's negative
+           margin pulls the text back over the glyph's empty right edge. */
+        gap: 0;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        margin-block: 0.25lh;
+    }
+    /* Inline callouts show no text type-label and no +/x toggle glyph — hide
+       the summary entirely (whether it's empty or carries a title like the
+       LastUpdated component's "📝 Last Updated"). The type is conveyed by the
+       SVG icon on .callout-inline::before instead, and the body carries the
+       content. !important to beat the WebTUI accordion `summary { display }`. */
+    .callout-inline > summary {
+        display: none !important;
+    }
+    .callout-inline > summary::before {
+        content: none !important;
+    }
+    /* Body parts inline, margins stripped so they don't break the row.
+       Text takes the callout's accent color (like the type label on a normal
+       callout: Note=blue, Important=purple, …). */
+    .callout-inline > :not(summary) {
+        display: inline;
+        margin: 0 !important;
+        color: var(--callout-color);
+    }
+    /* An empty/whitespace-only body paragraph (a `> &nbsp;` placeholder)
+       shouldn't reserve space. */
+    .callout-inline > p:empty {
+        display: none !important;
+    }
+
+    /* Per-type icon leading the inline callout, tinted with the callout's own
+       accent color — replaces the spelled-out type label. Implemented as an
+       inline-SVG mask (Material Design Icons) rather than a Nerd Font glyph:
+       the icons we want (notably `fire` / `alert-decagram-outline`) live in
+       the high MD codepoint range the SUBSET SymbolsNerdFont doesn't carry, so
+       font glyphs there rendered as tofu. A mask is font-independent and
+       `background: var(--callout-color)` colors the glyph to match the type. */
+    .callout-inline::before {
+        content: '';
+        display: inline-block;
+        width: 1em;
+        height: 1em;
+        flex-shrink: 0;
+        /* Pull the following text left over the glyph's intrinsic right padding
+           (the MDI viewBox inset) so the icon→text gap reads tight. */
+        margin-inline-end: -0.3em;
+        transform: translateY(0.12em); /* optical baseline nudge */
+        background-color: var(--callout-color);
+        mask-repeat: no-repeat;
+        mask-position: center;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        -webkit-mask-size: contain;
+        /* note — information-outline */
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z'/%3E%3C/svg%3E");
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z'/%3E%3C/svg%3E");
+    }
+    /* tip — lightbulb-on-outline */
+    .callout-inline[data-callout='tip']::before {
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20,11H23V13H20V11M1,11H4V13H1V11M13,1V4H11V1H13M4.92,3.5L7.05,5.64L5.63,7.05L3.5,4.93L4.92,3.5M16.95,5.63L19.07,3.5L20.5,4.93L18.37,7.05L16.95,5.63M12,6A6,6 0 0,1 18,12C18,14.22 16.79,16.16 15,17.2V19A1,1 0 0,1 14,20H10A1,1 0 0,1 9,19V17.2C7.21,16.16 6,14.22 6,12A6,6 0 0,1 12,6M14,21V22A1,1 0 0,1 13,23H11A1,1 0 0,1 10,22V21H14M11,18H13V15.87C14.73,15.43 16,13.86 16,12A4,4 0 0,0 12,8A4,4 0 0,0 8,12C8,13.86 9.27,15.43 11,15.87V18Z'/%3E%3C/svg%3E");
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20,11H23V13H20V11M1,11H4V13H1V11M13,1V4H11V1H13M4.92,3.5L7.05,5.64L5.63,7.05L3.5,4.93L4.92,3.5M16.95,5.63L19.07,3.5L20.5,4.93L18.37,7.05L16.95,5.63M12,6A6,6 0 0,1 18,12C18,14.22 16.79,16.16 15,17.2V19A1,1 0 0,1 14,20H10A1,1 0 0,1 9,19V17.2C7.21,16.16 6,14.22 6,12A6,6 0 0,1 12,6M14,21V22A1,1 0 0,1 13,23H11A1,1 0 0,1 10,22V21H14M11,18H13V15.87C14.73,15.43 16,13.86 16,12A4,4 0 0,0 12,8A4,4 0 0,0 8,12C8,13.86 9.27,15.43 11,15.87V18Z'/%3E%3C/svg%3E");
+    }
+    /* important — fire */
+    .callout-inline[data-callout='important']::before {
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13 3.23 12.17 3.75 11.46 4.32C8.87 6.4 7.85 10.07 9.07 13.22C9.11 13.32 9.15 13.42 9.15 13.55C9.15 13.77 9 13.97 8.8 14.05C8.57 14.15 8.33 14.09 8.14 13.93C8.08 13.88 8.04 13.83 8 13.76C6.87 12.33 6.69 10.28 7.45 8.64C5.78 10 4.87 12.3 5 14.47C5.06 14.97 5.12 15.47 5.29 15.97C5.43 16.57 5.7 17.17 6 17.7C7.08 19.43 8.95 20.67 10.96 20.92C13.1 21.19 15.39 20.8 17.03 19.32C18.86 17.66 19.5 15 18.56 12.72L18.43 12.46C18.22 12 17.66 11.2 17.66 11.2M14.5 17.5C14.22 17.74 13.76 18 13.4 18.1C12.28 18.5 11.16 17.94 10.5 17.28C11.69 17 12.4 16.12 12.61 15.23C12.78 14.43 12.46 13.77 12.33 13C12.21 12.26 12.23 11.63 12.5 10.94C12.69 11.32 12.89 11.7 13.13 12C13.9 13 15.11 13.44 15.37 14.8C15.41 14.94 15.43 15.08 15.43 15.23C15.46 16.05 15.1 16.95 14.5 17.5H14.5Z'/%3E%3C/svg%3E");
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13 3.23 12.17 3.75 11.46 4.32C8.87 6.4 7.85 10.07 9.07 13.22C9.11 13.32 9.15 13.42 9.15 13.55C9.15 13.77 9 13.97 8.8 14.05C8.57 14.15 8.33 14.09 8.14 13.93C8.08 13.88 8.04 13.83 8 13.76C6.87 12.33 6.69 10.28 7.45 8.64C5.78 10 4.87 12.3 5 14.47C5.06 14.97 5.12 15.47 5.29 15.97C5.43 16.57 5.7 17.17 6 17.7C7.08 19.43 8.95 20.67 10.96 20.92C13.1 21.19 15.39 20.8 17.03 19.32C18.86 17.66 19.5 15 18.56 12.72L18.43 12.46C18.22 12 17.66 11.2 17.66 11.2M14.5 17.5C14.22 17.74 13.76 18 13.4 18.1C12.28 18.5 11.16 17.94 10.5 17.28C11.69 17 12.4 16.12 12.61 15.23C12.78 14.43 12.46 13.77 12.33 13C12.21 12.26 12.23 11.63 12.5 10.94C12.69 11.32 12.89 11.7 13.13 12C13.9 13 15.11 13.44 15.37 14.8C15.41 14.94 15.43 15.08 15.43 15.23C15.46 16.05 15.1 16.95 14.5 17.5H14.5Z'/%3E%3C/svg%3E");
+    }
+    /* warning — alert-outline */
+    .callout-inline[data-callout='warning']::before {
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12,2L1,21H23M12,6L19.53,19H4.47M11,10V14H13V10M11,16V18H13V16'/%3E%3C/svg%3E");
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12,2L1,21H23M12,6L19.53,19H4.47M11,10V14H13V10M11,16V18H13V16'/%3E%3C/svg%3E");
+    }
+    /* error — alert-decagram-outline */
+    .callout-inline[data-callout='error']::before {
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M23,12L20.56,14.78L20.9,18.46L17.29,19.28L15.4,22.46L12,21L8.6,22.47L6.71,19.29L3.1,18.47L3.44,14.78L1,12L3.44,9.21L3.1,5.53L6.71,4.72L8.6,1.54L12,3L15.4,1.54L17.29,4.72L20.9,5.54L20.56,9.22L23,12M20.33,12L18.5,9.89L18.74,7.1L16,6.5L14.58,4.07L12,5.18L9.42,4.07L8,6.5L5.26,7.09L5.5,9.88L3.67,12L5.5,14.1L5.26,16.9L8,17.5L9.42,19.93L12,18.81L14.58,19.92L16,17.5L18.74,16.89L18.5,14.1L20.33,12M11,15H13V17H11V15M11,7H13V13H11V7'/%3E%3C/svg%3E");
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M23,12L20.56,14.78L20.9,18.46L17.29,19.28L15.4,22.46L12,21L8.6,22.47L6.71,19.29L3.1,18.47L3.44,14.78L1,12L3.44,9.21L3.1,5.53L6.71,4.72L8.6,1.54L12,3L15.4,1.54L17.29,4.72L20.9,5.54L20.56,9.22L23,12M20.33,12L18.5,9.89L18.74,7.1L16,6.5L14.58,4.07L12,5.18L9.42,4.07L8,6.5L5.26,7.09L5.5,9.88L3.67,12L5.5,14.1L5.26,16.9L8,17.5L9.42,19.93L12,18.81L14.58,19.92L16,17.5L18.74,16.89L18.5,14.1L20.33,12M11,15H13V17H11V15M11,7H13V13H11V7'/%3E%3C/svg%3E");
+    }
+    /* success — check-circle-outline */
+    .callout-inline[data-callout='success']::before {
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M12 20C7.59 20 4 16.41 4 12S7.59 4 12 4 20 7.59 20 12 16.41 20 12 20M16.59 7.58L10 14.17L7.41 11.59L6 13L10 17L18 9L16.59 7.58Z'/%3E%3C/svg%3E");
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M12 20C7.59 20 4 16.41 4 12S7.59 4 12 4 20 7.59 20 12 16.41 20 12 20M16.59 7.58L10 14.17L7.41 11.59L6 13L10 17L18 9L16.59 7.58Z'/%3E%3C/svg%3E");
+    }
+
     details[is-~='accordion']:is(
             .callout,
             .callout-tip,
@@ -746,14 +837,15 @@
             vertical-align: top;
         }
     }
-    /* Callout summary `+` / `x` glyph: 1ch breathing room on both
-       sides instead of just the trailing 1ch margin from the generic
-       accordion rule. Written as a flat descendant selector instead of
-       nested inside the .callout block — Lightning CSS's nesting
-       flattener drops attribute+class compounds and the rule would
-       leak to every accordion summary. */
+    /* Callout summary `+` / `x` glyph: drop the leading margin so the
+       marker sits flush at the indent (the generic accordion rule's
+       trailing 1ch toward the title is kept — only start is zeroed here).
+       Written as a flat descendant selector instead of nested inside the
+       .callout block — Lightning CSS's nesting flattener drops
+       attribute+class compounds and the rule would leak to every
+       accordion summary. */
     .callout > summary::before {
-        margin-inline: 1ch;
+        margin-inline: 0;
     }
 
     /* Kept OUTSIDE the .callout nesting block — Lightning CSS's nesting
@@ -806,6 +898,17 @@
         margin-left: 3ch;
     }
 
+    /* Blank line before a top-level list so it reads as a discrete block
+       instead of fusing with the intro paragraph above it (e.g. "The
+       default flow:" immediately followed by the numbered steps). Scope to
+       lists that are NOT nested inside an <li> so sublists stay tight.
+       `!important` because the heading-collapse content reset applies a
+       `margin: 0 !important` to its children that an unflagged rule can't
+       beat; mirrors how other overrides in this codebase handle that reset. */
+    #main-content :is(ol, ul):not(li > ol):not(li > ul):not(li ol):not(li ul) {
+        margin-block-start: 1lh !important;
+    }
+
     /* GFM task-list checkboxes — `- [ ] item` / `- [x] item`. Render as
        a TUI "[ ]" / "[x]" chip in monospace. Browsers also accept clicks
        on these (a rehype plugin strips the `disabled` attribute that GFM
@@ -822,10 +925,10 @@
         -webkit-appearance: none;
         display: inline-block;
         position: relative;
-        /* Width sized for "[x]" in monospace; the bracket-checkmark
-           "[✓]" combo widens because U+2713 falls back to a non-mono
-           font with wider advance — chars rendered side-by-side
-           naturally pick up that width without needing extra. */
+        /* Width sized for the 3-char "[ ]" / "[x]" chip. The checked
+           "[✓]" wants 4ch (✓ is double-width in Iosevka QP); it's
+           pulled back to 3ch with letter-spacing on :checked::before
+           so every row keeps this same 3ch bracket column. */
         width: 3ch;
         height: 1lh;
         margin: 0 0.5ch 0 0;
@@ -859,15 +962,30 @@
         font-variant-numeric: tabular-nums;
     }
     .task-list-item input[type='checkbox']:checked::before {
-        /* Nerd Font check glyph (U+F00C, Font Awesome 'check') instead
-           of the literal 'x' character — reads more like a real
-           checkbox without the wider advance issues of U+2713 ✓.
-           Requires a Nerd-Font-patched mono (Iosevka Nerd Font etc).
-           Falls back to '[x]' on unpatched fonts (won't render the
-           glyph, just the brackets — better than a missing tofu). */
-        content: '[\f00c]';
+        /* Literal check mark U+2713 ✓ in brackets, green for completion.
+           The bracket-column tightening for quasi-proportional fonts is
+           applied separately below (only the QP font draws ✓ double-
+           width); every true-monospace font renders `[✓]` at a clean 3ch
+           already, so it gets no letter-spacing. */
+        content: '[✓]';
         color: var(--green, #4caf50);
         font-weight: var(--font-weight-bold);
+    }
+    /* QP only: ✓ has a 2ch advance in mIosevka-QP (quasi-proportional),
+       so `[✓]` is naturally 4ch and would overflow the 3ch box and push
+       the bracket column out of line with unchecked `[ ]` rows. Snug it
+       back to ~3ch. letter-spacing only tightens advances — no glyph
+       distortion (unlike scaleX). Scoped to QP (the default font, set via
+       the inline script) + the no-JS absent case; Term/Iosevka/Victor/
+       system are true-mono (✓ = 1ch, `[✓]` already 3ch) and must NOT be
+       tightened or the brackets crowd the check. */
+    :root:not([data-mono-font])
+        .task-list-item
+        input[type='checkbox']:checked::before,
+    :root[data-mono-font='miosevka-qp']
+        .task-list-item
+        input[type='checkbox']:checked::before {
+        letter-spacing: -0.33ch;
     }
     .task-list-item input[type='checkbox']:focus-visible::before {
         text-decoration: underline;
@@ -1000,6 +1118,22 @@ html[data-webtui-theme='catppuccin-latte'] .dark-content {
     display: none !important;
 }
 
+/* Neovim themes have clear light/dark semantics, so wire the
+   light-content/dark-content toggles. The *= matchers cover both palette
+   variants (nvim-light-role / nvim-light-hue, nvim-dark-role / nvim-dark-hue). */
+html[data-webtui-theme*='nvim-light'] .light-content {
+    display: revert !important;
+}
+html[data-webtui-theme*='nvim-light'] .dark-content {
+    display: none !important;
+}
+html[data-webtui-theme*='nvim-dark'] .light-content {
+    display: none !important;
+}
+html[data-webtui-theme*='nvim-dark'] .dark-content {
+    display: revert !important;
+}
+
 html[data-webtui-theme='custom-light'] .astro-code {
     --pre-background: oklch(from var(--code-bg, #f8f8f8) l c h);
     background-color: var(--pre-background) !important;
@@ -1016,6 +1150,15 @@ html[data-webtui-theme='custom-light'] .astro-code span {
    that survives token-class changes. */
 html[data-webtui-theme='custom-light'] .astro-code span[style*='#C2C3C5'] {
     color: #6a6e76 !important;
+}
+
+/* Recolor min-light's amber #FF9800 (function params / variables — n_steps,
+   start, end, kind, …) to the warmer red-orange #FF5722, matching the site
+   palette's --orange. Same inline-style hook as the comment override above;
+   shikiConfig.colorReplacements wasn't honored for the bundled min-light
+   theme, so this CSS hook is the reliable route. */
+html[data-webtui-theme='custom-light'] .astro-code span[style*='#FF9800'] {
+    color: #ff5722 !important;
 }
 
 html[data-webtui-theme='custom-dark'] .astro-code span {
@@ -1065,6 +1208,47 @@ html[data-webtui-theme='sam-dark'] .astro-code span {
     font-weight: var(--shiki-sam-dark-font-weight) !important;
     text-decoration: var(--shiki-sam-dark-text-decoration) !important;
     --pre-background: var(--shiki-sam-dark-bg, #282828);
+    background-color: var(--pre-background) !important;
+}
+
+/* Neovim Shiki themes — onelight (light) / cyberdream (dark), generated from
+   the default themes in two palette-swap variants (role / hue). Same activation
+   mechanism as the sam-* themes: --shiki-<key>-* CSS vars baked into each code
+   block at build by shikiConfig.themes. */
+html[data-webtui-theme='nvim-light-role'] .astro-code,
+html[data-webtui-theme='nvim-light-role'] .astro-code span {
+    color: var(--shiki-nvim-light-role) !important;
+    font-style: var(--shiki-nvim-light-role-font-style) !important;
+    font-weight: var(--shiki-nvim-light-role-font-weight) !important;
+    text-decoration: var(--shiki-nvim-light-role-text-decoration) !important;
+    --pre-background: var(--shiki-nvim-light-role-bg, #ffffff);
+    background-color: var(--pre-background) !important;
+}
+html[data-webtui-theme='nvim-light-hue'] .astro-code,
+html[data-webtui-theme='nvim-light-hue'] .astro-code span {
+    color: var(--shiki-nvim-light-hue) !important;
+    font-style: var(--shiki-nvim-light-hue-font-style) !important;
+    font-weight: var(--shiki-nvim-light-hue-font-weight) !important;
+    text-decoration: var(--shiki-nvim-light-hue-text-decoration) !important;
+    --pre-background: var(--shiki-nvim-light-hue-bg, #ffffff);
+    background-color: var(--pre-background) !important;
+}
+html[data-webtui-theme='nvim-dark-role'] .astro-code,
+html[data-webtui-theme='nvim-dark-role'] .astro-code span {
+    color: var(--shiki-nvim-dark-role) !important;
+    font-style: var(--shiki-nvim-dark-role-font-style) !important;
+    font-weight: var(--shiki-nvim-dark-role-font-weight) !important;
+    text-decoration: var(--shiki-nvim-dark-role-text-decoration) !important;
+    --pre-background: var(--shiki-nvim-dark-role-bg, #1c1c1c);
+    background-color: var(--pre-background) !important;
+}
+html[data-webtui-theme='nvim-dark-hue'] .astro-code,
+html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
+    color: var(--shiki-nvim-dark-hue) !important;
+    font-style: var(--shiki-nvim-dark-hue-font-style) !important;
+    font-weight: var(--shiki-nvim-dark-hue-font-weight) !important;
+    text-decoration: var(--shiki-nvim-dark-hue-text-decoration) !important;
+    --pre-background: var(--shiki-nvim-dark-hue-bg, #1c1c1c);
     background-color: var(--pre-background) !important;
 }
 
@@ -1173,8 +1357,11 @@ pre.astro-code span.line {
 pre.astro-code,
 pre.astro-code code,
 pre.astro-code .line {
+    /* --code-font-family (NOT --font-family) so QP mode renders code in
+       Term. This rule is unlayered and so beats the layered overlay in
+       @layer base — it must carry the code font itself or QP leaks in. */
     font-family:
-        var(--font-family), 'inline-emoji-shrink', 'Apple Color Emoji',
+        var(--code-font-family), 'inline-emoji-shrink', 'Apple Color Emoji',
         'Segoe UI Emoji', 'Noto Color Emoji';
 }
 
@@ -1455,6 +1642,19 @@ p:has(> img) {
     }
 }
 
+/* svgbob diagrams (rendered ASCII art, /posts/svgbob). Self-contained SVGs
+   embedded as <img>; the colors are baked in (fixed #838383 grey, legible on
+   both themes — matches the original site, no theme-reactive recolor). Scale
+   to the content column and stay aspect-true; centered. The tall showcase
+   diagram (760x7520) is intentionally shown full-height per author request,
+   so no max-height cap here. */
+.svgbob-figure {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-inline: auto;
+}
+
 html[data-webtui-theme|='catppuccin'] {
     --callout-bg: oklch(
         from var(--accent, var(--red)) calc(l * var(--oklch-scale, 1.15)) c h /
@@ -1535,11 +1735,6 @@ html[data-webtui-theme='catppuccin'] {
    `[data-webtui-theme|='catppuccin']` block doesn't reach here, so
    we set --h2 and --h3 explicitly. Other heading levels inherit
    the global fallback (orange/green/etc.). */
-html[data-webtui-theme='custom-dark'] {
-    --h2: var(--blue);
-    --h3: var(--green);
-}
-
 /* webtui's catppuccin pack paints h1-h6 with hardcoded palette refs
    (h1=red, h2=peach, …) which makes the heading text disagree with
    our `##`/`###` ::before prefixes (those use --h1..--h6 and pick up
@@ -1638,7 +1833,10 @@ html[data-webtui-theme='catppuccin-latte'] {
        overflow-x: auto still acts as a fallback when a cell
        truly can't wrap further. */
     #main-content table {
-        width: 100%;
+        /* width: auto so tables size to their content rather than always
+           stretching edge-to-edge. max-width: 100% + the cell-wrap rules
+           below still keep wide tables inside the scroll wrapper on mobile. */
+        width: auto;
         max-width: 100%;
     }
     #main-content table th,
@@ -1811,6 +2009,52 @@ html[data-webtui-theme='catppuccin-latte'] {
     #main-content a[data-footnote-backref] {
         background-color: transparent;
         padding: 0;
+    }
+
+    /* CSL bibliography (#refs) — hanging indent so each entry's continuation
+       lines sit indented under its first line, via the `text-indent: <len>
+       hanging` one-liner (continuation lines indent, first line flush). */
+    #refs p,
+    #refs .csl-entry {
+        text-indent: 4ch hanging;
+    }
+
+    /* In-content WebTUI box-= boxes (e.g. the demo/example boxes in the
+       webtui docs): tactile hover/focus lift + hard TUI shadow in the box's
+       own border color, matching the .callout / sidebar-action treatment.
+       Scoped to #main-content and explicitly NOT the article shell
+       (#doc-article) — the page chrome shouldn't react to hover. Callouts
+       have their own hover rule, so exclude them too.
+
+       Written as FLAT selectors (no & nesting) — Lightning CSS's nesting
+       flattener mangles `&:hover` inside a compound :is()/:not() parent (see
+       prior occurrences in this file), which silently dropped this rule. */
+    #main-content [box-~='square']:not(#doc-article):not(.callout),
+    #main-content [box-~='round']:not(#doc-article):not(.callout),
+    #main-content [box-~='double']:not(#doc-article):not(.callout) {
+        transition:
+            transform 120ms ease-out,
+            box-shadow 120ms ease-out;
+    }
+    /* The pagination links (.next/.prev) are box-= boxes too, but they get
+       their own flat-fill hover in Doc.css instead of this tactile lift
+       (the translate + offset shadow read as a clumsy detached shadow on a
+       wide block). Exclude them here so Doc.css's hover isn't out-specified
+       (this selector carries two IDs via :not(#doc-article)). */
+    #main-content
+        [box-~='square']:not(#doc-article):not(.callout):not(.next):not(
+            .prev
+        ):is(:hover, :focus-within),
+    #main-content
+        [box-~='round']:not(#doc-article):not(.callout):not(.next):not(
+            .prev
+        ):is(:hover, :focus-within),
+    #main-content
+        [box-~='double']:not(#doc-article):not(.callout):not(.next):not(
+            .prev
+        ):is(:hover, :focus-within) {
+        transform: translate(-1px, -1px);
+        box-shadow: 2px 2px 0 0 var(--box-border-color, var(--background3));
     }
 
     /* Local overrides of upstream WebTUI typography defaults.

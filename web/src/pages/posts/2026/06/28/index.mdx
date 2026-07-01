@@ -1,0 +1,161 @@
+---
+layout: '@/layouts/Doc.astro'
+title: 'Migrating from Quarto to Astro: samforeman.me → samf.sh'
+date: 2026-06-28
+date-created: 2026-06-28
+date-modified: today
+description: 'Why I moved my personal site off Quarto and onto Astro, with measured before/after comparisons of Lighthouse scores, build time, and site size.'
+---
+
+For about three years my personal site lived at
+[samforeman.me](https://samforeman.me), built with [Quarto][quarto]. Quarto was a
+great fit at the time: I write a lot of computational notebooks, and it renders
+`.qmd` and `.ipynb` straight to a website with executed output baked in. But the
+site grew to hundreds of source documents, and the friction grew with it: builds
+took minutes, the output directory ballooned past 800&nbsp;MB, and customizing
+anything past the theme meant fighting the framework.
+
+So I rebuilt it on [Astro][astro] at [samf.sh](https://samf.sh). This post is the
+honest accounting: what got better, what is just different, and the numbers
+behind both.
+
+## What carried over
+
+The rebuild was not a rewrite from zero. The parts I actually liked about the old
+site came along:
+
+- **Math**, via [KaTeX][katex] (was MathJax).
+- **Diagrams**, via [Mermaid][mermaid], tree-shaken down to only the diagram
+  types I use.
+- **ASCII diagrams**, rendered to SVG with [svgbob][svgbob] at build time.
+- **Syntax highlighting**, via [Shiki][shiki] (was highlight.js), with a couple
+  of custom Neovim-derived themes.
+- **Self-hosted fonts** (Iosevka and friends), subset to the glyphs the site
+  actually uses.
+
+The content itself is Markdown/MDX now instead of Quarto Markdown. For prose-first
+posts that is a clean port. For notebook-heavy posts it is more work, since Astro
+does not execute notebooks: where the old site re-ran a `.ipynb` on every render,
+the new site treats committed output (charts as static SVG/PNG, tables as MDX) as
+the source of truth. That is a real tradeoff, covered below.
+
+## Lighthouse
+
+Rather than cherry-pick one page, I took the 52 routes that exist on both sites
+and **measured 8 of them at random**, each on desktop and mobile, against the
+live production sites in the same session. The eight: `/posts/dope-slides`,
+`/posts/jupyter/test`, `/posts/svgbob`, `/projects`, `/talks/2025/10/15`,
+`/talks/llms-at-scale`, `/talks/llms-on-polaris`, `/talks/openskai25/ai4science`.
+The home page (`/`) is listed first as a reference; it is not part of the random
+sample, so it is excluded from the mean.
+
+Performance scores (green ≥ 90, amber 50-89, red < 50, Lighthouse's own bands):
+
+| Page                           |                   Desktop old                    |                   Desktop new                   |                  Mobile old                   |                    Mobile new                    |
+| :----------------------------- | :----------------------------------------------: | :---------------------------------------------: | :-------------------------------------------: | :----------------------------------------------: |
+| `/` (home)                     |   <span style="color: var(--yellow)">84</span>   |   <span style="color: var(--green)">96</span>   | <span style="color: var(--yellow)">51</span>  |   <span style="color: var(--yellow)">84</span>   |
+| `/posts/dope-slides`           |   <span style="color: var(--yellow)">84</span>   |   <span style="color: var(--green)">95</span>   |   <span style="color: var(--red)">38</span>   |   <span style="color: var(--yellow)">77</span>   |
+| `/posts/jupyter/test`          |   <span style="color: var(--yellow)">72</span>   |   <span style="color: var(--green)">95</span>   |   <span style="color: var(--red)">28</span>   |   <span style="color: var(--yellow)">67</span>   |
+| `/posts/svgbob`                |   <span style="color: var(--yellow)">67</span>   |   <span style="color: var(--green)">99</span>   | <span style="color: var(--yellow)">57</span>  |   <span style="color: var(--yellow)">81</span>   |
+| `/projects`                    |   <span style="color: var(--yellow)">69</span>   |  <span style="color: var(--yellow)">68</span>   | <span style="color: var(--yellow)">51</span>  |   <span style="color: var(--yellow)">87</span>   |
+| `/talks/2025/10/15`            |   <span style="color: var(--yellow)">85</span>   |   <span style="color: var(--green)">99</span>   |                      n/a                      |   <span style="color: var(--yellow)">67</span>   |
+| `/talks/llms-at-scale`         |   <span style="color: var(--yellow)">86</span>   |   <span style="color: var(--green)">99</span>   | <span style="color: var(--yellow)">52</span>  |   <span style="color: var(--yellow)">67</span>   |
+| `/talks/llms-on-polaris`       |   <span style="color: var(--yellow)">83</span>   |   <span style="color: var(--green)">99</span>   |   <span style="color: var(--red)">48</span>   |   <span style="color: var(--yellow)">63</span>   |
+| `/talks/openskai25/ai4science` |   <span style="color: var(--yellow)">71</span>   |  <span style="color: var(--yellow)">75</span>   |   <span style="color: var(--red)">49</span>   |   <span style="color: var(--yellow)">75</span>   |
+| **Mean**                       | <span style="color: var(--yellow)">**77**</span> | <span style="color: var(--green)">**91**</span> | <span style="color: var(--red)">**46**</span> | <span style="color: var(--yellow)">**73**</span> |
+
+The new site is faster on **every** page on mobile, and on all but one on desktop
+(`/projects` is a statistical tie). The mean lift is +14 on desktop and **+27 on
+mobile**, where the old Quarto pages were routinely in the red.
+
+A few honest caveats:
+
+- **Mobile is the throttled profile** (slow 4G + a 4&times; CPU slowdown), which
+  is why even the new site sits in amber there. The point is the relative jump,
+  not the absolute mobile number.
+- **Lighthouse is point-in-time**, sensitive to CPU/network contention at the
+  moment of the run (these ran on a busy shared machine). Treat single-digit
+  gaps as noise; the durable signal is the consistent old&nbsp;&rarr;&nbsp;new
+  lift across a random sample, not any one cell. (`/talks/2025/10/15` old-mobile
+  is `n/a`: that one run failed to produce a score.)
+- This table is performance only. On the full category sweep the new site also
+  scores **100 on Best Practices and SEO** across the board (up from the low 90s
+  and, on posts, the 70s), driven by structured metadata, correct caching
+  headers, and no third-party console noise.
+
+## Build time
+
+|        | Command                                |                            Time                             |
+| :----- | :------------------------------------- | :---------------------------------------------------------: |
+| Quarto | `quarto render --no-clean`             | <span style="color: var(--red)">7&nbsp;min 49&nbsp;s</span> |
+| Astro  | `bun run build` (cold, caches cleared) |   <span style="color: var(--green)">**99&nbsp;s**</span>    |
+
+This is not a pure apples-to-apples race: Quarto's time includes _executing_
+notebooks, which Astro does not do. Quarto caches executed output (its `freeze`
+mechanism), so warm rebuilds are faster than the cold number above. But for my
+actual workflow (edit prose, rebuild, preview) the Astro loop is the one that
+feels instant, and the dev server's hot reload makes most rebuilds unnecessary
+anyway.
+
+## Site size
+
+|                  | Built site  | HTML pages |                        Framework assets                        |                         CSS                          |                          JS                          |
+| :--------------- | :---------: | :--------: | :------------------------------------------------------------: | :--------------------------------------------------: | :--------------------------------------------------: |
+| Quarto (`docs/`) | 851&nbsp;MB |    100     | <span style="color: var(--red)">`site_libs` 152&nbsp;MB</span> |  <span style="color: var(--red)">128&nbsp;MB</span>  |                     8.5&nbsp;MB                      |
+| Astro (`dist/`)  | 523&nbsp;MB |    145     |  <span style="color: var(--green)">`_astro` 17&nbsp;MB</span>  | <span style="color: var(--green)">0.3&nbsp;MB</span> | <span style="color: var(--green)">4.8&nbsp;MB</span> |
+
+Two things deserve a caveat so the numbers are not misleading:
+
+1. **Most of both totals is images.** The old `docs/` carried roughly 500&nbsp;MB
+   of figures; the new site is smaller mostly because I have not migrated every
+   image yet, not because Astro magically shrinks media. The fairer comparison is
+   the _framework overhead_, where the gap is real and large.
+2. **That CSS column is the real story.** Quarto ships full framework CSS
+   (Bootstrap and friends) per page library, which is how 947 CSS files add up to
+   128&nbsp;MB on disk. Astro emits one small scoped bundle: **0.3&nbsp;MB total**.
+   That is a ~400&times; reduction in stylesheet weight on disk, and it shows up
+   in what the browser downloads.
+
+### Per-page transfer
+
+What a visitor actually downloads for the HTML document (the new site serves
+Brotli/gzip from Cloudflare):
+
+| Page |                       Quarto (raw / gzip)                       |                          Astro (raw / gzip)                           |
+| :--- | :-------------------------------------------------------------: | :-------------------------------------------------------------------: |
+| Home | 288&nbsp;KB / <span style="color: var(--red)">56&nbsp;KB</span> | 255&nbsp;KB / <span style="color: var(--green)">**33&nbsp;KB**</span> |
+| Post |                    182&nbsp;KB / 34&nbsp;KB                     |   305&nbsp;KB / <span style="color: var(--green)">31&nbsp;KB</span>   |
+
+The home page compresses to about 60% of the old size. The post's raw HTML is
+actually larger on the new site (more inline content), but it still gzips a touch
+smaller, and it loads against a fraction of the old CSS/JS payload.
+
+## What I gave up
+
+To keep this honest, the migration was not free:
+
+- **No notebook execution.** Quarto re-runs `.qmd`/`.ipynb` and embeds fresh
+  output. Astro does not, so posts that relied on that now commit their output as
+  static assets. For reproducible-by-rebuild posts that is a downgrade; for
+  everything else it removed a slow, fragile step.
+- **More manual wiring.** Quarto gives you a themed site for free. On Astro I own
+  the layout, the components, and the build config. That is the whole point (it is
+  why customizing is finally pleasant), but it was real up-front work.
+- **A port, not a copy.** Hundreds of documents had to move from Quarto Markdown
+  to MDX. Most were mechanical; some were not.
+
+## Was it worth it
+
+For me, yes. The site is faster on every measured axis, the build loop went from
+minutes to seconds, the framework overhead dropped by more than an order of
+magnitude, and I can finally change things without arguing with the toolchain. If
+you live in notebooks and want execution-on-render, Quarto is still excellent and
+I would not talk you out of it. But if your site is mostly prose and components,
+and you have outgrown the theme, Astro is a very comfortable place to land.
+
+[quarto]: https://quarto.org
+[astro]: https://astro.build
+[katex]: https://katex.org
+[mermaid]: https://mermaid.js.org
+[svgbob]: https://github.com/ivanceras/svgbob
+[shiki]: https://shiki.style

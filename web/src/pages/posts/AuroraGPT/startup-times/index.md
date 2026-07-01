@@ -5,9 +5,6 @@ date: 2024-03-21
 description: 'Methodology for measuring and reducing distributed training startup times on Aurora.'
 ---
 
-Sam Foreman
-2024-03-21
-
 - [Response](#response)
   - [Measuring / Calculating Startup Time](#sec-measurements)
 - [Minimal Working Example](#minimal-working-example)
