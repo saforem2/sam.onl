@@ -75,3 +75,35 @@ for branch deploys). GitHub PR check posts a link automatically.
 | Sites       | Unlimited                                       |
 
 Reset at the start of each calendar month, UTC.
+
+## Google Analytics (GA4) — dashboard steps after the samf.sh rename
+
+The GA tag is wired in `web/src/layouts/Layout.astro` (measurement ID
+`G-RD883HJ1J2`). A GA4 measurement ID is **not** domain-locked — the tag
+collects from whatever host runs it, and the data-stream "website URL"
+is informational (it drives the "Visit site" link and the default page
+path, not an allowlist). Verified after cutover: samf.sh page_view
+beacons are accepted (`dl=https://samf.sh/…` → HTTP 204). So no code
+change was needed for the domain move.
+
+Two dashboard-only cleanups remain (GA Admin at
+https://analytics.google.com → Admin, for the property containing
+`G-RD883HJ1J2`). Neither blocks collection; they keep the reports
+labelled correctly:
+
+1. **Rename the data stream + property** from `sam.onl` to `samf.sh`.
+   Admin → Data streams → the web stream → update the stream URL/name;
+   and Admin → Property details → property name. Cosmetic, but fixes the
+   "Visit site" link and enhanced-measurement link decoration.
+2. **Check for a hostname Data Filter.** Admin → Data settings → Data
+   filters. If an "include only hostname = sam.onl" filter was ever
+   added, it would silently drop samf.sh hits despite the 204. Off by
+   default and rarely configured — but this is the one place a real
+   domain-binding could hide, so confirm there isn't one (or update it
+   to samf.sh).
+
+> **Note:** analytics were separately broken by a `requestIdleCallback`
+> loader bug (fixed in the commit that added this section) — the
+> deferred gtag.js was never injected on browsers supporting
+> requestIdleCallback. That was unrelated to the domain; see
+> `Layout.astro`'s `scheduleIdle` helper.
