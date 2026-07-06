@@ -1129,26 +1129,13 @@ h6::before {
         padding: 0.2lh 0.75ch !important;
         justify-content: center;
 
-        /* The base chip hover/focus lifts up-left with a 2px down-right
-           shadow — designed for the horizontal action row, where the
-           shadow falls into open space below. Stacked vertically the
-           chips are flush (0 gap), so that down-right shadow (and the
-           upward transform) bleeds onto the neighbor above/below. Make
-           the tactile lift horizontal-only here: shadow goes right into
-           the empty margin beside the column (container is
-           overflow:visible, so it isn't clipped), no vertical component
-           to collide with. */
-        &:hover,
-        &:focus-visible,
-        &[data-vim-focused='true'] {
-            transform: translateX(-1px);
-            box-shadow: 2px 0 0 0 var(--chip-accent);
-        }
-
-        &:active {
-            transform: translateX(0);
-            box-shadow: 1px 0 0 0 var(--chip-accent);
-        }
+        /* No hover/shadow override here on purpose: the chips inherit the
+           base .sidebar-action diagonal lift (translate(-1px,-1px) +
+           2px 2px shadow), identical to the horizontal action row. The
+           0.5ch gap above leaves room for the down-right shadow to fall
+           into (verified: 4px gap vs 2px shadow, no overlap), so the
+           earlier right-only override — needed only when chips were
+           flush-stacked — is gone. */
     }
 }
 
