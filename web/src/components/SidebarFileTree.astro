@@ -1181,6 +1181,14 @@ const ICON_ABOUT = '\u{f1028}'
            overflow-y:auto, so removing the outer clip is safe. */
         overflow: visible;
         flex-grow: 1;
+        /* Flex children default to min-width:auto, which refuses to
+           shrink below intrinsic content width. Without this, when the
+           #sidebar-container is narrower than the tree's natural width
+           (e.g. the 18ch intermediate-viewport floor), the rows spill
+           past the container edge instead of letting .tree-label's
+           ellipsis engage. min-width:0 lets the column honor the
+           container width. */
+        min-width: 0;
         padding-inline: 1ch;
         /* shear-="top" on the nav already zeroes the top padding so
            the action chips can sit on the box-= border line (like the
@@ -1383,6 +1391,10 @@ const ICON_ABOUT = '\u{f1028}'
         position: relative;
         flex-grow: 1;
         margin-top: 0.5ch;
+        /* Same flexbox min-width:auto trap as #sidebar above — let the
+           tree column shrink to the container so labels truncate rather
+           than overflow at narrow widths. */
+        min-width: 0;
     }
 
     #category-list {
@@ -1682,6 +1694,22 @@ const ICON_ABOUT = '\u{f1028}'
     .sidebar-toc .toc-heading:hover {
         background-color: var(--focus-hover-bg, var(--background1));
         color: var(--foreground0);
+    }
+
+    /* Keyboard / vim focus on an inline TOC heading. Without this the
+       heading receives focus + data-vim-focused on `j`/`k` but shows no
+       visible indicator (the only heading that looked focused was the
+       scrollspy `.active` one, by coincidence of its tint). Mirror the
+       .tree-entry focus ring above so headings are just as clearly
+       selectable. outline-offset pulls the ring inside the row so it
+       isn't clipped at the sidebar's edge. */
+    .sidebar-toc .toc-heading:focus-visible,
+    .sidebar-toc .toc-heading[data-vim-focused='true'] {
+        background-color: oklch(from var(--accent) calc(l * 0.85) c h / 0.075);
+        outline: 1pt solid var(--accent);
+        outline-offset: -1pt;
+        color: var(--focus-fg);
+        text-decoration: none;
     }
 
     /* ── Tree label (the text) ── */

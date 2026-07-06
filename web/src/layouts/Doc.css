@@ -1110,23 +1110,47 @@ h6::before {
     left: 0;
     z-index: 20;
     flex-direction: column;
+    /* Gap between chips + a little right/bottom padding on the column so
+       the diagonal hover shadow has room to render fully instead of being
+       clipped at a chip/container edge. The gap (0.5ch ≈ 4px) clears the
+       shadow's 2px downward offset (no overlap with the chip below); the
+       padding clears its 2px rightward offset (renders inside the
+       container, which is overflow:visible). */
+    gap: 0.5ch;
+    padding-right: 3px;
+    padding-bottom: 3px;
     margin: 0;
     height: auto;
 
     .sidebar-action {
-        /* Stacked vertically when collapsed, so the right border is now an
-           OUTER edge — keep the base .sidebar-action full border instead of
-           the expanded row's `border-right: none` continuous-strip trick,
-           which left the collapsed chips open on the right.
-           Dedupe the vertical seam between stacked chips by dropping the TOP
-           border on all but the first — the previous chip's bottom border
-           draws the seam, and every outer edge (first's top, last's bottom,
-           all rights) stays intact. */
-        padding: 0.25ch 0.5ch !important;
+        /* Same padding as the horizontal action row (0.2lh 0.75ch) so the
+           collapsed chips are identical squares to the expanded ones. The
+           gap above separates them, so each keeps its full four-sided
+           border (no dedup needed). */
+        padding: 0.2lh 0.75ch !important;
         justify-content: center;
 
-        &:not(:first-child) {
-            border-top: none;
+        /* Same diagonal "lifted key" hover as the horizontal action row
+           (translate(-1px,-1px) + 2px 2px shadow), plus an accent border +
+           tint. The gap + column padding above give the shadow room so it
+           renders fully rather than being clipped by the next chip or the
+           container edge. */
+        &:hover,
+        &:focus-visible,
+        &[data-vim-focused='true'] {
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0 0 var(--chip-accent);
+            border-color: var(--chip-accent);
+            background-color: color-mix(
+                in oklch,
+                var(--background0),
+                var(--chip-accent) 15%
+            );
+        }
+
+        &:active {
+            transform: translate(0, 0);
+            box-shadow: 1px 1px 0 0 var(--chip-accent);
         }
     }
 }
@@ -1145,6 +1169,21 @@ h6::before {
         gap: 0ch;
         overflow-x: hidden;
         color: var(--foreground1);
+
+        /* Cap the measure of running prose (~72ch) for readability — on a
+           wide monitor the article column is 180ch+, which makes body text
+           a chore to read (the eye loses the next line on the return
+           sweep). Only prose-bearing elements are capped; code blocks,
+           tables, diagrams and figure rows deliberately keep full width
+           since they benefit from it. Left-aligned: max-width leaves the
+           slack on the right (margin-inline stays 0), so the column stays
+           anchored to the sidebar rather than floating centered.
+           NB: most prose is nested inside .heading-collapse <details>, so
+           this can't be a direct-child (`> *`) rule — it matches the prose
+           tags at any depth. */
+        :is(p, ul, ol, dl, blockquote, h1, h2, h3, h4, h5, h6) {
+            max-width: 72ch;
+        }
 
         strong {
             /* color: var(--foreground0); */
@@ -1347,6 +1386,22 @@ article {
 
 /* Removed auto-collapse at medium widths (80-120ch) — sidebars now show
    their content unless explicitly collapsed via the toggle button */
+
+/* Intermediate widths (just above the mobile stack, up to comfortable
+   desktop): tighten the sidebar floor from 25ch to 18ch so the article
+   isn't squeezed to ~59ch. The tree's post-title rows (.tree-label)
+   truncate cleanly with ellipsis, so a narrower floor just shows fewer
+   label chars — no overflow into the article. Above ~110ch there's room
+   for the roomy 25ch default again. Only applies when NOT collapsed and
+   only to the width *fallback*: if the user dragged the resizer,
+   --sidebar-width is set and their choice still wins. */
+@media (min-width: 80ch) and (max-width: 110ch) {
+    #sidebar-container:not(.collapsed) {
+        min-width: 18ch;
+        width: var(--sidebar-width, 18ch);
+        flex-basis: var(--sidebar-width, 18ch);
+    }
+}
 
 @media (max-width: 80ch) {
     #sidebar-container {

@@ -75,8 +75,7 @@ Sam Foreman
     text-decoration: underline;
   }
   .repo-description {
-    color: var(--foreground2);
-    min-height: 2lh;
+    color: var(--foreground1);
     margin: 0;
     flex: 1;
   }
@@ -84,23 +83,42 @@ Sam Foreman
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 1ch;
+    gap: 0.5lh 1.5ch;
     margin-top: auto;
     padding-top: 0.5lh;
-    border-top: 1px solid var(--background3, var(--foreground2));
+    border-top: 1px solid var(--background3, var(--background2));
+    /* Legible footer: readable base color, no blanket opacity (the old
+       0.7 dimmed language + stars into an illegible grey). Individual
+       pieces carry their own emphasis via .repo-language / .repo-stars. */
     color: var(--foreground2);
-    opacity: 0.7;
+    font-size: 0.9em;
   }
   .repo-meta span {
     display: inline-flex;
     align-items: center;
     gap: 0.5ch;
+    white-space: nowrap;
+  }
+  /* Language name reads at full strength; the colored dot carries the
+     GitHub-linguist hue set inline on each card. */
+  .repo-language {
+    color: var(--foreground1);
   }
   .repo-language-dot {
     width: 1ch;
-    height: 1lh;
-    background: currentColor;
-    opacity: 0.6;
+    height: 1ch;
+    border-radius: 50%;
+    /* color set inline per language; fallback to foreground2 */
+    background: var(--lang-color, var(--foreground2));
+    flex-shrink: 0;
+  }
+  /* Star count gets a touch of warmth so it stands out from the muted
+     "updated" date without shouting. */
+  .repo-stars {
+    color: var(--foreground1);
+  }
+  .repo-star-glyph {
+    color: var(--yellow, #e3b341);
   }
   #repo-grid-status {
     color: var(--foreground2);
@@ -155,6 +173,28 @@ Sam Foreman
       return String(n);
     }
     function fmtDate(iso) { return iso.slice(0, 10); }
+    // GitHub-linguist colors for the languages that actually appear across
+    // saforem2's repos (plus a neutral fallback). Keeps the language dot a
+    // real signal instead of a monochrome square.
+    const LANG_COLORS = {
+      "Python": "#3572A5",
+      "Jupyter Notebook": "#DA5B0B",
+      "C++": "#f34b7d",
+      "C": "#555555",
+      "Lua": "#000080",
+      "Shell": "#89e051",
+      "HTML": "#e34c26",
+      "CSS": "#563d7c",
+      "SCSS": "#c6538c",
+      "JavaScript": "#f1e05a",
+      "TypeScript": "#3178c6",
+      "TeX": "#3D6117",
+      "Makefile": "#427819",
+      "Astro": "#ff5a03",
+      "Vim Script": "#199f4b",
+      "Rust": "#dea584",
+      "Go": "#00ADD8",
+    };
     function compare(a, b, key, dir) {
       const mul = dir === "asc" ? 1 : -1;
       let cmp = 0;
@@ -217,18 +257,33 @@ Sam Foreman
       meta.className = "repo-meta";
       if (repo.language) {
         const langSpan = document.createElement("span");
+        langSpan.className = "repo-language";
         const dot = document.createElement("span");
         dot.className = "repo-language-dot";
+        const color = LANG_COLORS[repo.language];
+        if (color) dot.style.setProperty("--lang-color", color);
         langSpan.appendChild(dot);
         const langText = document.createElement("span");
         langText.textContent = repo.language;
         langSpan.appendChild(langText);
         meta.appendChild(langSpan);
       }
-      const starsSpan = document.createElement("span");
-      starsSpan.textContent = "⭐️ " + formatNumber(repo.stargazers_count || 0);
-      meta.appendChild(starsSpan);
+      // Only show the star count when there's at least one — a "0" on
+      // every card is noise.
+      if ((repo.stargazers_count || 0) > 0) {
+        const starsSpan = document.createElement("span");
+        starsSpan.className = "repo-stars";
+        const starGlyph = document.createElement("span");
+        starGlyph.className = "repo-star-glyph";
+        starGlyph.textContent = ""; // nerd-font star, matches TUI aesthetic
+        starsSpan.appendChild(starGlyph);
+        starsSpan.appendChild(
+          document.createTextNode(" " + formatNumber(repo.stargazers_count)),
+        );
+        meta.appendChild(starsSpan);
+      }
       const updatedSpan = document.createElement("span");
+      updatedSpan.className = "repo-updated";
       updatedSpan.textContent = "Updated " + fmtDate(repo.updated_at);
       meta.appendChild(updatedSpan);
       card.appendChild(header);
