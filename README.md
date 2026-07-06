@@ -1,6 +1,8 @@
-# [sam.onl](https://sam.onl)
+# [samf.sh](https://samf.sh)
 
-Personal website for [Sam Foreman](https://sam.onl), built with [Astro](https://astro.build) and [WebTUI](https://webtui.ironclad.sh).
+Personal website for [Sam Foreman](https://samf.sh), built with [Astro](https://astro.build) and [WebTUI](https://webtui.ironclad.sh).
+
+> Formerly hosted at `sam.onl`; that domain now 301-redirects to `samf.sh`.
 
 ## Stack
 
@@ -21,8 +23,8 @@ packages/      → WebTUI packages (CSS, plugins, themes)
 Requires [Bun](https://bun.sh/) (`>=1.3.0`) and Node (`>=18`).
 
 ```bash
-git clone https://github.com/saforem2/sam.onl.git
-cd sam.onl
+git clone https://github.com/saforem2/samf.sh.git
+cd samf.sh
 bun install
 bun run build
 bun run dev
