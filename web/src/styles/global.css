@@ -227,7 +227,16 @@
            independent of the body font. Overridden by [data-code-font]. */
         --code-font-family:
             var(--font-stack-miosevka-term), 'Symbols Nerd Font';
-        --font-size: clamp(0.95rem, 0.6rem + 1vw, 1rem);
+        /* Body text tops out at 17px on wide screens and scales down to
+           16px on narrower ones. Bumped a smidge from the old 15.2–16px
+           band for more comfortable reading; the ch-based layout scales
+           with it cleanly. Mobile (<=480px) keeps its own flat 16px rule
+           below.
+           NB: px bounds (not rem) are deliberate — this var is applied at
+           both `html` and `body`, and a rem-based clamp compounds (body's
+           rem re-resolves against the already-bumped root, landing at
+           ~18px). px bounds make the clamp nesting-invariant. */
+        --font-size: clamp(16px, 10px + 1vw, 17px);
         /* --line-height: 1.5; */
         --line-height: initial;
         --font-family-sans-serif: var(--font-family);
