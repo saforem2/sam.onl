@@ -1121,8 +1121,12 @@ h6::before {
         /* Stacked vertically when collapsed, each chip is a standalone key
            with a full border on all four sides (the gap above separates
            them, so no border-dedup / continuous-strip trick is needed —
-           that was for the old flush-stacked layout). */
-        padding: 0.25ch 0.5ch !important;
+           that was for the old flush-stacked layout).
+           Keep the SAME padding as the horizontal action row (0.2lh
+           0.75ch) so the collapsed chips are identical squares to the
+           expanded ones — the old 0.25ch 0.5ch override made them a
+           different (smaller, off-ratio) size. */
+        padding: 0.2lh 0.75ch !important;
         justify-content: center;
 
         /* The base chip hover/focus lifts up-left with a 2px down-right
