@@ -1110,9 +1110,15 @@ h6::before {
     left: 0;
     z-index: 20;
     flex-direction: column;
-    /* Minimal gap between chips — just enough to separate them without the
-       cramped-strip look, and small enough to stay tidy. */
-    gap: 0.25ch;
+    /* Gap between chips + a little right/bottom padding on the column so
+       the diagonal hover shadow has room to render fully instead of being
+       clipped at a chip/container edge. The gap (0.5ch ≈ 4px) clears the
+       shadow's 2px downward offset (no overlap with the chip below); the
+       padding clears its 2px rightward offset (renders inside the
+       container, which is overflow:visible). */
+    gap: 0.5ch;
+    padding-right: 3px;
+    padding-bottom: 3px;
     margin: 0;
     height: auto;
 
@@ -1124,20 +1130,16 @@ h6::before {
         padding: 0.2lh 0.75ch !important;
         justify-content: center;
 
-        /* No offset drop-shadow / transform on hover in the collapsed
-           column. The base .sidebar-action "lifted key" effect uses a
-           hard-offset box-shadow + translate — a spatial effect that, in
-           a tight vertical stack, gets clipped or collides with a
-           neighbor no matter which direction it points (down onto the
-           next chip, right into the article pane, etc.). Use a purely
-           in-box focus indicator instead: accent border + tint. Nothing
-           extends past the chip box, so nothing can be clipped, in any
-           state or zoom. */
+        /* Same diagonal "lifted key" hover as the horizontal action row
+           (translate(-1px,-1px) + 2px 2px shadow), plus an accent border +
+           tint. The gap + column padding above give the shadow room so it
+           renders fully rather than being clipped by the next chip or the
+           container edge. */
         &:hover,
         &:focus-visible,
         &[data-vim-focused='true'] {
-            transform: none;
-            box-shadow: none;
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0 0 var(--chip-accent);
             border-color: var(--chip-accent);
             background-color: color-mix(
                 in oklch,
@@ -1147,8 +1149,8 @@ h6::before {
         }
 
         &:active {
-            transform: none;
-            box-shadow: none;
+            transform: translate(0, 0);
+            box-shadow: 1px 1px 0 0 var(--chip-accent);
         }
     }
 }
