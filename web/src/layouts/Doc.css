@@ -1110,33 +1110,27 @@ h6::before {
     left: 0;
     z-index: 20;
     flex-direction: column;
-    /* Flush-stacked, mirroring the horizontal action row's continuous-strip
-       look — no gap between chips. */
-    gap: 0;
+    /* Minimal gap between chips — just enough to separate them without the
+       cramped-strip look, and small enough to stay tidy. */
+    gap: 0.25ch;
     margin: 0;
     height: auto;
 
     .sidebar-action {
         /* Same padding as the horizontal action row (0.2lh 0.75ch) so the
-           collapsed chips are identical squares to the expanded ones. */
+           collapsed chips are identical squares to the expanded ones. The
+           gap above separates them, so each keeps its full four-sided
+           border (no dedup needed). */
         padding: 0.2lh 0.75ch !important;
         justify-content: center;
 
-        /* Flush chips would draw a doubled 2px seam where each chip's
-           bottom border meets the next chip's top border. Dedup it by
-           dropping the top border on all but the first: the previous
-           chip's bottom border draws the single seam, and every outer
-           edge (first's top, last's bottom, all sides) stays intact. */
-        &:not(:first-child) {
-            border-top: none;
-        }
-
-        /* Flush vertically = no gap for a down-right shadow to fall into,
-           so the base diagonal lift's 2px bottom offset would bleed onto
-           the chip below. Make the tactile lift horizontal-only: the
-           shadow goes right into the empty margin beside the column
-           (container is overflow:visible, not clipped), no vertical
-           component to collide with the neighbor. */
+        /* Horizontal-only hover shadow (2px 0 0), NOT the base diagonal
+           2px 2px: the minimal gap isn't enough room for a downward
+           shadow, so a vertical component would collide with / be clipped
+           by the chip below. Right-only has no vertical component, so it
+           can never be cut off vertically regardless of gap size. Shadow
+           falls into the empty margin beside the column (overflow:visible,
+           not clipped). */
         &:hover,
         &:focus-visible,
         &[data-vim-focused='true'] {
