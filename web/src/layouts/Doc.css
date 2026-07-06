@@ -1124,23 +1124,31 @@ h6::before {
         padding: 0.2lh 0.75ch !important;
         justify-content: center;
 
-        /* Horizontal-only hover shadow (2px 0 0), NOT the base diagonal
-           2px 2px: the minimal gap isn't enough room for a downward
-           shadow, so a vertical component would collide with / be clipped
-           by the chip below. Right-only has no vertical component, so it
-           can never be cut off vertically regardless of gap size. Shadow
-           falls into the empty margin beside the column (overflow:visible,
-           not clipped). */
+        /* No offset drop-shadow / transform on hover in the collapsed
+           column. The base .sidebar-action "lifted key" effect uses a
+           hard-offset box-shadow + translate — a spatial effect that, in
+           a tight vertical stack, gets clipped or collides with a
+           neighbor no matter which direction it points (down onto the
+           next chip, right into the article pane, etc.). Use a purely
+           in-box focus indicator instead: accent border + tint. Nothing
+           extends past the chip box, so nothing can be clipped, in any
+           state or zoom. */
         &:hover,
         &:focus-visible,
         &[data-vim-focused='true'] {
-            transform: translateX(-1px);
-            box-shadow: 2px 0 0 0 var(--chip-accent);
+            transform: none;
+            box-shadow: none;
+            border-color: var(--chip-accent);
+            background-color: color-mix(
+                in oklch,
+                var(--background0),
+                var(--chip-accent) 15%
+            );
         }
 
         &:active {
-            transform: translateX(0);
-            box-shadow: 1px 0 0 0 var(--chip-accent);
+            transform: none;
+            box-shadow: none;
         }
     }
 }
