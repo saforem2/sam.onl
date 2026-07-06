@@ -1110,32 +1110,44 @@ h6::before {
     left: 0;
     z-index: 20;
     flex-direction: column;
-    /* Breathing room between the stacked chips so they read as distinct
-       keys (like the horizontal action row) rather than one cramped
-       continuous strip. */
-    gap: 0.5ch;
+    /* Flush-stacked, mirroring the horizontal action row's continuous-strip
+       look — no gap between chips. */
+    gap: 0;
     margin: 0;
     height: auto;
 
     .sidebar-action {
-        /* Stacked vertically when collapsed, each chip is a standalone key
-           with a full border on all four sides (the gap above separates
-           them, so no border-dedup / continuous-strip trick is needed —
-           that was for the old flush-stacked layout).
-           Keep the SAME padding as the horizontal action row (0.2lh
-           0.75ch) so the collapsed chips are identical squares to the
-           expanded ones — the old 0.25ch 0.5ch override made them a
-           different (smaller, off-ratio) size. */
+        /* Same padding as the horizontal action row (0.2lh 0.75ch) so the
+           collapsed chips are identical squares to the expanded ones. */
         padding: 0.2lh 0.75ch !important;
         justify-content: center;
 
-        /* No hover/shadow override here on purpose: the chips inherit the
-           base .sidebar-action diagonal lift (translate(-1px,-1px) +
-           2px 2px shadow), identical to the horizontal action row. The
-           0.5ch gap above leaves room for the down-right shadow to fall
-           into (verified: 4px gap vs 2px shadow, no overlap), so the
-           earlier right-only override — needed only when chips were
-           flush-stacked — is gone. */
+        /* Flush chips would draw a doubled 2px seam where each chip's
+           bottom border meets the next chip's top border. Dedup it by
+           dropping the top border on all but the first: the previous
+           chip's bottom border draws the single seam, and every outer
+           edge (first's top, last's bottom, all sides) stays intact. */
+        &:not(:first-child) {
+            border-top: none;
+        }
+
+        /* Flush vertically = no gap for a down-right shadow to fall into,
+           so the base diagonal lift's 2px bottom offset would bleed onto
+           the chip below. Make the tactile lift horizontal-only: the
+           shadow goes right into the empty margin beside the column
+           (container is overflow:visible, not clipped), no vertical
+           component to collide with the neighbor. */
+        &:hover,
+        &:focus-visible,
+        &[data-vim-focused='true'] {
+            transform: translateX(-1px);
+            box-shadow: 2px 0 0 0 var(--chip-accent);
+        }
+
+        &:active {
+            transform: translateX(0);
+            box-shadow: 1px 0 0 0 var(--chip-accent);
+        }
     }
 }
 
