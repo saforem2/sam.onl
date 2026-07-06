@@ -257,6 +257,19 @@ const articleSchema =
         : null
 ---
 
+<!--
+  Doc.css is pulled in via @import (not a frontmatter `import './Doc.css'`)
+  on purpose: it must load HERE in the cascade, before the inline <style>
+  blocks further down that override the same selectors (.heading-collapse,
+  .footnote-popover). A frontmatter import would reorder it and flip those
+  overrides.
+
+  DEV-ONLY GOTCHA: Vite does not reliably HMR an @import-ed CSS file — edits
+  to Doc.css often won't show up on save OR on hard reload, because the
+  stale cache is in Vite's module transform, not the browser. If a Doc.css
+  change isn't reflecting, touch this file (Doc.astro) to reprocess the
+  block, or restart the dev server. Production builds always pick it up.
+-->
 <style is:global>
     @import './Doc.css';
 </style>
