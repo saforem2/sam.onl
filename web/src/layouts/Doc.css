@@ -1110,24 +1110,20 @@ h6::before {
     left: 0;
     z-index: 20;
     flex-direction: column;
+    /* Breathing room between the stacked chips so they read as distinct
+       keys (like the horizontal action row) rather than one cramped
+       continuous strip. */
+    gap: 0.5ch;
     margin: 0;
     height: auto;
 
     .sidebar-action {
-        /* Stacked vertically when collapsed, so the right border is now an
-           OUTER edge — keep the base .sidebar-action full border instead of
-           the expanded row's `border-right: none` continuous-strip trick,
-           which left the collapsed chips open on the right.
-           Dedupe the vertical seam between stacked chips by dropping the TOP
-           border on all but the first — the previous chip's bottom border
-           draws the seam, and every outer edge (first's top, last's bottom,
-           all rights) stays intact. */
+        /* Stacked vertically when collapsed, each chip is a standalone key
+           with a full border on all four sides (the gap above separates
+           them, so no border-dedup / continuous-strip trick is needed —
+           that was for the old flush-stacked layout). */
         padding: 0.25ch 0.5ch !important;
         justify-content: center;
-
-        &:not(:first-child) {
-            border-top: none;
-        }
 
         /* The base chip hover/focus lifts up-left with a 2px down-right
            shadow — designed for the horizontal action row, where the
