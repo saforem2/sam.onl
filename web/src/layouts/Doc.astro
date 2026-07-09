@@ -119,6 +119,7 @@ const category =
 // Source file path for GitHub links
 import { stat } from 'node:fs/promises'
 import { join } from 'node:path'
+import { getLastModified } from '@/utils/lastModified'
 
 const sourceFile = sortedPages.find((p) => compareUrlPaths(p.id, currentPath))
 const sourceId = sourceFile?.id ?? ''
@@ -178,18 +179,29 @@ const breadcrumbs = crumbSegments.map((seg, i) => {
     }
 })
 
-// Get file last-modified date
+// Last-modified date: frontmatter `date-modified` override -> git
+// committer date -> filesystem mtime (see utils/lastModified). Robust to
+// git checkouts rewriting mtime, and to shallow clones (skips git, uses
+// mtime, rather than emitting a fabricated boundary-commit date).
 let fileModifiedDate: Date | null = null
 if (sourceFilePath) {
     try {
         // sourceFilePath is repo-relative ("web/src/pages/..."); strip the
-        // leading "web/" to get the workspace-relative path under cwd.
-        const fileStat = await stat(
-            join(process.cwd(), sourceFilePath.replace(/^web\//, '')),
+        // leading "web/" to get the workspace-relative path, then make it
+        // absolute so the git pathspec resolves independent of cwd.
+        const absPath = join(
+            process.cwd(),
+            sourceFilePath.replace(/^web\//, ''),
         )
-        fileModifiedDate = fileStat.mtime
+        const override = (frontmatter as Record<string, unknown>)?.[
+            'date-modified'
+        ]
+        fileModifiedDate = getLastModified(
+            absPath,
+            override as string | undefined,
+        ).date
     } catch {
-        // File not found, skip
+        // Resolution failed entirely, skip (badge just won't render).
     }
 }
 

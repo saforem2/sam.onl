@@ -1,34 +1,48 @@
 ---
-/* LastUpdated — renders a "Last Updated" callout block whose
-   timestamp is the build-time mtime of the MDX page that imports
-   it.
+/* LastUpdated — renders a "Last Updated" callout whose timestamp is the
+   git committer date of the last commit that touched the source page
+   (robust to git checkouts rewriting the filesystem mtime), with an
+   optional frontmatter override and an mtime fallback. See
+   utils/lastModified for the resolution order.
 
-   Pass `file` as the importing page's `import.meta.url` so we can
-   stat the right file:
+   Usage — pass `path`, the page's source path relative to the `web/`
+   workspace (i.e. what you'd see under web/):
 
        import LastUpdated from '@/components/LastUpdated.astro'
-       <LastUpdated file={import.meta.url} />
+       <LastUpdated path="src/pages/about/index.mdx" />
 
-   We do the FS lookup in this Astro component (and not inline in
-   MDX) because MDX's acorn parser is fussy about top-level
-   `export const`s referencing `import.meta`, and exported
-   identifiers don't always reach inline `{…}` expressions in
-   page content depending on the rehype pipeline. An imported
-   component sidesteps both gotchas. */
-import { statSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+   Why `path` and NOT `file={import.meta.url}`: at build Astro bundles the
+   MDX page, so `import.meta.url` points into web/dist/chunks/… — an
+   untracked path git can't date, which silently regressed to the build
+   date. An explicit source path resolved against process.cwd() (the
+   `web/` workspace at build time) is stable and tracked.
+
+   We do the lookup in this Astro component (not inline in MDX) because
+   MDX's acorn parser is fussy about top-level `export const`s referencing
+   node builtins, and exported identifiers don't reliably reach inline
+   `{…}` expressions depending on the rehype pipeline. */
+import { join } from 'node:path'
+import {
+    getLastModified,
+    formatISODate,
+    formatISOTime,
+} from '@/utils/lastModified'
 
 interface Props {
-    file: string
+    /** Source path relative to the web/ workspace, e.g. src/pages/about/index.mdx */
+    path: string
     title?: string
+    /** Optional explicit override (e.g. frontmatter `date-modified`). */
+    date?: string | Date | null
 }
 
-const { file, title = '📝 Last Updated' } = Astro.props
+const { path, title = '📝 Last Updated', date } = Astro.props
 
-const mtime = statSync(fileURLToPath(file)).mtime
-const iso = mtime.toISOString().slice(0, 19).replace('T', ' ')
-const dateStr = iso.slice(0, 10)
-const timeStr = iso.slice(11, 19)
+// Resolve against process.cwd() (= the `web/` workspace dir at build time)
+// to an absolute source path so the git pathspec is cwd-independent.
+const { date: modified } = getLastModified(join(process.cwd(), path), date)
+const dateStr = formatISODate(modified)
+const timeStr = formatISOTime(modified)
 ---
 
 <details
