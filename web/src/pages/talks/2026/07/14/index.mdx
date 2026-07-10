@@ -672,67 +672,18 @@ Why move off MDS — and what broke
 2B eval comparison — MDS vs TT v2
 ───────────────────────────────────────────────────────────────*/}
 
-<Slide id="agpt-eval" size="sm">
+<Slide id="agpt-eval">
 
-## 2B + 20B eval: `torchtitan` vs the references
-
-<div class="eval-two-up">
-
-<figure>
-    <img src="/talks/2026-07-14/figures/eval-2b-overview.svg"
-        alt="AuroraGPT-2B lm-eval: v2 256N async + v2 512N sync vs MDS SophiaG reference, per benchmark vs tokens" />
-    <figcaption>
-        **2B**: v2 256N + 512N vs MDS SophiaG. Final (4.67T tok)
-        HellaSwag **0.561** · ARC-Easy **0.651**; plateaus ~2T, short of
-        the MDS ceiling.
-    </figcaption>
-</figure>
-
-<figure>
-    <img src="/talks/2026-07-14/figures/eval-20b-overview.svg"
-        alt="AuroraGPT-20B lm-eval: v1 256N, v2 256N, v2 512N sync, 2B-MDS reference, per benchmark vs tokens" />
-    <figcaption>
-        **20B**: v1 (bf16) stuck at random; v2 512N climbs. step-4,400
-        ARC-Easy **0.693 (+41.9pp)** · HellaSwag **0.634 (+36.9pp)**.
-    </figcaption>
-</figure>
-
-</div>
-
-Data:
-[`docs/evals`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals)
-
-<style>{`
-  #agpt-eval .eval-two-up {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2ch;
-    align-items: start;
-  }
-  #agpt-eval .eval-two-up figure { margin: 0; }
-  #agpt-eval .eval-two-up img { width: 100%; height: auto; }
-  @media (max-width: 768px) {
-    #agpt-eval .eval-two-up { grid-template-columns: 1fr; gap: 1lh; }
-  }
-`}</style>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-All-production evals overlay (kept separate: cross-model, per token)
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="all-evals">
-
-## All production evals, per token
+## Evals: 2B + 20B on one axis, per token
 
 <figure>
     <img src="/talks/2026-07-14/figures/all-production-evals.svg"
-        alt="All AuroraGPT production runs (2B MDS, 2B v2, 20B v2) lm-eval accuracy per benchmark vs tokens" />
+        alt="All AuroraGPT production runs (2B MDS reference, 2B v2, 20B v2) lm-eval accuracy per benchmark vs tokens consumed" />
     <figcaption>
-        Every production run on one axis. **20B/512N is the most
-        token-efficient run we have**: fewer tokens, higher accuracy
-        than either 2B chain (~8× per-token). Data:
+        **2B** (4.67T tok): HellaSwag 0.561 · ARC-Easy 0.651, plateaus
+        ~2T. **20B/512N is the most token-efficient run**: at 442.9B tok
+        already ARC-Easy **0.693** · HellaSwag **0.634**, beating both 2B
+        chains per token (~8×). Data:
         [`docs/evals`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals)
     </figcaption>
 </figure>
