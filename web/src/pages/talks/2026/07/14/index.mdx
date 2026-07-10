@@ -1005,9 +1005,9 @@ The base run is done, so the pipeline now extends past pretraining:
 
 ```mermaid
 flowchart LR
-    BASE(["<span style='font-weight:700'>2B base</span><br/><i>4.67T tok</i>"])
-    BASE --> CPT["<span style='font-weight:700'>CPT</span><br/><i>olmo x dolmino</i>"]
-    BASE --> SFT["<span style='font-weight:700'>SFT</span><br/><i>tulu math mix</i>"]
+    BASE(["<span style='font-weight:700'>2B base</span><br/><i>pretrain · 4.67T</i>"])
+    BASE --> CPT["<span style='font-weight:700'>CPT</span><br/><i>stages 2-3 · +3.1T</i>"]
+    CPT --> SFT["<span style='font-weight:700'>SFT</span><br/><i>tulu math mix</i>"]
     SFT --> GRPO["<span style='font-weight:700'>GRPO</span><br/><i>arithmetic RL</i>"]
 
     classDef base fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
@@ -1020,9 +1020,9 @@ flowchart LR
     class GRPO rl
 ```
 
-- **CPT**: data-mix sweep for a second pretraining stage
-- **SFT**: `checkpoint-729-hf` is now a first-class production asset
-- **GRPO**: on-policy RL (TRL + vLLM-XPU), verified multi-node
+- **CPT**: stages 2-3 of the SophiaG reference (dolmino, then math+code) → 7.77T tokens
+- **SFT**: `checkpoint-729-hf` (on that CPT'd base) is now a first-class production asset
+- **GRPO**: on-policy RL (TRL + vLLM-XPU) on the SFT checkpoint, verified multi-node
 
 <style>{`
   #posttrain-intro .mermaid svg { width: 100%; max-width: 100%; }
@@ -1060,7 +1060,7 @@ Two ~300B-token pilots (256N, GBS=6,144) vs the olmo-100 base plateau:
 
 <Slide id="sft" size="sm">
 
-## SFT: `tulu_math_uc_mix` on the 2B base
+## SFT: `tulu_math_uc_mix` on the CPT'd 2B
 
 <figure>
     <img src="/talks/2026-07-14/figures/sft-curves.svg"
