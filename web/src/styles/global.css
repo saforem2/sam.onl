@@ -625,30 +625,20 @@
             box-shadow 120ms ease-out,
             background-color 120ms linear;
     }
-    /* Hover: tiny 1px lift + hard TUI shadow in the callout's own accent
-       color (per type — blue note, orange warning, etc.), like the
-       accent-tinted sidebar chips. Brightens the inner blockquote tint so
-       the rail pops too. */
-    .callout:hover {
-        transform: translate(-1px, -1px);
-        box-shadow: 2px 2px 0 0 var(--callout-color);
-    }
-    /* Hide the left accent bar on hover so only the accent shadow's
-       card-lift shows. Transparent (not width:0) keeps layout stable — no
-       reflow as the bar hides. Written with the [is-~='accordion']
-       attribute so it matches the block rule's specificity
-       (details[is-~='accordion']:is(.callout,…) = 0,2,1) and wins by
-       source order; a bare .callout:hover (0,2,0) would lose and the bar
-       would stay. Flat selector (not nested) per the Lightning-CSS
-       flattener caveats noted elsewhere in this file. */
+    /* Hover: reproduce the samforeman.me callout effect — the full border
+       turns the per-type accent color and a hard offset drop-shadow
+       appears (on samforeman.me: 1px accent border + black 2px 2px
+       shadow). Shadow uses --foreground0 (theme-adaptive "ink": near-black
+       on light themes, near-white on dark) rather than a literal black.
+       The block rule below sets a faint full border at rest and
+       `transition` so this animates smoothly. Written with the
+       [is-~='accordion'] attribute to match the block rule's specificity
+       (0,2,1) and win by source order — a bare .callout:hover (0,2,0)
+       would lose. Flat selector per the Lightning-CSS flattener caveats
+       noted elsewhere. */
     details[is-~='accordion'].callout:hover {
-        border-left-color: transparent;
-    }
-    .callout:hover blockquote {
-        background-color: oklch(
-            from var(--callout-color) calc(l * var(--oklch-scale, 1.12)) c h /
-                0.18
-        );
+        border-color: var(--callout-color);
+        box-shadow: 2px 2px 0 0 var(--foreground0);
     }
     /* Inside the landing widget grid, the cell tracks are sized exactly
        so the 2px lift-shadow gets clipped on the right edge. Skip the
@@ -836,19 +826,25 @@
         ) {
         background-color: var(--callout-bg);
         color: var(--callout-color);
-        border-left: 2px solid;
-        /* A little breathing room inside the tinted band so the title/body
-           aren't cramped against the accent bar and the top/bottom edges
-           (was effectively zero vertical padding). Kept tight (0.15lh) so
-           the compact collapsed toggles don't feel bloated. Left padding
-           sits the content off the bar; the body's -1ch pull below is
-           dropped so it aligns to this padding instead of hugging the bar. */
+        /* Rest state: a thick per-type accent bar on the left + a faint
+           accent-TINTED full border on the other sides (not neutral grey).
+           The hover rule above swaps the full border to the solid accent
+           and drops a shadow (samforeman.me effect); `transition` animates
+           it. The left border is re-declared full-strength AFTER the faint
+           `border` shorthand so it keeps the bold accent bar at rest. */
+        border: 1px solid oklch(from var(--callout-color) l c h / 0.25);
+        border-left: 2px solid var(--callout-color);
+        transition:
+            border-color 120ms ease-out,
+            box-shadow 120ms ease-out;
+        /* Breathing room inside the box so the title/body aren't cramped
+           against the border/edges. Tight (0.15lh) so compact collapsed
+           toggles don't feel bloated. */
         padding: 0.15lh 1.25ch;
         margin-block: 0.4lh;
-        /* Small right margin so the hover lift's down-right box-shadow
-           (2px offset) renders instead of being clipped: callouts are
-           otherwise flush with #main-content's right edge, which has
-           overflow-x: hidden. 4px clears the 2px shadow with room. */
+        /* Small right margin so the hover down-right box-shadow (2px
+           offset) renders instead of being clipped: callouts are otherwise
+           flush with #main-content's right edge (overflow-x: hidden). */
         margin-right: 4px;
 
         summary {
