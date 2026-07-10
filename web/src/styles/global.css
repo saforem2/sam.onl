@@ -746,6 +746,12 @@
         white-space: nowrap;
         /* Match the block callouts' vertical rhythm. */
         margin-block: 0.4lh;
+        /* Same 4px right gap the block callouts get: `display: flex` makes
+           these block-level, so they stretch flush to #main-content's right
+           edge (overflow-x: hidden) and the 2px down-right hover shadow would
+           clip. The margin reserves room for it. (Earlier this was omitted on
+           the mistaken assumption inline callouts shrink to content width.) */
+        margin-right: 4px;
     }
     /* Animate the hover lift-shadow the same way block callouts do. WebTUI's
        accordion sets `transition: background-color, color, outline-color` via
@@ -767,9 +773,8 @@
     /* Same hard offset drop-shadow the block callouts get on hover, so the
        inline "Updated:" / publications bands read as the same liftable
        surface. Fixed near-black ink (theme-invariant) matching the block
-       rule; inline bands shrink to content width (flex + nowrap) well
-       inside the 72ch cap, so the shadow doesn't hit #main-content's
-       overflow-x clip and needs no right-margin fudge. */
+       rule. The 4px margin-right above reserves room so this 2px down-right
+       shadow renders instead of clipping at #main-content's overflow-x edge. */
     details[is-~='accordion'].callout-inline:hover {
         box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.55);
     }
