@@ -1,9 +1,9 @@
 ---
 layout: '@/layouts/SlideLayout.astro'
-title: 'Production Pre-Training at Scale: The Good, the Bad, and the Restarts'
-shortTitle: 'Production Pre-Training at Scale'
-subtitle: 'Lessons from AuroraGPT'
-description: 'Production pre-training at scale is less a story of peak FLOP/s than of what works, what breaks, and how cheaply you recover. This talk describes the open-source stack we have built and battle-tested through the AuroraGPT effort at the Argonne Leadership Computing Facility, where we routinely train across thousands of Intel GPU nodes on Aurora. The stack pairs `blendcorpus` for reproducible, weighted data blending with a fork of `torchtitan` extended to target Intel XPUs, driven by `ezpz`: our orchestration layer that makes distributed PyTorch launches portable across \{NVIDIA, AMD, Intel, MPS, CPU\} with zero code changes. This updated cut covers the latest developments since TPC26: the 2B reference run completing 4.67T tokens, the 20B/512N production chain overtaking it on evals per token, a manifold-normalized optimizer (`mano`) that matches Muon quality at AdamW speed, the shared bf16 optimizer cliff that NaN-ed all three optimizers at 80B, and where MoE throughput stands on Intel XPUs. We close on what generalizes across vendors, what we got wrong, and the open questions we would like this community to help us answer.'
+title: 'Training Models for Science on Aurora'
+# shortTitle: 'Training Models for Science on Aurora'
+# subtitle: 'Lessons from AuroraGPT'
+# description: 'Production pre-training at scale is less a story of peak FLOP/s than of what works, what breaks, and how cheaply you recover. This talk describes the open-source stack we have built and battle-tested through the AuroraGPT effort at the Argonne Leadership Computing Facility, where we routinely train across thousands of Intel GPU nodes on Aurora. The stack pairs `blendcorpus` for reproducible, weighted data blending with a fork of `torchtitan` extended to target Intel XPUs, driven by `ezpz`: our orchestration layer that makes distributed PyTorch launches portable across \{NVIDIA, AMD, Intel, MPS, CPU\} with zero code changes. This updated cut covers the latest developments since TPC26: the 2B reference run completing 4.67T tokens, the 20B/512N production chain overtaking it on evals per token, a manifold-normalized optimizer (`mano`) that matches Muon quality at AdamW speed, the shared bf16 optimizer cliff that NaN-ed all three optimizers at 80B, and where MoE throughput stands on Intel XPUs. We close on what generalizes across vendors, what we got wrong, and the open questions we would like this community to help us answer.'
 date: 2026-07-14
 location: 'Cerebras ⇆ ANL MoE Workshop'
 ---
@@ -33,11 +33,7 @@ export const ASSETS = 'https://samforeman.me/assets'
   <span>samf.sh/talks/2026/07/14</span>
 </a>
 
-# <span style="color:var(--foreground0);">Production Pre-Training at Scale:</span>
-
-## <span style="color:var(--foreground1);">The Good, the Bad, and the Restarts</span>
-
-## <span style="color:var(--foreground2);">_Lessons from AuroraGPT_</span>
+# <span style="color:var(--foreground0);">Training Models for Science on Aurora</span>
 
 &nbsp;  
 &nbsp;
@@ -676,61 +672,54 @@ Why move off MDS — and what broke
 2B eval comparison — MDS vs TT v2
 ───────────────────────────────────────────────────────────────*/}
 
-<Slide id="agpt-2b-eval">
+<Slide id="agpt-eval" size="sm">
 
-## 2B eval: MDS reference vs `torchtitan`
+## 2B + 20B eval: `torchtitan` vs the references
+
+<div class="eval-two-up">
 
 <figure>
     <img src="/talks/2026-07-14/figures/eval-2b-overview.svg"
-        alt="AuroraGPT-2B lm-eval overview: v2 256N async + v2 512N sync vs MDS SophiaG reference, per benchmark vs tokens" />
+        alt="AuroraGPT-2B lm-eval: v2 256N async + v2 512N sync vs MDS SophiaG reference, per benchmark vs tokens" />
     <figcaption>
-        v2 256N (async) + v2 512N (sync) vs the MDS SophiaG reference.
-        Final (step-92,859, 4.67T tok): **HellaSwag 0.561 · ARC-Easy
-        0.651**; plateaus ~2T tokens, still short of the MDS ceiling.
-        Data:
-        [`docs/evals/agpt/2b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals/agpt/2b)
+        **2B**: v2 256N + 512N vs MDS SophiaG. Final (4.67T tok)
+        HellaSwag **0.561** · ARC-Easy **0.651**; plateaus ~2T, short of
+        the MDS ceiling.
     </figcaption>
 </figure>
-
-<SpeakerNotes>
-
-"Why is 2B 512N (GBS=12,288) behind 256N (GBS=6,144) at matched
-tokens?" — classic large-batch tax. Same base LR across both runs,
-2× the per-step batch ≈ half the gradient-noise-scale signal per
-token. Critical batch size for a 2B model under olmo-mix is well
-under 12K; 512N is past the knee. Fix is an LR sweep at the larger
-batch (sqrt-scaling rule as a starting point) — we haven't done
-that sweep because 256N is the production node count and 512N was a
-throughput experiment.
-
-</SpeakerNotes>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-20B eval comparison — v1 (broken) vs v2 256N / 512N
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="agpt-20b-eval">
-
-## 20B eval: v2 (bf16-fixed) climbs off the noise band
 
 <figure>
     <img src="/talks/2026-07-14/figures/eval-20b-overview.svg"
-        alt="AuroraGPT-20B lm-eval overview: v1 256N, v2 256N, v2 512N sync, 2B-MDS reference, per benchmark vs training step" />
+        alt="AuroraGPT-20B lm-eval: v1 256N, v2 256N, v2 512N sync, 2B-MDS reference, per benchmark vs tokens" />
     <figcaption>
-        v1 (bf16-tainted) stays at random; v2 512N climbs monotonically.
-        At step-4,400 (442.9B tok): **ARC-Easy 0.693 (+41.9pp vs v1) ·
-        HellaSwag 0.634 (+36.9pp)**. 20B/512N beats 2B/256N per token
-        (~8× more token-efficient). Data:
-        [`docs/evals/agpt/20b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals/agpt/20b)
+        **20B**: v1 (bf16) stuck at random; v2 512N climbs. step-4,400
+        ARC-Easy **0.693 (+41.9pp)** · HellaSwag **0.634 (+36.9pp)**.
     </figcaption>
 </figure>
+
+</div>
+
+Data:
+[`docs/evals`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals)
+
+<style>{`
+  #agpt-eval .eval-two-up {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2ch;
+    align-items: start;
+  }
+  #agpt-eval .eval-two-up figure { margin: 0; }
+  #agpt-eval .eval-two-up img { width: 100%; height: auto; }
+  @media (max-width: 768px) {
+    #agpt-eval .eval-two-up { grid-template-columns: 1fr; gap: 1lh; }
+  }
+`}</style>
 
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-All-production evals overlay (NEW figure: refreshed 2026-07)
+All-production evals overlay (kept separate: cross-model, per token)
 ───────────────────────────────────────────────────────────────*/}
 
 <Slide id="all-evals">
@@ -743,7 +732,7 @@ All-production evals overlay (NEW figure: refreshed 2026-07)
     <figcaption>
         Every production run on one axis. **20B/512N is the most
         token-efficient run we have**: fewer tokens, higher accuracy
-        than either 2B chain. Data:
+        than either 2B chain (~8× per-token). Data:
         [`docs/evals`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals)
     </figcaption>
 </figure>
