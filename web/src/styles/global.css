@@ -675,9 +675,14 @@
     }
     /* Inside callouts: blockquotes are structural (every callout wraps its
        body in a <blockquote>), so strip the bar/background to avoid a
-       double border with the callout's own left edge. */
+       double border with the callout's own left edge. Also zero ALL
+       margin + block padding: the callout's own padding already spaces the
+       body, so the base blockquote's 0.5lh margin-block + 0.5lh
+       padding-block was stacking dead space around nested content (most
+       visible on the Spotify/Last.fm callouts inside "Now Playing"). */
     .callout blockquote {
-        margin-inline: 0;
+        margin: 0;
+        padding-block: 0;
         padding-inline-start: 0;
         background: none;
         border-left: none;
