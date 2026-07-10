@@ -1170,19 +1170,21 @@ h6::before {
         overflow-x: hidden;
         color: var(--foreground1);
 
-        /* Cap the measure of running prose (~72ch) for readability — on a
-           wide monitor the article column is 180ch+, which makes body text
-           a chore to read (the eye loses the next line on the return
-           sweep). Only prose-bearing elements are capped; code blocks,
-           tables, diagrams and figure rows deliberately keep full width
-           since they benefit from it. Left-aligned: max-width leaves the
-           slack on the right (margin-inline stays 0), so the column stays
-           anchored to the sidebar rather than floating centered.
+        /* Cap the measure of running prose for readability: on a wide
+           monitor the article column is 180ch+, which makes body text a
+           chore to read (the eye loses the next line on the return sweep).
+           The cap itself is --prose-measure (set in global.css :root, single
+           source of truth shared with the callout / collapsed-heading caps).
+           Only prose-bearing elements are capped; code blocks, tables,
+           diagrams and figure rows deliberately keep full width since they
+           benefit from it. Left-aligned: max-width leaves the slack on the
+           right (margin-inline stays 0), so the column stays anchored to the
+           sidebar rather than floating centered.
            NB: most prose is nested inside .heading-collapse <details>, so
            this can't be a direct-child (`> *`) rule — it matches the prose
            tags at any depth. */
         :is(p, ul, ol, dl, blockquote, h1, h2, h3, h4, h5, h6) {
-            max-width: 72ch;
+            max-width: var(--prose-measure);
         }
 
         strong {

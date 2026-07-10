@@ -2314,15 +2314,15 @@ const articleSchema =
             padding-block: 0.15lh !important;
             padding-inline-start: 1.5ch;
             /* Collapsed band spans the prose column like a paragraph
-               (fills the content width, capped at the 72ch measure)
+               (fills the content width, capped at the shared prose measure)
                instead of shrinking to fit-content. width:auto lets the
                block-level flex summary stretch to the column; max-width
-               matches the paragraph rule so the right edge lines up
-               exactly (a fixed width:72ch would overhang when the column
-               is narrower than 72ch). The open-state summary keeps
+               matches the paragraph rule (--prose-measure) so the right edge
+               lines up exactly (a fixed width would overhang when the column
+               is narrower than the measure). The open-state summary keeps
                fit-content for a tight click target. */
             width: auto;
-            max-width: 72ch;
+            max-width: var(--prose-measure);
 
             &::before {
                 content: '+';

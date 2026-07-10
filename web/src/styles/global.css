@@ -271,6 +271,16 @@
         --focus-marker: var(--accent, var(--red));
         --focus-ring-size: 1px;
         --focus-region-border: var(--foreground2);
+        /* Max measure (line length) for running prose on wide screens.
+           Single source of truth: the paragraph cap in Doc.css and the
+           callout / collapsed-heading width caps all reference this so they
+           can't drift apart. 84ch sits just above the classic 45-75ch
+           readability band, a deliberate nudge wider since the monospace
+           body font is physically wide per-ch and a left sidebar already
+           eats horizontal space (72ch felt cramped against the empty right
+           column on a large display). Code/tables/diagrams ignore this and
+           keep full width. */
+        --prose-measure: 84ch;
     }
     /* ── BODY font axis — [data-mono-font] sets --font-stack. All 5 fonts.
        'Symbols Nerd Font' is appended via --font-family so icons render
@@ -734,7 +744,7 @@
         color: var(--callout-color);
         padding: 0.15lh 1.25ch;
         /* Cap at the prose measure to match block callouts + paragraphs. */
-        max-width: 72ch;
+        max-width: var(--prose-measure);
         /* Icon→text spacing is handled by a negative margin-inline-end on the
            ::before icon (below), not by flex gap: the MDI glyphs carry built-in
            padding inside their 24×24 viewBox, so the visible glyph sits inset
@@ -892,7 +902,7 @@
         margin-right: 4px;
         /* Cap at the prose measure so callouts align with the paragraph
            column instead of running wider than the body text. */
-        max-width: 72ch;
+        max-width: var(--prose-measure);
 
         summary {
             /* Flex row so the title sits left and the +/x toggle is pushed
