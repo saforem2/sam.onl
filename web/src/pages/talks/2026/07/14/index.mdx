@@ -197,7 +197,7 @@ Since TPC'26: production status refresh (NEW)
 | Run          | Nodes | Steps  | Tokens          | Loss | Status                    |
 | ------------ | ----: | -----: | --------------- | ---: | ------------------------- |
 | **2B** base  |   256 | 92,859 | 4.674T (100%)   | 2.65 | ✅ **complete**            |
-| **2B** CPT   |   256 |  5,960 | ~300B pilot     | 2.49 | dolmino sweep beats olmo  |
+| **2B** CPT   |   256 |  5,960 | ~300B pilot     | 2.49 | loss ↓ but evals ↓ (no winner) |
 | **20B**      |   512 |  5,400 | 543.6B (11.6%)  | 2.47 | advancing (auto-retry)    |
 | **20B**      |   256 |  3,100 | 156.0B (3.3%)   | 2.68 | advancing                 |
 | **80B**      |   512 |     14 | (NaN'd)         | NaN  | ❌ optimizer cliff         |
@@ -695,35 +695,15 @@ Why move off MDS — and what broke
 
 ## 2B eval: MDS reference vs `torchtitan`
 
-<figure class="eval-grid eval-grid-2b">
-    <picture class="eval-panel">
-        <source media="(max-width: 768px)" srcset="/talks/2026-06-03/figures/eval-2b-hellaswag-mobile.svg" />
-        <img src="/talks/2026-06-03/figures/eval-2b-hellaswag.svg"
-            alt="HellaSwag accuracy vs tokens — MDS vs TT 256N vs TT 512N" />
-    </picture>
-    <picture class="eval-panel">
-        <source media="(max-width: 768px)" srcset="/talks/2026-06-03/figures/eval-2b-arc-easy-mobile.svg" />
-        <img src="/talks/2026-06-03/figures/eval-2b-arc-easy.svg"
-            alt="ARC-Easy accuracy vs tokens — MDS vs TT 256N vs TT 512N" />
-    </picture>
-    <picture class="eval-panel">
-        <source media="(max-width: 768px)" srcset="/talks/2026-06-03/figures/eval-2b-arc-challenge-mobile.svg" />
-        <img src="/talks/2026-06-03/figures/eval-2b-arc-challenge.svg"
-            alt="ARC-Challenge accuracy vs tokens — MDS vs TT 256N vs TT 512N" />
-    </picture>
-    <picture class="eval-panel">
-        <source media="(max-width: 768px)" srcset="/talks/2026-06-03/figures/eval-2b-winogrande-mobile.svg" />
-        <img src="/talks/2026-06-03/figures/eval-2b-winogrande.svg"
-            alt="Winogrande accuracy vs tokens — MDS vs TT 256N vs TT 512N" />
-    </picture>
-    <img class="eval-legend"
-        src="/talks/2026-06-03/figures/eval-2b-legend.svg"
-        alt="Legend: random baseline, MDS, TT 256N, TT 512N" />
+<figure>
+    <img src="/talks/2026-07-14/figures/eval-2b-overview.svg"
+        alt="AuroraGPT-2B lm-eval overview: v2 256N async + v2 512N sync vs MDS SophiaG reference, per benchmark vs tokens" />
     <figcaption>
+        v2 256N (async) + v2 512N (sync) vs the MDS SophiaG reference.
+        Final (step-92,859, 4.67T tok): **HellaSwag 0.561 · ARC-Easy
+        0.651**; plateaus ~2T tokens, still short of the MDS ceiling.
         Data:
-        [`docs/evals/agpt/2b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals/agpt/2b),
-        production run:
-        [`docs/production/agpt/2b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/2b)
+        [`docs/evals/agpt/2b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals/agpt/2b)
     </figcaption>
 </figure>
 
@@ -748,37 +728,38 @@ throughput experiment.
 
 <Slide id="agpt-20b-eval">
 
-## 20B eval: all-production overlay (2B + 20B)
+## 20B eval: v2 (bf16-fixed) climbs off the noise band
 
-<figure class="eval-grid eval-grid-20b">
-    <picture class="eval-panel">
-        <source media="(max-width: 768px)" srcset="/talks/2026-06-03/figures/eval-20b-hellaswag-mobile.svg" />
-        <img src="/talks/2026-06-03/figures/eval-20b-hellaswag.svg"
-            alt="HellaSwag accuracy vs tokens — 2B MDS, 2B TT 256N, 2B TT 512N, 20B TT 512N" />
-    </picture>
-    <picture class="eval-panel">
-        <source media="(max-width: 768px)" srcset="/talks/2026-06-03/figures/eval-20b-arc-easy-mobile.svg" />
-        <img src="/talks/2026-06-03/figures/eval-20b-arc-easy.svg"
-            alt="ARC-Easy accuracy vs tokens — 2B MDS, 2B TT 256N, 2B TT 512N, 20B TT 512N" />
-    </picture>
-    <picture class="eval-panel">
-        <source media="(max-width: 768px)" srcset="/talks/2026-06-03/figures/eval-20b-arc-challenge-mobile.svg" />
-        <img src="/talks/2026-06-03/figures/eval-20b-arc-challenge.svg"
-            alt="ARC-Challenge accuracy vs tokens — 2B MDS, 2B TT 256N, 2B TT 512N, 20B TT 512N" />
-    </picture>
-    <picture class="eval-panel">
-        <source media="(max-width: 768px)" srcset="/talks/2026-06-03/figures/eval-20b-winogrande-mobile.svg" />
-        <img src="/talks/2026-06-03/figures/eval-20b-winogrande.svg"
-            alt="Winogrande accuracy vs tokens — 2B MDS, 2B TT 256N, 2B TT 512N, 20B TT 512N" />
-    </picture>
-    <img class="eval-legend"
-        src="/talks/2026-06-03/figures/eval-20b-legend.svg"
-        alt="Legend: random baseline, 2B MDS, 2B TT 256N, 2B TT 512N, 20B TT 512N" />
+<figure>
+    <img src="/talks/2026-07-14/figures/eval-20b-overview.svg"
+        alt="AuroraGPT-20B lm-eval overview: v1 256N, v2 256N, v2 512N sync, 2B-MDS reference, per benchmark vs training step" />
     <figcaption>
-        Data:
-        [`docs/evals/agpt/20b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals/agpt/20b),
-        production run:
-        [`docs/production/agpt/20b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/20b)
+        v1 (bf16-tainted) stays at random; v2 512N climbs monotonically.
+        At step-4,400 (442.9B tok): **ARC-Easy 0.693 (+41.9pp vs v1) ·
+        HellaSwag 0.634 (+36.9pp)**. 20B/512N beats 2B/256N per token
+        (~8× more token-efficient). Data:
+        [`docs/evals/agpt/20b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals/agpt/20b)
+    </figcaption>
+</figure>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+All-production evals overlay (NEW figure: refreshed 2026-07)
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="all-evals">
+
+## All production evals, per token
+
+<figure>
+    <img src="/talks/2026-07-14/figures/all-production-evals.svg"
+        alt="All AuroraGPT production runs (2B MDS, 2B v2, 20B v2) lm-eval accuracy per benchmark vs tokens" />
+    <figcaption>
+        Every production run on one axis. **20B/512N is the most
+        token-efficient run we have**: fewer tokens, higher accuracy
+        than either 2B chain. Data:
+        [`docs/evals`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals)
     </figcaption>
 </figure>
 
@@ -1024,6 +1005,114 @@ help** (see the ask).
   #moe-xpu table th:nth-child(1), #moe-xpu table td:nth-child(1) { width: 22ch; }
   #moe-xpu table th:nth-child(2), #moe-xpu table td:nth-child(2) { width: auto; }
 `}</style>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+POST-TRAINING (NEW section): CPT -> SFT -> GRPO
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="posttrain-intro">
+
+## Beyond pretraining: CPT · SFT · RL
+
+The base run is done, so the pipeline now extends past pretraining:
+
+```mermaid
+flowchart LR
+    BASE(["<span style='font-weight:700'>2B base</span><br/><i>4.67T tok</i>"])
+    BASE --> CPT["<span style='font-weight:700'>CPT</span><br/><i>olmo x dolmino</i>"]
+    BASE --> SFT["<span style='font-weight:700'>SFT</span><br/><i>tulu math mix</i>"]
+    SFT --> GRPO["<span style='font-weight:700'>GRPO</span><br/><i>arithmetic RL</i>"]
+
+    classDef base fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
+    classDef cpt  fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
+    classDef sft  fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    classDef rl   fill:#7c4ed508,stroke:#7c4ed5,color:#7c4ed5,stroke-width:1.5px
+    class BASE base
+    class CPT cpt
+    class SFT sft
+    class GRPO rl
+```
+
+- **CPT**: data-mix sweep for a second pretraining stage
+- **SFT**: `checkpoint-729-hf` is now a first-class production asset
+- **GRPO**: on-policy RL (TRL + vLLM-XPU), verified multi-node
+
+<style>{`
+  #posttrain-intro .mermaid svg { width: 100%; max-width: 100%; }
+  #posttrain-intro .mermaid g.node span, #posttrain-intro .mermaid g.node p { font-size: 1.15em; }
+  #posttrain-intro .mermaid g.node foreignObject { overflow: visible; }
+  #posttrain-intro .mermaid g.node p { line-height: 1.35; padding-bottom: 0.1em; }
+`}</style>
+
+</Slide>
+
+<Slide id="cpt" size="sm">
+
+## CPT: lower loss ≠ better model
+
+Two ~300B-token pilots (256N, GBS=6,144) vs the olmo-100 base plateau:
+
+<figure>
+    <img src="/talks/2026-07-14/figures/cpt-loss.svg"
+        alt="2B CPT training/validation loss per data mix: dolmino-100 vs olmo50-dolmino50 vs olmo-100 base" />
+    <figcaption>
+        `dolmino-100` hit the **lowest val loss 2.492** (−0.31 vs base
+        ~2.80); `olmo50-dolmino50` 2.601.
+    </figcaption>
+</figure>
+
+<div class="repo-card repo-card-warning">
+    <div class="repo-card-title">⚠ but downstream evals reversed it</div>
+    ARC-Easy: base <strong>0.651</strong> → dolmino-100 <strong>0.547</strong>
+    (−10.4pp) vs olmo50-dolmino50 <strong>0.610</strong> (holds). HellaSwag
+    fell for both. <strong>No mixing ratio declared a winner</strong>.
+    Hypothesis: re-warm to peak LR caused forgetting; gentle-LR retry pending.
+</div>
+
+</Slide>
+
+<Slide id="sft" size="sm">
+
+## SFT: `tulu_math_uc_mix` on the 2B base
+
+<figure>
+    <img src="/talks/2026-07-14/figures/sft-curves.svg"
+        alt="AuroraGPT-2B SFT loss curves on tulu_math_uc_mix" />
+    <figcaption>
+        Run 1 **complete: final loss 0.77** over 4.5B tokens (3 epochs,
+        32N, GBS=6,144).
+    </figcaption>
+</figure>
+
+- `checkpoint-729-hf` is a **first-class production asset**: it feeds
+  every downstream GRPO experiment.
+- Survived **3 SIGABRTs across 4 mpiexec auto-retry attempts**.
+- Run 3 in progress on the full **~54B-token** mix (~93.1M rows); the
+  v2-base variant is blocked by a scale-only oneCCL fault at 32N.
+
+</Slide>
+
+<Slide id="grpo" size="sm">
+
+## GRPO: arithmetic RL on Intel XPU
+
+On-policy RL via **TRL `GRPOTrainer` + vLLM-XPU**, on the SFT'd 2B
+(`sum_digits` task, 1,000 steps, 8N × 12 = 96 ranks, LR 1e-6):
+
+<figure>
+    <img src="/talks/2026-07-14/figures/grpo-curves.svg"
+        alt="Arithmetic GRPO reward and accuracy curves over 1000 steps on the SFT'd AuroraGPT-2B" />
+    <figcaption>
+        Accuracy reward climbs **~0.4 → ~0.9** (from ~0 cold-start).
+    </figcaption>
+</figure>
+
+- **Multi-node GRPO now works** (2026-07-06): the apparent "desync" was
+  two ordinary bugs (a oneCCL MPI-transport SIGSEGV + an AVG→SUM
+  reduction), not an XPU pathology.
+- Still **experimental** (verified on XPU, not production-ready).
 
 </Slide>
 
@@ -1335,7 +1424,7 @@ throughout.
 - `ezpz`: [github.com/saforem2/ezpz](https://github.com/saforem2/ezpz)
 - `torchtitan` fork (experiments/ezpz):
   [github.com/saforem2/torchtitan](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz)
-- These slides: [samf.sh/talks/2026/06/03](https://samf.sh/talks/2026/06/03)
+- These slides: [samf.sh/talks/2026/07/14](https://samf.sh/talks/2026/07/14)
 
 > This research used resources of the Argonne Leadership Computing
 > Facility, which is a DOE Office of Science User Facility supported
@@ -1403,7 +1492,8 @@ Material that didn't make the main path but is here for Q&A.
 
 - Open questions
 - Silent-correctness bugs (bf16 RMSNorm freeze · TP loss reporting)
-- 80B optimizer cliff (details)
+- 80B optimizer cliff (details) + 80B LR-finder
+- Post-training: CPT · SFT · GRPO
 - Failover engineering deep-dive
 - LR-finder
 - `yeet-env` tarball broadcast scaling
@@ -1775,13 +1865,14 @@ under batch ramp, until it didn't:
   faulted at 24,864 ranks); 512N proven, 1024N is the missing measurement.
 
 <figure>
-    {/* TODO figure: 80B loss under the stable TP=4/GBS=372 corner
-       (12.93 -> 7.72 over 100 steps) vs the NaN'd runs. Data:
-       docs/production/agpt/80b/README.md. Drop an SVG at
-       /talks/2026-07-14/figures/loss-80b-corner.svg and swap this. */}
+    <img src="/talks/2026-07-14/figures/lr-finder-80b-adamw-vs-mano.png"
+        alt="80B LR-finder at GBS=6144 on Sunspot: AdamW vs mano loss-vs-LR, showing the hard NaN cliff" />
     <figcaption>
+        80B LR-finder (GBS=6,144, Sunspot): AdamW hits a **hard NaN
+        cliff** (usable ~7.4e-7, no clean minimum); `mano` tolerates a
+        wider band but still isn't production-safe as a constant LR.
         Data:
-        [`docs/production/agpt/80b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/80b)
+        [`docs/experiments/lr-finder/agpt/80b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/experiments/lr-finder/agpt/80b)
     </figcaption>
 </figure>
 
