@@ -2282,11 +2282,12 @@ const articleSchema =
             width: auto;
             max-width: var(--prose-measure);
             /* Band chrome, shared by both states: same padding as a collapsed
-               callout + a bold accent left-bar in the heading's own hue. The
-               full border is TRANSPARENT at rest (only the left-bar shows) and
-               only colours in on hover via the rule below. Declaring it here
-               (transparent) rather than only on :hover reserves the 1px so the
-               hover border adds no width and the row never jitters. */
+               callout. At rest the heading reads as plain text (no border, no
+               left-bar); the full border is TRANSPARENT here and only colours
+               in to the per-level accent on hover via the rule below.
+               Declaring it transparent at rest (rather than only on :hover)
+               reserves the 1px so the hover border adds no width and the row
+               never jitters. */
             padding-block: 0.15lh !important;
             padding-inline-start: 1.5ch;
             /* Small right margin (same as the callouts) so the 2px down-right
@@ -2295,7 +2296,6 @@ const articleSchema =
                overflow-x: hidden. */
             margin-right: 4px;
             border: 1px solid transparent;
-            border-left: 2px solid var(--callout-color, var(--foreground3));
             /* Animate the hover border-color + shadow. WebTUI's accordion sets
                `transition: background-color, color, outline-color` via an
                UNLAYERED rule (:is([tabindex="0"],a[href],summary)) that beats
