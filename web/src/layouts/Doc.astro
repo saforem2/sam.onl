@@ -2289,6 +2289,11 @@ const articleSchema =
                hover border adds no width and the row never jitters. */
             padding-block: 0.15lh !important;
             padding-inline-start: 1.5ch;
+            /* Small right margin (same as the callouts) so the 2px down-right
+               hover shadow renders instead of being clipped: the band spans
+               the prose measure flush to #main-content's right edge, which is
+               overflow-x: hidden. */
+            margin-right: 4px;
             border: 1px solid transparent;
             border-left: 2px solid var(--callout-color, var(--foreground3));
             /* Animate the hover border-color + shadow. WebTUI's accordion sets
