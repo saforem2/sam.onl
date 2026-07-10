@@ -2282,17 +2282,14 @@ const articleSchema =
             width: auto;
             max-width: var(--prose-measure);
             /* Band chrome, shared by both states: same padding as a collapsed
-               callout, a faint per-type-tinted full border at rest, and a
-               bold accent left-bar in the heading's own hue. The hover rule
-               below swaps the faint border to a solid accent + drop-shadow
-               (the samforeman.me callout effect); the border is reserved at
-               rest so hover changes only color, never geometry (no jitter). */
+               callout + a bold accent left-bar in the heading's own hue. The
+               full border is TRANSPARENT at rest (only the left-bar shows) and
+               only colours in on hover via the rule below. Declaring it here
+               (transparent) rather than only on :hover reserves the 1px so the
+               hover border adds no width and the row never jitters. */
             padding-block: 0.15lh !important;
             padding-inline-start: 1.5ch;
-            border: 1px solid
-                oklch(
-                    from var(--callout-color, var(--foreground3)) l c h / 0.25
-                );
+            border: 1px solid transparent;
             border-left: 2px solid var(--callout-color, var(--foreground3));
             /* Animate the hover border-color + shadow. WebTUI's accordion sets
                `transition: background-color, color, outline-color` via an
