@@ -820,12 +820,14 @@
         background-color: var(--callout-bg);
         color: var(--callout-color);
         border-left: 2px solid;
-        margin-block: 0.25lh;
-        /* padding-inline: 1ch; */
-
-        > :not(summary) {
-            margin-inline-start: -1ch;
-        }
+        /* A little breathing room inside the tinted band so the title/body
+           aren't cramped against the accent bar and the top/bottom edges
+           (was effectively zero vertical padding). Kept tight (0.15lh) so
+           the compact collapsed toggles don't feel bloated. Left padding
+           sits the content off the bar; the body's -1ch pull below is
+           dropped so it aligns to this padding instead of hugging the bar. */
+        padding: 0.15lh 1.25ch;
+        margin-block: 0.4lh;
 
         summary {
             background-color: var(--callout-summary-bg);
