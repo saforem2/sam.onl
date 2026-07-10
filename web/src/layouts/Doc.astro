@@ -2268,18 +2268,45 @@ const articleSchema =
             background-color: transparent !important;
             list-style: none;
             cursor: pointer;
-            padding-block: 0 !important;
             line-height: 1lh !important;
             min-height: 1lh;
             display: flex;
             align-items: center;
-            /* Shrink the click target to just the heading text + glyph.
-               Without this the flex summary spans the full content width, so
-               clicking the empty space to the right of a heading toggles it
-               even though nothing visible is there. fit-content caps it to
-               the text; max-width keeps long headings from overflowing. */
-            width: fit-content;
-            max-width: 100%;
+            /* Both states are full-width clickable bands spanning the prose
+               measure (open + collapsed alike), so a heading reads like a
+               callout band. The whole row is the toggle target; the hover
+               treatment below signals that, so a click in the empty space to
+               its right toggling the section is expected, not a surprise.
+               (This deliberately replaces the earlier fit-content click
+               target now that the band + hover make the affordance obvious.) */
+            width: auto;
+            max-width: var(--prose-measure);
+            /* Band chrome, shared by both states: same padding as a collapsed
+               callout, a faint per-type-tinted full border at rest, and a
+               bold accent left-bar in the heading's own hue. The hover rule
+               below swaps the faint border to a solid accent + drop-shadow
+               (the samforeman.me callout effect); the border is reserved at
+               rest so hover changes only color, never geometry (no jitter). */
+            padding-block: 0.15lh !important;
+            padding-inline-start: 1.5ch;
+            border: 1px solid
+                oklch(
+                    from var(--callout-color, var(--foreground3)) l c h / 0.25
+                );
+            border-left: 2px solid var(--callout-color, var(--foreground3));
+            /* Animate the hover border-color + shadow. WebTUI's accordion sets
+               `transition: background-color, color, outline-color` via an
+               UNLAYERED rule (:is([tabindex="0"],a[href],summary)) that beats
+               this layered one regardless of specificity; !important is the
+               only thing that wins across the layer boundary. Restate WebTUI's
+               three properties alongside ours so its focus-outline fade still
+               works for keyboard users. */
+            transition:
+                background-color 100ms linear,
+                color 100ms linear,
+                outline-color 100ms linear,
+                border-color 120ms ease-out,
+                box-shadow 120ms ease-out !important;
 
             /* (previous rule killed all ::before content here so the
                default details disclosure marker didn't ghost-render;
@@ -2298,31 +2325,21 @@ const articleSchema =
                 padding: 0 !important;
             }
         }
+        /* Hover: solid per-level border + the fixed black drop-shadow the
+           callouts use (theme-invariant; --foreground0 would flip to white in
+           dark mode). Applies to both open and collapsed bands. */
+        & > summary:hover {
+            border-color: var(--callout-color, var(--foreground3));
+            box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.55);
+        }
 
-        /* When collapsed, treat the band like a collapsed callout:
-           italic heading text + `+` glyph prefix + left-border accent
-           in the heading's hue. The trailing ellipsis still fades in
-           on hover/focus so the reader knows there's content tucked
-           behind. */
+        /* When collapsed, add the collapsed-callout cues on top of the
+           shared band chrome (border/padding/left-bar are on `> summary`
+           above): italic heading text + a right-aligned `+` glyph. The
+           trailing ellipsis fades in on hover/focus so the reader knows
+           there's content tucked behind. */
         &:not([open]) > summary {
             font-style: italic;
-            border-left: 2px solid var(--callout-color, var(--foreground3));
-            /* Match the collapsed-callout padding (0.15lh block) so the
-               collapsed heading band has the same breathing room as the
-               callout toggles. Overrides the summary's padding-block: 0
-               above. (Per-level background tint is set further down.) */
-            padding-block: 0.15lh !important;
-            padding-inline-start: 1.5ch;
-            /* Collapsed band spans the prose column like a paragraph
-               (fills the content width, capped at the shared prose measure)
-               instead of shrinking to fit-content. width:auto lets the
-               block-level flex summary stretch to the column; max-width
-               matches the paragraph rule (--prose-measure) so the right edge
-               lines up exactly (a fixed width would overhang when the column
-               is narrower than the measure). The open-state summary keeps
-               fit-content for a tight click target. */
-            width: auto;
-            max-width: var(--prose-measure);
 
             &::before {
                 content: '+';
@@ -2350,15 +2367,14 @@ const articleSchema =
                 opacity: 1;
             }
         }
-        /* Open band: no inline padding (the heading should sit at the
-           same x-position as the surrounding prose, since there's no
-           border or glyph to clear) and no `x` disclosure glyph.
-           webtui's theme-custom accordion paints an `x` on
-           `details[is-~='accordion'][open] > summary::before` by
-           default, which our heading-collapse <details> inherits;
-           explicitly suppress it. */
+        /* Open band: suppress the `x` disclosure glyph. webtui's theme-custom
+           accordion paints an `x` on `details[is-~='accordion'][open] >
+           summary::before` by default, which our heading-collapse <details>
+           inherits; explicitly suppress it. (The band chrome + right-edge
+           spacing come from the shared `> summary` rule; unlike before, the
+           open band now keeps the same border/padding as the collapsed one so
+           both read as the same clickable band.) */
         &[open] > summary {
-            padding-inline-start: 0;
             &::before {
                 content: none !important;
             }
