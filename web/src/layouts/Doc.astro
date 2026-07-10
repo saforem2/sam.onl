@@ -49,10 +49,51 @@ const nextDoc =
         : sortedPages.at(pageIndex + 1)
 const prevDoc = pageIndex === 0 ? undefined : sortedPages.at(pageIndex - 1)
 
-const tocHeadings: DocHeading[] = [
+const allTocHeadings: DocHeading[] = [
     { depth: 1, text: frontmatter.title, slug: 'toc-page-title' },
     ...headings.filter((heading) => heading.depth >= 2),
 ]
+
+// Mirror the runtime collapse-by-default predicate (see the collapsible-
+// headings script near the bottom of this file): year-ending sections
+// (e.g. "📆 2025") plus a short allowlist of exact section labels are
+// wrapped in a <details> that starts CLOSED. A heading nested inside such
+// a section is hidden until the reader expands it, so listing it in the
+// sidebar TOC advertises a link to content they can't see. Strip those
+// descendants from the outline. The section heading ITSELF stays (it's the
+// always-visible accordion summary); only its collapsed children are cut.
+const COLLAPSE_EXACT = new Set([
+    'music',
+    'projects',
+    'more',
+    'detailed list',
+    'by year',
+])
+const startsCollapsedSection = (text: string) => {
+    const bare = text
+        .replace(
+            /^[\p{Emoji_Presentation}\p{Extended_Pictographic}️‍]+\s*/gu,
+            '',
+        )
+        .trim()
+        .toLowerCase()
+    return /\b(19|20)\d{2}\s*$/.test(text) || COLLAPSE_EXACT.has(bare)
+}
+// Walk in document order tracking the depth of the nearest enclosing
+// collapsed section (Infinity = none). A heading deeper than that is a
+// hidden descendant; a heading at or above it closes the section.
+let collapsedAt = Infinity
+const hiddenHeadings = new Set<DocHeading>()
+for (const heading of allTocHeadings) {
+    if (heading.depth <= collapsedAt) collapsedAt = Infinity
+    if (heading.depth > collapsedAt) hiddenHeadings.add(heading)
+    if (heading.depth < collapsedAt && startsCollapsedSection(heading.text)) {
+        collapsedAt = heading.depth
+    }
+}
+const tocHeadings: DocHeading[] = allTocHeadings.filter(
+    (heading) => !hiddenHeadings.has(heading),
+)
 
 const hasSiblingAfter = (items: DocHeading[], index: number) => {
     const currentDepth = items[index].depth
