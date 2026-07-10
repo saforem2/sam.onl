@@ -674,11 +674,11 @@ Why move off MDS — and what broke
 
 <Slide id="agpt-eval">
 
-## Evals: 2B + 20B on one axis, per token
+## Evals: 2B + 20B vs MDS, per token
 
 <figure>
-    <img src="/talks/2026-07-14/figures/all-production-evals.svg"
-        alt="All AuroraGPT production runs (2B MDS reference, 2B v2, 20B v2) lm-eval accuracy per benchmark vs tokens consumed" />
+    <img src="/talks/2026-07-14/figures/eval-combined-4bench.svg"
+        alt="AuroraGPT eval: 2B v2 (256N + 512N), 20B v2 512N, and the 2B-MDS reference on HellaSwag, ARC-Easy, ARC-Challenge, Winogrande vs tokens consumed" />
     <figcaption>
         **2B** (4.67T tok): HellaSwag 0.561 · ARC-Easy 0.651, plateaus
         ~2T. **20B/512N is the most token-efficient run**: at 442.9B tok
