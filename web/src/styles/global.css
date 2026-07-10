@@ -598,8 +598,12 @@
         background-image: none;
     }
     .slide-deck.reveal-full-page {
-        width: min(800px, round(97%, 1ch));
-        margin-inline-end: 2ch;
+        /* Fill the (now full-width, callout-wide) talk callout instead of
+           capping at 800px. The 800px cap predated the wide-callout change
+           and left the 16:9 deck pillarboxed in a wider frame. The
+           .reveal-full-page rule below still forces the 1280/720 (16:9)
+           aspect-ratio + a 66vh max-height, so this only sets the width. */
+        width: 100%;
     }
     .reveal-full-page {
         max-height: round(calc(0.66 * 100vh), 1lh) !important;
