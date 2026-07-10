@@ -2266,12 +2266,33 @@ const articleSchema =
         &:not([open]) > summary {
             font-style: italic;
             border-left: 2px solid var(--callout-color, var(--foreground3));
+            /* Match the collapsed-callout padding (0.15lh block) so the
+               collapsed heading band has the same breathing room as the
+               callout toggles. Overrides the summary's padding-block: 0
+               above. (Per-level background tint is set further down.) */
+            padding-block: 0.15lh !important;
             padding-inline-start: 1.5ch;
+            /* Collapsed band spans the prose column like a paragraph
+               (fills the content width, capped at the 72ch measure)
+               instead of shrinking to fit-content. width:auto lets the
+               block-level flex summary stretch to the column; max-width
+               matches the paragraph rule so the right edge lines up
+               exactly (a fixed width:72ch would overhang when the column
+               is narrower than 72ch). The open-state summary keeps
+               fit-content for a tight click target. */
+            width: auto;
+            max-width: 72ch;
 
             &::before {
                 content: '+';
                 color: var(--callout-color, var(--foreground3));
-                margin-inline-end: 1ch;
+                /* Push the glyph to the far RIGHT of the band, matching the
+                   block callouts' toggle: order:1 moves it past the heading
+                   text, margin-inline-start:auto eats the free space between.
+                   (Left pad, not right margin, now that it trails.) */
+                order: 1;
+                margin-inline-start: auto;
+                padding-inline-start: 1ch;
                 font-style: normal;
                 font-weight: bold;
             }
