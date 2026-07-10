@@ -625,12 +625,14 @@
             box-shadow 120ms ease-out,
             background-color 120ms linear;
     }
-    /* Hover: tiny 1px lift + hard TUI shadow in the callout's own accent
-       color so the box reads as a physical card. Brightens the inner
-       blockquote tint so the rail pops too. */
+    /* Hover: tiny 1px lift + hard TUI shadow so the box reads as a
+       physical card. Uses neutral grey (--foreground2) to match the
+       sidebar action-chip shadow, rather than the saturated per-type
+       accent (which read harsher). Brightens the inner blockquote tint so
+       the rail pops too. */
     .callout:hover {
         transform: translate(-1px, -1px);
-        box-shadow: 2px 2px 0 0 var(--callout-color);
+        box-shadow: 2px 2px 0 0 var(--foreground2);
     }
     .callout:hover blockquote {
         background-color: oklch(
@@ -828,6 +830,11 @@
            dropped so it aligns to this padding instead of hugging the bar. */
         padding: 0.15lh 1.25ch;
         margin-block: 0.4lh;
+        /* Small right margin so the hover lift's down-right box-shadow
+           (2px offset) renders instead of being clipped: callouts are
+           otherwise flush with #main-content's right edge, which has
+           overflow-x: hidden. 4px clears the 2px shadow with room. */
+        margin-right: 4px;
 
         summary {
             background-color: var(--callout-summary-bg);
