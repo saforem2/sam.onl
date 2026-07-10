@@ -636,7 +636,7 @@
        (0,2,1) and win by source order — a bare .callout:hover (0,2,0)
        would lose. Flat selector per the Lightning-CSS flattener caveats
        noted elsewhere. */
-    details[is-~='accordion'].callout:hover {
+    details[is-~='accordion'].callout:not(.callout-inline):hover {
         border-color: var(--callout-color);
         box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.55);
     }
@@ -823,7 +823,7 @@
             .callout-error,
             .callout-danger,
             .callout-success
-        ) {
+        ):not(.callout-inline) {
         background-color: var(--callout-bg);
         color: var(--callout-color);
         /* Rest state: a thick per-type accent bar on the left + a faint
@@ -872,6 +872,13 @@
         }
         &[open] > summary::before {
             content: 'x';
+        }
+        /* Zero the generic accordion body indent (accordion.css sets
+           [open]::details-content { padding-left: 2ch }) so the callout
+           body aligns flush-left with the title instead of sitting further
+           right. */
+        &[open]::details-content {
+            padding-left: 0;
         }
     }
     /* Kept OUTSIDE the .callout nesting block — Lightning CSS's nesting
