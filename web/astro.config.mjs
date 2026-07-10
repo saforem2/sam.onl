@@ -247,6 +247,12 @@ const rehypeGitHubCallouts = () => {
             const calloutClasses = ['callout', `callout-${calloutType}`]
             if (calloutFlags.includes('inline'))
                 calloutClasses.push('callout-inline')
+            // `[!TIP|wide]` → break out of the prose-measure width cap and
+            // span the full article column (see .callout-wide in global.css).
+            // Slide-deck embeds also get this automatically via :has(), so the
+            // flag is only needed for wide non-slide callouts.
+            if (calloutFlags.includes('wide'))
+                calloutClasses.push('callout-wide')
 
             const detailsNode = {
                 type: 'element',

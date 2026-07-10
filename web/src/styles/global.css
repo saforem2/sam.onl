@@ -961,6 +961,29 @@
             padding-left: 0;
         }
     }
+    /* Wide callouts: break out of the --prose-measure cap and span the full
+       article column. Three triggers:
+         1. `.callout-wide`: explicit escape hatch (author writes
+            `[!TIP|wide]`; the wide flag is mapped to this class in
+            astro.config.mjs's callout plugin).
+         2/3. `:has(.slide-deck, .slide-deck-placeholder)`: any callout
+            wrapping an embedded reveal.js talk deck gets it automatically, so
+            the talk embeds on /about span the column with no per-callout
+            markup. Both states are matched: the lazy-mount script (Doc.astro)
+            swaps the `iframe.slide-deck` for a `button.slide-deck-placeholder`
+            until clicked, then restores the iframe (with its class) on click,
+            so the callout must stay wide across the swap.
+       Flat descendant selectors (not nested) per the Lightning-CSS nesting
+       caveats noted throughout this file; !important beats the max-width on
+       the block-callout rule above. Only the max-width cap is lifted; the
+       border, padding, hover, and margins are inherited unchanged. */
+    details[is-~='accordion'].callout.callout-wide:not(.callout-inline),
+    details[is-~='accordion'].callout:not(.callout-inline):has(.slide-deck),
+    details[is-~='accordion'].callout:not(.callout-inline):has(
+            .slide-deck-placeholder
+        ) {
+        max-width: none !important;
+    }
     /* Kept OUTSIDE the .callout nesting block — Lightning CSS's nesting
        parser silently dropped the parent compound selector when this
        lived inside `details[is~='accordion'].callout { … & p { … } }`,
