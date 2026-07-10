@@ -723,6 +723,16 @@
     .callout-inline {
         display: flex;
         align-items: baseline;
+        /* Tint background + accent text color + padding/margin. Inline
+           callouts used to inherit these from the shared block rule, but
+           that rule is now scoped :not(.callout-inline) (border/toggle
+           shouldn't apply to the one-line variant), so declare them here
+           directly. Same padding the block rule used, minus the border,
+           so the "Updated:" band keeps its breathing room. (margin-block
+           is set below with the rest of the inline layout.) */
+        background-color: var(--callout-bg);
+        color: var(--callout-color);
+        padding: 0.15lh 1.25ch;
         /* Icon→text spacing is handled by a negative margin-inline-end on the
            ::before icon (below), not by flex gap: the MDI glyphs carry built-in
            padding inside their 24×24 viewBox, so the visible glyph sits inset
@@ -732,7 +742,8 @@
         gap: 0;
         flex-wrap: nowrap;
         white-space: nowrap;
-        margin-block: 0.25lh;
+        /* Match the block callouts' vertical rhythm. */
+        margin-block: 0.4lh;
     }
     /* Inline callouts show no text type-label and no +/x toggle glyph — hide
        the summary entirely (whether it's empty or carries a title like the
