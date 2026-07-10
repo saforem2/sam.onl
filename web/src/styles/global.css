@@ -754,8 +754,11 @@
         gap: 0;
         flex-wrap: nowrap;
         white-space: nowrap;
-        /* Match the block callouts' vertical rhythm. */
-        margin-block: 0.4lh;
+        /* Match the block callouts' vertical rhythm (one line-box, same as a
+           paragraph). 0.4lh was too small: adjacent callouts' margins collapse
+           to the larger of the two, so two stacked callouts sat ~11px apart vs
+           the 21px a callout gets next to prose. 1lh evens that out. */
+        margin-block: 1lh;
         /* Same 4px right gap the block callouts get: `display: flex` makes
            these block-level, so they stretch flush to #main-content's right
            edge (overflow-x: hidden) and the 2px down-right hover shadow would
@@ -895,7 +898,11 @@
            against the border/edges. Tight (0.15lh) so compact collapsed
            toggles don't feel bloated. */
         padding: 0.15lh 1.25ch;
-        margin-block: 0.4lh;
+        /* One line-box of outer margin, matching paragraphs + inline callouts.
+           0.4lh was too small: adjacent callouts' margins collapse to the max
+           of the two, so stacked callouts sat ~11px apart vs 21px next to
+           prose; 1lh evens the rhythm. */
+        margin-block: 1lh;
         /* Small right margin so the hover down-right box-shadow (2px
            offset) renders instead of being clipped: callouts are otherwise
            flush with #main-content's right edge (overflow-x: hidden). */
