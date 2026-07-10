@@ -898,6 +898,12 @@
             background-color: var(--callout-summary-bg);
             color: var(--callout-color);
             font-weight: var(--font-weight-bold);
+            /* Pin the summary line to one line-box (1lh) so the collapsed
+               block callout is the same height as a single-line inline
+               callout. Without this the summary inherits line-height:normal
+               (~1.29x on Iosevka), which made the collapsed band ~6px taller
+               than the inline "Updated:" band for no visual benefit. */
+            line-height: 1lh;
         }
         /* +/x toggle glyph on the RIGHT. Uses ::before (NOT ::after):
            a <summary>'s ::after content is unreliable across browsers, but
