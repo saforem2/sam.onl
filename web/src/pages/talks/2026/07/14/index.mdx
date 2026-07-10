@@ -582,22 +582,17 @@ throughput tax.
 
 <Slide id="agpt-2b-loss">
 
-## 2B reference: training loss
+## 2B production: training loss (complete)
 
 <figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-06-03/figures/loss-2b-reference-mobile.svg"
-        />
-        <img
-            src="/talks/2026-06-03/figures/loss-2b-reference.svg"
-            alt="AuroraGPT-2B training loss across 3 stages"
-        />
-    </picture>
+    <img
+        src="/talks/2026-07-14/figures/production-2b-256n.svg"
+        alt="AuroraGPT-2B v2 256N production training loss over 4.67T tokens"
+    />
     <figcaption>
-        (1.) Pretrain[^stage1] → (2.) continued-pretrain[^stage2] → (3.)
-        math+code[^stage3]
+        v2 256N, the full **4.674T-token** run (step-92,859), final loss
+        **2.65**. Data:
+        [`docs/production/agpt/2b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/2b)
     </figcaption>
 </figure>
 
@@ -640,21 +635,16 @@ Why move off MDS — and what broke
 
 <Slide id="agpt-2b-loss-with-tt">
 
-## 2B reference + `torchtitan` overlay
+## All production runs: training loss
 
 <figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-06-03/figures/loss-2b-reference-with-tt-mobile.svg"
-        />
-        <img
-            src="/talks/2026-06-03/figures/loss-2b-reference-with-tt.svg"
-            alt="AuroraGPT-2B MDS 3-stage trajectory with TorchTitan 256N production run overlaid"
-        />
-    </picture>
+    <img
+        src="/talks/2026-07-14/figures/all-production-training.svg"
+        alt="AuroraGPT all production training-loss curves: 2B and 20B v2 runs on one axis"
+    />
     <figcaption>
-        Training loss comparison for AuroraGPT-2B trained with MDS vs. TT.
+        Every current production run on one axis (2B + 20B v2). Data:
+        [`docs/production`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production)
     </figcaption>
 </figure>
 
@@ -666,22 +656,17 @@ Why move off MDS — and what broke
 
 <Slide id="agpt-2b-loss-compare">
 
-## 2B loss: MDS full trajectory vs `torchtitan`
+## 20B production: training loss
 
 <figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-06-03/figures/loss-2b-compare-mobile.svg"
-        />
-        <img
-            src="/talks/2026-06-03/figures/loss-2b-compare.svg"
-            alt="2B training loss: MDS full 3-stage curve vs TT v2 256N chain"
-        />
-    </picture>
+    <img
+        src="/talks/2026-07-14/figures/production-20b-512n.svg"
+        alt="AuroraGPT-20B v2 512N production training loss, step-5,400 / 543.6B tokens"
+    />
     <figcaption>
-        256N / GBS=6,144. At matched tokens, **δ ≈ 0.02** — within run-to-run
-        noise. The cutover preserved training behavior.
+        v2 512N (sync), step-5,400 / **543.6B tokens** (11.6%), loss
+        **2.47** and still descending. Data:
+        [`docs/production/agpt/20b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/20b)
     </figcaption>
 </figure>
 
