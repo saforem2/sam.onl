@@ -1893,7 +1893,16 @@ const ICON_ABOUT = '\u{f1028}'
             // the query, focusing a toolbar button left j/k with no index in
             // the list, so it reset to the first tree item (sam.onl) instead of
             // moving to the next button.
-            '#sidebar-actions a[href]:not([disabled]), #sidebar-actions button:not([disabled]), #category-list > a:not(.hidden), details:not(.hidden)[open] a:not(.hidden), details:not(.hidden) summary',
+            // The inline TOC heading links (.sidebar-toc a.toc-heading, cloned
+            // in after the active page leaf above) must be in the query too, or
+            // j/k jumps from the active leaf straight to the next tree folder,
+            // skipping every heading. They sit inside the .sidebar-toc div (not
+            // a direct `#category-list > a` child) and aren't in a <details>, so
+            // the other clauses miss them. querySelectorAll returns DOM order,
+            // so headings interleave between the active leaf and the next entry;
+            // collapsed depth-3+ headings are display:none and get filtered out
+            // by applyVimNavigation's visibility check.
+            '#sidebar-actions a[href]:not([disabled]), #sidebar-actions button:not([disabled]), #category-list > a:not(.hidden), #category-list .sidebar-toc a.toc-heading, details:not(.hidden)[open] a:not(.hidden), details:not(.hidden) summary',
             (element) => {
                 if (lastInteractionWasPointer) {
                     return
