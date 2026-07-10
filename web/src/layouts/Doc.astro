@@ -2289,7 +2289,13 @@ const articleSchema =
                reserves the 1px so the hover border adds no width and the row
                never jitters. */
             padding-block: 0.15lh !important;
-            padding-inline-start: 1.5ch;
+            /* Hang the band 1ch to the LEFT of the prose column into
+               #main-content's new 2ch gutter: margin-left:-1ch pulls the box
+               out, padding-inline-start:1ch pushes the heading text back in,
+               so the `##` marker + text still line up with body prose while
+               the hover box/left-border sits in the gutter. */
+            padding-inline-start: 1ch;
+            margin-left: -1ch;
             /* Small right margin (same as the callouts) so the 2px down-right
                hover shadow renders instead of being clipped: the band spans
                the prose measure flush to #main-content's right edge, which is

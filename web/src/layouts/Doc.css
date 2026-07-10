@@ -1169,6 +1169,16 @@ h6::before {
         gap: 0ch;
         overflow-x: hidden;
         color: var(--foreground1);
+        /* Inset the content 2ch from the box edges but pull the box itself
+           1ch wider each side (net: content gains a ~1ch gutter on both
+           sides, the box grows 1ch). The gutter lives INSIDE the overflow-x:
+           hidden boundary, so a heading's hover box / drop-shadow (and the
+           heading negative-margin below, which hangs the box 1ch left) render
+           into it instead of being clipped. Verified no horizontal overflow
+           at desktop or mobile widths (mobile #main-content is overflow-x:
+           clip, which contains the negative margin). */
+        padding-inline: 2ch;
+        margin-inline: -1ch;
 
         /* Cap the measure of running prose for readability: on a wide
            monitor the article column is 180ch+, which makes body text a
