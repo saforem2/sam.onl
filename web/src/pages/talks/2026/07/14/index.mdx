@@ -206,8 +206,15 @@ Since TPC'26: production status refresh (NEW)
   changed.
 
 <style>{`
-  #since-tpc table th:nth-child(1), #since-tpc table td:nth-child(1) { width: 12ch; }
-  #since-tpc table th:nth-child(6), #since-tpc table td:nth-child(6) { width: auto; }
+  /* Pin every column so the narrow numeric fields (Nodes/Steps/Loss) don't
+     hog the row while Status wraps. Fixed-layout table splits leftover width
+     evenly across unset columns, which is why the numerics ballooned. */
+  #since-tpc table th:nth-child(1), #since-tpc table td:nth-child(1) { width: 11ch; } /* Run */
+  #since-tpc table th:nth-child(2), #since-tpc table td:nth-child(2) { width: 8ch; }  /* Nodes */
+  #since-tpc table th:nth-child(3), #since-tpc table td:nth-child(3) { width: 8ch; }  /* Steps */
+  #since-tpc table th:nth-child(4), #since-tpc table td:nth-child(4) { width: 16ch; } /* Tokens */
+  #since-tpc table th:nth-child(5), #since-tpc table td:nth-child(5) { width: 7ch; }  /* Loss */
+  #since-tpc table th:nth-child(6), #since-tpc table td:nth-child(6) { width: auto; } /* Status */
   #since-tpc pre, #since-tpc table { font-size: 0.95em; }
 `}</style>
 
