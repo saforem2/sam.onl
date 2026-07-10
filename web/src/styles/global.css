@@ -733,6 +733,8 @@
         background-color: var(--callout-bg);
         color: var(--callout-color);
         padding: 0.15lh 1.25ch;
+        /* Cap at the prose measure to match block callouts + paragraphs. */
+        max-width: 72ch;
         /* Icon→text spacing is handled by a negative margin-inline-end on the
            ::before icon (below), not by flex gap: the MDI glyphs carry built-in
            padding inside their 24×24 viewBox, so the visible glyph sits inset
@@ -744,6 +746,32 @@
         white-space: nowrap;
         /* Match the block callouts' vertical rhythm. */
         margin-block: 0.4lh;
+    }
+    /* Animate the hover lift-shadow the same way block callouts do. WebTUI's
+       accordion sets `transition: background-color, color, outline-color` via
+       an UNLAYERED rule (:is([tabindex="0"],a[href],summary)); this rule lives
+       in @layer components, and unlayered beats layered regardless of
+       specificity, so on the MDX-authored inline callout (the one WebTUI's JS
+       marks tabindex=0) our transition would lose and the shadow would snap.
+       `!important` is the only thing that wins across that layer boundary. We
+       restate WebTUI's three properties alongside box-shadow so the focus
+       outline still fades for keyboard users; we're only adding box-shadow,
+       not replacing the accordion's own transitions. */
+    details[is-~='accordion'].callout-inline {
+        transition:
+            background-color 0.1s linear,
+            color 0.1s linear,
+            outline-color 0.1s linear,
+            box-shadow 120ms ease-out !important;
+    }
+    /* Same hard offset drop-shadow the block callouts get on hover, so the
+       inline "Updated:" / publications bands read as the same liftable
+       surface. Fixed near-black ink (theme-invariant) matching the block
+       rule; inline bands shrink to content width (flex + nowrap) well
+       inside the 72ch cap, so the shadow doesn't hit #main-content's
+       overflow-x clip and needs no right-margin fudge. */
+    details[is-~='accordion'].callout-inline:hover {
+        box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.55);
     }
     /* Inline callouts show no text type-label and no +/x toggle glyph — hide
        the summary entirely (whether it's empty or carries a title like the
@@ -857,6 +885,9 @@
            offset) renders instead of being clipped: callouts are otherwise
            flush with #main-content's right edge (overflow-x: hidden). */
         margin-right: 4px;
+        /* Cap at the prose measure so callouts align with the paragraph
+           column instead of running wider than the body text. */
+        max-width: 72ch;
 
         summary {
             /* Flex row so the title sits left and the +/x toggle is pushed
