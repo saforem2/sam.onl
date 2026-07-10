@@ -263,27 +263,19 @@
         }
     }
     /* Compact table utility — for slides where a figure + table share
-       vertical space and the default 0.3lh per-side cell padding
-       crowds the chart out. Wrap the table in <div class="tight-table">
-       (or apply directly to a markdown table via a parent div).
-       Shrinks the table font ~10%; line-height stays at 1.5 (browser
-       default-ish) so rows still breathe — the savings come from
-       cell padding (0.3lh -> 0) + slightly smaller type, not from
-       cramped lines. */
-    .tight-table {
-        font-size: 0.9em;
-    }
+       vertical space. Keeps the default table's padded, roomy look
+       (matching a plain slide table) but shaves a little: full font
+       size, and cell padding of 0.2lh (vs the default 0.3lh) so the
+       rows stay open and legible instead of cramped. Previously this
+       zeroed the padding and shrank the font, which read as too tight;
+       the small padding trim alone is enough to reclaim vertical space
+       next to a figure without the cramped look. */
     .tight-table table,
     table.tight-table {
         th,
         td {
-            padding-block: 0 !important;
+            padding-block: 0.2lh !important;
             line-height: 1.5;
-        }
-        /* Trim header bottom-border padding too so the head doesn't
-           visually disconnect from the first row at zero padding. */
-        thead th {
-            padding-block: 0.05lh !important;
         }
     }
     pre {
