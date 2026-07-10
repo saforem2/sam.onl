@@ -469,6 +469,16 @@
         }
     }
 
+    /* The about-page intro two-column layout (#flex-container: bio text on the
+       left, icon row + Updated + Now Playing on the right). Its children carry
+       inline `width` values sized for a side-by-side row; the mobile override
+       lives in the @media block below. Declared explicitly here (rather than
+       relying on the flex default) so the row intent is self-documenting and
+       survives if the inline `display:flex` is ever moved out of the markup. */
+    #flex-container {
+        flex-direction: row;
+    }
+
     .dim-text {
         color: var(--foreground2);
     }
@@ -1137,6 +1147,18 @@
         > .col {
             flex: none;
             width: 100%;
+        }
+    }
+
+    /* Stack the about-page intro columns on narrow screens. The children have
+       inline `width` values (e.g. round(100% - 80ch, 1ch), which goes negative
+       and collapses to 0 below the row's design width), so !important is
+       required to override them to full width when stacked. */
+    #flex-container {
+        flex-direction: column;
+
+        > div {
+            width: 100% !important;
         }
     }
 
