@@ -718,7 +718,7 @@ The fork tax
 <div class="fork-tax-diagram">
 
 ```mermaid
-flowchart TB
+flowchart LR
     A["<i>start</i><br/><span style='font-weight:700'>upstream @ HEAD</span>"] --> B["<i>resync · 50 steps · deterministic</i><br/><span style='font-weight:700'>smoke test</span>"]
     B --> D{"bit-exact?"}
     D -->|✅| C["<i>diff = 0</i><br/><span style='font-weight:700'>✓ ship</span>"]
@@ -825,10 +825,12 @@ flowchart TB
     padding-bottom: 0.1em;
   }
   /* Slide-distance legible. Mermaid sets text via inline foreignObject
-     span/p — override both at once. */
+     span/p — override both at once. Bumped to 1.6em now the diagram is
+     landscape (flowchart LR): it fills the column width and no longer
+     scales down to fit a tall portrait layout into the column height. */
   #fork-tax .mermaid g.node span,
   #fork-tax .mermaid g.node p {
-    font-size: 1.25em;
+    font-size: 1.6em;
   }
   /* Subtle accent drop-shadow on each box so the colored chips lift
      off the slide background — matches the depth-cue treatment on the
