@@ -160,29 +160,29 @@ function panel(task, px, py) {
 
     let s = ''
     // panel title
-    s += `<text x="${px + panelW / 2}" y="${py + 16}" text-anchor="middle" font-family="${FONT}" font-size="19" fill="#444">${esc(TITLES[task])}</text>`
+    s += `<text x="${px + panelW / 2}" y="${py + 16}" text-anchor="middle" font-family="${FONT}" font-size="19" fill="#838383">${esc(TITLES[task])}</text>`
 
     // axes box
-    s += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#d8d8d8" stroke-width="1"/>`
+    s += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#83838355" stroke-width="1"/>`
 
     // y gridlines + labels (4 ticks)
     for (let k = 0; k <= 4; k++) {
         const v = yMin + ((yMax - yMin) * k) / 4
         const yy = sy(v)
-        s += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#eee" stroke-width="1"/>`
-        s += `<text x="${ax - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="12" fill="#888">${fmt(v)}</text>`
+        s += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
+        s += `<text x="${ax - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="12" fill="#838383">${fmt(v)}</text>`
     }
     // x ticks (0,1,2,3,4 T)
     for (let k = 0; k <= 4; k++) {
         const t = (X_MAX * k) / 4
         const xx = sx(t)
-        s += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 4}" stroke="#aaa" stroke-width="1"/>`
-        s += `<text x="${xx}" y="${ay + ah + 18}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#888">${(t / 1000).toFixed(0)}T</text>`
+        s += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 4}" stroke="#83838388" stroke-width="1"/>`
+        s += `<text x="${xx}" y="${ay + ah + 18}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#838383">${(t / 1000).toFixed(0)}T</text>`
     }
     // random baseline
     const yr = sy(RANDOM[task])
     if (RANDOM[task] >= yMin && RANDOM[task] <= yMax) {
-        s += `<line x1="${ax}" y1="${yr}" x2="${ax + aw}" y2="${yr}" stroke="#bbb" stroke-width="1" stroke-dasharray="2 3"/>`
+        s += `<line x1="${ax}" y1="${yr}" x2="${ax + aw}" y2="${yr}" stroke="#83838366" stroke-width="1" stroke-dasharray="2 3"/>`
     }
 
     // series (data index = 1 + col within row)
@@ -214,8 +214,8 @@ function panel(task, px, py) {
 
 let body = ''
 // title
-body += `<text x="${W / 2}" y="34" text-anchor="middle" font-family="${FONT}" font-size="22" font-weight="700" fill="#333">AuroraGPT eval: 2B + 20B vs MDS reference</text>`
-body += `<text x="${W / 2}" y="56" text-anchor="middle" font-family="${FONT}" font-size="13" fill="#888">lm-eval accuracy vs tokens consumed (four benchmarks with TorchTitan + MDS coverage)</text>`
+body += `<text x="${W / 2}" y="34" text-anchor="middle" font-family="${FONT}" font-size="22" font-weight="700" fill="#838383">AuroraGPT eval: 2B + 20B vs MDS reference</text>`
+body += `<text x="${W / 2}" y="56" text-anchor="middle" font-family="${FONT}" font-size="13" fill="#838383">lm-eval accuracy vs tokens consumed (four benchmarks with TorchTitan + MDS coverage)</text>`
 
 // legend
 let lx = M.left + 8
@@ -240,7 +240,6 @@ TASKS.forEach((task, i) => {
 
 const svg = `<?xml version="1.0" encoding="utf-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${FONT}">
-<rect width="${W}" height="${H}" fill="#ffffff"/>
 ${body}
 </svg>
 `

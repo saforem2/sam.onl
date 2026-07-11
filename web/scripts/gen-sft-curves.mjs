@@ -97,23 +97,23 @@ function panel(p, px, py) {
     const sy = (v) => ay + ah - ((v - yMin) / (yMax - yMin || 1)) * ah
 
     let s = ''
-    s += `<text x="${px + panelW / 2}" y="${py + 15}" text-anchor="middle" font-family="${FONT}" font-size="17" fill="#444">${esc(p.title)}</text>`
-    s += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#d8d8d8" stroke-width="1"/>`
+    s += `<text x="${px + panelW / 2}" y="${py + 15}" text-anchor="middle" font-family="${FONT}" font-size="17" fill="#838383">${esc(p.title)}</text>`
+    s += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#83838355" stroke-width="1"/>`
     // y ticks
     for (let k = 0; k <= 4; k++) {
         const v = yMin + ((yMax - yMin) * k) / 4
         const yy = sy(v)
-        s += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#f0f0f0" stroke-width="1"/>`
-        s += `<text x="${ax - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="11" fill="#999">${fmtTick(v)}</text>`
+        s += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
+        s += `<text x="${ax - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="11" fill="#838383">${fmtTick(v)}</text>`
     }
     // x ticks (0..sMax steps, 4 divisions)
     for (let k = 0; k <= 4; k++) {
         const st = sMin + ((sMax - sMin) * k) / 4
         const xx = sx(st)
-        s += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 4}" stroke="#aaa" stroke-width="1"/>`
-        s += `<text x="${xx}" y="${ay + ah + 17}" text-anchor="middle" font-family="${FONT}" font-size="11" fill="#999">${Math.round(st)}</text>`
+        s += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 4}" stroke="#83838388" stroke-width="1"/>`
+        s += `<text x="${xx}" y="${ay + ah + 17}" text-anchor="middle" font-family="${FONT}" font-size="11" fill="#838383">${Math.round(st)}</text>`
     }
-    s += `<text x="${ax + aw / 2}" y="${py + panelH - 1}" text-anchor="middle" font-family="${FONT}" font-size="11" fill="#888">global step</text>`
+    s += `<text x="${ax + aw / 2}" y="${py + panelH - 1}" text-anchor="middle" font-family="${FONT}" font-size="11" fill="#838383">global step</text>`
 
     // line + dots
     const pts = ROWS.map((r) => [sx(r[0]), sy(r[p.i] * scale)])
@@ -125,8 +125,8 @@ function panel(p, px, py) {
 }
 
 let body = ''
-body += `<text x="${W / 2}" y="34" text-anchor="middle" font-family="${FONT}" font-size="20" font-weight="700" fill="#333">AuroraGPT-2B × tulu_math_uc_mix SFT trajectory</text>`
-body += `<text x="${W / 2}" y="56" text-anchor="middle" font-family="${FONT}" font-size="13" fill="#888">step ${sMax}, 3 epochs, 32N, GBS=6144 · final loss ${ROWS[ROWS.length - 1][1].toFixed(2)} · ${ROWS[ROWS.length - 1][6].toFixed(2)}B tokens (cumulative)</text>`
+body += `<text x="${W / 2}" y="34" text-anchor="middle" font-family="${FONT}" font-size="20" font-weight="700" fill="#838383">AuroraGPT-2B × tulu_math_uc_mix SFT trajectory</text>`
+body += `<text x="${W / 2}" y="56" text-anchor="middle" font-family="${FONT}" font-size="13" fill="#838383">step ${sMax}, 3 epochs, 32N, GBS=6144 · final loss ${ROWS[ROWS.length - 1][1].toFixed(2)} · ${ROWS[ROWS.length - 1][6].toFixed(2)}B tokens (cumulative)</text>`
 
 PANELS.forEach((p, idx) => {
     const c = idx % COLS
@@ -138,7 +138,6 @@ PANELS.forEach((p, idx) => {
 
 const svg = `<?xml version="1.0" encoding="utf-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${FONT}">
-<rect width="${W}" height="${H}" fill="#ffffff"/>
 ${body}
 </svg>
 `
