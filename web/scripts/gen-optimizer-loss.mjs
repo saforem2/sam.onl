@@ -117,8 +117,8 @@ body += `<text x="${W / 2}" y="43" text-anchor="middle" font-family="${FONT}" fo
             .join(' ')
         body += `<path d="${d}" fill="none" stroke="${r.color}" stroke-width="2.2"/>`
     }
-    // legend
-    let lx = ax + aw - 150
+    // legend (top-left, in the corner the curves have already dropped out of)
+    let lx = ax + 14
     let ly = ay + 16
     body += `<rect x="${lx - 10}" y="${ly - 15}" width="160" height="${SERIES.length * 20 + 10}" fill="#83838310" stroke="#83838333" stroke-width="1"/>`
     for (const r of [...SERIES].reverse()) {
@@ -137,10 +137,10 @@ body += `<text x="${W / 2}" y="43" text-anchor="middle" font-family="${FONT}" fo
         const zX1 = 1000
         const zY0 = 3.3
         const zY1 = 5.3
-        // inset box on the canvas
-        const ix = ax + aw * 0.28
+        // inset box on the canvas (shifted right, clear of the top-left legend)
+        const ix = ax + aw * 0.4
         const iy = ay + 26
-        const iw = aw * 0.44
+        const iw = aw * 0.42
         const ih = 176
         const isx = (s) => ix + ((s - zX0) / (zX1 - zX0)) * iw
         const isy = (v) => iy + ih - ((v - zY0) / (zY1 - zY0)) * ih

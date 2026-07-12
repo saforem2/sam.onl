@@ -339,6 +339,10 @@
        the same vertical guideline as the surrounding body text. */
     pre.astro-code {
         margin-inline-start: -2ch;
+        /* A little breathing room inside the code block so single-line
+           commands (e.g. `ezpz launch --auto-retry …`) don't look cramped
+           against the top/bottom edges of their tinted background. */
+        padding-block: 0.4lh;
     }
     /* Inter-row whitespace fix — applies at ALL widths. Shiki emits a
        literal `\n` text node between each inline-block <span class="line">
