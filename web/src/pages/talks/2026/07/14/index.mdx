@@ -583,24 +583,6 @@ throughput tax.
 
 </Slide>
 
-<Slide id="agpt-2b-loss">
-
-## 2B production: training loss (complete)
-
-<figure>
-    <img
-        src="/talks/2026-07-14/figures/production-2b-256n.svg"
-        alt="AuroraGPT-2B v2 256N production training loss over 4.67T tokens"
-    />
-    <figcaption>
-        v2 256N, the full **4.674T-token** run (step-92,859), final loss
-        **2.65**. Data:
-        [`docs/production/agpt/2b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/2b)
-    </figcaption>
-</figure>
-
-</Slide>
-
 {/*───────────────────────────────────────────────────────────────
 Why move off MDS — and what broke
 ───────────────────────────────────────────────────────────────*/}
@@ -646,30 +628,11 @@ Why move off MDS — and what broke
         alt="AuroraGPT all production training-loss curves: 2B and 20B v2 runs on one axis"
     />
     <figcaption>
-        Every current production run on one axis (2B + 20B v2). Data:
+        Every current production run on one axis. **2B v2 256N**: the full
+        **4.674T-token** run (step-92,859), final loss **2.65**. **20B v2
+        512N** (sync): step-5,400 / **543.6B tok** (11.6%), loss **2.47** and
+        still descending. Data:
         [`docs/production`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production)
-    </figcaption>
-</figure>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-2B training loss comparison — MDS full trajectory vs TT v2
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="agpt-2b-loss-compare">
-
-## 20B production: training loss
-
-<figure>
-    <img
-        src="/talks/2026-07-14/figures/production-20b-512n.svg"
-        alt="AuroraGPT-20B v2 512N production training loss, step-5,400 / 543.6B tokens"
-    />
-    <figcaption>
-        v2 512N (sync), step-5,400 / **543.6B tokens** (11.6%), loss
-        **2.47** and still descending. Data:
-        [`docs/production/agpt/20b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/20b)
     </figcaption>
 </figure>
 
