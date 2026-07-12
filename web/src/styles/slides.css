@@ -739,6 +739,13 @@
         padding-inline-start: 0;
         list-style: decimal inside;
     }
+    /* A paragraph that immediately follows a list starts a new labelled
+       section (e.g. "Old stack (reference):" after the current-stack list).
+       With the zeroed list margins it would otherwise butt against the last
+       bullet, so give it a full-line break above. */
+    :is(ul, ol) + p {
+        margin-block-start: 1lh;
+    }
     /* Hanging indent for ordered-list items: wrapped lines align to the
        text start (after "N. "), not to the marker. The first line pulls
        its leading "1. " back into the gutter via negative text-indent. */

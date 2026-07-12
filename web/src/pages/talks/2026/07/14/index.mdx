@@ -146,16 +146,16 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
       - Moving to [ `torchtitan`](https://github.com/saforem2/torchtitan/blob/ezpz)[^mds]
     - Post-training now live: **CPT · SFT · GRPO**
 
+</div>
+
+<div>
+
 2. **The Bad**:
     - Rapidly evolving software (_and hardware_!)
       - Fork tax (fast-moving upstream!)
     - At scale, *failure is the default*
     - 80B: **one bf16 cliff, three dead optimizers**
     - MoE on XPU: **4–11% MFU** (`compile` hurts!)
-
-</div>
-
-<div>
 
 3. **The Restarts**:
     - Towards resilient training
@@ -267,6 +267,10 @@ Since TPC'26: production status refresh (NEW)
 
 ## The stack
 
+<div class="stack-grid">
+
+<div class="stack-left">
+
 **Current stack:**
 
 - 🍋 [saforem2/`ezpz`](https://github.com/saforem2/ezpz) (\+ [ezpz.cool](https://ezpz.cool))
@@ -281,10 +285,30 @@ Since TPC'26: production status refresh (NEW)
   - AuroraGPT-2B reference (~7.77T tokens)
   - **pre**-`torchtitan`
 
+</div>
+
+<div class="stack-right">
+
 <div class="repo-card repo-card-tip">
     <div class="repo-card-title">Hardware agnostic</div>
     Same code, every vendor; no `cuda` in user code !
 </div>
+
+</div>
+
+</div>
+
+<style>{`
+  #stack .stack-grid {
+    display: grid;
+    grid-template-columns: 1.7fr 1fr;
+    gap: 3ch;
+    align-items: center;
+    width: 100%;
+  }
+  #stack .stack-left { min-width: 0; }
+  #stack .stack-right { min-width: 0; }
+`}</style>
 
 </Slide>
 
