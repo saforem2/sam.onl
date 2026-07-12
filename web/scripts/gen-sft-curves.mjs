@@ -24,15 +24,16 @@ import { dirname, join } from 'node:path'
 import { fontDefs, FONT_STACK } from './svg-font.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const OUT = join(
+const FIG_DIR = join(
     __dirname,
     '..',
     'public',
     'talks',
     '2026-07-14',
     'figures',
-    'sft-curves.svg',
 )
+const OUT = join(FIG_DIR, 'sft-curves.svg')
+const OUT_MOBILE = join(FIG_DIR, 'sft-curves-mobile.svg')
 
 // Merged from the W&B SFT run histories (see header). Each row:
 // [step, loss, grad_norm, lr, mean_token_accuracy, entropy, cum_tokens_B].
@@ -49,18 +50,38 @@ const PANELS = [
     { i: 6, title: 'tokens seen (cumulative, B)', color: '#06b6d4' },
 ]
 
-const W = 1280
-const H = 720
-const M = { top: 78, right: 26, bottom: 50, left: 26 }
-const COLS = 3
-const ROWS_N = 2
-const GX = 52
-const GY = 56
-const gridW = W - M.left - M.right
-const gridH = H - M.top - M.bottom
-const panelW = (gridW - GX * (COLS - 1)) / COLS
-const panelH = (gridH - GY * (ROWS_N - 1)) / ROWS_N
-const PAD = { top: 24, right: 10, bottom: 30, left: 52 }
+// Landscape: 3 across x 2 down for the slide. Mobile: 2 across x 3 down,
+// narrow+tall so the six panels stay legible in a phone column (< 768px).
+const LANDSCAPE = {
+    W: 1280,
+    H: 720,
+    M: { top: 78, right: 26, bottom: 50, left: 26 },
+    COLS: 3,
+    ROWS_N: 2,
+    GX: 52,
+    GY: 56,
+    PAD: { top: 24, right: 10, bottom: 30, left: 52 },
+    titleSize: 20,
+    subSize: 13,
+    panelTitleSize: 17,
+    tickSize: 11,
+    axisSize: 11,
+}
+const MOBILE = {
+    W: 660,
+    H: 1180,
+    M: { top: 108, right: 22, bottom: 44, left: 22 },
+    COLS: 2,
+    ROWS_N: 3,
+    GX: 44,
+    GY: 70,
+    PAD: { top: 30, right: 12, bottom: 40, left: 58 },
+    titleSize: 26,
+    subSize: 17,
+    panelTitleSize: 22,
+    tickSize: 15,
+    axisSize: 15,
+}
 
 const FONT = FONT_STACK
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -86,7 +107,9 @@ function fmtTick(v) {
     return (Math.round(v * 1000) / 1000).toString()
 }
 
-function panel(p, px, py) {
+function panel(cfg, geo, p, px, py) {
+    const { PAD } = cfg
+    const { panelW, panelH } = geo
     const scale = p.scale || 1
     const vals = ROWS.map((r) => r[p.i] * scale)
     const [yMin, yMax] = niceRange(vals)
@@ -98,23 +121,23 @@ function panel(p, px, py) {
     const sy = (v) => ay + ah - ((v - yMin) / (yMax - yMin || 1)) * ah
 
     let s = ''
-    s += `<text x="${px + panelW / 2}" y="${py + 15}" text-anchor="middle" font-family="${FONT}" font-size="17" fill="#838383">${esc(p.title)}</text>`
+    s += `<text x="${px + panelW / 2}" y="${py + 15}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.panelTitleSize}" fill="#838383">${esc(p.title)}</text>`
     s += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#83838355" stroke-width="1"/>`
     // y ticks
     for (let k = 0; k <= 4; k++) {
         const v = yMin + ((yMax - yMin) * k) / 4
         const yy = sy(v)
         s += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
-        s += `<text x="${ax - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="11" fill="#838383">${fmtTick(v)}</text>`
+        s += `<text x="${ax - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="${cfg.tickSize}" fill="#838383">${fmtTick(v)}</text>`
     }
     // x ticks (0..sMax steps, 4 divisions)
     for (let k = 0; k <= 4; k++) {
         const st = sMin + ((sMax - sMin) * k) / 4
         const xx = sx(st)
         s += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 4}" stroke="#83838388" stroke-width="1"/>`
-        s += `<text x="${xx}" y="${ay + ah + 17}" text-anchor="middle" font-family="${FONT}" font-size="11" fill="#838383">${Math.round(st)}</text>`
+        s += `<text x="${xx}" y="${ay + ah + 17}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.tickSize}" fill="#838383">${Math.round(st)}</text>`
     }
-    s += `<text x="${ax + aw / 2}" y="${py + panelH - 1}" text-anchor="middle" font-family="${FONT}" font-size="11" fill="#838383">global step</text>`
+    s += `<text x="${ax + aw / 2}" y="${py + panelH - 1}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.axisSize}" fill="#838383">global step</text>`
 
     // line + dots
     const pts = ROWS.map((r) => [sx(r[0]), sy(r[p.i] * scale)])
@@ -130,23 +153,35 @@ function panel(p, px, py) {
     return s
 }
 
-let body = ''
-body += `<text x="${W / 2}" y="34" text-anchor="middle" font-family="${FONT}" font-size="20" font-weight="700" fill="#838383">AuroraGPT-2B × tulu_math_uc_mix SFT trajectory</text>`
-body += `<text x="${W / 2}" y="56" text-anchor="middle" font-family="${FONT}" font-size="13" fill="#838383">step ${sMax}, 3 epochs, 32N, GBS=6144 · final loss ${ROWS[ROWS.length - 1][1].toFixed(2)} · ${ROWS[ROWS.length - 1][6].toFixed(2)}B tokens (cumulative)</text>`
+function buildSVG(cfg) {
+    const { W, H, M, COLS, ROWS_N, GX, GY } = cfg
+    const gridW = W - M.left - M.right
+    const gridH = H - M.top - M.bottom
+    const panelW = (gridW - GX * (COLS - 1)) / COLS
+    const panelH = (gridH - GY * (ROWS_N - 1)) / ROWS_N
+    const geo = { panelW, panelH }
 
-PANELS.forEach((p, idx) => {
-    const c = idx % COLS
-    const r = Math.floor(idx / COLS)
-    const px = M.left + c * (panelW + GX)
-    const py = M.top + r * (panelH + GY)
-    body += panel(p, px, py)
-})
+    let body = ''
+    body += `<text x="${W / 2}" y="34" text-anchor="middle" font-family="${FONT}" font-size="${cfg.titleSize}" font-weight="700" fill="#838383">AuroraGPT-2B × tulu_math_uc_mix SFT trajectory</text>`
+    body += `<text x="${W / 2}" y="56" text-anchor="middle" font-family="${FONT}" font-size="${cfg.subSize}" fill="#838383">step ${sMax}, 3 epochs, 32N, GBS=6144 · final loss ${ROWS[ROWS.length - 1][1].toFixed(2)} · ${ROWS[ROWS.length - 1][6].toFixed(2)}B tokens (cumulative)</text>`
 
-const svg = `<?xml version="1.0" encoding="utf-8"?>
+    PANELS.forEach((p, idx) => {
+        const c = idx % COLS
+        const r = Math.floor(idx / COLS)
+        const px = M.left + c * (panelW + GX)
+        const py = M.top + r * (panelH + GY)
+        body += panel(cfg, geo, p, px, py)
+    })
+
+    return `<?xml version="1.0" encoding="utf-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${FONT}">
 ${fontDefs()}
 ${body}
 </svg>
 `
-writeFileSync(OUT, svg)
+}
+
+writeFileSync(OUT, buildSVG(LANDSCAPE))
 console.log('wrote', OUT)
+writeFileSync(OUT_MOBILE, buildSVG(MOBILE))
+console.log('wrote', OUT_MOBILE)
