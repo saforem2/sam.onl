@@ -896,6 +896,14 @@ was still flat (~12.9):
 
 </div>
 
+<style>{`
+  /* Pin the two short columns so Signature gets the room and stops
+     wrapping (fixed-layout table otherwise splits width evenly). */
+  #optimizer-cliff table th:nth-child(1), #optimizer-cliff table td:nth-child(1) { width: 12ch; } /* Optimizer */
+  #optimizer-cliff table th:nth-child(2), #optimizer-cliff table td:nth-child(2) { width: 9ch; }  /* Died at */
+  #optimizer-cliff table th:nth-child(3), #optimizer-cliff table td:nth-child(3) { width: auto; } /* Signature */
+`}</style>
+
 - The LR-finder's early ranking said **`mano` was "safest"**; it
   wasn't. **Early-step ranking does not predict sustained stability.**
 - Shared failure across 3 optimizers ⇒ a **corner-level instability
