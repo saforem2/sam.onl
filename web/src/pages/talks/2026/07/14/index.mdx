@@ -15,28 +15,38 @@ import Col from '@/components/slides/Col.astro'
 
 export const ASSETS = 'https://samforeman.me/assets'
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 1 — Title
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="title-slide">
 
-<a class="title-slide-qr" href="https://samf.sh/talks/2026/07/14"
-   aria-label="QR code linking to these slides">
-  <img src="/talks/2026-07-14/figures/qr-slides.svg"
-       alt="QR code linking to samf.sh/talks/2026/07/14" />
-  <span>samf.sh/talks/2026/07/14</span>
+<a
+    class="title-slide-qr"
+    href="https://samf.sh/talks/2026/07/14"
+    aria-label="QR code linking to these slides">
+    <img
+        src="/talks/2026-07-14/figures/qr-slides.svg"
+        alt="QR code linking to samf.sh/talks/2026/07/14"
+    />
+    <span>samf.sh/talks/2026/07/14</span>
 </a>
 
 # <span style="color:var(--foreground0);">Training Models for Science on Aurora</span>
 
-<p class="title-slide-thesis">Less a story of peak FLOP/s than of what works, what breaks, and how cheaply you recover.</p>
+<p class="title-slide-thesis">
+    Less a story of peak FLOP/s than of what works, what breaks, and how cheaply
+    you recover.
+</p>
 
 &nbsp;  
 &nbsp;
 
 <p class="author-list">
-<strong>Sam&nbsp;Foreman</strong>[^anl], Nathan&nbsp;Nichols, Varuni&nbsp;Sastry, Samuel&nbsp;Wheeler, Khalid&nbsp;Hossain, Huihuo&nbsp;Zheng, Murali&nbsp;Emani, Filippo&nbsp;Simini, Marieme&nbsp;Ngom, Ethan&nbsp;Wong, Venkat&nbsp;Vishwanath
+    <strong>Sam&nbsp;Foreman</strong>[^anl], Nathan&nbsp;Nichols,
+    Varuni&nbsp;Sastry, Samuel&nbsp;Wheeler, Khalid&nbsp;Hossain,
+    Huihuo&nbsp;Zheng, Murali&nbsp;Emani, Filippo&nbsp;Simini,
+    Marieme&nbsp;Ngom, Ethan&nbsp;Wong, Venkat&nbsp;Vishwanath
 </p>
 
 _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
@@ -125,9 +135,9 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 2 — Outline / TOC
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="outline">
 
@@ -139,11 +149,11 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 1. **The Good**:
     - AuroraGPT-2B: **4.67T tokens, done** ✓
-      - 20B/512N now **beats 2B/256N** / token
-      - [ `mano`](https://arxiv.org/abs/2601.23000): Muon quality @ AdamW speed
+        - 20B/512N now **beats 2B/256N** / token
+        - [ `mano`](https://arxiv.org/abs/2601.23000): Muon quality @ AdamW speed
     - Software stack:
-      - Using [ `ezpz`](https://github.com/saforem2/ezpz)
-      - Moving to [ `torchtitan`](https://github.com/saforem2/torchtitan/blob/ezpz)[^mds]
+        - Using [ `ezpz`](https://github.com/saforem2/ezpz)
+        - Moving to [ `torchtitan`](https://github.com/saforem2/torchtitan/blob/ezpz)[^mds]
     - Post-training now live: **CPT · SFT · GRPO**
 
 </div>
@@ -152,22 +162,22 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 2. **The Bad**:
     - Rapidly evolving software (_and hardware_!)
-      - Fork tax (fast-moving upstream!)
-    - At scale, *failure is the default*
+        - Fork tax (fast-moving upstream!)
+    - At scale, _failure is the default_
     - 80B: **one bf16 cliff, three dead optimizers**
     - MoE on XPU: **4–11% MFU** (`compile` hurts!)
 
 3. **The Restarts**:
     - Towards resilient training
     - 3 layers of recovery:
-      - Job → Node → Process
+        - Job → Node → Process
     - Native [ `--auto-retry`](https://github.com/saforem2/ezpz/pull/144)
 
 </div>
 
 </div>
 
-[^mds]: And *away* from [argonne-lcf/Megatron-DeepSpeed](https://github.com/argonne-lcf/Megatron-DeepSpeed)!
+[^mds]: And _away_ from [argonne-lcf/Megatron-DeepSpeed](https://github.com/argonne-lcf/Megatron-DeepSpeed)!
 
 <style>{`
   /* Tighten heading -> content spacing for this slide only. */
@@ -192,9 +202,9 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 Since TPC'26: production status refresh (NEW)
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="since-tpc" size="sm">
 
@@ -202,13 +212,13 @@ Since TPC'26: production status refresh (NEW)
 
 <div class="tight-table">
 
-| Run          | Nodes | Steps  | Tokens          | Loss | Status                    |
-| ------------ | ----: | -----: | --------------- | ---: | ------------------------- |
-| [**2B** base](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/2b/n256/) |   256 | 92,859 | 4.674T (100%)   | 2.65 | ✅ **complete**            |
-| [**2B** CPT](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/cpt/) |   256 |  5,960 | ~300B pilot     | 2.49 | loss ↓ but evals ↓ (no winner) |
-| [**20B**/512N](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/20b/n512/) |   512 |  5,400 | 543.6B (11.6%)  | 2.47 | advancing (auto-retry)    |
-| [**20B**/256N](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/20b/n256/) |   256 |  3,100 | 156.0B (3.3%)   | 2.68 | advancing                 |
-| [**80B**](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/80b/n512/) |   512 |     14 | (NaN'd)         | NaN  | ❌ optimizer cliff         |
+| Run                                                                                                                         | Nodes |  Steps | Tokens         | Loss | Status                         |
+| --------------------------------------------------------------------------------------------------------------------------- | ----: | -----: | -------------- | ---: | ------------------------------ |
+| [**2B** base](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/2b/n256/)   |   256 | 92,859 | 4.674T (100%)  | 2.65 | ✅ **complete**                |
+| [**2B** CPT](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/cpt/)             |   256 |  5,960 | ~300B pilot    | 2.49 | loss ↓ but evals ↓ (no winner) |
+| [**20B**/512N](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/20b/n512/) |   512 |  5,400 | 543.6B (11.6%) | 2.47 | advancing (auto-retry)         |
+| [**20B**/256N](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/20b/n256/) |   256 |  3,100 | 156.0B (3.3%)  | 2.68 | advancing                      |
+| [**80B**](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/80b/n512/)      |   512 |     14 | (NaN'd)        |  NaN | ❌ optimizer cliff             |
 
 </div>
 
@@ -244,24 +254,26 @@ Since TPC'26: production status refresh (NEW)
   stack?
     - across \{Intel, NVIDIA, AMD, ...\} hardware?
     - **while also mitigating failures** ?
-      - \{hardware, system, network, lustre, ...\} 
+        - \{hardware, system, network, lustre, ...\}
 
 - Tension between:
     - long running pre-training jobs
     - typical facility scheduling policies
-      - INCITE (>= 20% of machine, 2k nodes on Aurora)  
-        -\> _very_ large batches  
-        -\> bad model, unstable training[^openai18][^zhang25][^zhou25]
+        - INCITE (>= 20% of machine, 2k nodes on Aurora)  
+          -\> _very_ large batches  
+          -\> bad model, unstable training[^openai18][^zhang25][^zhou25]
 
-  [^openai18]: [An Empirical Model of Large-Batch Training](https://arxiv.org/abs/1812.06162)
-  [^zhang25]: [How Does Critical Batch Size Scale in Pre-training?](https://arxiv.org/abs/2410.21676v4)
-  [^zhou25]: [How to Set the Batch Size for Large-Scale Pre-training?](https://arxiv.org/abs/2601.05034v1)
+    [^openai18]: [An Empirical Model of Large-Batch Training](https://arxiv.org/abs/1812.06162)
+
+    [^zhang25]: [How Does Critical Batch Size Scale in Pre-training?](https://arxiv.org/abs/2410.21676v4)
+
+    [^zhou25]: [How to Set the Batch Size for Large-Scale Pre-training?](https://arxiv.org/abs/2601.05034v1)
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 3 — Stack diagram
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="stack">
 
@@ -284,8 +296,8 @@ Since TPC'26: production status refresh (NEW)
 **Old stack (reference):**
 
 - 🪦 [argonne-lcf/`Megatron-DeepSpeed`](https://github.com/argonne-lcf/Megatron-DeepSpeed):
-  - AuroraGPT-2B reference (~7.77T tokens)
-  - **pre**-`torchtitan`
+    - AuroraGPT-2B reference (~7.77T tokens)
+    - **pre**-`torchtitan`
 
 </div>
 
@@ -438,9 +450,9 @@ flowchart LR
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 AuroraGPT-2B (Megatron-DeepSpeed reference baseline)
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="agpt-2b">
 
@@ -480,9 +492,9 @@ broke when we cut over.
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 Why MDS in the first place — the pre-torchtitan landscape
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="mds-context">
 
@@ -498,7 +510,7 @@ that ran at scale and supported:
 Supporting context:
 
 - PyTorch FSDP1 had Intel XPU gaps (collectives, AC patterns, optimizer-state sharding)
-- `torchtitan` existed as a research project (not tested)  
+- `torchtitan` existed as a research project (not tested)
 - MDS was the pragmatic choice
 
 By early 2026, the calculus changed: `torchtitan` + DTensor + FSDP2 closed the gap
@@ -513,9 +525,9 @@ patched for Intel XPU.
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 Why SophiaG — large-batch optimizer comparison
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="optimizer-comparison">
 
@@ -524,8 +536,6 @@ Why SophiaG — large-batch optimizer comparison
 [W\&B Report: AuroraGPT-2B Pre-Training](https://api.wandb.ai/links/aurora_gpt/giy3swff)[^all-runs]
 
 [^all-runs]: See the 📊 All Runs section.
-
-
 
 <figure>
     <picture>
@@ -539,8 +549,8 @@ Why SophiaG — large-batch optimizer comparison
         />
     </picture>
     <figcaption>
-        **SophiaG** is the only one that stays in the low-loss band with
-        bounded grad norms. 
+        **SophiaG** is the only one that stays in the low-loss band with bounded
+        grad norms.
     </figcaption>
 </figure>
 
@@ -557,12 +567,12 @@ re-tune at the target node count before the actual production run.
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 How we picked the LR for SophiaG (and every other optimizer): the
 LR-finder sweep. Lives between "we picked the optimizer" and
 "here's the loss curve" so the audience sees both halves of the
 hyperparameter decision before the production-run plots.
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="lr-finder">
 
@@ -580,10 +590,14 @@ scaling work[^gupta-2026].
 
 <figure>
     <picture>
-        <source media="(max-width: 768px)"
-                srcset="/talks/2026-06-03/figures/lr-finder-aurora-mobile.svg" />
-        <img src="/talks/2026-06-03/figures/lr-finder-aurora.svg"
-             alt="LR-vs-loss sweeps for AdamW, Muon, SophiaG across 2B and 20B configs on Aurora" />
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-06-03/figures/lr-finder-aurora-mobile.svg"
+        />
+        <img
+            src="/talks/2026-06-03/figures/lr-finder-aurora.svg"
+            alt="LR-vs-loss sweeps for AdamW, Muon, SophiaG across 2B and 20B configs on Aurora"
+        />
     </picture>
     <figcaption>
         Cross-optimizer sweep on Aurora. Full report:
@@ -593,9 +607,9 @@ scaling work[^gupta-2026].
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 mano: manifold-normalized optimizer (NEW: the 2B-scale win)
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="mano" size="sm">
 
@@ -612,12 +626,12 @@ throughput tax.
 
 <div class="tight-table">
 
-| Optimizer   |  Loss |   TPS |
-| ----------- | ----: | ----: |
-| Muon        | 3.557 | 4,556 |
-| **`mano`**  | **3.631** | **7,048** |
-| AdamW       | 3.801 | 7,245 |
-| SophiaG     | 4.719 | 7,208 |
+| Optimizer  |      Loss |       TPS |
+| ---------- | --------: | --------: |
+| Muon       |     3.557 |     4,556 |
+| **`mano`** | **3.631** | **7,048** |
+| AdamW      |     3.801 |     7,245 |
+| SophiaG    |     4.719 |     7,208 |
 
 </div>
 
@@ -631,8 +645,10 @@ throughput tax.
 <div class="mano-right">
 
 <figure>
-    <img src="/talks/2026-07-14/figures/optimizer-loss.svg"
-        alt="Training loss vs step for Muon, mano, AdamW, SophiaG at 2B / GBS=48 over 1000 steps: mano and Muon converge lowest and nearly overlap, AdamW above, SophiaG highest" />
+    <img
+        src="/talks/2026-07-14/figures/optimizer-loss.svg"
+        alt="Training loss vs step for Muon, mano, AdamW, SophiaG at 2B / GBS=48 over 1000 steps: mano and Muon converge lowest and nearly overlap, AdamW above, SophiaG highest"
+    />
 </figure>
 
 </div>
@@ -669,13 +685,17 @@ throughput tax.
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 Why move off MDS — and what broke
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="why-titan">
 
 ## Why we moved to `torchtitan`
+
+<div class="why-titan-grid">
+
+<div class="why-titan-left">
 
 |                                          | MDS | TT  |
 | :--------------------------------------- | :-: | :-: |
@@ -685,24 +705,43 @@ Why move off MDS — and what broke
 | MoE support                              | ❌️  | ✅  |
 | Easy to extend, debug, maintain          | ❌️  | ✅  |
 
+</div>
+
+<div class="why-titan-right">
+
 **The trade-off we accepted:** living on a fast-moving upstream
-  [pytorch/torchtitan@main](https://github.com/pytorch/torchtitan); the "fork tax"
+ [pytorch/torchtitan@main](https://github.com/pytorch/torchtitan); the "fork tax"
+
+</div>
+
+</div>
 
 <style>{`
+  #why-titan .why-titan-grid {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 3ch;
+    align-items: center;
+    width: 100%;
+  }
+  #why-titan .why-titan-left { min-width: 0; }
+  #why-titan .why-titan-right { min-width: 0; }
   #why-titan table { table-layout: fixed; width: max-content; max-width: 100%; }
   #why-titan table th:nth-child(1), #why-titan table td:nth-child(1) { width: auto; }
   #why-titan table th:nth-child(2), #why-titan table td:nth-child(2),
   #why-titan table th:nth-child(3), #why-titan table td:nth-child(3) {
     width: 6ch; text-align: center;
   }
+  @media (max-width: 768px) {
+    #why-titan .why-titan-grid { grid-template-columns: 1fr; gap: 1lh; }
+  }
 `}</style>
 
 </Slide>
 
-
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 2B reference + TT overlay — MDS 3-stage chart with TT v2 256N drawn on top
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="agpt-2b-loss-with-tt">
 
@@ -715,40 +754,42 @@ Why move off MDS — and what broke
     />
     <figcaption>
         Every current production run on one axis. **2B v2 256N**: the full
-        **4.674T-token** run (step-92,859), final loss **2.65**. **20B v2
-        512N** (sync): step-5,400 / **543.6B tok** (11.6%), loss **2.47** and
-        still descending. Data:
+        **4.674T-token** run (step-92,859), final loss **2.65**. **20B v2 512N**
+        (sync): step-5,400 / **543.6B tok** (11.6%), loss **2.47** and still
+        descending. Data:
         [`docs/production`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production)
     </figcaption>
 </figure>
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 2B eval comparison — MDS vs TT v2
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="agpt-eval">
 
 ## Evals: 2B + 20B vs MDS, per token
 
 <figure>
-    <img src="/talks/2026-07-14/figures/eval-combined-4bench.svg"
-        alt="AuroraGPT eval: 2B v2 (256N + 512N), 20B v2 512N, and the 2B-MDS reference on HellaSwag, ARC-Easy, ARC-Challenge, Winogrande vs tokens consumed" />
+    <img
+        src="/talks/2026-07-14/figures/eval-combined-4bench.svg"
+        alt="AuroraGPT eval: 2B v2 (256N + 512N), 20B v2 512N, and the 2B-MDS reference on HellaSwag, ARC-Easy, ARC-Challenge, Winogrande vs tokens consumed"
+    />
     <figcaption>
-        **2B** (4.67T tok): HellaSwag 0.561 · ARC-Easy 0.651, plateaus
-        ~2T. **20B/512N is the most token-efficient run**: at 442.9B tok
-        already ARC-Easy **0.693** · HellaSwag **0.634**, beating both 2B
-        chains per token (~8×). Data:
+        **2B** (4.67T tok): HellaSwag 0.561 · ARC-Easy 0.651, plateaus ~2T.
+        **20B/512N is the most token-efficient run**: at 442.9B tok already
+        ARC-Easy **0.693** · HellaSwag **0.634**, beating both 2B chains per
+        token (~8×). Data:
         [`docs/evals`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/evals)
     </figcaption>
 </figure>
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 The fork tax
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="fork-tax">
 
@@ -760,7 +801,7 @@ The fork tax
 
 - [67 Upstream Syncs in 13 Weeks](https://github.com/saforem2/torchtitan/blob/ezpz/torchtitan/experiments/ezpz/docs/upstream-sync.md)
 - Smoke test: bit-exact loss + grad-norm + peak memory
-  - Verify changes from upstream haven't broken anything
+    - Verify changes from upstream haven't broken anything
 
 </div>
 
@@ -923,9 +964,9 @@ flowchart LR
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 80B optimizer cliff (NEW: one bf16 corner, three dead optimizers)
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="optimizer-cliff" size="sm">
 
@@ -937,10 +978,10 @@ was still flat (~12.9):
 
 <div class="tight-table">
 
-| Optimizer | Died at | Signature                        |
-| --------- | ------: | -------------------------------- |
-| `mano`    |  step 5 | grad NaN (diverged **first**)    |
-| AdamW     |  step 9 | grad NaN                         |
+| Optimizer | Died at | Signature                            |
+| --------- | ------: | ------------------------------------ |
+| `mano`    |  step 5 | grad NaN (diverged **first**)        |
+| AdamW     |  step 9 | grad NaN                             |
 | SophiaG   | step 14 | Hessian-term overflow, ~6,100 node-h |
 
 </div>
@@ -955,7 +996,7 @@ was still flat (~12.9):
 `}</style>
 
 - **`mano` (our 2B speed win) died first** (step 5), despite its 80B
-  LR-finder band looking the *safest* of the three. **Early-step ranking
+  LR-finder band looking the _safest_ of the three. **Early-step ranking
   does not predict sustained stability.**
 - Shared failure across 3 optimizers ⇒ a **corner-level instability
   (bf16 at dim=9216)**, not tuning. Two grad-path triggers: `LBS>1`
@@ -967,9 +1008,9 @@ was still flat (~12.9):
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 MoE on Intel XPU (NEW: audience-relevant for a MoE workshop)
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="moe-xpu" size="sm">
 
@@ -980,12 +1021,12 @@ no-compile, `AC=none`, `seq_len=4096`).
 
 <div class="tight-table">
 
-| Reality                            | Detail                                   |
-| ---------------------------------- | ---------------------------------------- |
-| MFU                                | **4–11%** (best ~7.4%); scaling degrades past 8N |
-| `torch.compile`                    | **hurts** MoE (**−35%** on 500M)         |
-| Activation checkpointing (7B+)     | `CheckpointError` (routing non-determinism) |
-| Expert parallelism (`EP`)          | `--parallelism.expert_parallel_degree`   |
+| Reality                        | Detail                                           |
+| ------------------------------ | ------------------------------------------------ |
+| MFU                            | **4–11%** (best ~7.4%); scaling degrades past 8N |
+| `torch.compile`                | **hurts** MoE (**−35%** on 500M)                 |
+| Activation checkpointing (7B+) | `CheckpointError` (routing non-determinism)      |
+| Expert parallelism (`EP`)      | `--parallelism.expert_parallel_degree`           |
 
 </div>
 
@@ -1002,9 +1043,9 @@ help** (see the ask).
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 POST-TRAINING (NEW section): CPT -> SFT -> GRPO
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="posttrain-intro">
 
@@ -1051,20 +1092,22 @@ Two ~300B-token pilots (256N, GBS=6,144) vs the olmo-100 base plateau:
 <div class="cpt-grid">
 
 <figure>
-    <img src="/talks/2026-07-14/figures/cpt-loss.svg"
-        alt="2B CPT training/validation loss per data mix: dolmino-100 vs olmo50-dolmino50 vs olmo-100 base" />
+    <img
+        src="/talks/2026-07-14/figures/cpt-loss.svg"
+        alt="2B CPT training/validation loss per data mix: dolmino-100 vs olmo50-dolmino50 vs olmo-100 base"
+    />
     <figcaption>
-        `dolmino-100` hit the **lowest val loss 2.492** (−0.31 vs base
-        ~2.80); `olmo50-dolmino50` 2.601.
+        `dolmino-100` hit the **lowest val loss 2.492** (−0.31 vs base ~2.80);
+        `olmo50-dolmino50` 2.601.
     </figcaption>
 </figure>
 
 <div class="repo-card repo-card-warning">
     <div class="repo-card-title">⚠ but downstream evals reversed it</div>
     ARC-Easy: base <strong>0.651</strong> → dolmino-100 <strong>0.547</strong>
-    (−10.4pp) vs olmo50-dolmino50 <strong>0.610</strong> (holds). HellaSwag
-    fell for both. <strong>No mixing ratio declared a winner</strong>.
-    Hypothesis: re-warm to peak LR caused forgetting; gentle-LR retry pending.
+    (−10.4pp) vs olmo50-dolmino50 <strong>0.610</strong> (holds). HellaSwag fell
+    for both. <strong>No mixing ratio declared a winner</strong>. Hypothesis:
+    re-warm to peak LR caused forgetting; gentle-LR retry pending.
 </div>
 
 </div>
@@ -1100,11 +1143,13 @@ Two ~300B-token pilots (256N, GBS=6,144) vs the olmo-100 base plateau:
 ## SFT: `tulu_math_uc_mix` on the CPT'd 2B
 
 <figure>
-    <img src="/talks/2026-07-14/figures/sft-curves.svg"
-        alt="AuroraGPT-2B SFT loss curves on tulu_math_uc_mix" />
+    <img
+        src="/talks/2026-07-14/figures/sft-curves.svg"
+        alt="AuroraGPT-2B SFT loss curves on tulu_math_uc_mix"
+    />
     <figcaption>
-        Run 1 **complete: final loss 0.77** over 4.5B tokens (3 epochs,
-        32N, GBS=6,144).
+        Run 1 **complete: final loss 0.77** over 4.5B tokens (3 epochs, 32N,
+        GBS=6,144).
     </figcaption>
 </figure>
 
@@ -1124,8 +1169,10 @@ On-policy RL via **TRL `GRPOTrainer` + vLLM-XPU**, on the SFT'd 2B
 (`sum_digits` task, 1,000 steps, 8N × 12 = 96 ranks, LR 1e-6):
 
 <figure>
-    <img src="/talks/2026-07-14/figures/grpo-curves.svg"
-        alt="Arithmetic GRPO reward and accuracy curves over 1000 steps on the SFT'd AuroraGPT-2B" />
+    <img
+        src="/talks/2026-07-14/figures/grpo-curves.svg"
+        alt="Arithmetic GRPO reward and accuracy curves over 1000 steps on the SFT'd AuroraGPT-2B"
+    />
     <figcaption>
         Accuracy reward climbs **~0.4 → ~0.9** (from ~0 cold-start).
     </figcaption>
@@ -1138,9 +1185,9 @@ On-policy RL via **TRL `GRPOTrainer` + vLLM-XPU**, on the SFT'd 2B
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 "The Restarts" — motivation: at scale, failure is the default
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="restarts-motivation">
 
@@ -1161,9 +1208,9 @@ On-policy RL via **TRL `GRPOTrainer` + vLLM-XPU**, on the SFT'd 2B
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 "The Restarts" — three layers of recovery at different scopes
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="restart-cascade">
 
@@ -1364,9 +1411,9 @@ flowchart TB
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 Native auto-retry + the async-checkpoint gotcha (NEW)
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="auto-retry-native">
 
@@ -1394,9 +1441,9 @@ ezpz launch --auto-retry --np 512 -- python -m torchtitan.train …
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 What generalizes / open questions / fin
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="generalizes">
 
@@ -1422,11 +1469,15 @@ What generalizes / open questions / fin
 
 <Slide id="thanks">
 
-<a class="thanks-qr" href="https://samf.sh/talks/2026/07/14"
-   aria-label="QR code linking to these slides">
-  <img src="/talks/2026-07-14/figures/qr-slides.svg"
-       alt="QR code linking to samf.sh/talks/2026/07/14" />
-  <span>samf.sh/talks/2026/07/14</span>
+<a
+    class="thanks-qr"
+    href="https://samf.sh/talks/2026/07/14"
+    aria-label="QR code linking to these slides">
+    <img
+        src="/talks/2026-07-14/figures/qr-slides.svg"
+        alt="QR code linking to samf.sh/talks/2026/07/14"
+    />
+    <span>samf.sh/talks/2026/07/14</span>
 </a>
 
 ## Thanks
@@ -1501,9 +1552,9 @@ Questions?
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 APPENDIX — silent-correctness bugs (deep-dive backup slides)
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="appendix">
 
@@ -1521,14 +1572,13 @@ Material that didn't make the main path but is here for Q&A.
 
 </Slide>
 
-
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 Appendix: Operational reality — failover wrapper
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="ask">
 
-  ### Open questions: the ask
+### Open questions: the ask
 
 - A **portable bit-exact regression suite** across vendors — does
   anyone have one?
@@ -1543,8 +1593,6 @@ Appendix: Operational reality — failover wrapper
   rely on an stdout-idle watchdog as the hang-detection ground truth
 
 </Slide>
-
-
 
 <Slide id="restarts">
 
@@ -1590,10 +1638,10 @@ those still need a heartbeat watchdog.
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 Appendix: failover engineering deep-dive
 (watchdog → state machine → auto-retry → in-production catch)
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="watchdog">
 
@@ -1730,11 +1778,11 @@ Full writeup: [`docs/experiments/agpt/aurora/20260523-failover-silent-hang-recov
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 Appendix: LR-finder 2B detail + optimal-LR bars
 (lr-finder methodology slide moved to main path after
 optimizer-comparison)
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="lr-finder-results">
 
@@ -1785,9 +1833,9 @@ Hessian estimate on 9216-dim matrices).
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 Appendix: Silent killer #1 — bf16 RMSNorm freeze
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="bf16-freeze">
 
@@ -1829,9 +1877,9 @@ fp32; forward/backward stay bf16. Extra ~1 GB master at 2B, ~10 GB at
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 Appendix: Silent killer #2 — TP loss reporting
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="tp-loss">
 
@@ -1857,9 +1905,9 @@ Appendix: Silent killer #2 — TP loss reporting
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 Appendix: 80B optimizer-cliff deep dive (NEW)
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="optimizer-cliff-detail">
 
@@ -1870,12 +1918,12 @@ under batch ramp, until it didn't:
 
 <div class="tight-table">
 
-| Batch    | GBS   | Result                      |
-| -------- | ----- | --------------------------- |
-| 1×       | 372   | ✓ 100/100 steps (12.93→7.72) |
-| 4×       | 1,488 | ✓ 46/46 steps               |
-| 8×       | 2,976 | ✓ 34/34 steps               |
-| 16×      | 5,952 | ❌ NaN at step 29            |
+| Batch           | GBS   | Result                        |
+| --------------- | ----- | ----------------------------- |
+| 1×              | 372   | ✓ 100/100 steps (12.93→7.72)  |
+| 4×              | 1,488 | ✓ 46/46 steps                 |
+| 8×              | 2,976 | ✓ 34/34 steps                 |
+| 16×             | 5,952 | ❌ NaN at step 29             |
 | 16× + LR-scaled | 5,952 | ❌ NaN at step **7** (worse!) |
 
 </div>
@@ -1888,13 +1936,14 @@ under batch ramp, until it didn't:
   faulted at 24,864 ranks); 512N proven, 1024N is the missing measurement.
 
 <figure>
-    <img src="/talks/2026-07-14/figures/lr-finder-80b-adamw-vs-mano.png"
-        alt="80B LR-finder at GBS=6144 on Sunspot: AdamW vs mano loss-vs-LR, showing the hard NaN cliff" />
+    <img
+        src="/talks/2026-07-14/figures/lr-finder-80b-adamw-vs-mano.png"
+        alt="80B LR-finder at GBS=6144 on Sunspot: AdamW vs mano loss-vs-LR, showing the hard NaN cliff"
+    />
     <figcaption>
-        80B LR-finder (GBS=6,144, Sunspot): AdamW hits a **hard NaN
-        cliff** (usable ~7.4e-7, no clean minimum); `mano` tolerates a
-        wider band but still isn't production-safe as a constant LR.
-        Data:
+        80B LR-finder (GBS=6,144, Sunspot): AdamW hits a **hard NaN cliff**
+        (usable ~7.4e-7, no clean minimum); `mano` tolerates a wider band but
+        still isn't production-safe as a constant LR. Data:
         [`docs/experiments/lr-finder/agpt/80b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/experiments/lr-finder/agpt/80b)
     </figcaption>
 </figure>
@@ -1908,9 +1957,9 @@ under batch ramp, until it didn't:
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 Appendix: ezpz yeet — env broadcast scaling at 8–4096 nodes
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="yeet-env" size="sm">
 
@@ -1981,12 +2030,12 @@ Full write-up: [samf.sh/posts/2026/05/01](https://samf.sh/posts/2026/05/01/#scal
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
+{/_───────────────────────────────────────────────────────────────
 Footnotes — a dedicated slide that mirrors all footnote definitions
 in the deck. Populated at runtime from the GFM-generated <section
 data-footnotes> (see Presentation.astro). Refs in slides jump here;
 backrefs here jump back to the referencing slide.
-───────────────────────────────────────────────────────────────*/}
+───────────────────────────────────────────────────────────────_/}
 
 <Slide id="footnotes">
 
