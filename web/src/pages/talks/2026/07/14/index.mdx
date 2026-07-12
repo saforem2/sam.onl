@@ -813,6 +813,8 @@ The fork tax
 
 <div class="fork-tax-diagram">
 
+<div class="ft-desktop">
+
 ```mermaid
 flowchart LR
     A["<i>start</i><br/><span style='font-weight:700'>upstream @ HEAD</span>"] --> B["<i>resync · 50 steps · deterministic</i><br/><span style='font-weight:700'>smoke test</span>"]
@@ -832,6 +834,32 @@ flowchart LR
     class C ship
     class F bad
 ```
+
+</div>
+
+<div class="ft-mobile">
+
+```mermaid
+flowchart TB
+    A["<i>start</i><br/><span style='font-weight:700'>upstream @ HEAD</span>"] --> B["<i>resync · 50 steps · deterministic</i><br/><span style='font-weight:700'>smoke test</span>"]
+    B --> D{"bit-exact?"}
+    D -->|✅| C["<i>diff = 0</i><br/><span style='font-weight:700'>✓ ship</span>"]
+    D -->|❌️| F["<i>diff &ne; 0</i><br/><span style='font-weight:700'>bisect + fix</span>"]
+    F -.->|retry| B
+
+    classDef source fill:#7c4ed508,stroke:#7c4ed5,color:#7c4ed5,stroke-width:1.5px
+    classDef stage  fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
+    classDef ship   fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    classDef gate   fill:#ee8f2410,stroke:#ee8f24,color:#c9750f,stroke-width:1.5px
+    classDef bad    fill:#e0556008,stroke:#e05560,color:#e05560,stroke-width:1.5px
+    class A source
+    class B stage
+    class D gate
+    class C ship
+    class F bad
+```
+
+</div>
 
 </div>
 
@@ -857,6 +885,12 @@ flowchart LR
       grid-template-columns: 1fr;
       gap: 1lh;
     }
+  }
+  /* LR on wide, TB on narrow (see posttrain-intro for the mechanism). */
+  #fork-tax .ft-mobile { display: none; }
+  @media (max-width: 768px) {
+    #fork-tax .ft-desktop { display: none; }
+    #fork-tax .ft-mobile { display: block; }
   }
   #fork-tax .fork-tax-text {
     min-width: 0;
@@ -1059,6 +1093,8 @@ POST-TRAINING (NEW section): CPT -> SFT -> GRPO
 
 The base run is done, so the pipeline now extends past pretraining:
 
+<div class="pt-desktop">
+
 ```mermaid
 flowchart LR
     BASE(["<span style='font-weight:700'>2B base</span><br/><i>pretrain · 4.67T</i>"])
@@ -1076,11 +1112,42 @@ flowchart LR
     class GRPO rl
 ```
 
+</div>
+
+<div class="pt-mobile">
+
+```mermaid
+flowchart TB
+    BASE(["<span style='font-weight:700'>2B base</span><br/><i>pretrain · 4.67T</i>"])
+    BASE --> CPT["<span style='font-weight:700'>CPT</span><br/><i>stages 2-3 · +3.1T</i>"]
+    CPT --> SFT["<span style='font-weight:700'>SFT</span><br/><i>tulu math mix</i>"]
+    SFT --> GRPO["<span style='font-weight:700'>GRPO</span><br/><i>arithmetic RL</i>"]
+
+    classDef base fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
+    classDef cpt  fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
+    classDef sft  fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    classDef rl   fill:#7c4ed508,stroke:#7c4ed5,color:#7c4ed5,stroke-width:1.5px
+    class BASE base
+    class CPT cpt
+    class SFT sft
+    class GRPO rl
+```
+
+</div>
+
 - **CPT**: stages 2-3 of the SophiaG reference (dolmino, then math+code) → 7.77T tokens
 - **SFT**: `checkpoint-729-hf` (on that CPT'd base) is now a first-class production asset
 - **GRPO**: on-policy RL (TRL + vLLM-XPU) on the SFT checkpoint, verified multi-node
 
 <style>{`
+  /* LR on wide, TB on narrow: two mermaid blocks, one hidden per
+     breakpoint. mermaid-render.ts skips 0x0 (display:none) blocks and
+     re-renders the visible one when the 768px query flips. */
+  #posttrain-intro .pt-mobile { display: none; }
+  @media (max-width: 768px) {
+    #posttrain-intro .pt-desktop { display: none; }
+    #posttrain-intro .pt-mobile { display: block; }
+  }
   #posttrain-intro .mermaid svg { width: 100%; max-width: 100%; }
   #posttrain-intro .mermaid g.node span, #posttrain-intro .mermaid g.node p { font-size: 1.15em; }
   #posttrain-intro .mermaid g.node foreignObject { overflow: visible; }
