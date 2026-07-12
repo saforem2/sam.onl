@@ -111,6 +111,71 @@ for (const run of RUNS) {
     body += `<path d="${d}" fill="none" stroke="${run.color}" stroke-width="2.2"/>`
 }
 
+// ── inset: tail zoom (the two mixes separating near the plateau) ────
+// The main plot's upper band (loss > ~3) is empty after the early drop, so
+// the inset lives there. Zooms steps 200-5960 at loss 2.45-2.85 so the
+// dolmino-100 vs olmo50-dolmino50 gap (and the ~2.80 plateau) is legible.
+{
+    const zX0 = 200
+    const zX1 = X_MAX
+    const zY0 = 2.45
+    const zY1 = 2.85
+    const ix = ax + aw * 0.3
+    const iy = ay + 30
+    const iw = aw * 0.6
+    const ih = 250
+    const isx = (t) => ix + ((t - zX0) / (zX1 - zX0)) * iw
+    const isy = (v) => iy + ih - ((v - zY0) / (zY1 - zY0)) * ih
+    // source-region marker on the main plot (the thin slab near the bottom)
+    const srcX = sx(zX0)
+    const srcYt = sy(zY1)
+    const srcW = sx(zX1) - sx(zX0)
+    const srcH = sy(zY0) - sy(zY1)
+    body += `<rect x="${srcX.toFixed(1)}" y="${srcYt.toFixed(1)}" width="${srcW.toFixed(1)}" height="${srcH.toFixed(1)}" fill="none" stroke="#838383" stroke-width="1" stroke-dasharray="4 3"/>`
+    // connectors: source top corners -> inset bottom corners
+    body += `<line x1="${srcX.toFixed(1)}" y1="${srcYt.toFixed(1)}" x2="${ix.toFixed(1)}" y2="${(iy + ih).toFixed(1)}" stroke="#83838355" stroke-width="1" stroke-dasharray="3 3"/>`
+    body += `<line x1="${(srcX + srcW).toFixed(1)}" y1="${srcYt.toFixed(1)}" x2="${(ix + iw).toFixed(1)}" y2="${(iy + ih).toFixed(1)}" stroke="#83838355" stroke-width="1" stroke-dasharray="3 3"/>`
+    // inset frame + clip
+    body += `<clipPath id="cptTailClip"><rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${iw.toFixed(1)}" height="${ih.toFixed(1)}"/></clipPath>`
+    body += `<rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${iw.toFixed(1)}" height="${ih.toFixed(1)}" fill="#8888880f" stroke="#838383" stroke-width="1.2"/>`
+    // inset y gridlines + labels (2.5 .. 2.8 by 0.1)
+    for (let v = 2.5; v <= 2.8 + 0.001; v += 0.1) {
+        const yy = isy(v)
+        body += `<line x1="${ix}" y1="${yy}" x2="${ix + iw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
+        body += `<text x="${ix - 7}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="12" fill="#838383">${v.toFixed(1)}</text>`
+    }
+    // inset x ticks (1k .. 5k)
+    for (let t = 1000; t <= 5000; t += 2000) {
+        const xx = isx(t)
+        body += `<text x="${xx}" y="${iy + ih + 16}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#838383">${(t / 1000).toFixed(0)}k</text>`
+    }
+    // plateau line inside the inset (2.80 sits at the very top of the band)
+    if (OLMO100_PLATEAU >= zY0 && OLMO100_PLATEAU <= zY1) {
+        const yp2 = isy(OLMO100_PLATEAU)
+        body += `<line x1="${ix}" y1="${yp2}" x2="${ix + iw}" y2="${yp2}" stroke="#838383" stroke-width="1.2" stroke-dasharray="6 4"/>`
+    }
+    // inset curves (clipped) + end-of-curve val labels
+    body += `<g clip-path="url(#cptTailClip)">`
+    for (const run of RUNS) {
+        const pts = run.data.filter((p) => p[0] >= zX0)
+        const d = pts
+            .map(
+                (p, i) =>
+                    `${i ? 'L' : 'M'}${isx(p[0]).toFixed(1)} ${isy(p[1]).toFixed(1)}`,
+            )
+            .join(' ')
+        body += `<path d="${d}" fill="none" stroke="${run.color}" stroke-width="2.2"/>`
+    }
+    body += `</g>`
+    // val labels riding each curve's tail inside the inset
+    for (const run of RUNS) {
+        const last = run.data[run.data.length - 1]
+        const ly2 = isy(Math.min(Math.max(last[1], zY0), zY1))
+        body += `<text x="${(ix + iw - 8).toFixed(1)}" y="${(ly2 - 6).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-size="12" font-weight="700" fill="${run.color}">${esc(run.label)} ${run.val.toFixed(3)}</text>`
+    }
+    body += `<text x="${ix + iw / 2}" y="${iy - 6}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#838383">tail zoom</text>`
+}
+
 // legend (right gutter)
 const lx = ax + aw + 24
 let ly = ay + 18
