@@ -200,8 +200,9 @@
         font-size: inherit;
     }
     li {
-        /* Tight by default so nested bullets don't sprawl vertically. */
-        margin-block: 0.1lh;
+        /* Zero by default so nested bullets pack tight; the only vertical
+           list spacing is the group-break on loose items (li:has(> p)). */
+        margin-block: 0;
     }
     /* "Loose" list items — ones authored with a blank line before them in
        markdown, which GFM renders with a <p> wrapper. These mark the start
@@ -727,14 +728,14 @@
        the source text. Fix by drawing our own "- " via ::marker and
        killing list-style. */
     ul {
-        /* Tight: the outer margin only needs to separate the list from an
-           adjacent heading/paragraph, not add a big gap. Inter-item and
-           new-group spacing is handled on <li> (see the li rules above). */
-        margin-block: 0.25lh;
+        /* Zero outer margin: inter-item and new-group spacing is handled
+           on <li> (tight by default, 1lh break on loose items). Keeps the
+           list snug against a preceding heading/paragraph. */
+        margin-block: 0;
         list-style: none;
     }
     ol {
-        margin-block: 0.25lh;
+        margin-block: 0;
         padding-inline-start: 0;
         list-style: decimal inside;
     }
