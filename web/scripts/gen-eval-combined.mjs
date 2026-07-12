@@ -52,7 +52,7 @@ const RUNS = [
     {
         key: 'mds',
         label: '2B MDS ref (SophiaG)',
-        color: '#118cc2',
+        color: '#2196f3',
         dash: '4 3',
         // MDS has a single well-characterized spot vs v2 256N step-52k (~3.52T tok).
         rows: [[3520, 0.5555, 0.649, 0.3336, 0.558]],
@@ -61,7 +61,7 @@ const RUNS = [
     {
         key: 'v2_2b_256',
         label: '2B v2 256N',
-        color: '#e05560',
+        color: '#ef5350',
         rows: [
             [10.1, 0.2548, 0.2618, 0.227, 0.4933],
             [50.3, 0.2616, 0.3826, 0.2125, 0.4996],
@@ -82,7 +82,7 @@ const RUNS = [
     {
         key: 'v2_2b_512',
         label: '2B v2 512N',
-        color: '#ee8f24',
+        color: '#b71c1c',
         rows: [
             [100.7, 0.2638, 0.362, 0.227, 0.513],
             [302.0, 0.3481, 0.513, 0.2509, 0.5193],
@@ -99,7 +99,7 @@ const RUNS = [
     {
         key: 'v2_20b_512',
         label: '20B v2 512N',
-        color: '#1da811',
+        color: '#1b8a3a',
         rows: [
             [10.1, 0.2541, 0.266, 0.2312, 0.4846],
             [50.3, 0.2657, 0.3594, 0.221, 0.5012],
