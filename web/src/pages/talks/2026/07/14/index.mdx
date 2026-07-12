@@ -568,11 +568,9 @@ hyperparameter decision before the production-run plots.
 
 ## LR-finder — exponential sweep, blow-up / 10
 
-Smith 2015[^smith-2015] / Gugger[^gugger-2017]: exponentially ramp LR over ~10% of training,
-record EMA-smoothed loss, pick LR at the steepest descent (or
-blow-up point / 10 as a conservative default).
-
-See also our recent work on cross-optimizer LR scaling[^gupta-2026].
+Classic exponential LR sweep[^smith-2015][^gugger-2017]; pick the steepest
+descent (blow-up / 10 as a safe default). See also our cross-optimizer LR
+scaling work[^gupta-2026].
 
 [^smith-2015]: [Cyclical Learning Rates for Training Neural Networks](https://arxiv.org/abs/1506.01186) (Smith 2015)
 
