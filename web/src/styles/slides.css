@@ -116,14 +116,17 @@
         -webkit-overflow-scrolling: touch;
         /* Responsive type scale: hard min so it stays readable on phones,
            viewport-relative middle so it grows with the canvas, hard max
-           so it doesn't get cartoonish on 4K displays. */
-        font-size: clamp(1.05rem, 1.8vw + 0.55rem, 2rem);
+           so it doesn't get cartoonish on 4K displays. Tuned down (~0.75x
+           of the old scale) so content — especially figure-heavy slides —
+           fits the viewport by default instead of the body type crowding
+           the charts into a thin band. */
+        font-size: clamp(1rem, 1.5vw + 0.45rem, 1.7rem);
         line-height: 1.5;
     }
     /* Tablet (≤ 1024px): slightly smaller type, tighter padding. */
     @media (max-width: 1024px) {
         .slide-inner {
-            font-size: 1.25rem;
+            font-size: 1.05rem;
             padding: 1lh 3ch;
         }
     }
@@ -148,16 +151,16 @@
        slides (big table + figure pairs) that don't fit at the default
        size. Applied via data-size="sm" attribute on the <section>. */
     &[data-size='sm'] .slide-inner {
-        font-size: clamp(0.9rem, 1.5vw + 0.45rem, 1.7rem);
+        font-size: clamp(0.86rem, 1.25vw + 0.38rem, 1.45rem);
     }
     @media (max-width: 1024px) {
         &[data-size='sm'] .slide-inner {
-            font-size: 1.05rem;
+            font-size: 0.92rem;
         }
     }
     @media (max-width: 768px) {
         &[data-size='sm'] .slide-inner {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
     }
 
@@ -338,11 +341,24 @@
        starting indented past it. Visually anchors the code block to
        the same vertical guideline as the surrounding body text. */
     pre.astro-code {
-        margin-inline-start: -2ch;
-        /* A little breathing room inside the code block so single-line
-           commands (e.g. `ezpz launch --auto-retry …`) don't look cramped
-           against the top/bottom edges of their tinted background. */
-        padding-block: 0.4lh;
+        /* Flush-left with the body text (no -2ch scoot, now that line
+           numbers are gone), and a small horizontal pad so code doesn't
+           kiss the tinted-background edge. */
+        margin-inline-start: 0ch;
+        padding-block: 0;
+        padding-inline: 1ch;
+    }
+    /* Omit line numbers on slides — they add gutter clutter and the
+       counter's tinted-background gutter never lines up cleanly with the
+       pre's padding-block, leaving an uneven band above/below the numbers.
+       On a slide you don't reference "line 4" anyway; the code reads
+       cleaner flush-left. (Doc pages keep their line numbers.) */
+    pre.astro-code span.line::before {
+        content: none;
+        counter-increment: none;
+        margin-right: 0;
+        padding-right: 0;
+        min-width: 0;
     }
     /* Inter-row whitespace fix — applies at ALL widths. Shiki emits a
        literal `\n` text node between each inline-block <span class="line">
@@ -443,10 +459,13 @@
         gap: 0.5lh;
     }
     /* Caption never tries to grow; sits flush below whichever image
-       child precedes it. */
+       child precedes it. Smaller than body text — a caption is secondary
+       to the figure, and shrinking it reclaims vertical room for the
+       chart. */
     .slide-inner > figure > figcaption {
         flex: none;
         margin-block: 0;
+        font-size: 0.8em;
     }
     /* <picture> is a layout-transparent wrapper for responsive <source>
        swapping — collapse it so the child <img> participates in the
