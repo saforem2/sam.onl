@@ -47,79 +47,115 @@ const ADAMW = [[1, 12.9628], [2, 12.0462], [4, 14.4863], [8, 9.1148], [12, 7.849
 // prettier-ignore
 const SOPHIAG = [[1, 12.9161], [2, 12.6263], [4, 11.6407], [8, 10.3784], [12, 8.7992], [16, 7.8154], [20, 7.4519], [24, 7.6708], [28, 7.6208], [32, 7.4145], [36, 7.2496], [40, 7.2897], [44, 7.2508], [48, 7.1433], [52, 7.2549], [56, 7.0773], [60, 6.9624], [64, 6.9221], [68, 6.9047], [72, 6.8003], [76, 6.731], [80, 6.7835], [84, 6.6966], [88, 6.6371], [92, 6.6385], [96, 6.5308], [100, 6.5211], [104, 6.4857], [108, 6.4399], [112, 6.3752], [116, 6.3238], [120, 6.3153], [130, 6.2882], [140, 6.2278], [150, 6.0973], [160, 6.0741], [170, 6.1625], [180, 5.9834], [190, 5.9958], [200, 5.9849], [210, 5.9846], [220, 6.2537], [230, 6.3813], [240, 5.9999], [250, 5.8939], [260, 5.7845], [270, 5.7856], [280, 5.6855], [290, 5.7548], [300, 5.7279], [310, 5.6461], [320, 5.5998], [330, 5.647], [340, 5.5046], [350, 5.5125], [360, 5.55], [370, 5.5054], [380, 5.48], [390, 5.4327], [400, 5.4338], [420, 5.3789], [440, 5.2958], [460, 5.2982], [480, 5.2497], [500, 5.2397], [520, 7.4652], [540, 5.6265], [560, 5.369], [580, 5.2962], [600, 5.1764], [620, 5.1354], [640, 5.1476], [660, 5.0761], [680, 5.0617], [700, 5.135], [720, 5.0086], [740, 5.0537], [760, 4.9394], [780, 4.9388], [800, 4.8531], [820, 4.9372], [840, 4.9067], [860, 4.9096], [880, 4.8894], [900, 4.796], [920, 4.8793], [940, 4.7906], [960, 4.7149], [980, 4.7189], [1000, 4.7187]]
 
-// draw order: worst-first so the winners (muon/mano) sit on top
+// draw order: worst-first so the winners (muon/mano) sit on top.
+// tps = TPS/GPU for the same run (from the results table).
 const SERIES = [
-    { label: 'SophiaG', data: SOPHIAG, val: 4.719, color: '#e05560' },
-    { label: 'AdamW', data: ADAMW, val: 3.801, color: '#ee8f24' },
-    { label: 'Muon', data: MUON, val: 3.557, color: '#118cc2' },
-    { label: 'mano', data: MANO, val: 3.631, color: '#1da811' },
+    {
+        label: 'SophiaG',
+        data: SOPHIAG,
+        val: 4.719,
+        tps: 7208,
+        color: '#e05560',
+    },
+    { label: 'AdamW', data: ADAMW, val: 3.801, tps: 7245, color: '#ee8f24' },
+    { label: 'Muon', data: MUON, val: 3.557, tps: 4556, color: '#118cc2' },
+    { label: 'mano', data: MANO, val: 3.631, tps: 7048, color: '#1da811' },
 ]
 
-// ── layout: landscape, fits the right column of a 2-col slide ───────
-const W = 760
-const H = 500
-const AX = { top: 60, right: 24, bottom: 60, left: 62 }
-const ax = AX.left
-const ay = AX.top
-const aw = W - AX.left - AX.right
-const ah = H - AX.top - AX.bottom
-const X_MAX = 1000 // steps
-const Y_MIN = 3.0
-const Y_MAX = 13.0
+// ── layout: stacked panels (fits the right column of a 2-col slide) ──
+// top = loss vs step; bottom = TPS/GPU horizontal bars.
+const W = 820
+const H = 560
 const FONT = FONT_STACK
+const AXL = 62 // left axis gutter
+const AXR = 24
+const ax = AXL
+const aw = W - AXL - AXR
 
 const esc = (s) =>
     String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-const sx = (s) => ax + (Math.min(s, X_MAX) / X_MAX) * aw
-const sy = (v) =>
-    ay +
-    ah -
-    ((Math.min(Math.max(v, Y_MIN), Y_MAX) - Y_MIN) / (Y_MAX - Y_MIN)) * ah
+const commas = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 
 let body = ''
 
-// title + subtitle
-body += `<text x="${W / 2}" y="28" text-anchor="middle" font-family="${FONT}" font-size="20" font-weight="700" fill="#838383">Loss vs step (2B, GBS=48, 1k steps)</text>`
-body += `<text x="${W / 2}" y="50" text-anchor="middle" font-family="${FONT}" font-size="13" fill="#838383">agpt_2b speedrun on FineWeb-EDU</text>`
+// figure title
+body += `<text x="${W / 2}" y="24" text-anchor="middle" font-family="${FONT}" font-size="18" font-weight="700" fill="#838383">agpt_2b speedrun: 2B, GBS=48, 1000 steps</text>`
+body += `<text x="${W / 2}" y="43" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#838383">FineWeb-EDU, 2N Sunspot</text>`
 
-// axes box
-body += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#83838355" stroke-width="1"/>`
+// ── Panel 1: loss vs step (top) ─────────────────────────────────────
+{
+    const ay = 62
+    const ah = 318
+    const X_MAX = 1000
+    const Y_MIN = 3.0
+    const Y_MAX = 13.0
+    const sx = (s) => ax + (Math.min(s, X_MAX) / X_MAX) * aw
+    const sy = (v) =>
+        ay +
+        ah -
+        ((Math.min(Math.max(v, Y_MIN), Y_MAX) - Y_MIN) / (Y_MAX - Y_MIN)) * ah
 
-// y gridlines + labels (3 .. 13 by 2)
-for (let v = Y_MIN; v <= Y_MAX + 0.001; v += 2) {
-    const yy = sy(v)
-    body += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
-    body += `<text x="${ax - 10}" y="${yy + 5}" text-anchor="end" font-family="${FONT}" font-size="13" fill="#838383">${v.toFixed(0)}</text>`
+    body += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#83838355" stroke-width="1"/>`
+    for (let v = Y_MIN; v <= Y_MAX + 0.001; v += 2) {
+        const yy = sy(v)
+        body += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
+        body += `<text x="${ax - 10}" y="${yy + 5}" text-anchor="end" font-family="${FONT}" font-size="12" fill="#838383">${v.toFixed(0)}</text>`
+    }
+    for (let s = 0; s <= 1000; s += 250) {
+        const xx = sx(s)
+        body += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 5}" stroke="#83838388" stroke-width="1"/>`
+        body += `<text x="${xx}" y="${ay + ah + 20}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#838383">${s}</text>`
+    }
+    body += `<text x="${ax + aw / 2}" y="${ay + ah + 42}" text-anchor="middle" font-family="${FONT}" font-size="13" fill="#838383">step</text>`
+    body += `<text x="${ax - 46}" y="${ay + ah / 2}" text-anchor="middle" font-family="${FONT}" font-size="13" fill="#838383" transform="rotate(-90 ${ax - 46} ${ay + ah / 2})">training loss</text>`
+    for (const r of SERIES) {
+        const d = r.data
+            .map(
+                (p, i) =>
+                    `${i ? 'L' : 'M'}${sx(p[0]).toFixed(1)} ${sy(p[1]).toFixed(1)}`,
+            )
+            .join(' ')
+        body += `<path d="${d}" fill="none" stroke="${r.color}" stroke-width="2.2"/>`
+    }
+    // legend
+    let lx = ax + aw - 150
+    let ly = ay + 16
+    body += `<rect x="${lx - 10}" y="${ly - 15}" width="160" height="${SERIES.length * 20 + 10}" fill="#83838310" stroke="#83838333" stroke-width="1"/>`
+    for (const r of [...SERIES].reverse()) {
+        body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 20}" y2="${ly - 4}" stroke="${r.color}" stroke-width="2.8"/>`
+        body += `<text x="${lx + 28}" y="${ly}" font-family="${FONT}" font-size="12" fill="#838383">${esc(r.label)} <tspan fill="${r.color}">${r.val.toFixed(3)}</tspan></text>`
+        ly += 20
+    }
 }
-// x ticks (0 .. 1000 by 250)
-for (let s = 0; s <= 1000; s += 250) {
-    const xx = sx(s)
-    body += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 5}" stroke="#83838388" stroke-width="1"/>`
-    body += `<text x="${xx}" y="${ay + ah + 24}" text-anchor="middle" font-family="${FONT}" font-size="13" fill="#838383">${s}</text>`
-}
-// axis titles
-body += `<text x="${ax + aw / 2}" y="${ay + ah + 52}" text-anchor="middle" font-family="${FONT}" font-size="14" fill="#838383">step</text>`
-body += `<text x="${ax - 46}" y="${ay + ah / 2}" text-anchor="middle" font-family="${FONT}" font-size="14" fill="#838383" transform="rotate(-90 ${ax - 46} ${ay + ah / 2})">training loss</text>`
 
-// series
-for (const r of SERIES) {
-    const d = r.data
-        .map(
-            (p, i) =>
-                `${i ? 'L' : 'M'}${sx(p[0]).toFixed(1)} ${sy(p[1]).toFixed(1)}`,
-        )
-        .join(' ')
-    body += `<path d="${d}" fill="none" stroke="${r.color}" stroke-width="2.2"/>`
-}
+// ── Panel 2: throughput bars (bottom) ───────────────────────────────
+{
+    const ay = 462
+    const ah = 78
+    const T_MAX = 8000 // TPS axis
+    const bx = (t) => ax + (t / T_MAX) * aw
+    // order top->bottom = SophiaG, AdamW, mano, Muon (reading order; Muon last
+    // = the short bar sits at the bottom, easy to contrast). Draw fastest at top.
+    const rows = [...SERIES].sort((a, b) => b.tps - a.tps)
+    const rowH = ah / rows.length
+    const barH = rowH * 0.56
 
-// legend (top-right, inside the plot where the curves are high early then drop)
-let lx = ax + aw - 168
-let ly = ay + 16
-body += `<rect x="${lx - 10}" y="${ly - 16}" width="178" height="${SERIES.length * 22 + 12}" fill="#83838310" stroke="#83838333" stroke-width="1"/>`
-for (const r of [...SERIES].reverse()) {
-    body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 22}" y2="${ly - 4}" stroke="${r.color}" stroke-width="2.8"/>`
-    body += `<text x="${lx + 30}" y="${ly}" font-family="${FONT}" font-size="13" fill="#838383">${esc(r.label)} <tspan fill="${r.color}">${r.val.toFixed(3)}</tspan></text>`
-    ly += 22
+    body += `<text x="${W / 2}" y="${ay - 14}" text-anchor="middle" font-family="${FONT}" font-size="14" font-weight="700" fill="#838383">throughput (TPS / GPU)</text>`
+    // x gridlines + ticks
+    for (let t = 0; t <= T_MAX; t += 2000) {
+        const xx = bx(t)
+        body += `<line x1="${xx}" y1="${ay}" x2="${xx}" y2="${ay + ah}" stroke="#83838322" stroke-width="1"/>`
+        body += `<text x="${xx}" y="${ay + ah + 18}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#838383">${(t / 1000).toFixed(0)}k</text>`
+    }
+    for (let i = 0; i < rows.length; i++) {
+        const r = rows[i]
+        const cy = ay + i * rowH + (rowH - barH) / 2
+        body += `<rect x="${ax}" y="${cy.toFixed(1)}" width="${(bx(r.tps) - ax).toFixed(1)}" height="${barH.toFixed(1)}" fill="${r.color}" opacity="0.9"/>`
+        // label (name) at the far left inside the gutter
+        body += `<text x="${ax - 8}" y="${(cy + barH / 2 + 4).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-size="12" fill="${r.color}" font-weight="700">${esc(r.label)}</text>`
+        // value at the bar end
+        body += `<text x="${(bx(r.tps) + 8).toFixed(1)}" y="${(cy + barH / 2 + 4).toFixed(1)}" text-anchor="start" font-family="${FONT}" font-size="12" fill="#838383">${commas(r.tps)}</text>`
+    }
 }
 
 const svg = `<?xml version="1.0" encoding="utf-8"?>
