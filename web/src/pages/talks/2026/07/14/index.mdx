@@ -575,12 +575,12 @@ throughput tax.
 
 <div class="tight-table">
 
-| Optimizer   | Loss (2B, 1k steps) | TPS/GPU   |
-| ----------- | ------------------: | --------: |
-| Muon        |               3.557 | 4,556     |
-| **`mano`**  |           **3.631** | **7,048** |
-| AdamW       |               3.801 | 7,245     |
-| SophiaG     |               4.719 | 7,208     |
+| Optimizer   |  Loss |   TPS |
+| ----------- | ----: | ----: |
+| Muon        | 3.557 | 4,556 |
+| **`mano`**  | **3.631** | **7,048** |
+| AdamW       | 3.801 | 7,245 |
+| SophiaG     | 4.719 | 7,208 |
 
 </div>
 
@@ -607,7 +607,7 @@ throughput tax.
 <style>{`
   #mano .mano-grid {
     display: grid;
-    grid-template-columns: 1.05fr 1fr;
+    grid-template-columns: 34ch 1fr;
     gap: 3ch;
     align-items: center;
     width: 100%;
@@ -616,9 +616,15 @@ throughput tax.
   #mano .mano-right { min-width: 0; display: flex; justify-content: center; }
   #mano .mano-right figure { margin: 0; width: 100%; }
   #mano .mano-right img { width: 100%; height: auto; max-height: 46lh; }
-  #mano table { max-width: none; }
+  /* Tight fixed-width table: pin the numeric columns so the header row
+     can't wrap and the table only claims the width it needs, leaving the
+     rest of the row for the figure. */
+  #mano table { table-layout: fixed; width: 100%; max-width: none; }
+  #mano table th:nth-child(1), #mano table td:nth-child(1) { width: 13ch; }
   #mano table th:nth-child(2), #mano table td:nth-child(2),
-  #mano table th:nth-child(3), #mano table td:nth-child(3) { text-align: right; }
+  #mano table th:nth-child(3), #mano table td:nth-child(3) {
+    width: auto; text-align: right; white-space: nowrap;
+  }
   @media (max-width: 768px) {
     #mano .mano-grid { grid-template-columns: 1fr; gap: 1lh; }
   }
