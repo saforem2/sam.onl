@@ -1026,6 +1026,8 @@ flowchart LR
 
 Two ~300B-token pilots (256N, GBS=6,144) vs the olmo-100 base plateau:
 
+<div class="cpt-grid">
+
 <figure>
     <img src="/talks/2026-07-14/figures/cpt-loss.svg"
         alt="2B CPT training/validation loss per data mix: dolmino-100 vs olmo50-dolmino50 vs olmo-100 base" />
@@ -1042,6 +1044,29 @@ Two ~300B-token pilots (256N, GBS=6,144) vs the olmo-100 base plateau:
     fell for both. <strong>No mixing ratio declared a winner</strong>.
     Hypothesis: re-warm to peak LR caused forgetting; gentle-LR retry pending.
 </div>
+
+</div>
+
+<style>{`
+  /* Figure + warning callout side-by-side: the figure takes ~62% and the
+     callout rides alongside instead of pushing off the bottom. Both align
+     to the top so the chart and the callout title start on the same line. */
+  #cpt .cpt-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 3ch;
+    align-items: start;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+  }
+  #cpt .cpt-grid > figure { margin: 0; min-width: 0; }
+  #cpt .cpt-grid > figure img { width: 100%; height: auto; max-height: 15lh; }
+  #cpt .cpt-grid > .repo-card { min-width: 0; align-self: center; }
+  @media (max-width: 768px) {
+    #cpt .cpt-grid { grid-template-columns: 1fr; gap: 1lh; }
+  }
+`}</style>
 
 </Slide>
 
