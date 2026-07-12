@@ -18,6 +18,7 @@
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { fontDefs, FONT_STACK } from './svg-font.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT = join(
@@ -133,8 +134,7 @@ const panelH = (gridH - GY * (ROWS - 1)) / ROWS
 const PAD = { top: 26, right: 12, bottom: 34, left: 46 } // inside each panel
 
 const X_MAX = 4800 // tokens (B); covers the 4.67T 2B run + headroom
-const FONT =
-    "'mIosevka-QP Web','Iosevka Web','JetBrains Mono',Menlo,monospace"
+const FONT = FONT_STACK
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
 const fmt = (n) => (Math.round(n * 1000) / 1000).toString()
@@ -195,7 +195,10 @@ function panel(task, px, py) {
         const dash = run.dash ? ` stroke-dasharray="${run.dash}"` : ''
         if (pts.length > 1) {
             const d = pts
-                .map((p, i) => `${i ? 'L' : 'M'}${sx(p[0]).toFixed(1)} ${sy(p[1]).toFixed(1)}`)
+                .map(
+                    (p, i) =>
+                        `${i ? 'L' : 'M'}${sx(p[0]).toFixed(1)} ${sy(p[1]).toFixed(1)}`,
+                )
                 .join(' ')
             s += `<path d="${d}" fill="none" stroke="${run.color}" stroke-width="2"${dash}/>`
         }
@@ -240,6 +243,7 @@ TASKS.forEach((task, i) => {
 
 const svg = `<?xml version="1.0" encoding="utf-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${FONT}">
+${fontDefs()}
 ${body}
 </svg>
 `

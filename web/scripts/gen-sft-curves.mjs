@@ -21,6 +21,7 @@
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { fontDefs, FONT_STACK } from './svg-font.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT = join(
@@ -61,7 +62,7 @@ const panelW = (gridW - GX * (COLS - 1)) / COLS
 const panelH = (gridH - GY * (ROWS_N - 1)) / ROWS_N
 const PAD = { top: 24, right: 10, bottom: 30, left: 52 }
 
-const FONT = "'mIosevka-QP Web','Iosevka Web','JetBrains Mono',Menlo,monospace"
+const FONT = FONT_STACK
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
 
 const steps = ROWS.map((r) => r[0])
@@ -117,7 +118,12 @@ function panel(p, px, py) {
 
     // line + dots
     const pts = ROWS.map((r) => [sx(r[0]), sy(r[p.i] * scale)])
-    const d = pts.map((pt, i) => `${i ? 'L' : 'M'}${pt[0].toFixed(1)} ${pt[1].toFixed(1)}`).join(' ')
+    const d = pts
+        .map(
+            (pt, i) =>
+                `${i ? 'L' : 'M'}${pt[0].toFixed(1)} ${pt[1].toFixed(1)}`,
+        )
+        .join(' ')
     s += `<path d="${d}" fill="none" stroke="${p.color}" stroke-width="2"/>`
     for (const pt of pts)
         s += `<circle cx="${pt[0].toFixed(1)}" cy="${pt[1].toFixed(1)}" r="2" fill="${p.color}"/>`
@@ -138,6 +144,7 @@ PANELS.forEach((p, idx) => {
 
 const svg = `<?xml version="1.0" encoding="utf-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${FONT}">
+${fontDefs()}
 ${body}
 </svg>
 `

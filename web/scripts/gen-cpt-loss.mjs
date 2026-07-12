@@ -22,6 +22,7 @@
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { fontDefs, FONT_STACK } from './svg-font.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT = join(
@@ -59,7 +60,7 @@ const ah = H - AX.top - AX.bottom
 const X_MAX = 5960 // CPT steps
 const Y_MIN = 2.2
 const Y_MAX = 8.0
-const FONT = "'mIosevka-QP Web','Iosevka Web','JetBrains Mono',Menlo,monospace"
+const FONT = FONT_STACK
 
 const esc = (s) =>
     String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -127,6 +128,7 @@ body += `<text x="${lx + 34}" y="${ly + 18}" font-family="${FONT}" font-size="13
 
 const svg = `<?xml version="1.0" encoding="utf-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${FONT}">
+${fontDefs()}
 ${body}
 </svg>
 `
