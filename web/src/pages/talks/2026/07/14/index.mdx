@@ -1260,10 +1260,16 @@ On-policy RL via **TRL `GRPOTrainer` + vLLM-XPU**, on the SFT'd 2B
 (`sum_digits` task, 1,000 steps, 8N × 12 = 96 ranks, LR 1e-6):
 
 <figure>
-    <img
-        src="/talks/2026-07-14/figures/grpo-curves.svg"
-        alt="Arithmetic GRPO reward and accuracy curves over 1000 steps on the SFT'd AuroraGPT-2B"
-    />
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-07-14/figures/grpo-curves-mobile.svg"
+        />
+        <img
+            src="/talks/2026-07-14/figures/grpo-curves.svg"
+            alt="Arithmetic GRPO reward and accuracy curves over 1000 steps on the SFT'd AuroraGPT-2B"
+        />
+    </picture>
     <figcaption>
         Accuracy reward climbs **~0.4 → ~0.9** (from ~0 cold-start).
     </figcaption>
