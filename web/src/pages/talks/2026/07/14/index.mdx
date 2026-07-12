@@ -1986,6 +1986,10 @@ Appendix: 80B optimizer-cliff deep dive (NEW)
 
 ### 80B cliff: the GBS ladder + why LR-scaling backfires
 
+<div class="cliff-grid">
+
+<div class="cliff-left">
+
 The stable corner (**TP=4 · LBS=1 · bf16 · GBS=372**) held NaN-free
 under batch ramp, until it didn't:
 
@@ -2008,20 +2012,56 @@ under batch ramp, until it didn't:
 - 2048N (dp=6138) `SIGSEGV`ed in `set_determinism` (seed broadcast
   faulted at 24,864 ranks); 512N proven, 1024N is the missing measurement.
 
+</div>
+
+<div class="cliff-right">
+
 <figure>
-    <img
-        src="/talks/2026-07-14/figures/lr-finder-80b-adamw-vs-mano.png"
-        alt="80B LR-finder at GBS=6144 on Sunspot: AdamW vs mano loss-vs-LR, showing the hard NaN cliff"
-    />
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-07-14/figures/lr-finder-80b-mobile.svg"
+        />
+        <img
+            src="/talks/2026-07-14/figures/lr-finder-80b.svg"
+            alt="80B LR-finder at GBS=6144: mano, SophiaG, AdamW, muon loss-vs-LR. AdamW and muon cliff straight to NaN with no minimum; mano and SophiaG reach a real U-minimum first"
+        />
+    </picture>
     <figcaption>
-        80B LR-finder (GBS=6,144, Sunspot): AdamW hits a **hard NaN cliff**
-        (usable ~7.4e-7, no clean minimum); `mano` tolerates a wider band but
-        still isn't production-safe as a constant LR. Data:
+        80B LR-finder at the production batch (GBS=6,144, four sweeps). **AdamW
+        and muon cliff straight to NaN** with no usable minimum (× marks the
+        diverged LRs); `mano` and SophiaG reach a real minimum first (circled,
+        ~11.9 / ~11.8) but SophiaG blows up just past it. Data:
         [`docs/experiments/lr-finder/agpt/80b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/experiments/lr-finder/agpt/80b)
     </figcaption>
 </figure>
 
+</div>
+
+</div>
+
 <style>{`
+  #optimizer-cliff-detail .cliff-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: 3ch;
+    align-items: center;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+  }
+  #optimizer-cliff-detail .cliff-left { min-width: 0; }
+  #optimizer-cliff-detail .cliff-right {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  #optimizer-cliff-detail .cliff-right figure { margin: 0; width: 100%; }
+  #optimizer-cliff-detail .cliff-right img { width: 100%; height: auto; }
+  @media (max-width: 768px) {
+    #optimizer-cliff-detail .cliff-grid { grid-template-columns: 1fr; gap: 1lh; }
+  }
   #optimizer-cliff-detail table { table-layout: fixed; width: max-content; max-width: 100%; font-size: 0.9em; }
   #optimizer-cliff-detail table th:nth-child(1), #optimizer-cliff-detail table td:nth-child(1) { width: 16ch; }
   #optimizer-cliff-detail table th:nth-child(2), #optimizer-cliff-detail table td:nth-child(2) { width: 8ch; text-align: right; }
