@@ -772,10 +772,16 @@ Why move off MDS — and what broke
 ## Evals: 2B + 20B vs MDS, per token
 
 <figure>
-    <img
-        src="/talks/2026-07-14/figures/eval-combined-4bench.svg"
-        alt="AuroraGPT eval: 2B v2 (256N + 512N), 20B v2 512N, and the 2B-MDS reference on HellaSwag, ARC-Easy, ARC-Challenge, Winogrande vs tokens consumed"
-    />
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-07-14/figures/eval-combined-4bench-mobile.svg"
+        />
+        <img
+            src="/talks/2026-07-14/figures/eval-combined-4bench.svg"
+            alt="AuroraGPT eval: 2B v2 (256N + 512N), 20B v2 512N, and the 2B-MDS reference on HellaSwag, ARC-Easy, ARC-Challenge, Winogrande vs tokens consumed"
+        />
+    </picture>
     <figcaption>
         **2B** (4.67T tok): HellaSwag 0.561 · ARC-Easy 0.651, plateaus ~2T.
         **20B/512N is the most token-efficient run**: at 442.9B tok already

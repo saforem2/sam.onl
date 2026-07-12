@@ -21,15 +21,9 @@ import { dirname, join } from 'node:path'
 import { fontDefs, FONT_STACK } from './svg-font.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const OUT = join(
-    __dirname,
-    '..',
-    'public',
-    'talks',
-    '2026-07-14',
-    'figures',
-    'eval-combined-4bench.svg',
-)
+const FIG_DIR = join(__dirname, '..', 'public', 'talks', '2026-07-14', 'figures')
+const OUT = join(FIG_DIR, 'eval-combined-4bench.svg')
+const OUT_MOBILE = join(FIG_DIR, 'eval-combined-4bench-mobile.svg')
 
 // Tasks (order = panel grid, row-major 2x2)
 const TASKS = ['hellaswag', 'arc_easy', 'arc_challenge', 'winogrande']
@@ -119,20 +113,6 @@ const RUNS = [
     },
 ]
 
-// ── layout ──────────────────────────────────────────────────────────
-const W = 1280
-const H = 760
-const M = { top: 96, right: 28, bottom: 56, left: 28 }
-const COLS = 2
-const ROWS = 2
-const GX = 64 // gap between panel columns
-const GY = 64 // gap between panel rows
-const gridW = W - M.left - M.right
-const gridH = H - M.top - M.bottom
-const panelW = (gridW - GX * (COLS - 1)) / COLS
-const panelH = (gridH - GY * (ROWS - 1)) / ROWS
-const PAD = { top: 26, right: 12, bottom: 34, left: 46 } // inside each panel
-
 const X_MAX = 4800 // tokens (B); covers the 4.67T 2B run + headroom
 const FONT = FONT_STACK
 
@@ -147,12 +127,49 @@ function taskYRange(task) {
     return [0.24, 0.64] // hellaswag
 }
 
-function panel(task, px, py) {
+// ── layout configs ──────────────────────────────────────────────────
+// Landscape: 2x2 grid for the slide. Mobile: single column, 4 rows stacked,
+// narrow+tall so each panel stays legible on phones (< 768px CSS width).
+const LANDSCAPE = {
+    W: 1280,
+    H: 760,
+    M: { top: 96, right: 28, bottom: 56, left: 28 },
+    COLS: 2,
+    ROWS: 2,
+    GX: 64,
+    GY: 64,
+    PAD: { top: 26, right: 12, bottom: 34, left: 46 },
+    titleSize: 30,
+    subSize: 18,
+    legendSize: 18,
+    panelTitleSize: 26,
+    tickSize: 16,
+    xTickFmt: (t) => `${(t / 1000).toFixed(0)}T`,
+}
+const MOBILE = {
+    W: 620,
+    H: 1560,
+    M: { top: 176, right: 22, bottom: 44, left: 22 },
+    COLS: 1,
+    ROWS: 4,
+    GX: 0,
+    GY: 54,
+    PAD: { top: 30, right: 14, bottom: 40, left: 56 },
+    titleSize: 30,
+    subSize: 17,
+    legendSize: 20,
+    panelTitleSize: 28,
+    tickSize: 18,
+    xTickFmt: (t) => `${(t / 1000).toFixed(0)}T`,
+}
+
+function panel(cfg, geo, task, px, py) {
+    const { PAD } = cfg
     const [yMin, yMax] = taskYRange(task)
     const ax = px + PAD.left
     const ay = py + PAD.top
-    const aw = panelW - PAD.left - PAD.right
-    const ah = panelH - PAD.top - PAD.bottom
+    const aw = geo.panelW - PAD.left - PAD.right
+    const ah = geo.panelH - PAD.top - PAD.bottom
     const sx = (t) => ax + (Math.min(t, X_MAX) / X_MAX) * aw
     const sy = (v) => ay + ah - ((v - yMin) / (yMax - yMin)) * ah
     const ti = TASKS.indexOf(task) >= 0 ? TASKS.indexOf(task) : 0
@@ -160,7 +177,7 @@ function panel(task, px, py) {
 
     let s = ''
     // panel title
-    s += `<text x="${px + panelW / 2}" y="${py + 16}" text-anchor="middle" font-family="${FONT}" font-size="26" fill="#838383">${esc(TITLES[task])}</text>`
+    s += `<text x="${px + geo.panelW / 2}" y="${py + 16}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.panelTitleSize}" fill="#838383">${esc(TITLES[task])}</text>`
 
     // axes box
     s += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#83838355" stroke-width="1"/>`
@@ -170,14 +187,14 @@ function panel(task, px, py) {
         const v = yMin + ((yMax - yMin) * k) / 4
         const yy = sy(v)
         s += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
-        s += `<text x="${ax - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="16" fill="#838383">${fmt(v)}</text>`
+        s += `<text x="${ax - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="${cfg.tickSize}" fill="#838383">${fmt(v)}</text>`
     }
     // x ticks (0,1,2,3,4 T)
     for (let k = 0; k <= 4; k++) {
         const t = (X_MAX * k) / 4
         const xx = sx(t)
         s += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 4}" stroke="#83838388" stroke-width="1"/>`
-        s += `<text x="${xx}" y="${ay + ah + 18}" text-anchor="middle" font-family="${FONT}" font-size="16" fill="#838383">${(t / 1000).toFixed(0)}T</text>`
+        s += `<text x="${xx}" y="${ay + ah + 18}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.tickSize}" fill="#838383">${cfg.xTickFmt(t)}</text>`
     }
     // random baseline
     const yr = sy(RANDOM[task])
@@ -215,38 +232,58 @@ function panel(task, px, py) {
     return s
 }
 
-let body = ''
-// title
-body += `<text x="${W / 2}" y="34" text-anchor="middle" font-family="${FONT}" font-size="30" font-weight="700" fill="#838383">AuroraGPT eval: 2B + 20B vs MDS reference</text>`
-body += `<text x="${W / 2}" y="56" text-anchor="middle" font-family="${FONT}" font-size="18" fill="#838383">lm-eval accuracy vs tokens consumed (four benchmarks with TorchTitan + MDS coverage)</text>`
+function buildSVG(cfg) {
+    const { W, H, M, COLS, ROWS, GX, GY } = cfg
+    const gridW = W - M.left - M.right
+    const gridH = H - M.top - M.bottom
+    const panelW = (gridW - GX * (COLS - 1)) / COLS
+    const panelH = (gridH - GY * (ROWS - 1)) / ROWS
+    const geo = { panelW, panelH }
 
-// legend
-let lx = M.left + 8
-const ly = 78
-for (const run of RUNS) {
-    const dash = run.dash ? ` stroke-dasharray="${run.dash}"` : ''
-    body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 24}" y2="${ly - 4}" stroke="${run.color}" stroke-width="2.5"${dash}/>`
-    if (run.marker === 'x')
-        body += `<path d="M${lx + 8} ${ly - 8}l8 8M${lx + 16} ${ly - 8}l-8 8" stroke="${run.color}" stroke-width="2"/>`
-    body += `<text x="${lx + 30}" y="${ly}" font-family="${FONT}" font-size="18" fill="#555">${esc(run.label)}</text>`
-    lx += 30 + run.label.length * 8 + 26
-}
+    let body = ''
+    // title
+    body += `<text x="${W / 2}" y="34" text-anchor="middle" font-family="${FONT}" font-size="${cfg.titleSize}" font-weight="700" fill="#838383">AuroraGPT eval: 2B + 20B vs MDS reference</text>`
+    body += `<text x="${W / 2}" y="56" text-anchor="middle" font-family="${FONT}" font-size="${cfg.subSize}" fill="#838383">lm-eval accuracy vs tokens consumed (four benchmarks with TorchTitan + MDS coverage)</text>`
 
-// panels
-TASKS.forEach((task, i) => {
-    const c = i % COLS
-    const r = Math.floor(i / COLS)
-    const px = M.left + c * (panelW + GX)
-    const py = M.top + r * (panelH + GY)
-    body += panel(task, px, py)
-})
+    // legend: lay out left-to-right, wrapping to a new line when the next
+    // entry would overflow the right margin (needed for the narrow variant).
+    const lsz = cfg.legendSize
+    const lineH = lsz + 10
+    let lx = M.left + 8
+    let ly = 78
+    const lRight = W - M.right
+    for (const run of RUNS) {
+        const w = 30 + run.label.length * (lsz * 0.5) + 26
+        if (lx + w > lRight && lx > M.left + 8) {
+            lx = M.left + 8
+            ly += lineH
+        }
+        const dash = run.dash ? ` stroke-dasharray="${run.dash}"` : ''
+        body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 24}" y2="${ly - 4}" stroke="${run.color}" stroke-width="2.5"${dash}/>`
+        if (run.marker === 'x')
+            body += `<path d="M${lx + 8} ${ly - 8}l8 8M${lx + 16} ${ly - 8}l-8 8" stroke="${run.color}" stroke-width="2"/>`
+        body += `<text x="${lx + 30}" y="${ly}" font-family="${FONT}" font-size="${lsz}" fill="#555">${esc(run.label)}</text>`
+        lx += w
+    }
 
-const svg = `<?xml version="1.0" encoding="utf-8"?>
+    // panels
+    TASKS.forEach((task, i) => {
+        const c = i % COLS
+        const r = Math.floor(i / COLS)
+        const px = M.left + c * (panelW + GX)
+        const py = M.top + r * (panelH + GY)
+        body += panel(cfg, geo, task, px, py)
+    })
+
+    return `<?xml version="1.0" encoding="utf-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${FONT}">
 ${fontDefs()}
 ${body}
 </svg>
 `
+}
 
-writeFileSync(OUT, svg)
+writeFileSync(OUT, buildSVG(LANDSCAPE))
 console.log('wrote', OUT)
+writeFileSync(OUT_MOBILE, buildSVG(MOBILE))
+console.log('wrote', OUT_MOBILE)
