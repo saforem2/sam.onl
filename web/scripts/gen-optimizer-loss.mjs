@@ -79,8 +79,8 @@ const commas = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 let body = ''
 
 // figure title
-body += `<text x="${W / 2}" y="24" text-anchor="middle" font-family="${FONT}" font-size="18" font-weight="700" fill="#838383">agpt_2b speedrun: 2B, GBS=48, 1000 steps</text>`
-body += `<text x="${W / 2}" y="43" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#838383">FineWeb-EDU, 2N Sunspot</text>`
+body += `<text x="${W / 2}" y="24" text-anchor="middle" font-family="${FONT}" font-size="21" font-weight="700" fill="#838383">agpt_2b speedrun: 2B, GBS=48, 1000 steps</text>`
+body += `<text x="${W / 2}" y="43" text-anchor="middle" font-family="${FONT}" font-size="14" fill="#838383">FineWeb-EDU, 2N Sunspot</text>`
 
 // ── Panel 1: loss vs step (top) ─────────────────────────────────────
 {
@@ -99,15 +99,15 @@ body += `<text x="${W / 2}" y="43" text-anchor="middle" font-family="${FONT}" fo
     for (let v = Y_MIN; v <= Y_MAX + 0.001; v += 2) {
         const yy = sy(v)
         body += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
-        body += `<text x="${ax - 10}" y="${yy + 5}" text-anchor="end" font-family="${FONT}" font-size="12" fill="#838383">${v.toFixed(0)}</text>`
+        body += `<text x="${ax - 10}" y="${yy + 5}" text-anchor="end" font-family="${FONT}" font-size="14" fill="#838383">${v.toFixed(0)}</text>`
     }
     for (let s = 0; s <= 1000; s += 250) {
         const xx = sx(s)
         body += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 5}" stroke="#83838388" stroke-width="1"/>`
-        body += `<text x="${xx}" y="${ay + ah + 20}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#838383">${s}</text>`
+        body += `<text x="${xx}" y="${ay + ah + 20}" text-anchor="middle" font-family="${FONT}" font-size="14" fill="#838383">${s}</text>`
     }
-    body += `<text x="${ax + aw / 2}" y="${ay + ah + 42}" text-anchor="middle" font-family="${FONT}" font-size="13" fill="#838383">step</text>`
-    body += `<text x="${ax - 46}" y="${ay + ah / 2}" text-anchor="middle" font-family="${FONT}" font-size="13" fill="#838383" transform="rotate(-90 ${ax - 46} ${ay + ah / 2})">training loss</text>`
+    body += `<text x="${ax + aw / 2}" y="${ay + ah + 42}" text-anchor="middle" font-family="${FONT}" font-size="15" fill="#838383">step</text>`
+    body += `<text x="${ax - 46}" y="${ay + ah / 2}" text-anchor="middle" font-family="${FONT}" font-size="15" fill="#838383" transform="rotate(-90 ${ax - 46} ${ay + ah / 2})">training loss</text>`
     for (const r of SERIES) {
         const d = r.data
             .map(
@@ -123,7 +123,7 @@ body += `<text x="${W / 2}" y="43" text-anchor="middle" font-family="${FONT}" fo
     body += `<rect x="${lx - 10}" y="${ly - 15}" width="160" height="${SERIES.length * 20 + 10}" fill="#83838310" stroke="#83838333" stroke-width="1"/>`
     for (const r of [...SERIES].reverse()) {
         body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 20}" y2="${ly - 4}" stroke="${r.color}" stroke-width="2.8"/>`
-        body += `<text x="${lx + 28}" y="${ly}" font-family="${FONT}" font-size="12" fill="#838383">${esc(r.label)} <tspan fill="${r.color}">${r.val.toFixed(3)}</tspan></text>`
+        body += `<text x="${lx + 28}" y="${ly}" font-family="${FONT}" font-size="14" fill="#838383">${esc(r.label)} <tspan fill="${r.color}">${r.val.toFixed(3)}</tspan></text>`
         ly += 20
     }
 
@@ -161,12 +161,12 @@ body += `<text x="${W / 2}" y="43" text-anchor="middle" font-family="${FONT}" fo
         for (let v = 3.5; v <= 5.0 + 0.001; v += 0.5) {
             const yy = isy(v)
             body += `<line x1="${ix}" y1="${yy}" x2="${ix + iw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
-            body += `<text x="${ix - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="10" fill="#838383">${v.toFixed(1)}</text>`
+            body += `<text x="${ix - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="12" fill="#838383">${v.toFixed(1)}</text>`
         }
         // inset x ticks (600, 800, 1000)
         for (const s of [600, 800, 1000]) {
             const xx = isx(s)
-            body += `<text x="${xx}" y="${iy + ih + 14}" text-anchor="middle" font-family="${FONT}" font-size="10" fill="#838383">${s}</text>`
+            body += `<text x="${xx}" y="${iy + ih + 14}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#838383">${s}</text>`
         }
         // inset curves (clipped)
         body += `<g clip-path="url(#tailclip)">`
@@ -182,7 +182,7 @@ body += `<text x="${W / 2}" y="43" text-anchor="middle" font-family="${FONT}" fo
             body += `<path d="${d}" fill="none" stroke="${r.color}" stroke-width="2"/>`
         }
         body += `</g>`
-        body += `<text x="${ix + iw / 2}" y="${iy - 6}" text-anchor="middle" font-family="${FONT}" font-size="11" fill="#838383">tail zoom (steps 600-1000)</text>`
+        body += `<text x="${ix + iw / 2}" y="${iy - 6}" text-anchor="middle" font-family="${FONT}" font-size="13" fill="#838383">tail zoom (steps 600-1000)</text>`
     }
 }
 
@@ -198,21 +198,21 @@ body += `<text x="${W / 2}" y="43" text-anchor="middle" font-family="${FONT}" fo
     const rowH = ah / rows.length
     const barH = rowH * 0.56
 
-    body += `<text x="${W / 2}" y="${ay - 14}" text-anchor="middle" font-family="${FONT}" font-size="14" font-weight="700" fill="#838383">throughput (TPS / GPU)</text>`
+    body += `<text x="${W / 2}" y="${ay - 14}" text-anchor="middle" font-family="${FONT}" font-size="17" font-weight="700" fill="#838383">throughput (TPS / GPU)</text>`
     // x gridlines + ticks
     for (let t = 0; t <= T_MAX; t += 2000) {
         const xx = bx(t)
         body += `<line x1="${xx}" y1="${ay}" x2="${xx}" y2="${ay + ah}" stroke="#83838322" stroke-width="1"/>`
-        body += `<text x="${xx}" y="${ay + ah + 18}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#838383">${(t / 1000).toFixed(0)}k</text>`
+        body += `<text x="${xx}" y="${ay + ah + 18}" text-anchor="middle" font-family="${FONT}" font-size="14" fill="#838383">${(t / 1000).toFixed(0)}k</text>`
     }
     for (let i = 0; i < rows.length; i++) {
         const r = rows[i]
         const cy = ay + i * rowH + (rowH - barH) / 2
         body += `<rect x="${ax}" y="${cy.toFixed(1)}" width="${(bx(r.tps) - ax).toFixed(1)}" height="${barH.toFixed(1)}" fill="${r.color}" opacity="0.9"/>`
         // label (name) at the far left inside the gutter
-        body += `<text x="${ax - 8}" y="${(cy + barH / 2 + 4).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-size="12" fill="${r.color}" font-weight="700">${esc(r.label)}</text>`
+        body += `<text x="${ax - 8}" y="${(cy + barH / 2 + 4).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-size="14" fill="${r.color}" font-weight="700">${esc(r.label)}</text>`
         // value at the bar end
-        body += `<text x="${(bx(r.tps) + 8).toFixed(1)}" y="${(cy + barH / 2 + 4).toFixed(1)}" text-anchor="start" font-family="${FONT}" font-size="12" fill="#838383">${commas(r.tps)}</text>`
+        body += `<text x="${(bx(r.tps) + 8).toFixed(1)}" y="${(cy + barH / 2 + 4).toFixed(1)}" text-anchor="start" font-family="${FONT}" font-size="14" fill="#838383">${commas(r.tps)}</text>`
     }
 }
 

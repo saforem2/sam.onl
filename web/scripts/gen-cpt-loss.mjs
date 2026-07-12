@@ -70,8 +70,8 @@ const sy = (v) => ay + ah - ((v - Y_MIN) / (Y_MAX - Y_MIN)) * ah
 let body = ''
 
 // title + subtitle
-body += `<text x="${W / 2}" y="38" text-anchor="middle" font-family="${FONT}" font-size="24" font-weight="700" fill="#838383">2B continued-pretraining: olmo x dolmino sweep</text>`
-body += `<text x="${W / 2}" y="62" text-anchor="middle" font-family="${FONT}" font-size="14" fill="#838383">training loss vs CPT step (fork from 2B base step-92,859; 256N, GBS=6144, ~300B tok each)</text>`
+body += `<text x="${W / 2}" y="38" text-anchor="middle" font-family="${FONT}" font-size="32" font-weight="700" fill="#838383">2B continued-pretraining: olmo x dolmino sweep</text>`
+body += `<text x="${W / 2}" y="62" text-anchor="middle" font-family="${FONT}" font-size="19" fill="#838383">training loss vs CPT step (fork from 2B base step-92,859; 256N, GBS=6144, ~300B tok each)</text>`
 
 // axes box
 body += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#83838355" stroke-width="1"/>`
@@ -81,23 +81,23 @@ for (let k = 0; k <= 8; k++) {
     const v = Y_MIN + ((Y_MAX - Y_MIN) * k) / 8
     const yy = sy(v)
     body += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
-    body += `<text x="${ax - 10}" y="${yy + 5}" text-anchor="end" font-family="${FONT}" font-size="14" fill="#838383">${v.toFixed(1)}</text>`
+    body += `<text x="${ax - 10}" y="${yy + 5}" text-anchor="end" font-family="${FONT}" font-size="19" fill="#838383">${v.toFixed(1)}</text>`
 }
 // x ticks (0 .. ~6k steps)
 for (let k = 0; k <= 6; k++) {
     const t = (6000 * k) / 6
     const xx = sx(t)
     body += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 5}" stroke="#83838388" stroke-width="1"/>`
-    body += `<text x="${xx}" y="${ay + ah + 24}" text-anchor="middle" font-family="${FONT}" font-size="14" fill="#838383">${k === 0 ? '0' : (t / 1000).toFixed(0) + 'k'}</text>`
+    body += `<text x="${xx}" y="${ay + ah + 24}" text-anchor="middle" font-family="${FONT}" font-size="19" fill="#838383">${k === 0 ? '0' : (t / 1000).toFixed(0) + 'k'}</text>`
 }
 // axis titles
-body += `<text x="${ax + aw / 2}" y="${ay + ah + 58}" text-anchor="middle" font-family="${FONT}" font-size="15" fill="#838383">CPT step</text>`
-body += `<text x="${ax - 58}" y="${ay + ah / 2}" text-anchor="middle" font-family="${FONT}" font-size="15" fill="#838383" transform="rotate(-90 ${ax - 58} ${ay + ah / 2})">training loss</text>`
+body += `<text x="${ax + aw / 2}" y="${ay + ah + 58}" text-anchor="middle" font-family="${FONT}" font-size="20" fill="#838383">CPT step</text>`
+body += `<text x="${ax - 58}" y="${ay + ah / 2}" text-anchor="middle" font-family="${FONT}" font-size="20" fill="#838383" transform="rotate(-90 ${ax - 58} ${ay + ah / 2})">training loss</text>`
 
 // olmo-100 plateau reference (the level CPT has to beat, on loss)
 const yp = sy(OLMO100_PLATEAU)
 body += `<line x1="${ax}" y1="${yp}" x2="${ax + aw}" y2="${yp}" stroke="#838383" stroke-width="1.4" stroke-dasharray="6 4"/>`
-body += `<text x="${ax + aw - 8}" y="${yp - 8}" text-anchor="end" font-family="${FONT}" font-size="13" fill="#838383">olmo-100 base plateau (~2.80)</text>`
+body += `<text x="${ax + aw - 8}" y="${yp - 8}" text-anchor="end" font-family="${FONT}" font-size="18" fill="#838383">olmo-100 base plateau (~2.80)</text>`
 
 // series
 for (const run of RUNS) {
@@ -142,12 +142,12 @@ for (const run of RUNS) {
     for (let v = 2.5; v <= 2.8 + 0.001; v += 0.1) {
         const yy = isy(v)
         body += `<line x1="${ix}" y1="${yy}" x2="${ix + iw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
-        body += `<text x="${ix - 7}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="12" fill="#838383">${v.toFixed(1)}</text>`
+        body += `<text x="${ix - 7}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="16" fill="#838383">${v.toFixed(1)}</text>`
     }
     // inset x ticks (1k .. 5k)
     for (let t = 1000; t <= 5000; t += 2000) {
         const xx = isx(t)
-        body += `<text x="${xx}" y="${iy + ih + 16}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#838383">${(t / 1000).toFixed(0)}k</text>`
+        body += `<text x="${xx}" y="${iy + ih + 16}" text-anchor="middle" font-family="${FONT}" font-size="16" fill="#838383">${(t / 1000).toFixed(0)}k</text>`
     }
     // plateau line inside the inset (2.80 sits at the very top of the band)
     if (OLMO100_PLATEAU >= zY0 && OLMO100_PLATEAU <= zY1) {
@@ -171,25 +171,25 @@ for (const run of RUNS) {
     for (const run of RUNS) {
         const last = run.data[run.data.length - 1]
         const ly2 = isy(Math.min(Math.max(last[1], zY0), zY1))
-        body += `<text x="${(ix + iw - 8).toFixed(1)}" y="${(ly2 - 6).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-size="12" font-weight="700" fill="${run.color}">${esc(run.label)} ${run.val.toFixed(3)}</text>`
+        body += `<text x="${(ix + iw - 8).toFixed(1)}" y="${(ly2 - 6).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-size="16" font-weight="700" fill="${run.color}">${esc(run.label)} ${run.val.toFixed(3)}</text>`
     }
-    body += `<text x="${ix + iw / 2}" y="${iy - 6}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#838383">tail zoom</text>`
+    body += `<text x="${ix + iw / 2}" y="${iy - 6}" text-anchor="middle" font-family="${FONT}" font-size="16" fill="#838383">tail zoom</text>`
 }
 
 // legend (right gutter)
 const lx = ax + aw + 24
 let ly = ay + 18
-body += `<text x="${lx}" y="${ly - 22}" font-family="${FONT}" font-size="14" font-weight="700" fill="#838383">final val loss</text>`
+body += `<text x="${lx}" y="${ly - 22}" font-family="${FONT}" font-size="19" font-weight="700" fill="#838383">final val loss</text>`
 for (const run of RUNS) {
     body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 26}" y2="${ly - 4}" stroke="${run.color}" stroke-width="2.8"/>`
-    body += `<text x="${lx + 34}" y="${ly}" font-family="${FONT}" font-size="14" fill="#838383">${esc(run.label)}</text>`
-    body += `<text x="${lx + 34}" y="${ly + 18}" font-family="${FONT}" font-size="13" fill="${run.color}">val ${run.val.toFixed(3)}</text>`
+    body += `<text x="${lx + 34}" y="${ly}" font-family="${FONT}" font-size="19" fill="#838383">${esc(run.label)}</text>`
+    body += `<text x="${lx + 34}" y="${ly + 18}" font-family="${FONT}" font-size="18" fill="${run.color}">val ${run.val.toFixed(3)}</text>`
     ly += 52
 }
 // plateau in legend
 body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 26}" y2="${ly - 4}" stroke="#838383" stroke-width="1.6" stroke-dasharray="6 4"/>`
-body += `<text x="${lx + 34}" y="${ly}" font-family="${FONT}" font-size="14" fill="#838383">olmo-100 base</text>`
-body += `<text x="${lx + 34}" y="${ly + 18}" font-family="${FONT}" font-size="13" fill="#838383">~2.80 (control)</text>`
+body += `<text x="${lx + 34}" y="${ly}" font-family="${FONT}" font-size="19" fill="#838383">olmo-100 base</text>`
+body += `<text x="${lx + 34}" y="${ly + 18}" font-family="${FONT}" font-size="18" fill="#838383">~2.80 (control)</text>`
 
 const svg = `<?xml version="1.0" encoding="utf-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${FONT}">

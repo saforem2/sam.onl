@@ -160,7 +160,7 @@ function panel(task, px, py) {
 
     let s = ''
     // panel title
-    s += `<text x="${px + panelW / 2}" y="${py + 16}" text-anchor="middle" font-family="${FONT}" font-size="19" fill="#838383">${esc(TITLES[task])}</text>`
+    s += `<text x="${px + panelW / 2}" y="${py + 16}" text-anchor="middle" font-family="${FONT}" font-size="26" fill="#838383">${esc(TITLES[task])}</text>`
 
     // axes box
     s += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#83838355" stroke-width="1"/>`
@@ -170,14 +170,14 @@ function panel(task, px, py) {
         const v = yMin + ((yMax - yMin) * k) / 4
         const yy = sy(v)
         s += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
-        s += `<text x="${ax - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="12" fill="#838383">${fmt(v)}</text>`
+        s += `<text x="${ax - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="16" fill="#838383">${fmt(v)}</text>`
     }
     // x ticks (0,1,2,3,4 T)
     for (let k = 0; k <= 4; k++) {
         const t = (X_MAX * k) / 4
         const xx = sx(t)
         s += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 4}" stroke="#83838388" stroke-width="1"/>`
-        s += `<text x="${xx}" y="${ay + ah + 18}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#838383">${(t / 1000).toFixed(0)}T</text>`
+        s += `<text x="${xx}" y="${ay + ah + 18}" text-anchor="middle" font-family="${FONT}" font-size="16" fill="#838383">${(t / 1000).toFixed(0)}T</text>`
     }
     // random baseline
     const yr = sy(RANDOM[task])
@@ -217,8 +217,8 @@ function panel(task, px, py) {
 
 let body = ''
 // title
-body += `<text x="${W / 2}" y="34" text-anchor="middle" font-family="${FONT}" font-size="22" font-weight="700" fill="#838383">AuroraGPT eval: 2B + 20B vs MDS reference</text>`
-body += `<text x="${W / 2}" y="56" text-anchor="middle" font-family="${FONT}" font-size="13" fill="#838383">lm-eval accuracy vs tokens consumed (four benchmarks with TorchTitan + MDS coverage)</text>`
+body += `<text x="${W / 2}" y="34" text-anchor="middle" font-family="${FONT}" font-size="30" font-weight="700" fill="#838383">AuroraGPT eval: 2B + 20B vs MDS reference</text>`
+body += `<text x="${W / 2}" y="56" text-anchor="middle" font-family="${FONT}" font-size="18" fill="#838383">lm-eval accuracy vs tokens consumed (four benchmarks with TorchTitan + MDS coverage)</text>`
 
 // legend
 let lx = M.left + 8
@@ -228,7 +228,7 @@ for (const run of RUNS) {
     body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 24}" y2="${ly - 4}" stroke="${run.color}" stroke-width="2.5"${dash}/>`
     if (run.marker === 'x')
         body += `<path d="M${lx + 8} ${ly - 8}l8 8M${lx + 16} ${ly - 8}l-8 8" stroke="${run.color}" stroke-width="2"/>`
-    body += `<text x="${lx + 30}" y="${ly}" font-family="${FONT}" font-size="13" fill="#555">${esc(run.label)}</text>`
+    body += `<text x="${lx + 30}" y="${ly}" font-family="${FONT}" font-size="18" fill="#555">${esc(run.label)}</text>`
     lx += 30 + run.label.length * 8 + 26
 }
 
