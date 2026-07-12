@@ -341,35 +341,6 @@ ezpz launch python3 train.py
 
 <div class="ezpz-diagram">
 
-<div class="ezpz-diagram-desktop">
-
-```mermaid
-flowchart TB
-    EZ(["<span style='font-weight:700'>ezpz launch</span>"])
-    EZ --> AURORA["<i>PBS · Intel</i><br/><span style='font-weight:700'>Aurora</span>"]
-    EZ --> POLARIS["<i>PBS · NVIDIA</i><br/><span style='font-weight:700'>Polaris</span>"]
-    EZ --> PM["<i>SLURM · NVIDIA</i><br/><span style='font-weight:700'>Perlmutter</span>"]
-    EZ --> FRONTIER["<i>SLURM · AMD</i><br/><span style='font-weight:700'>Frontier</span>"]
-    EZ --> MAC["<span style='font-weight:700'>Multi-CPU</span>"]
-
-    classDef hub        fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
-    classDef aurora     fill:#3b82f608,stroke:#3b82f6,color:#3b82f6,stroke-width:1.5px
-    classDef polaris    fill:#10b98108,stroke:#10b981,color:#10b981,stroke-width:1.5px
-    classDef perlmutter fill:#06b6d408,stroke:#06b6d4,color:#06b6d4,stroke-width:1.5px
-    classDef frontier   fill:#ef444408,stroke:#ef4444,color:#ef4444,stroke-width:1.5px
-    classDef mac        fill:#a78bfa08,stroke:#a78bfa,color:#a78bfa,stroke-width:1.5px
-    class EZ hub
-    class AURORA aurora
-    class POLARIS polaris
-    class PM perlmutter
-    class FRONTIER frontier
-    class MAC mac
-```
-
-</div>
-
-<div class="ezpz-diagram-mobile">
-
 ```mermaid
 flowchart LR
     EZ(["<span style='font-weight:700'>ezpz launch</span>"])
@@ -397,8 +368,6 @@ flowchart LR
 
 </div>
 
-</div>
-
 <style>{`
   #ezpz .ezpz-grid {
     display: grid;
@@ -414,19 +383,11 @@ flowchart LR
   #ezpz .ezpz-text pre.astro-code { width: 100%; }
   #ezpz .ezpz-diagram { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
   #ezpz .ezpz-diagram .mermaid svg { width: 100%; max-width: 100%; }
-  /* Diagram orientation swap: top-down (TB) on wide screens so the five
-     target nodes stack vertically in the right column beside the code;
-     left-right (LR) on narrow/mobile where a wide fan reads better than a
-     tall one. Only one variant renders at a time so mermaid's interactive
-     controls attach to the visible block. */
-  #ezpz .ezpz-diagram-mobile { display: none; }
   @media (max-width: 768px) {
     #ezpz .ezpz-grid {
       grid-template-columns: 1fr;
       gap: 1lh;
     }
-    #ezpz .ezpz-diagram-desktop { display: none; }
-    #ezpz .ezpz-diagram-mobile { display: block; }
   }
 
   /* ---- Chip-badge styling (mirrors fork-tax + restart-cascade) ----
@@ -812,13 +773,13 @@ flowchart LR
     A["<i>start</i><br/><span style='font-weight:700'>upstream @ HEAD</span>"] --> B["<i>resync · 50 steps · deterministic</i><br/><span style='font-weight:700'>smoke test</span>"]
     B --> D{"bit-exact?"}
     D -->|✅| C["<i>diff = 0</i><br/><span style='font-weight:700'>✓ ship</span>"]
-    D -.->|❌️| F["<i>diff &ne; 0</i><br/><span style='font-weight:700'>bisect + fix</span>"]
+    D -->|❌️| F["<i>diff &ne; 0</i><br/><span style='font-weight:700'>bisect + fix</span>"]
     F -.->|retry| B
 
     classDef source fill:#7c4ed508,stroke:#7c4ed5,color:#7c4ed5,stroke-width:1.5px
     classDef stage  fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
     classDef ship   fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
-    classDef gate   fill:#8a8a8a18,stroke:#9a9a9a,color:#838383,stroke-width:1.5px
+    classDef gate   fill:#ee8f2410,stroke:#ee8f24,color:#c9750f,stroke-width:1.5px
     classDef bad    fill:#e0556008,stroke:#e05560,color:#e05560,stroke-width:1.5px
     class A source
     class B stage
@@ -1125,7 +1086,10 @@ Two ~300B-token pilots (256N, GBS=6,144) vs the olmo-100 base plateau:
   }
   #cpt .cpt-grid > figure { margin: 0; min-width: 0; }
   #cpt .cpt-grid > figure img { width: 100%; height: auto; max-height: 15lh; }
-  #cpt .cpt-grid > .repo-card { min-width: 0; align-self: center; }
+  /* Top-align the callout with the chart (not centered against the taller
+     figure+caption block, which floated it down opposite the chart's
+     lower half). */
+  #cpt .cpt-grid > .repo-card { min-width: 0; align-self: start; }
   @media (max-width: 768px) {
     #cpt .cpt-grid { grid-template-columns: 1fr; gap: 1lh; }
   }
