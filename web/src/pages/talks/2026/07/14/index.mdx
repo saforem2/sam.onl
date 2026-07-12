@@ -569,28 +569,59 @@ rotating **Oblique manifold** with $O(\text{dim})$ vector-norm ops
 (no Newton-Schulz iterations). So it matches Muon's loss without Muon's
 throughput tax.
 
+<div class="mano-grid">
+
+<div class="mano-left">
+
 <div class="tight-table">
 
 | Optimizer   | Loss (2B, 1k steps) | TPS/GPU   |
 | ----------- | ------------------: | --------: |
-| Muon        |               3.628 | 4,695     |
-| **`mano`**  |           **3.631** | **7,200** |
-| AdamW       |               ~3.70 | 7,200     |
-| SophiaG     |               4.719 | 7,200     |
+| Muon        |               3.557 | 4,556     |
+| **`mano`**  |           **3.631** | **7,048** |
+| AdamW       |               3.801 | 7,245     |
+| SophiaG     |               4.719 | 7,208     |
 
 </div>
 
-- **Muon and `mano` tie on loss (~3.63); `mano` runs at AdamW speed**
-  (7,200 vs 4,700 TPS) → **wins on wall-clock**.
+- **Muon and `mano` tie on loss (~3.6); `mano` runs at AdamW speed**
+  (~7,000 vs ~4,600 TPS) → **wins on wall-clock**.
 - Caveat: at **large batch** (GBS=384) AdamW still wins (2.71 vs 2.88);
   `mano`'s LR was tuned at GBS=48 and needs re-tuning.
+
+</div>
+
+<div class="mano-right">
+
+<figure>
+    <img src="/talks/2026-07-14/figures/optimizer-loss.svg"
+        alt="Training loss vs step for Muon, mano, AdamW, SophiaG at 2B / GBS=48 over 1000 steps: mano and Muon converge lowest and nearly overlap, AdamW above, SophiaG highest" />
+</figure>
+
+</div>
+
+</div>
 
 [^mano]: [`mano`: manifold-normalized optimization](https://arxiv.org/abs/2601.23000) (2026). Implemented in our fork alongside SPAM ([2501.06842](https://arxiv.org/abs/2501.06842)).
 
 <style>{`
-  #mano table { max-width: 60ch; }
+  #mano .mano-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 3ch;
+    align-items: center;
+    width: 100%;
+  }
+  #mano .mano-left { min-width: 0; }
+  #mano .mano-right { min-width: 0; display: flex; justify-content: center; }
+  #mano .mano-right figure { margin: 0; width: 100%; }
+  #mano .mano-right img { width: 100%; height: auto; max-height: 46lh; }
+  #mano table { max-width: none; }
   #mano table th:nth-child(2), #mano table td:nth-child(2),
   #mano table th:nth-child(3), #mano table td:nth-child(3) { text-align: right; }
+  @media (max-width: 768px) {
+    #mano .mano-grid { grid-template-columns: 1fr; gap: 1lh; }
+  }
 `}</style>
 
 </Slide>
