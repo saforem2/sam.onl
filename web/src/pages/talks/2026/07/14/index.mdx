@@ -315,20 +315,20 @@ ezpz launch python3 train.py
 
 <div class="ezpz-diagram">
 
+<div class="ezpz-diagram-desktop">
+
 ```mermaid
-flowchart LR
+flowchart TB
     EZ(["<span style='font-weight:700'>ezpz launch</span>"])
     EZ --> AURORA["<i>PBS · Intel</i><br/><span style='font-weight:700'>Aurora</span>"]
     EZ --> POLARIS["<i>PBS · NVIDIA</i><br/><span style='font-weight:700'>Polaris</span>"]
     EZ --> PM["<i>SLURM · NVIDIA</i><br/><span style='font-weight:700'>Perlmutter</span>"]
     EZ --> FRONTIER["<i>SLURM · AMD</i><br/><span style='font-weight:700'>Frontier</span>"]
-    %% EZ --> CLUSTER["<i>{SLURM, PBS} · ANY!}</i>< br/><span style='font-weight:700'>private-cluster</span>"]
     EZ --> MAC["<span style='font-weight:700'>Multi-CPU</span>"]
 
     classDef hub        fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
     classDef aurora     fill:#3b82f608,stroke:#3b82f6,color:#3b82f6,stroke-width:1.5px
     classDef polaris    fill:#10b98108,stroke:#10b981,color:#10b981,stroke-width:1.5px
-    %% classDef cluster    fill:#88888808,stroke:#888888,color:#888888,stroke-width:1.5px
     classDef perlmutter fill:#06b6d408,stroke:#06b6d4,color:#06b6d4,stroke-width:1.5px
     classDef frontier   fill:#ef444408,stroke:#ef4444,color:#ef4444,stroke-width:1.5px
     classDef mac        fill:#a78bfa08,stroke:#a78bfa,color:#a78bfa,stroke-width:1.5px
@@ -339,6 +339,35 @@ flowchart LR
     class FRONTIER frontier
     class MAC mac
 ```
+
+</div>
+
+<div class="ezpz-diagram-mobile">
+
+```mermaid
+flowchart LR
+    EZ(["<span style='font-weight:700'>ezpz launch</span>"])
+    EZ --> AURORA["<i>PBS · Intel</i><br/><span style='font-weight:700'>Aurora</span>"]
+    EZ --> POLARIS["<i>PBS · NVIDIA</i><br/><span style='font-weight:700'>Polaris</span>"]
+    EZ --> PM["<i>SLURM · NVIDIA</i><br/><span style='font-weight:700'>Perlmutter</span>"]
+    EZ --> FRONTIER["<i>SLURM · AMD</i><br/><span style='font-weight:700'>Frontier</span>"]
+    EZ --> MAC["<span style='font-weight:700'>Multi-CPU</span>"]
+
+    classDef hub        fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
+    classDef aurora     fill:#3b82f608,stroke:#3b82f6,color:#3b82f6,stroke-width:1.5px
+    classDef polaris    fill:#10b98108,stroke:#10b981,color:#10b981,stroke-width:1.5px
+    classDef perlmutter fill:#06b6d408,stroke:#06b6d4,color:#06b6d4,stroke-width:1.5px
+    classDef frontier   fill:#ef444408,stroke:#ef4444,color:#ef4444,stroke-width:1.5px
+    classDef mac        fill:#a78bfa08,stroke:#a78bfa,color:#a78bfa,stroke-width:1.5px
+    class EZ hub
+    class AURORA aurora
+    class POLARIS polaris
+    class PM perlmutter
+    class FRONTIER frontier
+    class MAC mac
+```
+
+</div>
 
 </div>
 
@@ -359,11 +388,19 @@ flowchart LR
   #ezpz .ezpz-text pre.astro-code { width: 100%; }
   #ezpz .ezpz-diagram { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
   #ezpz .ezpz-diagram .mermaid svg { width: 100%; max-width: 100%; }
+  /* Diagram orientation swap: top-down (TB) on wide screens so the five
+     target nodes stack vertically in the right column beside the code;
+     left-right (LR) on narrow/mobile where a wide fan reads better than a
+     tall one. Only one variant renders at a time so mermaid's interactive
+     controls attach to the visible block. */
+  #ezpz .ezpz-diagram-mobile { display: none; }
   @media (max-width: 768px) {
     #ezpz .ezpz-grid {
       grid-template-columns: 1fr;
       gap: 1lh;
     }
+    #ezpz .ezpz-diagram-desktop { display: none; }
+    #ezpz .ezpz-diagram-mobile { display: block; }
   }
 
   /* ---- Chip-badge styling (mirrors fork-tax + restart-cascade) ----
