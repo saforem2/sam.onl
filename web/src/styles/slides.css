@@ -200,7 +200,24 @@
         font-size: inherit;
     }
     li {
-        margin-block: 0.25lh;
+        /* Tight by default so nested bullets don't sprawl vertically. */
+        margin-block: 0.1lh;
+    }
+    /* "Loose" list items — ones authored with a blank line before them in
+       markdown, which GFM renders with a <p> wrapper. These mark the start
+       of a new thought/group, so restore a full-line break above them
+       (e.g. the gap before "Tension between:"). :first-child guard so the
+       list's very first item doesn't get a leading gap. */
+    li:has(> p) {
+        margin-block-start: 1lh;
+    }
+    li:first-child:has(> p) {
+        margin-block-start: 0;
+    }
+    /* Loose <li> wraps its text in <p>; kill that <p>'s own margins so the
+       only vertical spacing is the <li>'s, not doubled up. */
+    li > p {
+        margin-block: 0;
     }
     table,
     th,
@@ -710,11 +727,14 @@
        the source text. Fix by drawing our own "- " via ::marker and
        killing list-style. */
     ul {
-        margin-block: 0.5lh;
+        /* Tight: the outer margin only needs to separate the list from an
+           adjacent heading/paragraph, not add a big gap. Inter-item and
+           new-group spacing is handled on <li> (see the li rules above). */
+        margin-block: 0.25lh;
         list-style: none;
     }
     ol {
-        margin-block: 0.5lh;
+        margin-block: 0.25lh;
         padding-inline-start: 0;
         list-style: decimal inside;
     }
