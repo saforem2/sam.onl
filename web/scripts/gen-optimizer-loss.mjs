@@ -126,6 +126,64 @@ body += `<text x="${W / 2}" y="43" text-anchor="middle" font-family="${FONT}" fo
         body += `<text x="${lx + 28}" y="${ly}" font-family="${FONT}" font-size="12" fill="#838383">${esc(r.label)} <tspan fill="${r.color}">${r.val.toFixed(3)}</tspan></text>`
         ly += 20
     }
+
+    // ── inset: tail zoom (steps 600-1000) ───────────────────────────
+    // Sits in the empty upper band of the panel (all curves are < ~5.5
+    // after step ~200, so nothing but a couple of faint gridlines is
+    // behind it). Shows where the four curves settle: mano/Muon tie at
+    // the floor, AdamW just above, SophiaG well above.
+    {
+        const zX0 = 600
+        const zX1 = 1000
+        const zY0 = 3.3
+        const zY1 = 5.3
+        // inset box on the canvas
+        const ix = ax + aw * 0.28
+        const iy = ay + 26
+        const iw = aw * 0.44
+        const ih = 176
+        const isx = (s) => ix + ((s - zX0) / (zX1 - zX0)) * iw
+        const isy = (v) => iy + ih - ((v - zY0) / (zY1 - zY0)) * ih
+        // source region marker on the main plot
+        const srcX = sx(zX0)
+        const srcYt = sy(zY1)
+        const srcW = sx(zX1) - sx(zX0)
+        const srcH = sy(zY0) - sy(zY1)
+        body += `<rect x="${srcX.toFixed(1)}" y="${srcYt.toFixed(1)}" width="${srcW.toFixed(1)}" height="${srcH.toFixed(1)}" fill="none" stroke="#838383" stroke-width="1" stroke-dasharray="4 3"/>`
+        // connectors: source top corners -> inset bottom corners
+        body += `<line x1="${srcX.toFixed(1)}" y1="${srcYt.toFixed(1)}" x2="${ix.toFixed(1)}" y2="${(iy + ih).toFixed(1)}" stroke="#83838366" stroke-width="1" stroke-dasharray="3 3"/>`
+        body += `<line x1="${(srcX + srcW).toFixed(1)}" y1="${srcYt.toFixed(1)}" x2="${(ix + iw).toFixed(1)}" y2="${(iy + ih).toFixed(1)}" stroke="#83838366" stroke-width="1" stroke-dasharray="3 3"/>`
+        // inset backdrop: faint fill so it reads as its own panel, plus a
+        // clip so the curves never spill past the frame.
+        body += `<clipPath id="tailclip"><rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${iw.toFixed(1)}" height="${ih.toFixed(1)}"/></clipPath>`
+        body += `<rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${iw.toFixed(1)}" height="${ih.toFixed(1)}" fill="#8888880f" stroke="#838383" stroke-width="1.2"/>`
+        // inset gridlines + y labels (loss 3.5 .. 5.0 by 0.5)
+        for (let v = 3.5; v <= 5.0 + 0.001; v += 0.5) {
+            const yy = isy(v)
+            body += `<line x1="${ix}" y1="${yy}" x2="${ix + iw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
+            body += `<text x="${ix - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="10" fill="#838383">${v.toFixed(1)}</text>`
+        }
+        // inset x ticks (600, 800, 1000)
+        for (const s of [600, 800, 1000]) {
+            const xx = isx(s)
+            body += `<text x="${xx}" y="${iy + ih + 14}" text-anchor="middle" font-family="${FONT}" font-size="10" fill="#838383">${s}</text>`
+        }
+        // inset curves (clipped)
+        body += `<g clip-path="url(#tailclip)">`
+        for (const r of SERIES) {
+            const pts = r.data.filter((p) => p[0] >= zX0)
+            if (pts.length < 2) continue
+            const d = pts
+                .map(
+                    (p, i) =>
+                        `${i ? 'L' : 'M'}${isx(p[0]).toFixed(1)} ${isy(p[1]).toFixed(1)}`,
+                )
+                .join(' ')
+            body += `<path d="${d}" fill="none" stroke="${r.color}" stroke-width="2"/>`
+        }
+        body += `</g>`
+        body += `<text x="${ix + iw / 2}" y="${iy - 6}" text-anchor="middle" font-family="${FONT}" font-size="11" fill="#838383">tail zoom (steps 600-1000)</text>`
+    }
 }
 
 // ── Panel 2: throughput bars (bottom) ───────────────────────────────
