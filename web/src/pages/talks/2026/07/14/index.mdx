@@ -50,6 +50,21 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
     max-width: 70ch;
     line-height: 1.6;
   }
+  /* Thesis / tagline under the title: the one-sentence framing for the
+     whole talk. Muted + italic so it reads as a subtitle, not a second
+     heading. Capped well clear of the QR (top-right, ~11ch + 4ch offset)
+     so the text never runs under it; the title + thesis share the QR's
+     vertical band. */
+  #title-slide .title-slide-thesis {
+    max-width: 44ch;
+    margin-block-start: 0.5lh;
+    font-style: italic;
+    color: var(--foreground1);
+  }
+  @media (max-width: 768px) {
+    /* No QR on phones, so the thesis can use the full measure. */
+    #title-slide .title-slide-thesis { max-width: 100%; }
+  }
   /* QR code top-right of the title slide. Big enough to scan from
      the back of the hall (~8lh ≈ 11ch square), with the canonical
      URL underneath for anyone who'd rather type it. currentColor on
@@ -129,7 +144,7 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
     - Software stack:
       - Using [ `ezpz`](https://github.com/saforem2/ezpz)
       - Moving to [ `torchtitan`](https://github.com/saforem2/torchtitan/blob/ezpz)[^mds]
-      - **CODING AGENTS** !!
+    - Post-training now live: **CPT · SFT · GRPO**
 
 2. **The Bad**:
     - Rapidly evolving software (_and hardware_!)
@@ -189,11 +204,11 @@ Since TPC'26: production status refresh (NEW)
 
 | Run          | Nodes | Steps  | Tokens          | Loss | Status                    |
 | ------------ | ----: | -----: | --------------- | ---: | ------------------------- |
-| **2B** base  |   256 | 92,859 | 4.674T (100%)   | 2.65 | ✅ **complete**            |
-| **2B** CPT   |   256 |  5,960 | ~300B pilot     | 2.49 | loss ↓ but evals ↓ (no winner) |
-| **20B**      |   512 |  5,400 | 543.6B (11.6%)  | 2.47 | advancing (auto-retry)    |
-| **20B**      |   256 |  3,100 | 156.0B (3.3%)   | 2.68 | advancing                 |
-| **80B**      |   512 |     14 | (NaN'd)         | NaN  | ❌ optimizer cliff         |
+| [**2B** base](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/2b/n256/) |   256 | 92,859 | 4.674T (100%)   | 2.65 | ✅ **complete**            |
+| [**2B** CPT](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/cpt/) |   256 |  5,960 | ~300B pilot     | 2.49 | loss ↓ but evals ↓ (no winner) |
+| [**20B**/512N](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/20b/n512/) |   512 |  5,400 | 543.6B (11.6%)  | 2.47 | advancing (auto-retry)    |
+| [**20B**/256N](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/20b/n256/) |   256 |  3,100 | 156.0B (3.3%)   | 2.68 | advancing                 |
+| [**80B**](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/80b/n512/) |   512 |     14 | (NaN'd)         | NaN  | ❌ optimizer cliff         |
 
 </div>
 
@@ -206,7 +221,7 @@ Since TPC'26: production status refresh (NEW)
   /* Pin every column so the narrow numeric fields (Nodes/Steps/Loss) don't
      hog the row while Status wraps. Fixed-layout table splits leftover width
      evenly across unset columns, which is why the numerics ballooned. */
-  #since-tpc table th:nth-child(1), #since-tpc table td:nth-child(1) { width: 11ch; } /* Run */
+  #since-tpc table th:nth-child(1), #since-tpc table td:nth-child(1) { width: 12ch; white-space: nowrap; } /* Run */
   #since-tpc table th:nth-child(2), #since-tpc table td:nth-child(2) { width: 8ch; }  /* Nodes */
   #since-tpc table th:nth-child(3), #since-tpc table td:nth-child(3) { width: 8ch; }  /* Steps */
   #since-tpc table th:nth-child(4), #since-tpc table td:nth-child(4) { width: 16ch; } /* Tokens */
@@ -864,8 +879,9 @@ was still flat (~12.9):
   #optimizer-cliff table th:nth-child(3), #optimizer-cliff table td:nth-child(3) { width: auto; } /* Signature */
 `}</style>
 
-- The LR-finder's early ranking said **`mano` was "safest"**; it
-  wasn't. **Early-step ranking does not predict sustained stability.**
+- **`mano` (our 2B speed win) died first** (step 5), despite its 80B
+  LR-finder band looking the *safest* of the three. **Early-step ranking
+  does not predict sustained stability.**
 - Shared failure across 3 optimizers ⇒ a **corner-level instability
   (bf16 at dim=9216)**, not tuning. Two grad-path triggers: `LBS>1`
   and large `dp_degree`.
