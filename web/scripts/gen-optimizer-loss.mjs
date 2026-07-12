@@ -27,15 +27,16 @@ import { dirname, join } from 'node:path'
 import { fontDefs, FONT_STACK } from './svg-font.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const OUT = join(
+const FIG_DIR = join(
     __dirname,
     '..',
     'public',
     'talks',
     '2026-07-14',
     'figures',
-    'optimizer-loss.svg',
 )
+const OUT = join(FIG_DIR, 'optimizer-loss.svg')
+const OUT_MOBILE = join(FIG_DIR, 'optimizer-loss-mobile.svg')
 
 // ── data (downsampled from W&B sampledHistory) ──────────────────────
 // prettier-ignore
@@ -62,166 +63,196 @@ const SERIES = [
     { label: 'mano', data: MANO, val: 3.631, tps: 7048, color: '#1da811' },
 ]
 
-// ── layout: stacked panels (fits the right column of a 2-col slide) ──
-// top = loss vs step; bottom = TPS/GPU horizontal bars.
-const W = 820
-const H = 560
+// ── layout: stacked panels (loss vs step over TPS/GPU bars) ─────────
+// Landscape fits the right column of the 2-col mano slide. Mobile is taller
+// with bigger fonts so it stays legible full-width in a phone column.
 const FONT = FONT_STACK
-const AXL = 62 // left axis gutter
-const AXR = 24
-const ax = AXL
-const aw = W - AXL - AXR
-
 const esc = (s) =>
     String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 const commas = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 
-let body = ''
+const LANDSCAPE = {
+    W: 820,
+    H: 560,
+    AXL: 62,
+    AXR: 24,
+    titleSize: 21,
+    subSize: 14,
+    tickSize: 14,
+    axisSize: 15,
+    legendSize: 14,
+    legendW: 160,
+    legendRowH: 20,
+    insetTitleSize: 13,
+    insetTickSize: 12,
+    tpsTitleSize: 17,
+    tpsTickSize: 14,
+    tpsLabelSize: 14,
+    p1: { top: 62, h: 318 },
+    p2: { top: 462, h: 78 },
+    inset: { xFrac: 0.4, top: 26, wFrac: 0.42, h: 176 },
+}
+const MOBILE = {
+    W: 720,
+    H: 760,
+    AXL: 66,
+    AXR: 26,
+    titleSize: 26,
+    subSize: 18,
+    tickSize: 18,
+    axisSize: 19,
+    legendSize: 19,
+    legendW: 210,
+    legendRowH: 27,
+    insetTitleSize: 17,
+    insetTickSize: 16,
+    tpsTitleSize: 22,
+    tpsTickSize: 18,
+    tpsLabelSize: 18,
+    p1: { top: 76, h: 440 },
+    p2: { top: 636, h: 96 },
+    inset: { xFrac: 0.42, top: 30, wFrac: 0.44, h: 232 },
+}
 
-// figure title
-body += `<text x="${W / 2}" y="24" text-anchor="middle" font-family="${FONT}" font-size="21" font-weight="700" fill="#838383">agpt_2b speedrun: 2B, GBS=48, 1000 steps</text>`
-body += `<text x="${W / 2}" y="43" text-anchor="middle" font-family="${FONT}" font-size="14" fill="#838383">FineWeb-EDU, 2N Sunspot</text>`
+function buildSVG(cfg) {
+    const { W, H } = cfg
+    const ax = cfg.AXL
+    const aw = W - cfg.AXL - cfg.AXR
 
-// ── Panel 1: loss vs step (top) ─────────────────────────────────────
-{
-    const ay = 62
-    const ah = 318
-    const X_MAX = 1000
-    const Y_MIN = 3.0
-    const Y_MAX = 13.0
-    const sx = (s) => ax + (Math.min(s, X_MAX) / X_MAX) * aw
-    const sy = (v) =>
-        ay +
-        ah -
-        ((Math.min(Math.max(v, Y_MIN), Y_MAX) - Y_MIN) / (Y_MAX - Y_MIN)) * ah
+    let body = ''
 
-    body += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#83838355" stroke-width="1"/>`
-    for (let v = Y_MIN; v <= Y_MAX + 0.001; v += 2) {
-        const yy = sy(v)
-        body += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
-        body += `<text x="${ax - 10}" y="${yy + 5}" text-anchor="end" font-family="${FONT}" font-size="14" fill="#838383">${v.toFixed(0)}</text>`
-    }
-    for (let s = 0; s <= 1000; s += 250) {
-        const xx = sx(s)
-        body += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 5}" stroke="#83838388" stroke-width="1"/>`
-        body += `<text x="${xx}" y="${ay + ah + 20}" text-anchor="middle" font-family="${FONT}" font-size="14" fill="#838383">${s}</text>`
-    }
-    body += `<text x="${ax + aw / 2}" y="${ay + ah + 42}" text-anchor="middle" font-family="${FONT}" font-size="15" fill="#838383">step</text>`
-    body += `<text x="${ax - 46}" y="${ay + ah / 2}" text-anchor="middle" font-family="${FONT}" font-size="15" fill="#838383" transform="rotate(-90 ${ax - 46} ${ay + ah / 2})">training loss</text>`
-    for (const r of SERIES) {
-        const d = r.data
-            .map(
-                (p, i) =>
-                    `${i ? 'L' : 'M'}${sx(p[0]).toFixed(1)} ${sy(p[1]).toFixed(1)}`,
-            )
-            .join(' ')
-        body += `<path d="${d}" fill="none" stroke="${r.color}" stroke-width="2.2"/>`
-    }
-    // legend (top-left, in the corner the curves have already dropped out of)
-    let lx = ax + 14
-    let ly = ay + 16
-    body += `<rect x="${lx - 10}" y="${ly - 15}" width="160" height="${SERIES.length * 20 + 10}" fill="#83838310" stroke="#83838333" stroke-width="1"/>`
-    for (const r of [...SERIES].reverse()) {
-        body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 20}" y2="${ly - 4}" stroke="${r.color}" stroke-width="2.8"/>`
-        body += `<text x="${lx + 28}" y="${ly}" font-family="${FONT}" font-size="14" fill="#838383">${esc(r.label)} <tspan fill="${r.color}">${r.val.toFixed(3)}</tspan></text>`
-        ly += 20
-    }
+    // figure title
+    body += `<text x="${W / 2}" y="24" text-anchor="middle" font-family="${FONT}" font-size="${cfg.titleSize}" font-weight="700" fill="#838383">agpt_2b speedrun: 2B, GBS=48, 1000 steps</text>`
+    body += `<text x="${W / 2}" y="43" text-anchor="middle" font-family="${FONT}" font-size="${cfg.subSize}" fill="#838383">FineWeb-EDU, 2N Sunspot</text>`
 
-    // ── inset: tail zoom (steps 600-1000) ───────────────────────────
-    // Sits in the empty upper band of the panel (all curves are < ~5.5
-    // after step ~200, so nothing but a couple of faint gridlines is
-    // behind it). Shows where the four curves settle: mano/Muon tie at
-    // the floor, AdamW just above, SophiaG well above.
+    // ── Panel 1: loss vs step (top) ─────────────────────────────────
     {
-        const zX0 = 600
-        const zX1 = 1000
-        const zY0 = 3.3
-        const zY1 = 5.3
-        // inset box on the canvas (shifted right, clear of the top-left legend)
-        const ix = ax + aw * 0.4
-        const iy = ay + 26
-        const iw = aw * 0.42
-        const ih = 176
-        const isx = (s) => ix + ((s - zX0) / (zX1 - zX0)) * iw
-        const isy = (v) => iy + ih - ((v - zY0) / (zY1 - zY0)) * ih
-        // source region marker on the main plot
-        const srcX = sx(zX0)
-        const srcYt = sy(zY1)
-        const srcW = sx(zX1) - sx(zX0)
-        const srcH = sy(zY0) - sy(zY1)
-        body += `<rect x="${srcX.toFixed(1)}" y="${srcYt.toFixed(1)}" width="${srcW.toFixed(1)}" height="${srcH.toFixed(1)}" fill="none" stroke="#838383" stroke-width="1" stroke-dasharray="4 3"/>`
-        // connectors: source top corners -> inset bottom corners
-        body += `<line x1="${srcX.toFixed(1)}" y1="${srcYt.toFixed(1)}" x2="${ix.toFixed(1)}" y2="${(iy + ih).toFixed(1)}" stroke="#83838366" stroke-width="1" stroke-dasharray="3 3"/>`
-        body += `<line x1="${(srcX + srcW).toFixed(1)}" y1="${srcYt.toFixed(1)}" x2="${(ix + iw).toFixed(1)}" y2="${(iy + ih).toFixed(1)}" stroke="#83838366" stroke-width="1" stroke-dasharray="3 3"/>`
-        // inset backdrop: faint fill so it reads as its own panel, plus a
-        // clip so the curves never spill past the frame.
-        body += `<clipPath id="tailclip"><rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${iw.toFixed(1)}" height="${ih.toFixed(1)}"/></clipPath>`
-        body += `<rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${iw.toFixed(1)}" height="${ih.toFixed(1)}" fill="#8888880f" stroke="#838383" stroke-width="1.2"/>`
-        // inset gridlines + y labels (loss 3.5 .. 5.0 by 0.5)
-        for (let v = 3.5; v <= 5.0 + 0.001; v += 0.5) {
-            const yy = isy(v)
-            body += `<line x1="${ix}" y1="${yy}" x2="${ix + iw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
-            body += `<text x="${ix - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="12" fill="#838383">${v.toFixed(1)}</text>`
+        const ay = cfg.p1.top
+        const ah = cfg.p1.h
+        const X_MAX = 1000
+        const Y_MIN = 3.0
+        const Y_MAX = 13.0
+        const sx = (s) => ax + (Math.min(s, X_MAX) / X_MAX) * aw
+        const sy = (v) =>
+            ay +
+            ah -
+            ((Math.min(Math.max(v, Y_MIN), Y_MAX) - Y_MIN) / (Y_MAX - Y_MIN)) *
+                ah
+
+        body += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#83838355" stroke-width="1"/>`
+        for (let v = Y_MIN; v <= Y_MAX + 0.001; v += 2) {
+            const yy = sy(v)
+            body += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
+            body += `<text x="${ax - 10}" y="${yy + 5}" text-anchor="end" font-family="${FONT}" font-size="${cfg.tickSize}" fill="#838383">${v.toFixed(0)}</text>`
         }
-        // inset x ticks (600, 800, 1000)
-        for (const s of [600, 800, 1000]) {
-            const xx = isx(s)
-            body += `<text x="${xx}" y="${iy + ih + 14}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#838383">${s}</text>`
+        for (let s = 0; s <= 1000; s += 250) {
+            const xx = sx(s)
+            body += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 5}" stroke="#83838388" stroke-width="1"/>`
+            body += `<text x="${xx}" y="${ay + ah + 20}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.tickSize}" fill="#838383">${s}</text>`
         }
-        // inset curves (clipped)
-        body += `<g clip-path="url(#tailclip)">`
+        body += `<text x="${ax + aw / 2}" y="${ay + ah + 42}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.axisSize}" fill="#838383">step</text>`
+        body += `<text x="${ax - 46}" y="${ay + ah / 2}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.axisSize}" fill="#838383" transform="rotate(-90 ${ax - 46} ${ay + ah / 2})">training loss</text>`
         for (const r of SERIES) {
-            const pts = r.data.filter((p) => p[0] >= zX0)
-            if (pts.length < 2) continue
-            const d = pts
+            const d = r.data
                 .map(
                     (p, i) =>
-                        `${i ? 'L' : 'M'}${isx(p[0]).toFixed(1)} ${isy(p[1]).toFixed(1)}`,
+                        `${i ? 'L' : 'M'}${sx(p[0]).toFixed(1)} ${sy(p[1]).toFixed(1)}`,
                 )
                 .join(' ')
-            body += `<path d="${d}" fill="none" stroke="${r.color}" stroke-width="2"/>`
+            body += `<path d="${d}" fill="none" stroke="${r.color}" stroke-width="2.2"/>`
         }
-        body += `</g>`
-        body += `<text x="${ix + iw / 2}" y="${iy - 6}" text-anchor="middle" font-family="${FONT}" font-size="13" fill="#838383">tail zoom (steps 600-1000)</text>`
-    }
-}
+        // legend (top-left, in the corner the curves have dropped out of)
+        const lx = ax + 14
+        let ly = ay + 16
+        body += `<rect x="${lx - 10}" y="${ly - 15}" width="${cfg.legendW}" height="${SERIES.length * cfg.legendRowH + 10}" fill="#83838310" stroke="#83838333" stroke-width="1"/>`
+        for (const r of [...SERIES].reverse()) {
+            body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 20}" y2="${ly - 4}" stroke="${r.color}" stroke-width="2.8"/>`
+            body += `<text x="${lx + 28}" y="${ly}" font-family="${FONT}" font-size="${cfg.legendSize}" fill="#838383">${esc(r.label)} <tspan fill="${r.color}">${r.val.toFixed(3)}</tspan></text>`
+            ly += cfg.legendRowH
+        }
 
-// ── Panel 2: throughput bars (bottom) ───────────────────────────────
-{
-    const ay = 462
-    const ah = 78
-    const T_MAX = 8000 // TPS axis
-    const bx = (t) => ax + (t / T_MAX) * aw
-    // order top->bottom = SophiaG, AdamW, mano, Muon (reading order; Muon last
-    // = the short bar sits at the bottom, easy to contrast). Draw fastest at top.
-    const rows = [...SERIES].sort((a, b) => b.tps - a.tps)
-    const rowH = ah / rows.length
-    const barH = rowH * 0.56
-
-    body += `<text x="${W / 2}" y="${ay - 14}" text-anchor="middle" font-family="${FONT}" font-size="17" font-weight="700" fill="#838383">throughput (TPS / GPU)</text>`
-    // x gridlines + ticks
-    for (let t = 0; t <= T_MAX; t += 2000) {
-        const xx = bx(t)
-        body += `<line x1="${xx}" y1="${ay}" x2="${xx}" y2="${ay + ah}" stroke="#83838322" stroke-width="1"/>`
-        body += `<text x="${xx}" y="${ay + ah + 18}" text-anchor="middle" font-family="${FONT}" font-size="14" fill="#838383">${(t / 1000).toFixed(0)}k</text>`
+        // ── inset: tail zoom (steps 600-1000) ───────────────────────
+        {
+            const zX0 = 600
+            const zX1 = 1000
+            const zY0 = 3.3
+            const zY1 = 5.3
+            const ix = ax + aw * cfg.inset.xFrac
+            const iy = ay + cfg.inset.top
+            const iw = aw * cfg.inset.wFrac
+            const ih = cfg.inset.h
+            const isx = (s) => ix + ((s - zX0) / (zX1 - zX0)) * iw
+            const isy = (v) => iy + ih - ((v - zY0) / (zY1 - zY0)) * ih
+            const srcX = sx(zX0)
+            const srcYt = sy(zY1)
+            const srcW = sx(zX1) - sx(zX0)
+            const srcH = sy(zY0) - sy(zY1)
+            body += `<rect x="${srcX.toFixed(1)}" y="${srcYt.toFixed(1)}" width="${srcW.toFixed(1)}" height="${srcH.toFixed(1)}" fill="none" stroke="#838383" stroke-width="1" stroke-dasharray="4 3"/>`
+            body += `<line x1="${srcX.toFixed(1)}" y1="${srcYt.toFixed(1)}" x2="${ix.toFixed(1)}" y2="${(iy + ih).toFixed(1)}" stroke="#83838366" stroke-width="1" stroke-dasharray="3 3"/>`
+            body += `<line x1="${(srcX + srcW).toFixed(1)}" y1="${srcYt.toFixed(1)}" x2="${(ix + iw).toFixed(1)}" y2="${(iy + ih).toFixed(1)}" stroke="#83838366" stroke-width="1" stroke-dasharray="3 3"/>`
+            const clipId = `tailclip-${W}`
+            body += `<clipPath id="${clipId}"><rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${iw.toFixed(1)}" height="${ih.toFixed(1)}"/></clipPath>`
+            body += `<rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${iw.toFixed(1)}" height="${ih.toFixed(1)}" fill="#8888880f" stroke="#838383" stroke-width="1.2"/>`
+            for (let v = 3.5; v <= 5.0 + 0.001; v += 0.5) {
+                const yy = isy(v)
+                body += `<line x1="${ix}" y1="${yy}" x2="${ix + iw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
+                body += `<text x="${ix - 6}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="${cfg.insetTickSize}" fill="#838383">${v.toFixed(1)}</text>`
+            }
+            for (const s of [600, 800, 1000]) {
+                const xx = isx(s)
+                body += `<text x="${xx}" y="${iy + ih + 14}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.insetTickSize}" fill="#838383">${s}</text>`
+            }
+            body += `<g clip-path="url(#${clipId})">`
+            for (const r of SERIES) {
+                const pts = r.data.filter((p) => p[0] >= zX0)
+                if (pts.length < 2) continue
+                const d = pts
+                    .map(
+                        (p, i) =>
+                            `${i ? 'L' : 'M'}${isx(p[0]).toFixed(1)} ${isy(p[1]).toFixed(1)}`,
+                    )
+                    .join(' ')
+                body += `<path d="${d}" fill="none" stroke="${r.color}" stroke-width="2"/>`
+            }
+            body += `</g>`
+            body += `<text x="${ix + iw / 2}" y="${iy - 6}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.insetTitleSize}" fill="#838383">tail zoom (steps 600-1000)</text>`
+        }
     }
-    for (let i = 0; i < rows.length; i++) {
-        const r = rows[i]
-        const cy = ay + i * rowH + (rowH - barH) / 2
-        body += `<rect x="${ax}" y="${cy.toFixed(1)}" width="${(bx(r.tps) - ax).toFixed(1)}" height="${barH.toFixed(1)}" fill="${r.color}" opacity="0.9"/>`
-        // label (name) at the far left inside the gutter
-        body += `<text x="${ax - 8}" y="${(cy + barH / 2 + 4).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-size="14" fill="${r.color}" font-weight="700">${esc(r.label)}</text>`
-        // value at the bar end
-        body += `<text x="${(bx(r.tps) + 8).toFixed(1)}" y="${(cy + barH / 2 + 4).toFixed(1)}" text-anchor="start" font-family="${FONT}" font-size="14" fill="#838383">${commas(r.tps)}</text>`
-    }
-}
 
-const svg = `<?xml version="1.0" encoding="utf-8"?>
+    // ── Panel 2: throughput bars (bottom) ───────────────────────────
+    {
+        const ay = cfg.p2.top
+        const ah = cfg.p2.h
+        const T_MAX = 8000 // TPS axis
+        const bx = (t) => ax + (t / T_MAX) * aw
+        const rows = [...SERIES].sort((a, b) => b.tps - a.tps)
+        const rowH = ah / rows.length
+        const barH = rowH * 0.56
+
+        body += `<text x="${W / 2}" y="${ay - 14}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.tpsTitleSize}" font-weight="700" fill="#838383">throughput (TPS / GPU)</text>`
+        for (let t = 0; t <= T_MAX; t += 2000) {
+            const xx = bx(t)
+            body += `<line x1="${xx}" y1="${ay}" x2="${xx}" y2="${ay + ah}" stroke="#83838322" stroke-width="1"/>`
+            body += `<text x="${xx}" y="${ay + ah + 18}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.tpsTickSize}" fill="#838383">${(t / 1000).toFixed(0)}k</text>`
+        }
+        for (let i = 0; i < rows.length; i++) {
+            const r = rows[i]
+            const cy = ay + i * rowH + (rowH - barH) / 2
+            body += `<rect x="${ax}" y="${cy.toFixed(1)}" width="${(bx(r.tps) - ax).toFixed(1)}" height="${barH.toFixed(1)}" fill="${r.color}" opacity="0.9"/>`
+            body += `<text x="${ax - 8}" y="${(cy + barH / 2 + 4).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-size="${cfg.tpsLabelSize}" fill="${r.color}" font-weight="700">${esc(r.label)}</text>`
+            body += `<text x="${(bx(r.tps) + 8).toFixed(1)}" y="${(cy + barH / 2 + 4).toFixed(1)}" text-anchor="start" font-family="${FONT}" font-size="${cfg.tpsLabelSize}" fill="#838383">${commas(r.tps)}</text>`
+        }
+    }
+
+    return `<?xml version="1.0" encoding="utf-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${FONT}">
 ${fontDefs()}
 ${body}
 </svg>
 `
+}
 
-writeFileSync(OUT, svg)
+writeFileSync(OUT, buildSVG(LANDSCAPE))
 console.log('wrote', OUT)
+writeFileSync(OUT_MOBILE, buildSVG(MOBILE))
+console.log('wrote', OUT_MOBILE)

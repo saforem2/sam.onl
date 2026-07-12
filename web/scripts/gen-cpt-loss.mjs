@@ -25,15 +25,16 @@ import { dirname, join } from 'node:path'
 import { fontDefs, FONT_STACK } from './svg-font.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const OUT = join(
+const FIG_DIR = join(
     __dirname,
     '..',
     'public',
     'talks',
     '2026-07-14',
     'figures',
-    'cpt-loss.svg',
 )
+const OUT = join(FIG_DIR, 'cpt-loss.svg')
+const OUT_MOBILE = join(FIG_DIR, 'cpt-loss-mobile.svg')
 
 // ── data (downsampled from the committed per-step TSVs) ─────────────
 // prettier-ignore
@@ -49,14 +50,6 @@ const RUNS = [
 ]
 const OLMO100_PLATEAU = 2.8 // control: 2B 256N base saturated here on its own mix
 
-// ── layout (16:9) ──────────────────────────────────────────────────
-const W = 1280
-const H = 720
-const AX = { top: 96, right: 240, bottom: 92, left: 92 }
-const ax = AX.left
-const ay = AX.top
-const aw = W - AX.left - AX.right
-const ah = H - AX.top - AX.bottom
 const X_MAX = 5960 // CPT steps
 const Y_MIN = 2.2
 const Y_MAX = 8.0
@@ -64,139 +57,188 @@ const FONT = FONT_STACK
 
 const esc = (s) =>
     String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-const sx = (t) => ax + (Math.min(t, X_MAX) / X_MAX) * aw
-const sy = (v) => ay + ah - ((v - Y_MIN) / (Y_MAX - Y_MIN)) * ah
 
-let body = ''
-
-// title + subtitle
-body += `<text x="${W / 2}" y="38" text-anchor="middle" font-family="${FONT}" font-size="32" font-weight="700" fill="#838383">2B continued-pretraining: olmo x dolmino sweep</text>`
-body += `<text x="${W / 2}" y="62" text-anchor="middle" font-family="${FONT}" font-size="19" fill="#838383">training loss vs CPT step (fork from 2B base step-92,859; 256N, GBS=6144, ~300B tok each)</text>`
-
-// axes box
-body += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#83838355" stroke-width="1"/>`
-
-// y gridlines + labels (2.2 .. 8.0 by 0.8)
-for (let k = 0; k <= 8; k++) {
-    const v = Y_MIN + ((Y_MAX - Y_MIN) * k) / 8
-    const yy = sy(v)
-    body += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
-    body += `<text x="${ax - 10}" y="${yy + 5}" text-anchor="end" font-family="${FONT}" font-size="19" fill="#838383">${v.toFixed(1)}</text>`
+// Landscape: 16:9 with a right-gutter legend. Mobile: taller aspect, legend
+// below the plot (no right gutter), larger fonts so it stays legible in a
+// phone column (< 768px).
+const LANDSCAPE = {
+    W: 1280,
+    H: 720,
+    AX: { top: 96, right: 240, bottom: 92, left: 92 },
+    legend: 'right',
+    titleSize: 32,
+    subSize: 19,
+    tickSize: 19,
+    axisSize: 20,
+    plateauSize: 18,
+    insetTitleSize: 16,
+    insetTickSize: 16,
+    insetLabelSize: 16,
+    legendSize: 19,
+    legendSubSize: 18,
+    inset: { xFrac: 0.3, wFrac: 0.6, top: 30, h: 250 },
 }
-// x ticks (0 .. ~6k steps)
-for (let k = 0; k <= 6; k++) {
-    const t = (6000 * k) / 6
-    const xx = sx(t)
-    body += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 5}" stroke="#83838388" stroke-width="1"/>`
-    body += `<text x="${xx}" y="${ay + ah + 24}" text-anchor="middle" font-family="${FONT}" font-size="19" fill="#838383">${k === 0 ? '0' : (t / 1000).toFixed(0) + 'k'}</text>`
-}
-// axis titles
-body += `<text x="${ax + aw / 2}" y="${ay + ah + 58}" text-anchor="middle" font-family="${FONT}" font-size="20" fill="#838383">CPT step</text>`
-body += `<text x="${ax - 58}" y="${ay + ah / 2}" text-anchor="middle" font-family="${FONT}" font-size="20" fill="#838383" transform="rotate(-90 ${ax - 58} ${ay + ah / 2})">training loss</text>`
-
-// olmo-100 plateau reference (the level CPT has to beat, on loss)
-const yp = sy(OLMO100_PLATEAU)
-body += `<line x1="${ax}" y1="${yp}" x2="${ax + aw}" y2="${yp}" stroke="#838383" stroke-width="1.4" stroke-dasharray="6 4"/>`
-body += `<text x="${ax + aw - 8}" y="${yp - 8}" text-anchor="end" font-family="${FONT}" font-size="18" fill="#838383">olmo-100 base plateau (~2.80)</text>`
-
-// series
-for (const run of RUNS) {
-    const pts = run.data
-    const d = pts
-        .map(
-            (p, i) =>
-                `${i ? 'L' : 'M'}${sx(p[0]).toFixed(1)} ${sy(p[1]).toFixed(1)}`,
-        )
-        .join(' ')
-    body += `<path d="${d}" fill="none" stroke="${run.color}" stroke-width="2.2"/>`
+const MOBILE = {
+    W: 720,
+    H: 760,
+    AX: { top: 104, right: 34, bottom: 190, left: 78 },
+    legend: 'below',
+    titleSize: 30,
+    subSize: 18,
+    tickSize: 20,
+    axisSize: 22,
+    plateauSize: 19,
+    insetTitleSize: 19,
+    insetTickSize: 18,
+    insetLabelSize: 19,
+    legendSize: 22,
+    legendSubSize: 20,
+    inset: { xFrac: 0.34, wFrac: 0.62, top: 20, h: 210 },
 }
 
-// ── inset: tail zoom (the two mixes separating near the plateau) ────
-// The main plot's upper band (loss > ~3) is empty after the early drop, so
-// the inset lives there. Zooms steps 200-5960 at loss 2.45-2.85 so the
-// dolmino-100 vs olmo50-dolmino50 gap (and the ~2.80 plateau) is legible.
-{
-    const zX0 = 200
-    const zX1 = X_MAX
-    const zY0 = 2.45
-    const zY1 = 2.85
-    const ix = ax + aw * 0.3
-    const iy = ay + 30
-    const iw = aw * 0.6
-    const ih = 250
-    const isx = (t) => ix + ((t - zX0) / (zX1 - zX0)) * iw
-    const isy = (v) => iy + ih - ((v - zY0) / (zY1 - zY0)) * ih
-    // source-region marker on the main plot (the thin slab near the bottom)
-    const srcX = sx(zX0)
-    const srcYt = sy(zY1)
-    const srcW = sx(zX1) - sx(zX0)
-    const srcH = sy(zY0) - sy(zY1)
-    body += `<rect x="${srcX.toFixed(1)}" y="${srcYt.toFixed(1)}" width="${srcW.toFixed(1)}" height="${srcH.toFixed(1)}" fill="none" stroke="#838383" stroke-width="1" stroke-dasharray="4 3"/>`
-    // connectors: source top corners -> inset bottom corners
-    body += `<line x1="${srcX.toFixed(1)}" y1="${srcYt.toFixed(1)}" x2="${ix.toFixed(1)}" y2="${(iy + ih).toFixed(1)}" stroke="#83838355" stroke-width="1" stroke-dasharray="3 3"/>`
-    body += `<line x1="${(srcX + srcW).toFixed(1)}" y1="${srcYt.toFixed(1)}" x2="${(ix + iw).toFixed(1)}" y2="${(iy + ih).toFixed(1)}" stroke="#83838355" stroke-width="1" stroke-dasharray="3 3"/>`
-    // inset frame + clip
-    body += `<clipPath id="cptTailClip"><rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${iw.toFixed(1)}" height="${ih.toFixed(1)}"/></clipPath>`
-    body += `<rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${iw.toFixed(1)}" height="${ih.toFixed(1)}" fill="#8888880f" stroke="#838383" stroke-width="1.2"/>`
-    // inset y gridlines + labels (2.5 .. 2.8 by 0.1)
-    for (let v = 2.5; v <= 2.8 + 0.001; v += 0.1) {
-        const yy = isy(v)
-        body += `<line x1="${ix}" y1="${yy}" x2="${ix + iw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
-        body += `<text x="${ix - 7}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="16" fill="#838383">${v.toFixed(1)}</text>`
+function buildSVG(cfg) {
+    const { W, H, AX } = cfg
+    const ax = AX.left
+    const ay = AX.top
+    const aw = W - AX.left - AX.right
+    const ah = H - AX.top - AX.bottom
+    const sx = (t) => ax + (Math.min(t, X_MAX) / X_MAX) * aw
+    const sy = (v) => ay + ah - ((v - Y_MIN) / (Y_MAX - Y_MIN)) * ah
+    const clipId = `cptTailClip-${W}`
+
+    let body = ''
+
+    // title + subtitle
+    body += `<text x="${W / 2}" y="38" text-anchor="middle" font-family="${FONT}" font-size="${cfg.titleSize}" font-weight="700" fill="#838383">2B continued-pretraining: olmo x dolmino sweep</text>`
+    body += `<text x="${W / 2}" y="62" text-anchor="middle" font-family="${FONT}" font-size="${cfg.subSize}" fill="#838383">training loss vs CPT step (fork from 2B base step-92,859; 256N, GBS=6144, ~300B tok each)</text>`
+
+    // axes box
+    body += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#83838355" stroke-width="1"/>`
+
+    // y gridlines + labels (2.2 .. 8.0 by 0.8)
+    for (let k = 0; k <= 8; k++) {
+        const v = Y_MIN + ((Y_MAX - Y_MIN) * k) / 8
+        const yy = sy(v)
+        body += `<line x1="${ax}" y1="${yy}" x2="${ax + aw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
+        body += `<text x="${ax - 10}" y="${yy + 5}" text-anchor="end" font-family="${FONT}" font-size="${cfg.tickSize}" fill="#838383">${v.toFixed(1)}</text>`
     }
-    // inset x ticks (1k .. 5k)
-    for (let t = 1000; t <= 5000; t += 2000) {
-        const xx = isx(t)
-        body += `<text x="${xx}" y="${iy + ih + 16}" text-anchor="middle" font-family="${FONT}" font-size="16" fill="#838383">${(t / 1000).toFixed(0)}k</text>`
+    // x ticks (0 .. ~6k steps)
+    for (let k = 0; k <= 6; k++) {
+        const t = (6000 * k) / 6
+        const xx = sx(t)
+        body += `<line x1="${xx}" y1="${ay + ah}" x2="${xx}" y2="${ay + ah + 5}" stroke="#83838388" stroke-width="1"/>`
+        body += `<text x="${xx}" y="${ay + ah + 24}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.tickSize}" fill="#838383">${k === 0 ? '0' : (t / 1000).toFixed(0) + 'k'}</text>`
     }
-    // plateau line inside the inset (2.80 sits at the very top of the band)
-    if (OLMO100_PLATEAU >= zY0 && OLMO100_PLATEAU <= zY1) {
-        const yp2 = isy(OLMO100_PLATEAU)
-        body += `<line x1="${ix}" y1="${yp2}" x2="${ix + iw}" y2="${yp2}" stroke="#838383" stroke-width="1.2" stroke-dasharray="6 4"/>`
-    }
-    // inset curves (clipped) + end-of-curve val labels
-    body += `<g clip-path="url(#cptTailClip)">`
+    // axis titles
+    body += `<text x="${ax + aw / 2}" y="${ay + ah + 58}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.axisSize}" fill="#838383">CPT step</text>`
+    body += `<text x="${ax - 58}" y="${ay + ah / 2}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.axisSize}" fill="#838383" transform="rotate(-90 ${ax - 58} ${ay + ah / 2})">training loss</text>`
+
+    // olmo-100 plateau reference (the level CPT has to beat, on loss)
+    const yp = sy(OLMO100_PLATEAU)
+    body += `<line x1="${ax}" y1="${yp}" x2="${ax + aw}" y2="${yp}" stroke="#838383" stroke-width="1.4" stroke-dasharray="6 4"/>`
+    body += `<text x="${ax + aw - 8}" y="${yp - 8}" text-anchor="end" font-family="${FONT}" font-size="${cfg.plateauSize}" fill="#838383">olmo-100 base plateau (~2.80)</text>`
+
+    // series
     for (const run of RUNS) {
-        const pts = run.data.filter((p) => p[0] >= zX0)
-        const d = pts
+        const d = run.data
             .map(
                 (p, i) =>
-                    `${i ? 'L' : 'M'}${isx(p[0]).toFixed(1)} ${isy(p[1]).toFixed(1)}`,
+                    `${i ? 'L' : 'M'}${sx(p[0]).toFixed(1)} ${sy(p[1]).toFixed(1)}`,
             )
             .join(' ')
         body += `<path d="${d}" fill="none" stroke="${run.color}" stroke-width="2.2"/>`
     }
-    body += `</g>`
-    // val labels riding each curve's tail inside the inset
-    for (const run of RUNS) {
-        const last = run.data[run.data.length - 1]
-        const ly2 = isy(Math.min(Math.max(last[1], zY0), zY1))
-        body += `<text x="${(ix + iw - 8).toFixed(1)}" y="${(ly2 - 6).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-size="16" font-weight="700" fill="${run.color}">${esc(run.label)} ${run.val.toFixed(3)}</text>`
+
+    // ── inset: tail zoom (the two mixes separating near the plateau) ──
+    {
+        const zX0 = 200
+        const zX1 = X_MAX
+        const zY0 = 2.45
+        const zY1 = 2.85
+        const ix = ax + aw * cfg.inset.xFrac
+        const iy = ay + cfg.inset.top
+        const iw = aw * cfg.inset.wFrac
+        const ih = cfg.inset.h
+        const isx = (t) => ix + ((t - zX0) / (zX1 - zX0)) * iw
+        const isy = (v) => iy + ih - ((v - zY0) / (zY1 - zY0)) * ih
+        const srcX = sx(zX0)
+        const srcYt = sy(zY1)
+        const srcW = sx(zX1) - sx(zX0)
+        const srcH = sy(zY0) - sy(zY1)
+        body += `<rect x="${srcX.toFixed(1)}" y="${srcYt.toFixed(1)}" width="${srcW.toFixed(1)}" height="${srcH.toFixed(1)}" fill="none" stroke="#838383" stroke-width="1" stroke-dasharray="4 3"/>`
+        body += `<line x1="${srcX.toFixed(1)}" y1="${srcYt.toFixed(1)}" x2="${ix.toFixed(1)}" y2="${(iy + ih).toFixed(1)}" stroke="#83838355" stroke-width="1" stroke-dasharray="3 3"/>`
+        body += `<line x1="${(srcX + srcW).toFixed(1)}" y1="${srcYt.toFixed(1)}" x2="${(ix + iw).toFixed(1)}" y2="${(iy + ih).toFixed(1)}" stroke="#83838355" stroke-width="1" stroke-dasharray="3 3"/>`
+        body += `<clipPath id="${clipId}"><rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${iw.toFixed(1)}" height="${ih.toFixed(1)}"/></clipPath>`
+        body += `<rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${iw.toFixed(1)}" height="${ih.toFixed(1)}" fill="#8888880f" stroke="#838383" stroke-width="1.2"/>`
+        for (let v = 2.5; v <= 2.8 + 0.001; v += 0.1) {
+            const yy = isy(v)
+            body += `<line x1="${ix}" y1="${yy}" x2="${ix + iw}" y2="${yy}" stroke="#83838322" stroke-width="1"/>`
+            body += `<text x="${ix - 7}" y="${yy + 4}" text-anchor="end" font-family="${FONT}" font-size="${cfg.insetTickSize}" fill="#838383">${v.toFixed(1)}</text>`
+        }
+        for (let t = 1000; t <= 5000; t += 2000) {
+            const xx = isx(t)
+            body += `<text x="${xx}" y="${iy + ih + 16}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.insetTickSize}" fill="#838383">${(t / 1000).toFixed(0)}k</text>`
+        }
+        if (OLMO100_PLATEAU >= zY0 && OLMO100_PLATEAU <= zY1) {
+            const yp2 = isy(OLMO100_PLATEAU)
+            body += `<line x1="${ix}" y1="${yp2}" x2="${ix + iw}" y2="${yp2}" stroke="#838383" stroke-width="1.2" stroke-dasharray="6 4"/>`
+        }
+        body += `<g clip-path="url(#${clipId})">`
+        for (const run of RUNS) {
+            const pts = run.data.filter((p) => p[0] >= zX0)
+            const d = pts
+                .map(
+                    (p, i) =>
+                        `${i ? 'L' : 'M'}${isx(p[0]).toFixed(1)} ${isy(p[1]).toFixed(1)}`,
+                )
+                .join(' ')
+            body += `<path d="${d}" fill="none" stroke="${run.color}" stroke-width="2.2"/>`
+        }
+        body += `</g>`
+        for (const run of RUNS) {
+            const last = run.data[run.data.length - 1]
+            const ly2 = isy(Math.min(Math.max(last[1], zY0), zY1))
+            body += `<text x="${(ix + iw - 8).toFixed(1)}" y="${(ly2 - 6).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-size="${cfg.insetLabelSize}" font-weight="700" fill="${run.color}">${esc(run.label)} ${run.val.toFixed(3)}</text>`
+        }
+        body += `<text x="${ix + iw / 2}" y="${iy - 6}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.insetTitleSize}" fill="#838383">tail zoom</text>`
     }
-    body += `<text x="${ix + iw / 2}" y="${iy - 6}" text-anchor="middle" font-family="${FONT}" font-size="16" fill="#838383">tail zoom</text>`
-}
 
-// legend (right gutter)
-const lx = ax + aw + 24
-let ly = ay + 18
-body += `<text x="${lx}" y="${ly - 22}" font-family="${FONT}" font-size="19" font-weight="700" fill="#838383">final val loss</text>`
-for (const run of RUNS) {
-    body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 26}" y2="${ly - 4}" stroke="${run.color}" stroke-width="2.8"/>`
-    body += `<text x="${lx + 34}" y="${ly}" font-family="${FONT}" font-size="19" fill="#838383">${esc(run.label)}</text>`
-    body += `<text x="${lx + 34}" y="${ly + 18}" font-family="${FONT}" font-size="18" fill="${run.color}">val ${run.val.toFixed(3)}</text>`
-    ly += 52
-}
-// plateau in legend
-body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 26}" y2="${ly - 4}" stroke="#838383" stroke-width="1.6" stroke-dasharray="6 4"/>`
-body += `<text x="${lx + 34}" y="${ly}" font-family="${FONT}" font-size="19" fill="#838383">olmo-100 base</text>`
-body += `<text x="${lx + 34}" y="${ly + 18}" font-family="${FONT}" font-size="18" fill="#838383">~2.80 (control)</text>`
+    // legend: right gutter (landscape) or a row below the plot (mobile)
+    if (cfg.legend === 'right') {
+        const lx = ax + aw + 24
+        let ly = ay + 18
+        body += `<text x="${lx}" y="${ly - 22}" font-family="${FONT}" font-size="${cfg.legendSize}" font-weight="700" fill="#838383">final val loss</text>`
+        for (const run of RUNS) {
+            body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 26}" y2="${ly - 4}" stroke="${run.color}" stroke-width="2.8"/>`
+            body += `<text x="${lx + 34}" y="${ly}" font-family="${FONT}" font-size="${cfg.legendSize}" fill="#838383">${esc(run.label)}</text>`
+            body += `<text x="${lx + 34}" y="${ly + 18}" font-family="${FONT}" font-size="${cfg.legendSubSize}" fill="${run.color}">val ${run.val.toFixed(3)}</text>`
+            ly += 52
+        }
+        body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 26}" y2="${ly - 4}" stroke="#838383" stroke-width="1.6" stroke-dasharray="6 4"/>`
+        body += `<text x="${lx + 34}" y="${ly}" font-family="${FONT}" font-size="${cfg.legendSize}" fill="#838383">olmo-100 base</text>`
+        body += `<text x="${lx + 34}" y="${ly + 18}" font-family="${FONT}" font-size="${cfg.legendSubSize}" fill="#838383">~2.80 (control)</text>`
+    } else {
+        // stacked rows centered below the x-axis title
+        let ly = ay + ah + 90
+        const lx = ax
+        for (const run of RUNS) {
+            body += `<line x1="${lx}" y1="${ly - 5}" x2="${lx + 30}" y2="${ly - 5}" stroke="${run.color}" stroke-width="3"/>`
+            body += `<text x="${lx + 40}" y="${ly}" font-family="${FONT}" font-size="${cfg.legendSize}" fill="#838383">${esc(run.label)} — val <tspan fill="${run.color}" font-weight="700">${run.val.toFixed(3)}</tspan></text>`
+            ly += 32
+        }
+        body += `<line x1="${lx}" y1="${ly - 5}" x2="${lx + 30}" y2="${ly - 5}" stroke="#838383" stroke-width="1.8" stroke-dasharray="6 4"/>`
+        body += `<text x="${lx + 40}" y="${ly}" font-family="${FONT}" font-size="${cfg.legendSize}" fill="#838383">olmo-100 base — ~2.80 (control)</text>`
+    }
 
-const svg = `<?xml version="1.0" encoding="utf-8"?>
+    return `<?xml version="1.0" encoding="utf-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="${FONT}">
 ${fontDefs()}
 ${body}
 </svg>
 `
+}
 
-writeFileSync(OUT, svg)
+writeFileSync(OUT, buildSVG(LANDSCAPE))
 console.log('wrote', OUT, `(${DOLMINO100.length}+${OLMO50.length} pts)`)
+writeFileSync(OUT_MOBILE, buildSVG(MOBILE))
+console.log('wrote', OUT_MOBILE)

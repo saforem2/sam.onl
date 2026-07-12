@@ -645,10 +645,16 @@ throughput tax.
 <div class="mano-right">
 
 <figure>
-    <img
-        src="/talks/2026-07-14/figures/optimizer-loss.svg"
-        alt="Training loss vs step for Muon, mano, AdamW, SophiaG at 2B / GBS=48 over 1000 steps: mano and Muon converge lowest and nearly overlap, AdamW above, SophiaG highest"
-    />
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-07-14/figures/optimizer-loss-mobile.svg"
+        />
+        <img
+            src="/talks/2026-07-14/figures/optimizer-loss.svg"
+            alt="Training loss vs step for Muon, mano, AdamW, SophiaG at 2B / GBS=48 over 1000 steps: mano and Muon converge lowest and nearly overlap, AdamW above, SophiaG highest"
+        />
+    </picture>
 </figure>
 
 </div>
@@ -1165,10 +1171,16 @@ Two ~300B-token pilots (256N, GBS=6,144) vs the olmo-100 base plateau:
 <div class="cpt-grid">
 
 <figure>
-    <img
-        src="/talks/2026-07-14/figures/cpt-loss.svg"
-        alt="2B CPT training/validation loss per data mix: dolmino-100 vs olmo50-dolmino50 vs olmo-100 base"
-    />
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-07-14/figures/cpt-loss-mobile.svg"
+        />
+        <img
+            src="/talks/2026-07-14/figures/cpt-loss.svg"
+            alt="2B CPT training/validation loss per data mix: dolmino-100 vs olmo50-dolmino50 vs olmo-100 base"
+        />
+    </picture>
     <figcaption>
         `dolmino-100` hit the **lowest val loss 2.492** (−0.31 vs base ~2.80);
         `olmo50-dolmino50` 2.601.
