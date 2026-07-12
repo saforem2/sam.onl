@@ -218,15 +218,19 @@ Since TPC'26: production status refresh (NEW)
   changed.
 
 <style>{`
-  /* Pin every column so the narrow numeric fields (Nodes/Steps/Loss) don't
-     hog the row while Status wraps. Fixed-layout table splits leftover width
-     evenly across unset columns, which is why the numerics ballooned. */
-  #since-tpc table th:nth-child(1), #since-tpc table td:nth-child(1) { width: 12ch; white-space: nowrap; } /* Run */
+  /* Pin every column (incl. Status) so the table sizes to its content and
+     table-layout:fixed can honor the exact ch widths — otherwise the auto
+     Status column expands to eat the leftover slide width. */
+  #since-tpc table { table-layout: fixed; width: max-content; max-width: 100%; }
+  /* nowrap on the header + numeric cells so a tight column can't wrap the
+     label ("Nodes" -> "Nod es"); widths sized to the longest cell. */
+  #since-tpc table th, #since-tpc table td { white-space: nowrap; }
+  #since-tpc table th:nth-child(1), #since-tpc table td:nth-child(1) { width: 10ch; } /* Run */
   #since-tpc table th:nth-child(2), #since-tpc table td:nth-child(2) { width: 8ch; }  /* Nodes */
   #since-tpc table th:nth-child(3), #since-tpc table td:nth-child(3) { width: 8ch; }  /* Steps */
   #since-tpc table th:nth-child(4), #since-tpc table td:nth-child(4) { width: 16ch; } /* Tokens */
-  #since-tpc table th:nth-child(5), #since-tpc table td:nth-child(5) { width: 7ch; }  /* Loss */
-  #since-tpc table th:nth-child(6), #since-tpc table td:nth-child(6) { width: auto; } /* Status */
+  #since-tpc table th:nth-child(5), #since-tpc table td:nth-child(5) { width: 6ch; }  /* Loss */
+  #since-tpc table th:nth-child(6), #since-tpc table td:nth-child(6) { width: 31ch; white-space: normal; } /* Status */
   #since-tpc pre, #since-tpc table { font-size: 0.95em; }
 `}</style>
 
@@ -438,6 +442,17 @@ AuroraGPT-2B (Megatron-DeepSpeed reference baseline)
 This is the **pre-`torchtitan` reference**. Everything that follows is
 the migration story: same scale, same data, what changed and what
 broke when we cut over.
+
+<style>{`
+  /* Shrink to content: label column sized to its longest label (nowrap so
+     "Training Config" stays one line), Value column to its natural width.
+     Overrides the global :has() 22%-label rule that otherwise stretches
+     this to full slide width. */
+  #agpt-2b table { table-layout: auto; width: max-content; max-width: 100%; }
+  #agpt-2b table th:first-child, #agpt-2b table td:first-child {
+    width: auto; white-space: nowrap;
+  }
+`}</style>
 
 </Slide>
 
@@ -652,7 +667,7 @@ Why move off MDS — and what broke
   [pytorch/torchtitan@main](https://github.com/pytorch/torchtitan); the "fork tax"
 
 <style>{`
-  #why-titan table { table-layout: fixed; width: 100%; max-width: 70ch; }
+  #why-titan table { table-layout: fixed; width: max-content; max-width: 100%; }
   #why-titan table th:nth-child(1), #why-titan table td:nth-child(1) { width: auto; }
   #why-titan table th:nth-child(2), #why-titan table td:nth-child(2),
   #why-titan table th:nth-child(3), #why-titan table td:nth-child(3) {
@@ -911,9 +926,10 @@ was still flat (~12.9):
 <style>{`
   /* Pin the two short columns so Signature gets the room and stops
      wrapping (fixed-layout table otherwise splits width evenly). */
-  #optimizer-cliff table th:nth-child(1), #optimizer-cliff table td:nth-child(1) { width: 12ch; } /* Optimizer */
+  #optimizer-cliff table { table-layout: fixed; width: max-content; max-width: 100%; }
+  #optimizer-cliff table th:nth-child(1), #optimizer-cliff table td:nth-child(1) { width: 11ch; } /* Optimizer */
   #optimizer-cliff table th:nth-child(2), #optimizer-cliff table td:nth-child(2) { width: 9ch; }  /* Died at */
-  #optimizer-cliff table th:nth-child(3), #optimizer-cliff table td:nth-child(3) { width: auto; } /* Signature */
+  #optimizer-cliff table th:nth-child(3), #optimizer-cliff table td:nth-child(3) { width: 36ch; } /* Signature */
 `}</style>
 
 - **`mano` (our 2B speed win) died first** (step 5), despite its 80B
@@ -957,8 +973,9 @@ Float8. This is exactly where **cross-vendor MoE experience would
 help** (see the ask).
 
 <style>{`
+  #moe-xpu table { table-layout: fixed; width: max-content; max-width: 100%; }
   #moe-xpu table th:nth-child(1), #moe-xpu table td:nth-child(1) { width: 22ch; }
-  #moe-xpu table th:nth-child(2), #moe-xpu table td:nth-child(2) { width: auto; }
+  #moe-xpu table th:nth-child(2), #moe-xpu table td:nth-child(2) { width: 44ch; }
 `}</style>
 
 </Slide>
@@ -1512,9 +1529,10 @@ those still need a heartbeat watchdog.
 <style>{`
   /* Pin the Job + Trajectory columns to just the width they need;
      let Failure (the long, prose-y cell) take the rest. */
+  #restarts table { table-layout: fixed; width: max-content; max-width: 100%; }
   #restarts table th:nth-child(1), #restarts table td:nth-child(1) { width: 10ch; }
   #restarts table th:nth-child(2), #restarts table td:nth-child(2) { width: 14ch; }
-  #restarts table th:nth-child(3), #restarts table td:nth-child(3) { width: auto; }
+  #restarts table th:nth-child(3), #restarts table td:nth-child(3) { width: 40ch; white-space: normal; }
   /* Codeblock: span full slide width so the short qsub command has
      visual presence instead of shrinking to its tiny max-content box. */
   #restarts pre.astro-code { width: 100%; }
@@ -1653,10 +1671,11 @@ when no specific bad node can be identified. They did.
 Full writeup: [`docs/experiments/agpt/aurora/20260523-failover-silent-hang-recovery-8505298.md`](https://github.com/saforem2/torchtitan/blob/ezpz/torchtitan/experiments/ezpz/docs/experiments/agpt/aurora/20260523-failover-silent-hang-recovery-8505298.md)
 
 <style>{`
+  #failover-validation table { table-layout: fixed; width: max-content; max-width: 100%; }
   #failover-validation table th:nth-child(1),
   #failover-validation table td:nth-child(1) { width: 12ch; white-space: nowrap; }
   #failover-validation table th:nth-child(2),
-  #failover-validation table td:nth-child(2) { width: auto; }
+  #failover-validation table td:nth-child(2) { width: 52ch; }
 `}</style>
 
 </Slide>
@@ -1831,8 +1850,10 @@ under batch ramp, until it didn't:
 </figure>
 
 <style>{`
+  #optimizer-cliff-detail table { table-layout: fixed; width: max-content; max-width: 100%; font-size: 0.9em; }
   #optimizer-cliff-detail table th:nth-child(1), #optimizer-cliff-detail table td:nth-child(1) { width: 16ch; }
-  #optimizer-cliff-detail table { font-size: 0.9em; }
+  #optimizer-cliff-detail table th:nth-child(2), #optimizer-cliff-detail table td:nth-child(2) { width: 8ch; text-align: right; }
+  #optimizer-cliff-detail table th:nth-child(3), #optimizer-cliff-detail table td:nth-child(3) { width: 30ch; }
 `}</style>
 
 </Slide>

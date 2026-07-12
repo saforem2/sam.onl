@@ -207,13 +207,18 @@
     td {
         font-size: inherit;
     }
-    /* On slides, tables should always fit the slide width — wrap content
-       inside cells rather than overflow the slide. (Default browser table
-       layout is `auto`, which grows the table to fit its widest cell;
-       fine on a doc page with horizontal scroll, fatal on a projector.) */
+    /* On slides, a table should span only the width its content needs,
+       not the whole slide — a 3-column status table stretched to full
+       width leaves acres of empty cell. `width: max-content` shrinks the
+       table to its natural column widths; `max-width: 100%` is the
+       projector guard (if the content really is that wide, fall back to
+       auto layout and wrap inside cells rather than overflow the slide).
+       Per-slide overrides that pin `ch` column widths + `table-layout:
+       fixed` still win where an author wants exact control. */
     table {
-        width: 100%;
-        table-layout: fixed;
+        width: max-content;
+        max-width: 100%;
+        table-layout: auto;
     }
     th,
     td {
