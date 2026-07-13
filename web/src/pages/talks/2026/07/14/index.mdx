@@ -608,90 +608,6 @@ scaling work[^gupta-2026].
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-mano: manifold-normalized optimizer (NEW: the 2B-scale win)
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="mano" size="sm">
-
-## `mano`: Muon quality at AdamW speed
-
-[`mano`](https://arxiv.org/abs/2601.23000)[^mano] normalizes updates on a
-rotating **Oblique manifold** with $O(\text{dim})$ vector-norm ops
-(no Newton-Schulz iterations). So it matches Muon's loss without Muon's
-throughput tax.
-
-<div class="mano-grid">
-
-<div class="mano-left">
-
-<div class="tight-table">
-
-| Optimizer  |      Loss |       TPS |
-| ---------- | --------: | --------: |
-| Muon       |     3.557 |     4,556 |
-| **`mano`** | **3.631** | **7,048** |
-| AdamW      |     3.801 |     7,245 |
-| SophiaG    |     4.719 |     7,208 |
-
-</div>
-
-- **Muon and `mano` tie on loss (~3.6); `mano` runs at AdamW speed**
-  (~7,000 vs ~4,600 TPS) → **wins on wall-clock**.
-- Caveat: at **large batch** (GBS=384) AdamW still wins (2.71 vs 2.88);
-  `mano`'s LR was tuned at GBS=48 and needs re-tuning.
-
-</div>
-
-<div class="mano-right">
-
-<figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-07-14/figures/optimizer-loss-mobile.svg"
-        />
-        <img
-            src="/talks/2026-07-14/figures/optimizer-loss.svg"
-            alt="Training loss vs step for Muon, mano, AdamW, SophiaG at 2B / GBS=48 over 1000 steps: mano and Muon converge lowest and nearly overlap, AdamW above, SophiaG highest"
-        />
-    </picture>
-</figure>
-
-</div>
-
-</div>
-
-[^mano]: [`mano`: manifold-normalized optimization](https://arxiv.org/abs/2601.23000) (2026). Implemented in our fork alongside SPAM ([2501.06842](https://arxiv.org/abs/2501.06842)).
-
-<style>{`
-  #mano .mano-grid {
-    display: grid;
-    grid-template-columns: 34ch 1fr;
-    gap: 3ch;
-    align-items: start;
-    width: 100%;
-  }
-  #mano .mano-left { min-width: 0; }
-  #mano .mano-right { min-width: 0; display: flex; justify-content: center; }
-  #mano .mano-right figure { margin: 0; width: 100%; }
-  #mano .mano-right img { width: 100%; height: auto; max-height: 24lh; }
-  /* Tight fixed-width table: pin the numeric columns so the header row
-     can't wrap and the table only claims the width it needs, leaving the
-     rest of the row for the figure. */
-  #mano table { table-layout: fixed; width: 100%; max-width: none; }
-  #mano table th:nth-child(1), #mano table td:nth-child(1) { width: 13ch; }
-  #mano table th:nth-child(2), #mano table td:nth-child(2),
-  #mano table th:nth-child(3), #mano table td:nth-child(3) {
-    width: auto; text-align: right; white-space: nowrap;
-  }
-  @media (max-width: 768px) {
-    #mano .mano-grid { grid-template-columns: 1fr; gap: 1lh; }
-  }
-`}</style>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
 Why move off MDS — and what broke
 ───────────────────────────────────────────────────────────────*/}
 
@@ -1011,50 +927,6 @@ flowchart TB
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-80B optimizer cliff (NEW: one bf16 corner, three dead optimizers)
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="optimizer-cliff" size="sm">
-
-## 80B: one bf16 cliff, three dead optimizers
-
-At 80B (`dim=9216`), **every** constant-finder LR NaN-ed in the first
-~dozen steps: `grad_norm → inf` one step before the loss, while loss
-was still flat (~12.9):
-
-<div class="tight-table">
-
-| Optimizer | Died at | Signature                            |
-| --------- | ------: | ------------------------------------ |
-| `mano`    |  step 5 | grad NaN (diverged **first**)        |
-| AdamW     |  step 9 | grad NaN                             |
-| SophiaG   | step 14 | Hessian-term overflow, ~6,100 node-h |
-
-</div>
-
-<style>{`
-  /* Pin the two short columns so Signature gets the room and stops
-     wrapping (fixed-layout table otherwise splits width evenly). */
-  #optimizer-cliff table { table-layout: fixed; width: max-content; max-width: 100%; }
-  #optimizer-cliff table th:nth-child(1), #optimizer-cliff table td:nth-child(1) { width: 11ch; } /* Optimizer */
-  #optimizer-cliff table th:nth-child(2), #optimizer-cliff table td:nth-child(2) { width: 9ch; }  /* Died at */
-  #optimizer-cliff table th:nth-child(3), #optimizer-cliff table td:nth-child(3) { width: 36ch; } /* Signature */
-`}</style>
-
-- **`mano` (our 2B speed win) died first** (step 5), despite its 80B
-  LR-finder band looking the _safest_ of the three. **Early-step ranking
-  does not predict sustained stability.**
-- Shared failure across 3 optimizers ⇒ a **corner-level instability
-  (bf16 at dim=9216)**, not tuning. Two grad-path triggers: `LBS>1`
-  and large `dp_degree`.
-- **Fix in flight:** long warmup (≥200 steps) + grad clipping,
-  possibly an fp32 grad path. Stable corner today: **TP=4 · LBS=1 ·
-  GBS=372**, validated 100/100 steps NaN-free (loss 12.93 → 7.72) at
-  ~9.8% MFU.
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
 MoE on Intel XPU (NEW: audience-relevant for a MoE workshop)
 ───────────────────────────────────────────────────────────────*/}
 
@@ -1206,6 +1078,7 @@ Two ~300B-token pilots (256N, GBS=6,144) vs the olmo-100 base plateau:
     grid-template-columns: 1.6fr 1fr;
     gap: 3ch;
     align-items: start;
+    align-content: center;
     width: 100%;
     flex: 1;
     min-height: 0;
@@ -1999,6 +1872,134 @@ Appendix: Silent killer #2 — TP loss reporting
 
 - **Lesson**: Bit-exact smoke caught this immediately; the prior 2B TP=1
   baseline gave us a number to disagree with
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Appendix: alternative optimizers — mano (the 2B-scale win)
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="mano" size="sm">
+
+## `mano`: Muon quality at AdamW speed
+
+[`mano`](https://arxiv.org/abs/2601.23000)[^mano] normalizes updates on a
+rotating **Oblique manifold** with $O(\text{dim})$ vector-norm ops
+(no Newton-Schulz iterations). So it matches Muon's loss without Muon's
+throughput tax.
+
+<div class="mano-grid">
+
+<div class="mano-left">
+
+<div class="tight-table">
+
+| Optimizer  |      Loss |       TPS |
+| ---------- | --------: | --------: |
+| Muon       |     3.557 |     4,556 |
+| **`mano`** | **3.631** | **7,048** |
+| AdamW      |     3.801 |     7,245 |
+| SophiaG    |     4.719 |     7,208 |
+
+</div>
+
+- **Muon and `mano` tie on loss (~3.6); `mano` runs at AdamW speed**
+  (~7,000 vs ~4,600 TPS) → **wins on wall-clock**.
+- Caveat: at **large batch** (GBS=384) AdamW still wins (2.71 vs 2.88);
+  `mano`'s LR was tuned at GBS=48 and needs re-tuning.
+
+</div>
+
+<div class="mano-right">
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-07-14/figures/optimizer-loss-mobile.svg"
+        />
+        <img
+            src="/talks/2026-07-14/figures/optimizer-loss.svg"
+            alt="Training loss vs step for Muon, mano, AdamW, SophiaG at 2B / GBS=48 over 1000 steps: mano and Muon converge lowest and nearly overlap, AdamW above, SophiaG highest"
+        />
+    </picture>
+</figure>
+
+</div>
+
+</div>
+
+[^mano]: [`mano`: manifold-normalized optimization](https://arxiv.org/abs/2601.23000) (2026). Implemented in our fork alongside SPAM ([2501.06842](https://arxiv.org/abs/2501.06842)).
+
+<style>{`
+  #mano .mano-grid {
+    display: grid;
+    grid-template-columns: 34ch 1fr;
+    gap: 3ch;
+    align-items: start;
+    width: 100%;
+  }
+  #mano .mano-left { min-width: 0; }
+  #mano .mano-right { min-width: 0; display: flex; justify-content: center; }
+  #mano .mano-right figure { margin: 0; width: 100%; }
+  #mano .mano-right img { width: 100%; height: auto; max-height: 24lh; }
+  /* Tight fixed-width table: pin the numeric columns so the header row
+     can't wrap and the table only claims the width it needs, leaving the
+     rest of the row for the figure. */
+  #mano table { table-layout: fixed; width: 100%; max-width: none; }
+  #mano table th:nth-child(1), #mano table td:nth-child(1) { width: 13ch; }
+  #mano table th:nth-child(2), #mano table td:nth-child(2),
+  #mano table th:nth-child(3), #mano table td:nth-child(3) {
+    width: auto; text-align: right; white-space: nowrap;
+  }
+  @media (max-width: 768px) {
+    #mano .mano-grid { grid-template-columns: 1fr; gap: 1lh; }
+  }
+`}</style>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Appendix: 80B optimizer cliff (one bf16 corner, three dead optimizers)
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="optimizer-cliff" size="sm">
+
+## 80B: one bf16 cliff, three dead optimizers
+
+At 80B (`dim=9216`), **every** constant-finder LR NaN-ed in the first
+~dozen steps: `grad_norm → inf` one step before the loss, while loss
+was still flat (~12.9):
+
+<div class="tight-table">
+
+| Optimizer | Died at | Signature                            |
+| --------- | ------: | ------------------------------------ |
+| `mano`    |  step 5 | grad NaN (diverged **first**)        |
+| AdamW     |  step 9 | grad NaN                             |
+| SophiaG   | step 14 | Hessian-term overflow, ~6,100 node-h |
+
+</div>
+
+<style>{`
+  /* Pin the two short columns so Signature gets the room and stops
+     wrapping (fixed-layout table otherwise splits width evenly). */
+  #optimizer-cliff table { table-layout: fixed; width: max-content; max-width: 100%; }
+  #optimizer-cliff table th:nth-child(1), #optimizer-cliff table td:nth-child(1) { width: 11ch; } /* Optimizer */
+  #optimizer-cliff table th:nth-child(2), #optimizer-cliff table td:nth-child(2) { width: 9ch; }  /* Died at */
+  #optimizer-cliff table th:nth-child(3), #optimizer-cliff table td:nth-child(3) { width: 36ch; } /* Signature */
+`}</style>
+
+- **`mano` (our 2B speed win) died first** (step 5), despite its 80B
+  LR-finder band looking the _safest_ of the three. **Early-step ranking
+  does not predict sustained stability.**
+- Shared failure across 3 optimizers ⇒ a **corner-level instability
+  (bf16 at dim=9216)**, not tuning. Two grad-path triggers: `LBS>1`
+  and large `dp_degree`.
+- **Fix in flight:** long warmup (≥200 steps) + grad clipping,
+  possibly an fp32 grad path. Stable corner today: **TP=4 · LBS=1 ·
+  GBS=372**, validated 100/100 steps NaN-free (loss 12.93 → 7.72) at
+  ~9.8% MFU.
 
 </Slide>
 
