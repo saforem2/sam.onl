@@ -44,10 +44,16 @@ const ROWS = [[10,1.151884,0.738132,2e-05,0.728331,1.159362,0.0624],[20,0.995761
 const PANELS = [
     { i: 1, title: 'loss', color: '#118cc2' },
     { i: 2, title: 'grad_norm', color: '#ee8f24' },
-    { i: 3, title: 'learning rate (×1e-5)', color: '#9a76ce', scale: 1e5 },
+    {
+        i: 3,
+        title: 'learning rate (×1e-5)',
+        color: '#9a76ce',
+        scale: 1e5,
+        yMin: 0,
+    },
     { i: 4, title: 'mean token accuracy', color: '#1da811' },
     { i: 5, title: 'entropy (nats)', color: '#e05560' },
-    { i: 6, title: 'tokens seen (cumulative, B)', color: '#06b6d4' },
+    { i: 6, title: 'tokens seen (cumulative, B)', color: '#06b6d4', yMin: 0 },
 ]
 
 // Landscape: 3 across x 2 down for the slide. Mobile: 2 across x 3 down,
@@ -112,7 +118,10 @@ function panel(cfg, geo, p, px, py) {
     const { panelW, panelH } = geo
     const scale = p.scale || 1
     const vals = ROWS.map((r) => r[p.i] * scale)
-    const [yMin, yMax] = niceRange(vals)
+    let [yMin, yMax] = niceRange(vals)
+    // Per-panel floor: a cumulative-tokens curve is strictly >= 0, so don't
+    // let niceRange's padding push the axis below zero.
+    if (p.yMin != null) yMin = p.yMin
     const ax = px + PAD.left
     const ay = py + PAD.top
     const aw = panelW - PAD.left - PAD.right
