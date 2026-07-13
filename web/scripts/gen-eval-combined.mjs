@@ -21,7 +21,14 @@ import { dirname, join } from 'node:path'
 import { fontDefs, FONT_STACK } from './svg-font.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const FIG_DIR = join(__dirname, '..', 'public', 'talks', '2026-07-14', 'figures')
+const FIG_DIR = join(
+    __dirname,
+    '..',
+    'public',
+    'talks',
+    '2026-07-14',
+    'figures',
+)
 const OUT = join(FIG_DIR, 'eval-combined-4bench.svg')
 const OUT_MOBILE = join(FIG_DIR, 'eval-combined-4bench-mobile.svg')
 
@@ -217,7 +224,7 @@ function panel(cfg, geo, task, px, py) {
                         `${i ? 'L' : 'M'}${sx(p[0]).toFixed(1)} ${sy(p[1]).toFixed(1)}`,
                 )
                 .join(' ')
-            s += `<path d="${d}" fill="none" stroke="${run.color}" stroke-width="2"${dash}/>`
+            s += `<path d="${d}" fill="none" stroke="${run.color}" stroke-width="2.6"${dash}/>`
         }
         for (const p of pts) {
             const cx = sx(p[0])

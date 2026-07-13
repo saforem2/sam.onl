@@ -168,7 +168,7 @@ const LANDSCAPE = {
     legendSize: 20,
     axisSize: 22,
     tickSize: 18,
-    lw: 2.4,
+    lw: 3,
     mr: 4.8,
     legendCols: 4,
 }
@@ -181,7 +181,7 @@ const MOBILE = {
     legendSize: 21,
     axisSize: 23,
     tickSize: 19,
-    lw: 2.6,
+    lw: 3.2,
     mr: 5.2,
     legendCols: 2,
 }

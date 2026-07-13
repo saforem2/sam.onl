@@ -146,7 +146,7 @@ function buildSVG(cfg) {
                     `${i ? 'L' : 'M'}${sx(p[0]).toFixed(1)} ${sy(p[1]).toFixed(1)}`,
             )
             .join(' ')
-        body += `<path d="${d}" fill="none" stroke="${run.color}" stroke-width="2.2"/>`
+        body += `<path d="${d}" fill="none" stroke="${run.color}" stroke-width="2.8"/>`
     }
 
     // ── inset: tail zoom (the two mixes separating near the plateau) ──
@@ -192,7 +192,7 @@ function buildSVG(cfg) {
                         `${i ? 'L' : 'M'}${isx(p[0]).toFixed(1)} ${isy(p[1]).toFixed(1)}`,
                 )
                 .join(' ')
-            body += `<path d="${d}" fill="none" stroke="${run.color}" stroke-width="2.2"/>`
+            body += `<path d="${d}" fill="none" stroke="${run.color}" stroke-width="2.8"/>`
         }
         body += `</g>`
         for (const run of RUNS) {

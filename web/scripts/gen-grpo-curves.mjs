@@ -168,7 +168,7 @@ function panel(cfg, geo, p, px, py) {
                     `${i ? 'L' : 'M'}${sx(pt[0]).toFixed(1)} ${sy(pt[1]).toFixed(1)}`,
             )
             .join(' ')
-        s += `<path d="${dr}" fill="none" stroke="${RAW_COL}" stroke-width="1" opacity="0.4"/>`
+        s += `<path d="${dr}" fill="none" stroke="${RAW_COL}" stroke-width="1.3" opacity="0.4"/>`
     }
     const db = bold
         .map(
@@ -176,7 +176,7 @@ function panel(cfg, geo, p, px, py) {
                 `${i ? 'L' : 'M'}${sx(pt[0]).toFixed(1)} ${sy(pt[1]).toFixed(1)}`,
         )
         .join(' ')
-    s += `<path d="${db}" fill="none" stroke="${p.color}" stroke-width="2.2"/>`
+    s += `<path d="${db}" fill="none" stroke="${p.color}" stroke-width="2.8"/>`
     return s
 }
 

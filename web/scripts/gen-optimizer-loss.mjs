@@ -159,7 +159,7 @@ function buildSVG(cfg) {
                         `${i ? 'L' : 'M'}${sx(p[0]).toFixed(1)} ${sy(p[1]).toFixed(1)}`,
                 )
                 .join(' ')
-            body += `<path d="${d}" fill="none" stroke="${r.color}" stroke-width="2.2"/>`
+            body += `<path d="${d}" fill="none" stroke="${r.color}" stroke-width="2.8"/>`
         }
         // legend (top-left, in the corner the curves have dropped out of)
         const lx = ax + 14
@@ -212,7 +212,7 @@ function buildSVG(cfg) {
                             `${i ? 'L' : 'M'}${isx(p[0]).toFixed(1)} ${isy(p[1]).toFixed(1)}`,
                     )
                     .join(' ')
-                body += `<path d="${d}" fill="none" stroke="${r.color}" stroke-width="2"/>`
+                body += `<path d="${d}" fill="none" stroke="${r.color}" stroke-width="2.5"/>`
             }
             body += `</g>`
             body += `<text x="${ix + iw / 2}" y="${iy - 6}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.insetTitleSize}" fill="#838383">tail zoom (steps 600-1000)</text>`

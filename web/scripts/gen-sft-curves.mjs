@@ -156,7 +156,7 @@ function panel(cfg, geo, p, px, py) {
                 `${i ? 'L' : 'M'}${pt[0].toFixed(1)} ${pt[1].toFixed(1)}`,
         )
         .join(' ')
-    s += `<path d="${d}" fill="none" stroke="${p.color}" stroke-width="2"/>`
+    s += `<path d="${d}" fill="none" stroke="${p.color}" stroke-width="2.6"/>`
     for (const pt of pts)
         s += `<circle cx="${pt[0].toFixed(1)}" cy="${pt[1].toFixed(1)}" r="2" fill="${p.color}"/>`
     return s
