@@ -1716,10 +1716,11 @@ What it took to train AERIS (same stack / machine)
 
 ## What it took to train AERIS
 
-The same Aurora + `ezpz`/`torchtitan` stack also trained
-**AERIS**[^aeris], a pixel-level Swin **diffusion transformer** for
+On the **same machine** (Aurora), but with its **own separate stack**,
+**AERIS**[^aeris] is a pixel-level Swin **diffusion transformer** for
 generative weather & climate prediction, the first diffusion model taken
-to this scale.
+to this scale, a useful contrast point for what full-machine training
+demands.
 
 <div class="tight-table">
 
@@ -1735,9 +1736,9 @@ to this scale.
 
 </div>
 
-- Same lessons carried over: launcher-native scaling, bf16 stability care,
-  and failure-tolerant runs at 10k-node scale.
-- The hard new problem was **scaling diffusion stably at high resolution**,
+- A separate codebase, but the **same operational realities** we hit:
+  bf16 stability, full-machine scaling, and failure tolerance at 10k nodes.
+- Its hard new problem was **scaling diffusion stably at high resolution**,
   which SWiPe's window-parallelism addresses without inflating the global
   batch.
 
