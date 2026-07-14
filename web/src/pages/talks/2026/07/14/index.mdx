@@ -1122,6 +1122,226 @@ On-policy RL via **TRL `GRPOTrainer` + vLLM-XPU**, on the SFT'd 2B
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
+Optimizers: mano (2B speed win) + the 80B cliff (moved into main flow)
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="mano" size="sm">
+
+## `mano`: Muon quality at AdamW speed
+
+[`mano`](https://arxiv.org/abs/2601.23000)[^mano] normalizes updates on a
+rotating **Oblique manifold** with $O(\text{dim})$ vector-norm ops
+(no Newton-Schulz iterations). So it matches Muon's loss without Muon's
+throughput tax.
+
+<div class="mano-grid">
+
+<div class="mano-left">
+
+<div class="tight-table">
+
+| Optimizer  |      Loss |       TPS |
+| ---------- | --------: | --------: |
+| Muon       |     3.557 |     4,556 |
+| **`mano`** | **3.631** | **7,048** |
+| AdamW      |     3.801 |     7,245 |
+| SophiaG    |     4.719 |     7,208 |
+
+</div>
+
+- **Muon and `mano` tie on loss (~3.6); `mano` runs at AdamW speed**
+  (~7,000 vs ~4,600 TPS) → **wins on wall-clock**.
+- Caveat: at **large batch** (GBS=384) AdamW still wins (2.71 vs 2.88);
+  `mano`'s LR was tuned at GBS=48 and needs re-tuning.
+
+</div>
+
+<div class="mano-right">
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-07-14/figures/optimizer-loss-mobile.svg"
+        />
+        <img
+            src="/talks/2026-07-14/figures/optimizer-loss.svg"
+            alt="Training loss vs step for Muon, mano, AdamW, SophiaG at 2B / GBS=48 over 1000 steps: mano and Muon converge lowest and nearly overlap, AdamW above, SophiaG highest"
+        />
+    </picture>
+</figure>
+
+</div>
+
+</div>
+
+[^mano]: [`mano`: manifold-normalized optimization](https://arxiv.org/abs/2601.23000) (2026). Implemented in our fork alongside SPAM ([2501.06842](https://arxiv.org/abs/2501.06842)).
+
+<style>{`
+  #mano .mano-grid {
+    display: grid;
+    grid-template-columns: 34ch 1fr;
+    gap: 3ch;
+    align-items: start;
+    width: 100%;
+  }
+  #mano .mano-left { min-width: 0; }
+  #mano .mano-right { min-width: 0; display: flex; justify-content: center; }
+  #mano .mano-right figure { margin: 0; width: 100%; }
+  #mano .mano-right img { width: 100%; height: auto; max-height: 24lh; }
+  /* Tight fixed-width table: pin the numeric columns so the header row
+     can't wrap and the table only claims the width it needs, leaving the
+     rest of the row for the figure. */
+  #mano table { table-layout: fixed; width: 100%; max-width: none; }
+  #mano table th:nth-child(1), #mano table td:nth-child(1) { width: 13ch; }
+  #mano table th:nth-child(2), #mano table td:nth-child(2),
+  #mano table th:nth-child(3), #mano table td:nth-child(3) {
+    width: auto; text-align: right; white-space: nowrap;
+  }
+  @media (max-width: 768px) {
+    #mano .mano-grid { grid-template-columns: 1fr; gap: 1lh; }
+  }
+`}</style>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Appendix: 80B optimizer cliff (one bf16 corner, three dead optimizers)
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="optimizer-cliff" size="sm">
+
+## 80B: one bf16 cliff, three dead optimizers
+
+At 80B (`dim=9216`), **every** constant-finder LR NaN-ed in the first
+~dozen steps: `grad_norm → inf` one step before the loss, while loss
+was still flat (~12.9):
+
+<div class="tight-table">
+
+| Optimizer | Died at | Signature                            |
+| --------- | ------: | ------------------------------------ |
+| `mano`    |  step 5 | grad NaN (diverged **first**)        |
+| AdamW     |  step 9 | grad NaN                             |
+| SophiaG   | step 14 | Hessian-term overflow, ~6,100 node-h |
+
+</div>
+
+<style>{`
+  /* Pin the two short columns so Signature gets the room and stops
+     wrapping (fixed-layout table otherwise splits width evenly). */
+  #optimizer-cliff table { table-layout: fixed; width: max-content; max-width: 100%; }
+  #optimizer-cliff table th:nth-child(1), #optimizer-cliff table td:nth-child(1) { width: 11ch; } /* Optimizer */
+  #optimizer-cliff table th:nth-child(2), #optimizer-cliff table td:nth-child(2) { width: 9ch; }  /* Died at */
+  #optimizer-cliff table th:nth-child(3), #optimizer-cliff table td:nth-child(3) { width: 36ch; } /* Signature */
+`}</style>
+
+- **`mano` (our 2B speed win) died first** (step 5), despite its 80B
+  LR-finder band looking the _safest_ of the three. **Early-step ranking
+  does not predict sustained stability.**
+- Shared failure across 3 optimizers ⇒ a **corner-level instability
+  (bf16 at dim=9216)**, not tuning. Two grad-path triggers: `LBS>1`
+  and large `dp_degree`.
+- **Fix in flight:** long warmup (≥200 steps) + grad clipping,
+  possibly an fp32 grad path. Stable corner today: **TP=4 · LBS=1 ·
+  GBS=372**, validated 100/100 steps NaN-free (loss 12.93 → 7.72) at
+  ~9.8% MFU.
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+Appendix: 80B optimizer-cliff deep dive (NEW)
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="optimizer-cliff-detail">
+
+### 80B cliff: the GBS ladder + why LR-scaling backfires
+
+<div class="cliff-grid">
+
+<div class="cliff-left">
+
+The stable corner (**TP=4 · LBS=1 · bf16 · GBS=372**) held NaN-free
+under batch ramp, until it didn't:
+
+<div class="tight-table">
+
+| Batch           | GBS   | Result                        |
+| --------------- | ----- | ----------------------------- |
+| 1×              | 372   | ✓ 100/100 steps (12.93→7.72)  |
+| 4×              | 1,488 | ✓ 46/46 steps                 |
+| 8×              | 2,976 | ✓ 34/34 steps                 |
+| 16×             | 5,952 | ❌ NaN at step 29             |
+| 16× + LR-scaled | 5,952 | ❌ NaN at step **7** (worse!) |
+
+</div>
+
+- **Do not linearly scale LR with batch here**: it moves the cliff
+  _earlier_.
+- `dp_degree` bisect: `dp=192` and `dp=264` both ran 30 steps clean, so
+  the old "`dp>186` unsafe" warning was over-conservative.
+- 2048N (dp=6138) `SIGSEGV`ed in `set_determinism` (seed broadcast
+  faulted at 24,864 ranks); 512N proven, 1024N is the missing measurement.
+
+</div>
+
+<div class="cliff-right">
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-07-14/figures/lr-finder-80b-mobile.svg"
+        />
+        <img
+            src="/talks/2026-07-14/figures/lr-finder-80b.svg"
+            alt="80B LR-finder at GBS=6144: mano, SophiaG, AdamW, muon loss-vs-LR. AdamW and muon cliff straight to NaN with no minimum; mano and SophiaG reach a real U-minimum first"
+        />
+    </picture>
+    <figcaption>
+        80B LR-finder at the production batch (GBS=6,144, four sweeps). **AdamW
+        and muon cliff straight to NaN** with no usable minimum (× marks the
+        diverged LRs); `mano` and SophiaG reach a real minimum first (circled,
+        ~11.9 / ~11.8) but SophiaG blows up just past it. Data:
+        [`docs/experiments/lr-finder/agpt/80b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/experiments/lr-finder/agpt/80b)
+    </figcaption>
+</figure>
+
+</div>
+
+</div>
+
+<style>{`
+  #optimizer-cliff-detail .cliff-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: 3ch;
+    align-items: center;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+  }
+  #optimizer-cliff-detail .cliff-left { min-width: 0; }
+  #optimizer-cliff-detail .cliff-right {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  #optimizer-cliff-detail .cliff-right figure { margin: 0; width: 100%; }
+  #optimizer-cliff-detail .cliff-right img { width: 100%; height: auto; }
+  @media (max-width: 768px) {
+    #optimizer-cliff-detail .cliff-grid { grid-template-columns: 1fr; gap: 1lh; }
+  }
+  #optimizer-cliff-detail table { table-layout: fixed; width: max-content; max-width: 100%; font-size: 0.9em; }
+  #optimizer-cliff-detail table th:nth-child(1), #optimizer-cliff-detail table td:nth-child(1) { width: 16ch; }
+  #optimizer-cliff-detail table th:nth-child(2), #optimizer-cliff-detail table td:nth-child(2) { width: 8ch; text-align: right; }
+  #optimizer-cliff-detail table th:nth-child(3), #optimizer-cliff-detail table td:nth-child(3) { width: 30ch; }
+`}</style>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
 "The Restarts" — motivation: at scale, failure is the default
 ───────────────────────────────────────────────────────────────*/}
 
@@ -1489,6 +1709,44 @@ Questions?
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
+What it took to train AERIS (same stack / machine)
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="aeris" size="sm">
+
+## What it took to train AERIS
+
+The same Aurora + `ezpz`/`torchtitan` stack also trained
+**AERIS**[^aeris], a pixel-level Swin **diffusion transformer** for
+generative weather & climate prediction, the first diffusion model taken
+to this scale.
+
+<div class="tight-table">
+
+| | |
+| --- | --- |
+| **Model** | Swin diffusion transformer, **1.3B → 80B** params |
+| **Data** | ERA5 reanalysis at 0.25°, 1×1 patches |
+| **Machine** | Aurora, up to **10,080 nodes** |
+| **Parallelism** | **SWiPe**: window ∥ + sequence ∥ + pipeline ∥ (no added comm / no larger global batch) |
+| **Sustained** | **10.21 EFLOP/s** (mixed precision); 11.21 peak |
+| **Scaling** | **95.5%** weak, **81.6%** strong |
+| **Skill** | beats IFS ENS; stable to **90-day** seasonal rollouts |
+
+</div>
+
+- Same lessons carried over: launcher-native scaling, bf16 stability care,
+  and failure-tolerant runs at 10k-node scale.
+- The hard new problem was **scaling diffusion stably at high resolution**,
+  which SWiPe's window-parallelism addresses without inflating the global
+  batch.
+
+[^aeris]: AERIS: Argonne Earth Systems Model for Reliable and Skillful
+Predictions ([arXiv:2509.13523](https://arxiv.org/abs/2509.13523)).
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
 APPENDIX — silent-correctness bugs (deep-dive backup slides)
 ───────────────────────────────────────────────────────────────*/}
 
@@ -1500,10 +1758,8 @@ Material that didn't make the main path but is here for Q&A.
 
 - Open questions
 - Silent-correctness bugs (bf16 RMSNorm freeze · TP loss reporting)
-- 80B optimizer cliff (details) + 80B LR-finder
 - Post-training: CPT · SFT · GRPO
 - Failover engineering deep-dive
-- LR-finder
 - `yeet-env` tarball broadcast scaling
 
 </Slide>
@@ -1715,61 +1971,6 @@ Full writeup: [`docs/experiments/agpt/aurora/20260523-failover-silent-hang-recov
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-Appendix: LR-finder 2B detail + optimal-LR bars
-(lr-finder methodology slide moved to main path after
-optimizer-comparison)
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="lr-finder-results">
-
-### LR-finder — 2B sweep + optimal LR per config
-
-<div class="lr-finder-grid">
-
-<figure>
-    <img
-        src="/talks/2026-06-03/figures/lr-finder-aurora-2b.svg"
-        alt="2B LR-vs-loss sweep — AdamW, Muon, SophiaG overlaid"
-    />
-    <figcaption>2B sweep — flat / descent / blow-up signature.</figcaption>
-</figure>
-
-<figure>
-    <img
-        src="/talks/2026-06-03/figures/lr-finder-aurora-bars.svg"
-        alt="Optimal LR per (model size, optimizer) — bar chart"
-    />
-    <figcaption>
-        Optimal LR per config. AdamW most tolerant; SophiaG ~10× lower.
-    </figcaption>
-</figure>
-
-</div>
-
-**Findings:** AdamW most LR-tolerant; SophiaG needs ~10× lower LR;
-SophiaG + Muon both break at 80B (bf16 overflow in Newton-Schulz /
-Hessian estimate on 9216-dim matrices).
-
-<style>{`
-  #lr-finder-results .lr-finder-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2ch;
-      align-items: start;
-  }
-  #lr-finder-results .lr-finder-grid figure {
-      margin: 0;
-  }
-  @media (max-width: 768px) {
-      #lr-finder-results .lr-finder-grid {
-          grid-template-columns: 1fr;
-      }
-  }
-`}</style>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
 Appendix: Silent killer #1 — bf16 RMSNorm freeze
 ───────────────────────────────────────────────────────────────*/}
 
@@ -1838,226 +2039,6 @@ Appendix: Silent killer #2 — TP loss reporting
 
 - **Lesson**: Bit-exact smoke caught this immediately; the prior 2B TP=1
   baseline gave us a number to disagree with
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-Appendix: alternative optimizers — mano (the 2B-scale win)
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="mano" size="sm">
-
-## `mano`: Muon quality at AdamW speed
-
-[`mano`](https://arxiv.org/abs/2601.23000)[^mano] normalizes updates on a
-rotating **Oblique manifold** with $O(\text{dim})$ vector-norm ops
-(no Newton-Schulz iterations). So it matches Muon's loss without Muon's
-throughput tax.
-
-<div class="mano-grid">
-
-<div class="mano-left">
-
-<div class="tight-table">
-
-| Optimizer  |      Loss |       TPS |
-| ---------- | --------: | --------: |
-| Muon       |     3.557 |     4,556 |
-| **`mano`** | **3.631** | **7,048** |
-| AdamW      |     3.801 |     7,245 |
-| SophiaG    |     4.719 |     7,208 |
-
-</div>
-
-- **Muon and `mano` tie on loss (~3.6); `mano` runs at AdamW speed**
-  (~7,000 vs ~4,600 TPS) → **wins on wall-clock**.
-- Caveat: at **large batch** (GBS=384) AdamW still wins (2.71 vs 2.88);
-  `mano`'s LR was tuned at GBS=48 and needs re-tuning.
-
-</div>
-
-<div class="mano-right">
-
-<figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-07-14/figures/optimizer-loss-mobile.svg"
-        />
-        <img
-            src="/talks/2026-07-14/figures/optimizer-loss.svg"
-            alt="Training loss vs step for Muon, mano, AdamW, SophiaG at 2B / GBS=48 over 1000 steps: mano and Muon converge lowest and nearly overlap, AdamW above, SophiaG highest"
-        />
-    </picture>
-</figure>
-
-</div>
-
-</div>
-
-[^mano]: [`mano`: manifold-normalized optimization](https://arxiv.org/abs/2601.23000) (2026). Implemented in our fork alongside SPAM ([2501.06842](https://arxiv.org/abs/2501.06842)).
-
-<style>{`
-  #mano .mano-grid {
-    display: grid;
-    grid-template-columns: 34ch 1fr;
-    gap: 3ch;
-    align-items: start;
-    width: 100%;
-  }
-  #mano .mano-left { min-width: 0; }
-  #mano .mano-right { min-width: 0; display: flex; justify-content: center; }
-  #mano .mano-right figure { margin: 0; width: 100%; }
-  #mano .mano-right img { width: 100%; height: auto; max-height: 24lh; }
-  /* Tight fixed-width table: pin the numeric columns so the header row
-     can't wrap and the table only claims the width it needs, leaving the
-     rest of the row for the figure. */
-  #mano table { table-layout: fixed; width: 100%; max-width: none; }
-  #mano table th:nth-child(1), #mano table td:nth-child(1) { width: 13ch; }
-  #mano table th:nth-child(2), #mano table td:nth-child(2),
-  #mano table th:nth-child(3), #mano table td:nth-child(3) {
-    width: auto; text-align: right; white-space: nowrap;
-  }
-  @media (max-width: 768px) {
-    #mano .mano-grid { grid-template-columns: 1fr; gap: 1lh; }
-  }
-`}</style>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-Appendix: 80B optimizer cliff (one bf16 corner, three dead optimizers)
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="optimizer-cliff" size="sm">
-
-## 80B: one bf16 cliff, three dead optimizers
-
-At 80B (`dim=9216`), **every** constant-finder LR NaN-ed in the first
-~dozen steps: `grad_norm → inf` one step before the loss, while loss
-was still flat (~12.9):
-
-<div class="tight-table">
-
-| Optimizer | Died at | Signature                            |
-| --------- | ------: | ------------------------------------ |
-| `mano`    |  step 5 | grad NaN (diverged **first**)        |
-| AdamW     |  step 9 | grad NaN                             |
-| SophiaG   | step 14 | Hessian-term overflow, ~6,100 node-h |
-
-</div>
-
-<style>{`
-  /* Pin the two short columns so Signature gets the room and stops
-     wrapping (fixed-layout table otherwise splits width evenly). */
-  #optimizer-cliff table { table-layout: fixed; width: max-content; max-width: 100%; }
-  #optimizer-cliff table th:nth-child(1), #optimizer-cliff table td:nth-child(1) { width: 11ch; } /* Optimizer */
-  #optimizer-cliff table th:nth-child(2), #optimizer-cliff table td:nth-child(2) { width: 9ch; }  /* Died at */
-  #optimizer-cliff table th:nth-child(3), #optimizer-cliff table td:nth-child(3) { width: 36ch; } /* Signature */
-`}</style>
-
-- **`mano` (our 2B speed win) died first** (step 5), despite its 80B
-  LR-finder band looking the _safest_ of the three. **Early-step ranking
-  does not predict sustained stability.**
-- Shared failure across 3 optimizers ⇒ a **corner-level instability
-  (bf16 at dim=9216)**, not tuning. Two grad-path triggers: `LBS>1`
-  and large `dp_degree`.
-- **Fix in flight:** long warmup (≥200 steps) + grad clipping,
-  possibly an fp32 grad path. Stable corner today: **TP=4 · LBS=1 ·
-  GBS=372**, validated 100/100 steps NaN-free (loss 12.93 → 7.72) at
-  ~9.8% MFU.
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-Appendix: 80B optimizer-cliff deep dive (NEW)
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="optimizer-cliff-detail">
-
-### 80B cliff: the GBS ladder + why LR-scaling backfires
-
-<div class="cliff-grid">
-
-<div class="cliff-left">
-
-The stable corner (**TP=4 · LBS=1 · bf16 · GBS=372**) held NaN-free
-under batch ramp, until it didn't:
-
-<div class="tight-table">
-
-| Batch           | GBS   | Result                        |
-| --------------- | ----- | ----------------------------- |
-| 1×              | 372   | ✓ 100/100 steps (12.93→7.72)  |
-| 4×              | 1,488 | ✓ 46/46 steps                 |
-| 8×              | 2,976 | ✓ 34/34 steps                 |
-| 16×             | 5,952 | ❌ NaN at step 29             |
-| 16× + LR-scaled | 5,952 | ❌ NaN at step **7** (worse!) |
-
-</div>
-
-- **Do not linearly scale LR with batch here**: it moves the cliff
-  _earlier_.
-- `dp_degree` bisect: `dp=192` and `dp=264` both ran 30 steps clean, so
-  the old "`dp>186` unsafe" warning was over-conservative.
-- 2048N (dp=6138) `SIGSEGV`ed in `set_determinism` (seed broadcast
-  faulted at 24,864 ranks); 512N proven, 1024N is the missing measurement.
-
-</div>
-
-<div class="cliff-right">
-
-<figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-07-14/figures/lr-finder-80b-mobile.svg"
-        />
-        <img
-            src="/talks/2026-07-14/figures/lr-finder-80b.svg"
-            alt="80B LR-finder at GBS=6144: mano, SophiaG, AdamW, muon loss-vs-LR. AdamW and muon cliff straight to NaN with no minimum; mano and SophiaG reach a real U-minimum first"
-        />
-    </picture>
-    <figcaption>
-        80B LR-finder at the production batch (GBS=6,144, four sweeps). **AdamW
-        and muon cliff straight to NaN** with no usable minimum (× marks the
-        diverged LRs); `mano` and SophiaG reach a real minimum first (circled,
-        ~11.9 / ~11.8) but SophiaG blows up just past it. Data:
-        [`docs/experiments/lr-finder/agpt/80b`](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/experiments/lr-finder/agpt/80b)
-    </figcaption>
-</figure>
-
-</div>
-
-</div>
-
-<style>{`
-  #optimizer-cliff-detail .cliff-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-    gap: 3ch;
-    align-items: center;
-    flex: 1;
-    min-height: 0;
-    width: 100%;
-  }
-  #optimizer-cliff-detail .cliff-left { min-width: 0; }
-  #optimizer-cliff-detail .cliff-right {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  #optimizer-cliff-detail .cliff-right figure { margin: 0; width: 100%; }
-  #optimizer-cliff-detail .cliff-right img { width: 100%; height: auto; }
-  @media (max-width: 768px) {
-    #optimizer-cliff-detail .cliff-grid { grid-template-columns: 1fr; gap: 1lh; }
-  }
-  #optimizer-cliff-detail table { table-layout: fixed; width: max-content; max-width: 100%; font-size: 0.9em; }
-  #optimizer-cliff-detail table th:nth-child(1), #optimizer-cliff-detail table td:nth-child(1) { width: 16ch; }
-  #optimizer-cliff-detail table th:nth-child(2), #optimizer-cliff-detail table td:nth-child(2) { width: 8ch; text-align: right; }
-  #optimizer-cliff-detail table th:nth-child(3), #optimizer-cliff-detail table td:nth-child(3) { width: 30ch; }
-`}</style>
 
 </Slide>
 
