@@ -202,6 +202,31 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)}_
 
 </Slide>
 
+<Slide id="notes">
+
+## Motivation
+
+- How to do _production training_ on a _rapidly evolving_ software
+  stack?
+    - across \{Intel, NVIDIA, AMD, ...\} hardware?
+    - **while also mitigating failures** ?
+        - \{hardware, system, network, lustre, ...\}
+
+- Tension between:
+    - long running pre-training jobs
+    - typical facility scheduling policies
+        - INCITE (>= 20% of machine, 2k nodes on Aurora)  
+          -\> _very_ large batches  
+          -\> bad model, unstable training[^openai18][^zhang25][^zhou25]
+
+    [^openai18]: [An Empirical Model of Large-Batch Training](https://arxiv.org/abs/1812.06162)
+
+    [^zhang25]: [How Does Critical Batch Size Scale in Pre-training?](https://arxiv.org/abs/2410.21676v4)
+
+    [^zhou25]: [How to Set the Batch Size for Large-Scale Pre-training?](https://arxiv.org/abs/2601.05034v1)
+
+</Slide>
+
 {/*───────────────────────────────────────────────────────────────
 Since TPC'26: production status refresh (NEW)
 ───────────────────────────────────────────────────────────────*/}
@@ -243,31 +268,6 @@ Since TPC'26: production status refresh (NEW)
   #since-tpc table th:nth-child(6), #since-tpc table td:nth-child(6) { width: 31ch; white-space: normal; } /* Status */
   #since-tpc pre, #since-tpc table { font-size: 0.95em; }
 `}</style>
-
-</Slide>
-
-<Slide id="notes">
-
-## Motivation
-
-- How to do _production training_ on a _rapidly evolving_ software
-  stack?
-    - across \{Intel, NVIDIA, AMD, ...\} hardware?
-    - **while also mitigating failures** ?
-        - \{hardware, system, network, lustre, ...\}
-
-- Tension between:
-    - long running pre-training jobs
-    - typical facility scheduling policies
-        - INCITE (>= 20% of machine, 2k nodes on Aurora)  
-          -\> _very_ large batches  
-          -\> bad model, unstable training[^openai18][^zhang25][^zhou25]
-
-    [^openai18]: [An Empirical Model of Large-Batch Training](https://arxiv.org/abs/1812.06162)
-
-    [^zhang25]: [How Does Critical Batch Size Scale in Pre-training?](https://arxiv.org/abs/2410.21676v4)
-
-    [^zhou25]: [How to Set the Batch Size for Large-Scale Pre-training?](https://arxiv.org/abs/2601.05034v1)
 
 </Slide>
 
@@ -932,200 +932,6 @@ help** (see the ask).
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-POST-TRAINING (NEW section): CPT -> SFT -> GRPO
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="posttrain-intro">
-
-## Beyond pretraining: CPT · SFT · RL
-
-The base run is done, so the pipeline now extends past pretraining:
-
-<div class="pt-desktop">
-
-```mermaid
-flowchart LR
-    BASE(["<span style='font-weight:700'>2B base</span><br/><i>pretrain · 4.67T</i>"])
-    BASE --> CPT["<span style='font-weight:700'>CPT</span><br/><i>stages 2-3 · +3.1T</i>"]
-    CPT --> SFT["<span style='font-weight:700'>SFT</span><br/><i>tulu math mix</i>"]
-    SFT --> GRPO["<span style='font-weight:700'>GRPO</span><br/><i>arithmetic RL</i>"]
-
-    classDef base fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
-    classDef cpt  fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
-    classDef sft  fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
-    classDef rl   fill:#7c4ed508,stroke:#7c4ed5,color:#7c4ed5,stroke-width:1.5px
-    class BASE base
-    class CPT cpt
-    class SFT sft
-    class GRPO rl
-```
-
-</div>
-
-<div class="pt-mobile">
-
-```mermaid
-flowchart TB
-    BASE(["<span style='font-weight:700'>2B base</span><br/><i>pretrain · 4.67T</i>"])
-    BASE --> CPT["<span style='font-weight:700'>CPT</span><br/><i>stages 2-3 · +3.1T</i>"]
-    CPT --> SFT["<span style='font-weight:700'>SFT</span><br/><i>tulu math mix</i>"]
-    SFT --> GRPO["<span style='font-weight:700'>GRPO</span><br/><i>arithmetic RL</i>"]
-
-    classDef base fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
-    classDef cpt  fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
-    classDef sft  fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
-    classDef rl   fill:#7c4ed508,stroke:#7c4ed5,color:#7c4ed5,stroke-width:1.5px
-    class BASE base
-    class CPT cpt
-    class SFT sft
-    class GRPO rl
-```
-
-</div>
-
-- **CPT**: stages 2-3 of the SophiaG reference (dolmino, then math+code) → 7.77T tokens
-- **SFT**: `checkpoint-729-hf` (on that CPT'd base) is now a first-class production asset
-- **GRPO**: on-policy RL (TRL + vLLM-XPU) on the SFT checkpoint, verified multi-node
-
-<style>{`
-  /* LR on wide, TB on narrow: two mermaid blocks, one hidden per
-     breakpoint. mermaid-render.ts skips 0x0 (display:none) blocks and
-     re-renders the visible one when the 768px query flips. */
-  #posttrain-intro .pt-mobile { display: none; }
-  @media (max-width: 768px) {
-    #posttrain-intro .pt-desktop { display: none; }
-    #posttrain-intro .pt-mobile { display: block; }
-  }
-  #posttrain-intro .mermaid svg { width: 100%; max-width: 100%; }
-  #posttrain-intro .mermaid g.node span, #posttrain-intro .mermaid g.node p { font-size: 1.15em; }
-  #posttrain-intro .mermaid g.node foreignObject { overflow: visible; }
-  #posttrain-intro .mermaid g.node p { line-height: 1.35; padding-bottom: 0.1em; }
-`}</style>
-
-</Slide>
-
-<Slide id="cpt" size="sm">
-
-## CPT: lower loss ≠ better model
-
-Two ~300B-token pilots (256N, GBS=6,144) vs the olmo-100 base plateau:
-
-<div class="cpt-grid">
-
-<figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-07-14/figures/cpt-loss-mobile.svg"
-        />
-        <img
-            src="/talks/2026-07-14/figures/cpt-loss.svg"
-            alt="2B CPT training/validation loss per data mix: dolmino-100 vs olmo50-dolmino50 vs olmo-100 base"
-        />
-    </picture>
-    <figcaption>
-        `dolmino-100` hit the **lowest val loss 2.492** (−0.31 vs base ~2.80);
-        `olmo50-dolmino50` 2.601.
-    </figcaption>
-</figure>
-
-<div class="repo-card repo-card-warning">
-    <div class="repo-card-title">⚠ but downstream evals reversed it</div>
-    ARC-Easy: base <strong>0.651</strong> → dolmino-100 <strong>0.547</strong>
-    (−10.4pp) vs olmo50-dolmino50 <strong>0.610</strong> (holds). HellaSwag fell
-    for both. <strong>No mixing ratio declared a winner</strong>. Hypothesis:
-    re-warm to peak LR caused forgetting; gentle-LR retry pending.
-</div>
-
-</div>
-
-<style>{`
-  /* Figure + warning callout side-by-side: the figure takes ~62% and the
-     callout rides alongside instead of pushing off the bottom. Both align
-     to the top so the chart and the callout title start on the same line. */
-  #cpt .cpt-grid {
-    display: grid;
-    grid-template-columns: 1.6fr 1fr;
-    gap: 3ch;
-    align-items: start;
-    align-content: center;
-    width: 100%;
-    flex: 1;
-    min-height: 0;
-  }
-  #cpt .cpt-grid > figure { margin: 0; min-width: 0; }
-  #cpt .cpt-grid > figure img { width: 100%; height: auto; max-height: 15lh; }
-  /* Top-align the callout with the chart (not centered against the taller
-     figure+caption block, which floated it down opposite the chart's
-     lower half). */
-  #cpt .cpt-grid > .repo-card { min-width: 0; align-self: start; }
-  @media (max-width: 768px) {
-    #cpt .cpt-grid { grid-template-columns: 1fr; gap: 1lh; }
-  }
-`}</style>
-
-</Slide>
-
-<Slide id="sft" size="sm">
-
-## SFT: `tulu_math_uc_mix` on the CPT'd 2B
-
-<figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-07-14/figures/sft-curves-mobile.svg"
-        />
-        <img
-            src="/talks/2026-07-14/figures/sft-curves.svg"
-            alt="AuroraGPT-2B SFT loss curves on tulu_math_uc_mix"
-        />
-    </picture>
-    <figcaption>
-        Run 1 **complete: final loss 0.77** over 4.5B tokens (3 epochs, 32N,
-        GBS=6,144).
-    </figcaption>
-</figure>
-
-- `checkpoint-729-hf` is a **first-class production asset**: it feeds
-  every downstream GRPO experiment.
-- Survived **3 SIGABRTs across 4 mpiexec auto-retry attempts**.
-- Run 3 in progress on the full **~54B-token** mix (~93.1M rows); the
-  v2-base variant is blocked by a scale-only oneCCL fault at 32N.
-
-</Slide>
-
-<Slide id="grpo" size="sm">
-
-## GRPO: arithmetic RL on Intel XPU
-
-On-policy RL via **TRL `GRPOTrainer` + vLLM-XPU**, on the SFT'd 2B
-(`sum_digits` task, 1,000 steps, 8N × 12 = 96 ranks, LR 1e-6):
-
-<figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-07-14/figures/grpo-curves-mobile.svg"
-        />
-        <img
-            src="/talks/2026-07-14/figures/grpo-curves.svg"
-            alt="Arithmetic GRPO reward and accuracy curves over 1000 steps on the SFT'd AuroraGPT-2B"
-        />
-    </picture>
-    <figcaption>
-        Accuracy reward climbs **~0.4 → ~0.9** (from ~0 cold-start).
-    </figcaption>
-</figure>
-
-- **Multi-node GRPO now works** (2026-07-06): the apparent "desync" was
-  two ordinary bugs (a oneCCL MPI-transport SIGSEGV + an AVG→SUM
-  reduction), not an XPU pathology.
-- Still **experimental** (verified on XPU, not production-ready).
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
 Optimizers: mano (2B speed win) + the 80B cliff (moved into main flow)
 ───────────────────────────────────────────────────────────────*/}
 
@@ -1342,6 +1148,200 @@ under batch ramp, until it didn't:
   #optimizer-cliff-detail table th:nth-child(2), #optimizer-cliff-detail table td:nth-child(2) { width: 8ch; text-align: right; }
   #optimizer-cliff-detail table th:nth-child(3), #optimizer-cliff-detail table td:nth-child(3) { width: 30ch; }
 `}</style>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+POST-TRAINING (NEW section): CPT -> SFT -> GRPO
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="posttrain-intro">
+
+## Beyond pretraining: CPT · SFT · RL
+
+The base run is done, so the pipeline now extends past pretraining:
+
+<div class="pt-desktop">
+
+```mermaid
+flowchart LR
+    BASE(["<span style='font-weight:700'>2B base</span><br/><i>pretrain · 4.67T</i>"])
+    BASE --> CPT["<span style='font-weight:700'>CPT</span><br/><i>stages 2-3 · +3.1T</i>"]
+    CPT --> SFT["<span style='font-weight:700'>SFT</span><br/><i>tulu math mix</i>"]
+    SFT --> GRPO["<span style='font-weight:700'>GRPO</span><br/><i>arithmetic RL</i>"]
+
+    classDef base fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
+    classDef cpt  fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
+    classDef sft  fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    classDef rl   fill:#7c4ed508,stroke:#7c4ed5,color:#7c4ed5,stroke-width:1.5px
+    class BASE base
+    class CPT cpt
+    class SFT sft
+    class GRPO rl
+```
+
+</div>
+
+<div class="pt-mobile">
+
+```mermaid
+flowchart TB
+    BASE(["<span style='font-weight:700'>2B base</span><br/><i>pretrain · 4.67T</i>"])
+    BASE --> CPT["<span style='font-weight:700'>CPT</span><br/><i>stages 2-3 · +3.1T</i>"]
+    CPT --> SFT["<span style='font-weight:700'>SFT</span><br/><i>tulu math mix</i>"]
+    SFT --> GRPO["<span style='font-weight:700'>GRPO</span><br/><i>arithmetic RL</i>"]
+
+    classDef base fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
+    classDef cpt  fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
+    classDef sft  fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    classDef rl   fill:#7c4ed508,stroke:#7c4ed5,color:#7c4ed5,stroke-width:1.5px
+    class BASE base
+    class CPT cpt
+    class SFT sft
+    class GRPO rl
+```
+
+</div>
+
+- **CPT**: stages 2-3 of the SophiaG reference (dolmino, then math+code) → 7.77T tokens
+- **SFT**: `checkpoint-729-hf` (on that CPT'd base) is now a first-class production asset
+- **GRPO**: on-policy RL (TRL + vLLM-XPU) on the SFT checkpoint, verified multi-node
+
+<style>{`
+  /* LR on wide, TB on narrow: two mermaid blocks, one hidden per
+     breakpoint. mermaid-render.ts skips 0x0 (display:none) blocks and
+     re-renders the visible one when the 768px query flips. */
+  #posttrain-intro .pt-mobile { display: none; }
+  @media (max-width: 768px) {
+    #posttrain-intro .pt-desktop { display: none; }
+    #posttrain-intro .pt-mobile { display: block; }
+  }
+  #posttrain-intro .mermaid svg { width: 100%; max-width: 100%; }
+  #posttrain-intro .mermaid g.node span, #posttrain-intro .mermaid g.node p { font-size: 1.15em; }
+  #posttrain-intro .mermaid g.node foreignObject { overflow: visible; }
+  #posttrain-intro .mermaid g.node p { line-height: 1.35; padding-bottom: 0.1em; }
+`}</style>
+
+</Slide>
+
+<Slide id="cpt" size="sm">
+
+## CPT: lower loss ≠ better model
+
+Two ~300B-token pilots (256N, GBS=6,144) vs the olmo-100 base plateau:
+
+<div class="cpt-grid">
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-07-14/figures/cpt-loss-mobile.svg"
+        />
+        <img
+            src="/talks/2026-07-14/figures/cpt-loss.svg"
+            alt="2B CPT training/validation loss per data mix: dolmino-100 vs olmo50-dolmino50 vs olmo-100 base"
+        />
+    </picture>
+    <figcaption>
+        `dolmino-100` hit the **lowest val loss 2.492** (−0.31 vs base ~2.80);
+        `olmo50-dolmino50` 2.601.
+    </figcaption>
+</figure>
+
+<div class="repo-card repo-card-warning">
+    <div class="repo-card-title">⚠ but downstream evals reversed it</div>
+    ARC-Easy: base <strong>0.651</strong> → dolmino-100 <strong>0.547</strong>
+    (−10.4pp) vs olmo50-dolmino50 <strong>0.610</strong> (holds). HellaSwag fell
+    for both. <strong>No mixing ratio declared a winner</strong>. Hypothesis:
+    re-warm to peak LR caused forgetting; gentle-LR retry pending.
+</div>
+
+</div>
+
+<style>{`
+  /* Figure + warning callout side-by-side: the figure takes ~62% and the
+     callout rides alongside instead of pushing off the bottom. Both align
+     to the top so the chart and the callout title start on the same line. */
+  #cpt .cpt-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 3ch;
+    align-items: start;
+    align-content: center;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+  }
+  #cpt .cpt-grid > figure { margin: 0; min-width: 0; }
+  #cpt .cpt-grid > figure img { width: 100%; height: auto; max-height: 15lh; }
+  /* Top-align the callout with the chart (not centered against the taller
+     figure+caption block, which floated it down opposite the chart's
+     lower half). */
+  #cpt .cpt-grid > .repo-card { min-width: 0; align-self: start; }
+  @media (max-width: 768px) {
+    #cpt .cpt-grid { grid-template-columns: 1fr; gap: 1lh; }
+  }
+`}</style>
+
+</Slide>
+
+<Slide id="sft" size="sm">
+
+## SFT: `tulu_math_uc_mix` on the CPT'd 2B
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-07-14/figures/sft-curves-mobile.svg"
+        />
+        <img
+            src="/talks/2026-07-14/figures/sft-curves.svg"
+            alt="AuroraGPT-2B SFT loss curves on tulu_math_uc_mix"
+        />
+    </picture>
+    <figcaption>
+        Run 1 **complete: final loss 0.77** over 4.5B tokens (3 epochs, 32N,
+        GBS=6,144).
+    </figcaption>
+</figure>
+
+- `checkpoint-729-hf` is a **first-class production asset**: it feeds
+  every downstream GRPO experiment.
+- Survived **3 SIGABRTs across 4 mpiexec auto-retry attempts**.
+- Run 3 in progress on the full **~54B-token** mix (~93.1M rows); the
+  v2-base variant is blocked by a scale-only oneCCL fault at 32N.
+
+</Slide>
+
+<Slide id="grpo" size="sm">
+
+## GRPO: arithmetic RL on Intel XPU
+
+On-policy RL via **TRL `GRPOTrainer` + vLLM-XPU**, on the SFT'd 2B
+(`sum_digits` task, 1,000 steps, 8N × 12 = 96 ranks, LR 1e-6):
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-07-14/figures/grpo-curves-mobile.svg"
+        />
+        <img
+            src="/talks/2026-07-14/figures/grpo-curves.svg"
+            alt="Arithmetic GRPO reward and accuracy curves over 1000 steps on the SFT'd AuroraGPT-2B"
+        />
+    </picture>
+    <figcaption>
+        Accuracy reward climbs **~0.4 → ~0.9** (from ~0 cold-start).
+    </figcaption>
+</figure>
+
+- **Multi-node GRPO now works** (2026-07-06): the apparent "desync" was
+  two ordinary bugs (a oneCCL MPI-transport SIGSEGV + an AVG→SUM
+  reduction), not an XPU pathology.
+- Still **experimental** (verified on XPU, not production-ready).
 
 </Slide>
 
@@ -1627,6 +1627,45 @@ What generalizes / open questions / fin
 
 </Slide>
 
+{/*───────────────────────────────────────────────────────────────
+What it took to train AERIS (same stack / machine)
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="aeris" size="sm">
+
+## What it took to train AERIS
+
+On the **same machine** (Aurora), but with its **own separate stack**,
+**AERIS**[^aeris] is a pixel-level Swin **diffusion transformer** for
+generative weather & climate prediction, the first diffusion model taken
+to this scale, a useful contrast point for what full-machine training
+demands.
+
+<div class="tight-table">
+
+| | |
+| --- | --- |
+| **Model** | Swin diffusion transformer, **1.3B → 80B** params |
+| **Data** | ERA5 reanalysis at 0.25°, 1×1 patches |
+| **Machine** | Aurora, up to **10,080 nodes** |
+| **Parallelism** | **SWiPe**: window ∥ + sequence ∥ + pipeline ∥ (no added comm / no larger global batch) |
+| **Sustained** | **10.21 EFLOP/s** (mixed precision); 11.21 peak |
+| **Scaling** | **95.5%** weak, **81.6%** strong |
+| **Skill** | beats IFS ENS; stable to **90-day** seasonal rollouts |
+
+</div>
+
+- A separate codebase, but the **same operational realities** we hit:
+  bf16 stability, full-machine scaling, and failure tolerance at 10k nodes.
+- Its hard new problem was **scaling diffusion stably at high resolution**,
+  which SWiPe's window-parallelism addresses without inflating the global
+  batch.
+
+[^aeris]: AERIS: Argonne Earth Systems Model for Reliable and Skillful
+Predictions ([arXiv:2509.13523](https://arxiv.org/abs/2509.13523)).
+
+</Slide>
+
 <Slide id="thanks">
 
 <a
@@ -1709,45 +1748,6 @@ Questions?
     }
   }
 `}</style>
-
-</Slide>
-
-{/*───────────────────────────────────────────────────────────────
-What it took to train AERIS (same stack / machine)
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="aeris" size="sm">
-
-## What it took to train AERIS
-
-On the **same machine** (Aurora), but with its **own separate stack**,
-**AERIS**[^aeris] is a pixel-level Swin **diffusion transformer** for
-generative weather & climate prediction, the first diffusion model taken
-to this scale, a useful contrast point for what full-machine training
-demands.
-
-<div class="tight-table">
-
-| | |
-| --- | --- |
-| **Model** | Swin diffusion transformer, **1.3B → 80B** params |
-| **Data** | ERA5 reanalysis at 0.25°, 1×1 patches |
-| **Machine** | Aurora, up to **10,080 nodes** |
-| **Parallelism** | **SWiPe**: window ∥ + sequence ∥ + pipeline ∥ (no added comm / no larger global batch) |
-| **Sustained** | **10.21 EFLOP/s** (mixed precision); 11.21 peak |
-| **Scaling** | **95.5%** weak, **81.6%** strong |
-| **Skill** | beats IFS ENS; stable to **90-day** seasonal rollouts |
-
-</div>
-
-- A separate codebase, but the **same operational realities** we hit:
-  bf16 stability, full-machine scaling, and failure tolerance at 10k nodes.
-- Its hard new problem was **scaling diffusion stably at high resolution**,
-  which SWiPe's window-parallelism addresses without inflating the global
-  batch.
-
-[^aeris]: AERIS: Argonne Earth Systems Model for Reliable and Skillful
-Predictions ([arXiv:2509.13523](https://arxiv.org/abs/2509.13523)).
 
 </Slide>
 
