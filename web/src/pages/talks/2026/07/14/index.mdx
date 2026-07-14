@@ -870,15 +870,11 @@ flowchart TB
   #fork-tax .mermaid g.node.gate > polygon {
     filter: drop-shadow(0 2px 5px #88888830);
   }
-  /* Bump arrowhead size — mermaid's defaults are sized for in-doc
-     diagrams, not slide-distance viewing. Scale up the arrowhead
-     marker SVGs ~1.8x via transform on the marker children, and
-     thicken the edge paths so the connector strokes match the
-     bigger heads. */
-  #fork-tax .mermaid marker {
-    markerWidth: 16;
-    markerHeight: 16;
-  }
+  /* Recolor + thicken the connectors so the edges read at slide
+     distance next to the bumped-up (1.6em) node text. The arrowhead
+     markers themselves are SVG geometry (markerWidth/Height attrs,
+     not CSS), so they're enlarged once per render in mermaid-render.ts
+     (see the #fork-tax marker-scaling block there). */
   #fork-tax .mermaid .marker {
     fill: var(--foreground2, #888) !important;
     stroke: var(--foreground2, #888) !important;
@@ -886,7 +882,15 @@ flowchart TB
   }
   #fork-tax .mermaid g.edgePaths .path,
   #fork-tax .mermaid g.edgePaths path {
-    stroke-width: 2 !important;
+    stroke-width: 3 !important;
+  }
+  /* Edge labels ("retry", the ✅/❌ badges) default to 16px — tiny next
+     to the 1.6em node text. Bump the leaf text and let it overflow
+     mermaid's fixed 40x20 foreignObject box. */
+  #fork-tax .mermaid .edgeLabel foreignObject { overflow: visible; }
+  #fork-tax .mermaid .edgeLabel span,
+  #fork-tax .mermaid .edgeLabel p {
+    font-size: 1.5em;
   }
 `}</style>
 

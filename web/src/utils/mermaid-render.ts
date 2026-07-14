@@ -386,6 +386,23 @@ function stabilizeMermaidSvgLayout() {
         )
         node.style.setProperty('visibility', 'visible', 'important')
 
+        // Enlarge arrowhead markers on the fork-tax diagram: its node text
+        // is bumped to 1.6em for slide-distance viewing, which leaves
+        // mermaid's default 8px arrowheads (SVG markerWidth/Height attrs,
+        // not stylable via CSS) looking tiny. Scale them ~1.9x once here.
+        if (node.closest('#fork-tax')) {
+            node.querySelectorAll('marker').forEach((marker) => {
+                if (marker.getAttribute('data-scaled') === '1') return
+                const w = Number(marker.getAttribute('markerWidth'))
+                const h = Number(marker.getAttribute('markerHeight'))
+                if (Number.isFinite(w) && w > 0)
+                    marker.setAttribute('markerWidth', (w * 1.9).toFixed(1))
+                if (Number.isFinite(h) && h > 0)
+                    marker.setAttribute('markerHeight', (h * 1.9).toFixed(1))
+                marker.setAttribute('data-scaled', '1')
+            })
+        }
+
         const block = node.closest('.mermaid')
         if (block instanceof HTMLElement) {
             setupInteractiveViewport(block)
