@@ -1039,11 +1039,13 @@ was still flat (~12.9):
 
 <style>{`
   /* Pin the two short columns so Signature gets the room and stops
-     wrapping (fixed-layout table otherwise splits width evenly). */
+     wrapping (fixed-layout table otherwise splits width evenly). The
+     first two columns nowrap so "Optimizer" / "Died at" / "step 14"
+     can't break mid-cell; widths include cell padding. */
   #optimizer-cliff table { table-layout: fixed; width: max-content; max-width: 100%; }
-  #optimizer-cliff table th:nth-child(1), #optimizer-cliff table td:nth-child(1) { width: 11ch; } /* Optimizer */
-  #optimizer-cliff table th:nth-child(2), #optimizer-cliff table td:nth-child(2) { width: 9ch; }  /* Died at */
-  #optimizer-cliff table th:nth-child(3), #optimizer-cliff table td:nth-child(3) { width: 36ch; } /* Signature */
+  #optimizer-cliff table th:nth-child(1), #optimizer-cliff table td:nth-child(1) { width: 13ch; white-space: nowrap; } /* Optimizer */
+  #optimizer-cliff table th:nth-child(2), #optimizer-cliff table td:nth-child(2) { width: 11ch; white-space: nowrap; } /* Died at */
+  #optimizer-cliff table th:nth-child(3), #optimizer-cliff table td:nth-child(3) { width: 34ch; } /* Signature */
 `}</style>
 
 - **`mano` (our 2B speed win) died first** (step 5), despite its 80B
