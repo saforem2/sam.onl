@@ -46,7 +46,7 @@ OUT = Path.home() / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/figur
 RUNS = [
     ('adamw.parquet',    'AdamW',          '#43a047', 'o'),  # green   · circle  (Material green 600 — toned down from the brighter #22c55e that was bleaching against white)
     ('lamb.parquet',     'Lamb',           '#e53935', 's'),  # red     · square  (Material red 600 — IPEX FusedLamb under the hood)
-    ('muonclip.parquet', 'Muon',           '#eab308', '^'),  # yellow  · triangle (Tailwind yellow 500 — saturated enough to hold on a white projector, unlike the lighter #facc15 yellow 400)
+    ('muonclip.parquet', 'Muon',           '#ee8f24', '^'),  # orange · triangle (matches lr-finder + deck optimizer palette; was gold #eab308)
     ('sophiag.parquet',  'SophiaG',        '#2196f3', 'D'),  # blue    · diamond (Material blue 500)
 ]
 
@@ -126,14 +126,14 @@ def _draw(ax_loss, ax_grad):
         ax_loss.plot(
             x, loss,
             color=color, label=label,
-            linewidth=2.0, alpha=0.95,
+            linewidth=2.8, alpha=0.95,
             marker=marker, markevery=idxs,
             markersize=8, markeredgewidth=0,
         )
         ax_grad.plot(
             x, gn,
             color=color, label=label,
-            linewidth=2.0, alpha=0.95,
+            linewidth=2.8, alpha=0.95,
             marker=marker, markevery=idxs,
             markersize=8, markeredgewidth=0,
         )
