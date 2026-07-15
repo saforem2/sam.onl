@@ -48,7 +48,7 @@ OUT_DIR = (
 # (label, slug, color, marker) — matches the optimizer-comparison palette.
 OPTIMIZERS = [
     ('AdamW',   'adamw',   '#43a047', 'o'),  # green
-    ('Muon',    'muon',    '#eab308', '^'),  # yellow
+    ('Muon',    'muon',    '#ee8f24', '^'),  # orange (matches optimizer-comparison)
     ('SophiaG', 'sophiag', '#2196f3', 'D'),  # blue
 ]
 
@@ -154,7 +154,7 @@ def _draw_panel(ax, size_label: str, size_slug: str, y_cap: float):
         every = max(1, len(lr) // 12)
         ax.fill_between(lr, lo, hi, color=color, alpha=0.15,
                         linewidth=0, zorder=2)
-        ax.plot(lr, mean, color=color, lw=2.0,
+        ax.plot(lr, mean, color=color, lw=2.8,
                 marker=marker, ms=5, markevery=every,
                 alpha=0.95, label=opt_label, zorder=3)
         # Suggested-LR vertical dotted line. AdamW + SophiaG can
