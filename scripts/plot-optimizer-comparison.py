@@ -44,10 +44,13 @@ OUT = Path.home() / 'projects/saforem2/sam.onl/web/public/talks/2026-06-03/figur
 # additional story. MuonClip is relabeled 'Muon' since the audience
 # knows the category, not the variant distinction.
 RUNS = [
-    ('adamw.parquet',    'AdamW',          '#43a047', 'o'),  # green   · circle  (Material green 600 — toned down from the brighter #22c55e that was bleaching against white)
-    ('lamb.parquet',     'Lamb',           '#e53935', 's'),  # red     · square  (Material red 600 — IPEX FusedLamb under the hood)
-    ('muonclip.parquet', 'Muon',           '#ee8f24', '^'),  # orange · triangle (matches lr-finder + deck optimizer palette; was gold #eab308)
-    ('sophiag.parquet',  'SophiaG',        '#2196f3', 'D'),  # blue    · diamond (Material blue 500)
+    # Canonical deck optimizer palette (matches gen-optimizer-loss.mjs +
+    # gen-lrfinder-80b.mjs + plot-lr-finder.py):
+    # AdamW=orange, Muon=blue, SophiaG=red, mano=green, Lamb=purple.
+    ('adamw.parquet',    'AdamW',          '#ee8f24', 'o'),  # orange · circle
+    ('lamb.parquet',     'Lamb',           '#9a76ce', 's'),  # purple · square (IPEX FusedLamb; distinct from the 4 shared optimizers)
+    ('muonclip.parquet', 'Muon',           '#118cc2', '^'),  # blue   · triangle
+    ('sophiag.parquet',  'SophiaG',        '#e05560', 'D'),  # red    · diamond
 ]
 
 # Drop a marker every N billion tokens. Coarse enough to avoid a

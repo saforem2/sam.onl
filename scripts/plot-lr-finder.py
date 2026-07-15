@@ -47,9 +47,11 @@ OUT_DIR = (
 
 # (label, slug, color, marker) — matches the optimizer-comparison palette.
 OPTIMIZERS = [
-    ('AdamW',   'adamw',   '#43a047', 'o'),  # green
-    ('Muon',    'muon',    '#ee8f24', '^'),  # orange (matches optimizer-comparison)
-    ('SophiaG', 'sophiag', '#2196f3', 'D'),  # blue
+    # Canonical deck optimizer palette (matches gen-optimizer-loss.mjs +
+    # gen-lrfinder-80b.mjs): AdamW=orange, Muon=blue, SophiaG=red.
+    ('AdamW',   'adamw',   '#ee8f24', 'o'),  # orange
+    ('Muon',    'muon',    '#118cc2', '^'),  # blue
+    ('SophiaG', 'sophiag', '#e05560', 'D'),  # red
 ]
 
 # Machines we pool over. Both machines' CSVs are loaded for each
