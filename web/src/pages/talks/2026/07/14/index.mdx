@@ -1,6 +1,6 @@
 ---
 layout: '@/layouts/SlideLayout.astro'
-title: 'Training Models for Science on Aurora'
+title: 'Pre-Training AuroraGPT at Scale on Aurora'
 # shortTitle: 'Training Models for Science on Aurora'
 # subtitle: 'Lessons from AuroraGPT'
 # description: 'Production pre-training at scale is less a story of peak FLOP/s than of what works, what breaks, and how cheaply you recover. This talk describes the open-source stack we have built and battle-tested through the AuroraGPT effort at the Argonne Leadership Computing Facility, where we routinely train across thousands of Intel GPU nodes on Aurora. The stack pairs `blendcorpus` for reproducible, weighted data blending with a fork of `torchtitan` extended to target Intel XPUs, driven by `ezpz`: our orchestration layer that makes distributed PyTorch launches portable across \{NVIDIA, AMD, Intel, MPS, CPU\} with zero code changes. This updated cut covers the latest developments since TPC26: the 2B reference run completing 4.67T tokens, the 20B/512N production chain overtaking it on evals per token, a manifold-normalized optimizer (`mano`) that matches Muon quality at AdamW speed, the shared bf16 optimizer cliff that NaN-ed all three optimizers at 80B, and where MoE throughput stands on Intel XPUs. We close on what generalizes across vendors, what we got wrong, and the open questions we would like this community to help us answer.'
@@ -32,7 +32,7 @@ export const ASSETS = 'https://samforeman.me/assets'
     <span>samf.sh/talks/2026/07/14</span>
 </a>
 
-# <span style="color:var(--foreground0);">Training Models for Science on Aurora</span>
+# <span style="color:var(--foreground0);">Pre-Training AuroraGPT at Scale on Aurora</span>
 
 <p class="title-slide-thesis">
     Less a story of peak FLOP/s than of what works, what breaks, and how cheaply
