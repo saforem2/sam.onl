@@ -161,11 +161,15 @@ function buildSVG(cfg) {
                 .join(' ')
             body += `<path d="${d}" fill="none" stroke="${r.color}" stroke-width="2.8"/>`
         }
-        // legend (top-left, in the corner the curves have dropped out of)
+        // legend (top-left, in the corner the curves have dropped out of).
+        // Order top->bottom by final loss (worst->best) so the legend rows
+        // line up with where the curves settle on the right edge: SophiaG,
+        // AdamW, mano, Muon.
+        const legendOrder = [...SERIES].sort((a, b) => b.val - a.val)
         const lx = ax + 14
         let ly = ay + 16
         body += `<rect x="${lx - 10}" y="${ly - 15}" width="${cfg.legendW}" height="${SERIES.length * cfg.legendRowH + 10}" fill="#83838310" stroke="#83838333" stroke-width="1"/>`
-        for (const r of [...SERIES].reverse()) {
+        for (const r of legendOrder) {
             body += `<line x1="${lx}" y1="${ly - 4}" x2="${lx + 20}" y2="${ly - 4}" stroke="${r.color}" stroke-width="2.8"/>`
             body += `<text x="${lx + 28}" y="${ly}" font-family="${FONT}" font-size="${cfg.legendSize}" fill="#838383">${esc(r.label)} <tspan fill="${r.color}">${r.val.toFixed(3)}</tspan></text>`
             ly += cfg.legendRowH
