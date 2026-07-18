@@ -327,6 +327,16 @@
        layered one), so both must use this var. */
     :is(pre, code, kbd, samp, var, .astro-code) {
         font-family: var(--code-font-family);
+        /* Kill ligatures in code: Iosevka renders "--" as a single long
+           dash, which makes CLI flags (--no-banner, --with-inference) read
+           like em-dashes even though the source is correct double-hyphens.
+           Copy-paste is unaffected, but it looks wrong / untrustworthy in a
+           post full of copy-pasteable commands. */
+        font-variant-ligatures: none;
+        font-feature-settings:
+            'liga' 0,
+            'calt' 0,
+            'dlig' 0;
     }
     ::highlight(vim) {
         background-color: var(--foreground0);
