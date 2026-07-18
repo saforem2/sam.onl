@@ -1260,18 +1260,24 @@ h6::before {
             transition:
                 color 120ms ease-out,
                 background-color 120ms ease-out,
-                transform 0.1s ease-out,
-                box-shadow 0.1s ease-out;
+                transform 0.1s ease-out;
+            /* The box-shadow lift lives on ::before (the WebTUI frame), so
+               animate it there too. */
+            &::before {
+                transition: box-shadow 0.1s ease-out;
+            }
             /* The destination title keeps the link color (the box's color
                is now grey for the border). */
             & span[pad-] {
                 color: var(--url);
             }
-            /* Hover/focus: faint accent wash + accent border/text, plus the
-               tactile lift + hard TUI shadow used by the action buttons
-               (nudge up-left, drop a hard offset shadow in the accent hue).
-               3px offset (vs the buttons' 2px) so the lift still reads on
-               these larger boxes. */
+            /* Hover/focus: faint accent wash + accent border/text, plus a
+               tactile lift with a hard TUI shadow. WebTUI draws the box
+               frame as a ::before border (not the element's own border), so
+               the shadow must ride the ::before or it renders behind the
+               frame as a clumsy doubled line. Shadowing ::before lifts the
+               border + shadow together as one crisp unit, matching the
+               keycap button language. */
             &:focus,
             &:hover {
                 color: var(--accent);
@@ -1280,12 +1286,17 @@ h6::before {
                         0.1
                 );
                 transform: translate(-2px, -2px);
-                box-shadow: 3px 3px 0 0 var(--accent);
             }
-            /* Pressed: snap flatter with a smaller shadow. */
+            &:focus::before,
+            &:hover::before {
+                box-shadow: 4px 4px 0 0 var(--accent);
+            }
+            /* Pressed: snap flat with a smaller shadow. */
             &:active {
                 transform: translate(0, 0);
-                box-shadow: 1px 1px 0 0 var(--accent);
+            }
+            &:active::before {
+                box-shadow: 2px 2px 0 0 var(--accent);
             }
             /* Keep the title text accent-colored too on hover (it's pinned
                to --url at rest by the span[pad-] rule above). */
