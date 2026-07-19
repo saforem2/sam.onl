@@ -570,6 +570,12 @@ const resolvedOgType = ogType ?? 'website'
         />
     </head>
     <body>
+        <!-- Skip link: first focusable element so keyboard/AT users can jump
+             past the navbar + sidebar + TOC to the content (WCAG 2.4.1).
+             Visually hidden until focused. Targets the main region via the
+             shared selector below (works on Doc #main-content, slide <main>,
+             and the landing page alike). -->
+        <a href="#main-content" class="skip-link">Skip to content</a>
         <slot />
         <script type="module">
             const MAIN_FOCUS_SELECTOR = '#main-content, main, [role="main"]'
@@ -581,6 +587,12 @@ const resolvedOgType = ogType ?? 'website'
 
             const focusMainRegion = () => {
                 if (window.location.hash.length > 0) return
+                // The skip link now serves the same "jump past nav" purpose,
+                // and is the standard, user-controlled pattern. Auto-focusing
+                // main on load would strand it (focus starts *inside* content,
+                // so forward-Tab never reaches it). Leave focus at the top so
+                // the skip link is the first Tab stop.
+                if (document.querySelector('.skip-link')) return
 
                 const mainRegion = document.querySelector(MAIN_FOCUS_SELECTOR)
                 if (!(mainRegion instanceof HTMLElement)) return
@@ -612,6 +624,21 @@ const resolvedOgType = ogType ?? 'website'
             }
 
             focusMainRegion()
+
+            // Skip link: focus the main region regardless of whether it's
+            // literally #main-content (slides/landing use <main>). Reuses the
+            // selector above so it never dead-links.
+            document
+                .querySelector('.skip-link')
+                ?.addEventListener('click', (e) => {
+                    const main = document.querySelector(MAIN_FOCUS_SELECTOR)
+                    if (!(main instanceof HTMLElement)) return
+                    e.preventDefault()
+                    if (!isNaturallyFocusable(main))
+                        main.setAttribute('tabindex', '-1')
+                    main.focus()
+                    main.scrollIntoView()
+                })
         </script>
         <script>
             if (

@@ -168,6 +168,28 @@
 }
 
 @layer base {
+    /* Skip-to-content link: off-screen until focused, then pinned top-left
+       as a TUI chip. First focusable element so keyboard/AT users bypass the
+       nav chrome (WCAG 2.4.1). */
+    .skip-link {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        transform: translateY(-120%);
+        padding: 0.5lh 1ch;
+        background-color: var(--background0);
+        color: var(--foreground0);
+        border: 1px solid var(--foreground2);
+        text-decoration: none;
+        transition: transform 0.1s ease-out;
+    }
+    .skip-link:focus {
+        transform: translateY(0);
+        outline: 2px solid var(--accent, var(--blue));
+        outline-offset: 2px;
+    }
+
     /* :where(a, button, summary, [tabindex]:not([tabindex='-1'])):focus-visible { */
     /*     outline: 2px solid var(--foreground0); */
     /*     outline-offset: 2px; */
