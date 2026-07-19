@@ -2106,7 +2106,12 @@ html[data-webtui-theme='catppuccin-latte'] {
         border: none !important;
         content: none !important;
     }
-    table:not([data-table-style='terminal']) tr :is(td, th) {
+    /* Exclude the CodePreview code-table (:has(.line-code)) — it's a
+       borderless line-numbered listing, not a content table, and this
+       1px cell border was drawing a grid across the HTML/CSS panes. */
+    table:not([data-table-style='terminal']):not(:has(.line-code))
+        tr
+        :is(td, th) {
         border: 1px solid var(--foreground3);
         padding: 0 1ch;
     }
