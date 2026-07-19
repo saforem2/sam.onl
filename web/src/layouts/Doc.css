@@ -1261,24 +1261,32 @@ h6::before {
                 color 120ms ease-out,
                 background-color 120ms ease-out,
                 transform 0.1s ease-out;
+            /* The box-shadow lift lives on ::before (the WebTUI frame), so
+               animate it there too. */
+            &::before {
+                transition: box-shadow 0.1s ease-out;
+            }
             /* The destination title keeps the link color (the box's color
                is now grey for the border). */
             & span[pad-] {
                 color: var(--url);
             }
-            /* Hover/focus: the whole notched chip turns accent as one unit —
-               border, badge, title, and a faint wash — with a 1px lift. An
-               offset TUI shadow was tried but fights this shape: the WebTUI
-               frame is a ::before covering only the lower half (the [n]ext
-               badge notches the top), so any box-shadow wrapped a partial
-               box and read as a detached/lopsided drop. Recoloring the full
-               silhouette is cleaner and still clearly interactive. */
+            /* Hover/focus: the whole notched chip turns accent — border,
+               badge, title, faint wash — and lifts up-left with a hard TUI
+               shadow. WebTUI draws the frame as a ::before (covering the
+               lower half; the badge notches the top), so the shadow rides
+               ::before to lift the frame as one unit; recoloring the badge
+               too keeps the top notch lifting with it. */
             &:focus,
             &:hover {
                 color: var(--accent);
                 --box-border-color: var(--accent);
                 background-color: oklch(from var(--accent) l c h / 0.08);
-                transform: translateY(-1px);
+                transform: translate(-2px, -2px);
+            }
+            &:focus::before,
+            &:hover::before {
+                box-shadow: 4px 4px 0 0 var(--accent);
             }
             /* Badge chip (the [b]ack / [n]ext label) picks up the accent too
                so the top notch lifts visually with the frame. */
@@ -1286,8 +1294,12 @@ h6::before {
             &:hover [is-='badge'] {
                 --badge-color: var(--accent);
             }
+            /* Pressed: snap flat with a smaller shadow. */
             &:active {
-                transform: translateY(0);
+                transform: translate(0, 0);
+            }
+            &:active::before {
+                box-shadow: 2px 2px 0 0 var(--accent);
             }
             /* Keep the title text accent-colored too on hover (it's pinned
                to --url at rest by the span[pad-] rule above). */
