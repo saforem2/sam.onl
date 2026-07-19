@@ -1146,9 +1146,12 @@ const articleSchema =
             const scroller = (window as any).getDocScroller?.() ?? mainContent
             if (!scroller) return
             const halfPage = scroller.clientHeight / 2
+            const reduceMotion = window.matchMedia(
+                '(prefers-reduced-motion: reduce)',
+            ).matches
             scroller.scrollBy({
                 top: e.key === 'd' ? halfPage : -halfPage,
-                behavior: 'smooth',
+                behavior: reduceMotion ? 'auto' : 'smooth',
             })
             // No focus-follow here: calling .focus() mid-animation scrolls the
             // target back into view and cancels the smooth scroll (and made

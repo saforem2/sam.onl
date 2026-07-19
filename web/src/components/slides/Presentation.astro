@@ -447,7 +447,11 @@ const canonical = `samf.sh${url}`
                 render(idx)
                 requestAnimationFrame(() => {
                     target.scrollIntoView({
-                        behavior: 'smooth',
+                        behavior: window.matchMedia(
+                            '(prefers-reduced-motion: reduce)',
+                        ).matches
+                            ? 'auto'
+                            : 'smooth',
                         block: 'center',
                     })
                 })
@@ -519,7 +523,11 @@ const canonical = `samf.sh${url}`
                     requestAnimationFrame(() => {
                         const target = document.getElementById(id)
                         target?.scrollIntoView({
-                            behavior: 'smooth',
+                            behavior: window.matchMedia(
+                                '(prefers-reduced-motion: reduce)',
+                            ).matches
+                                ? 'auto'
+                                : 'smooth',
                             block: 'center',
                         })
                     })
