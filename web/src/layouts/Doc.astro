@@ -330,7 +330,11 @@ const articleSchema =
 <Layout
     ogSlug={Astro.url.pathname.replace(/^\//, '').replace(/\/$/, '')}
     title={frontmatter.title ? `${frontmatter.title} — Sam Foreman` : undefined}
-    description={frontmatter.description}>
+    description={frontmatter.description}
+    ogType={isPost ? 'article' : 'website'}
+    publishedTime={isPost && frontmatter.date
+        ? new Date(frontmatter.date).toISOString()
+        : undefined}>
     {
         articleSchema && (
             <script type="application/ld+json" set:html={articleSchema} />

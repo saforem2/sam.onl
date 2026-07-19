@@ -5,14 +5,22 @@ interface Props {
     ogSlug?: string
     description?: string
     title?: string
+    ogType?: 'website' | 'article'
+    publishedTime?: string
 }
 
-const { ogSlug, description, title } = Astro.props as Props
+const { ogSlug, description, title, ogType, publishedTime } =
+    Astro.props as Props
 const pageDescription = description || "Sam Foreman's Personal Website"
 const pageTitle = title || 'Sam Foreman'
 const ogImage = ogSlug
     ? `https://samf.sh/og/${ogSlug}.png`
     : 'https://samf.sh/social-card.png'
+// Canonical + per-page og:url, resolved against the configured site
+// (https://samf.sh) so they're correct regardless of which host served
+// the page (sam.onl, *.pages.dev preview builds, etc.).
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href
+const resolvedOgType = ogType ?? 'website'
 ---
 
 <!doctype html>
@@ -135,6 +143,19 @@ const ogImage = ogSlug
         <meta name="generator" content={Astro.generator} />
         <title>{pageTitle}</title>
 
+        <!-- Canonical: the site is served from samf.sh, sam.onl, and
+             per-commit *.sam-onl.pages.dev; point every page at its
+             canonical samf.sh URL so crawlers don't split-index it. -->
+        <link rel="canonical" href={pageUrl} />
+
+        <!-- RSS autodiscovery -->
+        <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="Sam Foreman"
+            href="/rss.xml"
+        />
+
         <!-- Icon(s) -->
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
@@ -147,7 +168,7 @@ const ogImage = ogSlug
 
         <!-- OpenGraph / X Description -->
         <meta name="description" content={pageDescription} />
-        <meta name="og:description" content={pageDescription} />
+        <meta property="og:description" content={pageDescription} />
         <meta name="twitter:description" content={pageDescription} />
 
         <!-- OpenGraph / X Cover Image -->
@@ -167,11 +188,19 @@ const ogImage = ogSlug
         />
 
         <!-- Misc Metadata -->
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://samf.sh" />
+        <meta property="og:type" content={resolvedOgType} />
+        {
+            resolvedOgType === 'article' && publishedTime && (
+                <meta
+                    property="article:published_time"
+                    content={publishedTime}
+                />
+            )
+        }
+        <meta property="og:url" content={pageUrl} />
         <meta name="twitter:site" content="@saforem2" />
         <meta name="twitter:creator" content="@saforem2" />
-        <meta name="twitter:url" content="https://samf.sh" />
+        <meta name="twitter:url" content={pageUrl} />
         <meta
             name="keywords"
             content="blog,machine learning,deep learning,artificial intelligence,supercomputing,programming,technology,sam foreman"
