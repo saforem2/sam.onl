@@ -2724,47 +2724,55 @@ const articleSchema =
                     '#preview',
                 ) as HTMLIFrameElement
                 if (!iframe) return
-                const colorPreference = window.matchMedia(
-                    '(prefers-color-scheme: dark)',
-                )
+                const html = document.querySelector('html') as HTMLElement
                 const initialTheme = this.getAttribute('data-initial-theme')
-                const preferredTheme =
-                    initialTheme ??
-                    (colorPreference.matches ? 'custom-dark' : 'custom-light')
 
-                const iframeDocument = iframe.contentDocument
-                if (
-                    !iframeDocument ||
-                    iframeDocument.readyState === 'loading'
-                ) {
-                    iframe.addEventListener('load', () => {
-                        this.updateIframeTheme(preferredTheme)
-                    })
-                } else {
-                    this.updateIframeTheme(preferredTheme)
-                }
+                // The preview follows the reader's active page theme by
+                // default. Picking from this example's own dropdown is a
+                // sticky LOCAL override: once set, this preview stops
+                // following the page.
+                let overridden = false
+                const pageTheme = () =>
+                    html.getAttribute('data-webtui-theme') ??
+                    initialTheme ??
+                    'custom-light'
+
+                // The srcdoc bakes in data-initial-theme, so wait until
+                // that document has actually parsed before overriding it
+                // with the page theme. `load` covers the parse-later case;
+                // the immediate call covers the already-parsed race (load
+                // fired before this deferred module ran). updateIframeTheme
+                // is idempotent.
+                const applyInitial = () => this.updateIframeTheme(pageTheme())
+                const srcdocReady = () =>
+                    !!iframe.contentDocument?.documentElement?.hasAttribute(
+                        'data-webtui-theme',
+                    )
+                iframe.addEventListener('load', applyInitial)
+                if (srcdocReady()) applyInitial()
 
                 const themeDropdown = this.querySelector(
                     '#theme-dropdown',
                 ) as HTMLElement
-                const html = document.querySelector('html') as HTMLElement
 
+                // Dropdown pick → local override for THIS example only.
                 new MutationObserver(() => {
+                    overridden = true
                     const value = themeDropdown.getAttribute(
                         'data-value',
                     ) as string
-                    html.setAttribute('data-example-theme', value)
+                    this.updateIframeTheme(value)
                 }).observe(themeDropdown, {
                     attributes: true,
                     attributeFilter: ['data-value'],
                 })
 
+                // Page theme change → follow it, unless locally overridden.
                 new MutationObserver(() => {
-                    const value = html.getAttribute('data-example-theme')
-                    this.updateIframeTheme(value ?? preferredTheme)
+                    if (!overridden) this.updateIframeTheme(pageTheme())
                 }).observe(html, {
                     attributes: true,
-                    attributeFilter: ['data-example-theme'],
+                    attributeFilter: ['data-webtui-theme'],
                 })
             }
 

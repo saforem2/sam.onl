@@ -1,6 +1,7 @@
 ---
 import webtuiBase from '@webtui/css/base.css?raw'
 import customTheme from '@webtui/theme-custom?raw'
+import catppuccinTheme from '@webtui/theme-catppuccin?raw'
 
 import Dropdown from '@/components/ui/Dropdown.astro'
 import Tabs from '@/components/ui/Tabs.astro'
@@ -32,6 +33,7 @@ const { html, css, stylesheets, themes, ...rest } = Astro.props as Props
 <style>@layer base, utils, components;</style>
 <style>${webtuiBase}</style>
 <style>${customTheme}</style>
+<style>${catppuccinTheme}</style>
 ${stylesheets ? stylesheets.map((stylesheet) => `<style>${stylesheet}</style>`).join('') : ''}
 <style>
 @layer base {
@@ -175,46 +177,51 @@ ${css ? `<style>${css}</style>` : ''}
             const self = this
 
             const iframe = self.querySelector('#preview') as HTMLIFrameElement
-            const colorPreference = window.matchMedia(
-                '(prefers-color-scheme: dark)',
-            )
+            const html = document.querySelector('html') as HTMLElement
             const initialTheme = self.getAttribute('data-initial-theme')
-            const preferredTheme =
+
+            // The preview follows the reader's active page theme by default.
+            // Picking from this example's own dropdown is a sticky LOCAL
+            // override: once set, this preview stops following the page.
+            let overridden = false
+            const pageTheme = () =>
+                html.getAttribute('data-webtui-theme') ??
                 initialTheme ??
-                (colorPreference.matches ? 'custom-dark' : 'custom-light')
+                'custom-light'
 
-            const iframeDocument = iframe.contentDocument
-
-            if (!iframeDocument || iframeDocument.readyState === 'loading') {
-                iframe.addEventListener('load', () => {
-                    self.updateIframeTheme(preferredTheme)
-                })
-            } else {
-                // Weird race condition where the iframe can already be loaded
-                self.updateIframeTheme(preferredTheme)
-            }
+            // The srcdoc bakes in data-initial-theme, so wait until that
+            // document has actually parsed before overriding it with the
+            // page theme. `load` covers the parse-later case; the immediate
+            // call covers the already-parsed race (load fired before this
+            // deferred module ran). updateIframeTheme is idempotent.
+            const applyInitial = () => self.updateIframeTheme(pageTheme())
+            const srcdocReady = () =>
+                !!iframe.contentDocument?.documentElement?.hasAttribute(
+                    'data-webtui-theme',
+                )
+            iframe.addEventListener('load', applyInitial)
+            if (srcdocReady()) applyInitial()
 
             const themeDropdown = self.querySelector(
                 '#theme-dropdown',
             ) as HTMLElement
-            const html = document.querySelector('html') as HTMLElement
 
-            // Watch for changes in the theme dropdown
+            // Dropdown pick → local override for THIS example only.
             new MutationObserver(() => {
+                overridden = true
                 const value = themeDropdown.getAttribute('data-value') as string
-                html.setAttribute('data-example-theme', value)
+                self.updateIframeTheme(value)
             }).observe(themeDropdown, {
                 attributes: true,
                 attributeFilter: ['data-value'],
             })
 
-            // Watch for changes in the html element
+            // Page theme change → follow it, unless locally overridden.
             new MutationObserver(() => {
-                const value = html.getAttribute('data-example-theme')
-                self.updateIframeTheme(value ?? preferredTheme)
+                if (!overridden) self.updateIframeTheme(pageTheme())
             }).observe(html, {
                 attributes: true,
-                attributeFilter: ['data-example-theme'],
+                attributeFilter: ['data-webtui-theme'],
             })
         }
 
