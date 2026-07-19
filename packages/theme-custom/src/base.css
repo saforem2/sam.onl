@@ -19,7 +19,10 @@
         /* Pure gray: dark → light (0 = darkest text) */
         --foreground0: oklch(from #262626 l c h);
         --foreground1: oklch(from #666666 l c h);
-        --foreground2: oklch(from #999999 l c h);
+        /* #767676 is the lightest gray that still clears WCAG AA (4.54:1 on
+           #fff) — #999 was 2.85:1. Kept as light as AA allows so the dim/
+           normal (fg2 vs fg1 #666) distinction survives. */
+        --foreground2: oklch(from #767676 l c h);
         --foreground3: oklch(from #b5b5b5 l c h);
         /* Pure gray: light → dark (0 = lightest base) */
         --background0: oklch(from #ffffff l c h);
@@ -53,7 +56,9 @@
         /*--url: oklch(from #039BE5 l c h);*/
         /* --h3: oklch(from #2196f3 l c h);*/
         /* --url: oklch(from #5c7cfa l c h); */
-        --url: oklch(from #2196f3 l c h);
+        /* #1565c0 clears AA (4.6:1 on #fff); #2196f3 was 3.12:1. Same blue
+           family, just dark enough for body-text links. */
+        --url: oklch(from #1565c0 l c h);
         /* --h1: oklch(from #F44336 l c h); */
         --h1: oklch(from #ff1a8f l c h);
         --h2: oklch(from #5c7cfa l c h);
