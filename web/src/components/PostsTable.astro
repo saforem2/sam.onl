@@ -55,36 +55,38 @@ const posts = docs
 </table>
 
 <style>
+    /* Matches the talks-table styling (talks/index.mdx): left-aligned
+       header band, zebra-striped rows, dimmed date column, and vertical
+       breathing room. Width + mobile horizontal scroll come from the
+       shared .table-scroll-wrapper machinery (Doc.astro + global.css), same
+       as the talks table — so no table-layout / overflow-wrap overrides
+       here. */
     .posts-table {
-        --table-border-width: 1px;
-        --table-border-color: var(--foreground1);
         width: 100%;
-        max-width: 100%;
-        /* table-layout: fixed forces the browser to size columns from
-           the first row's cell widths instead of measuring every
-           cell's max-content. Without this on mobile the Title
-           column's max-content (a long post title) pushed the whole
-           table past the viewport — overflow-wrap then never had a
-           chance to fire because the column was already sized to fit
-           the unwrapped string. fixed + the col widths below let the
-           Title cell wrap on the first too-long word. */
-        table-layout: fixed;
+        margin-block: 1lh;
+        border-collapse: collapse;
     }
-    /* Date column: short, fixed-width-ish content (YYYY/MM/DD). 11ch
-       fits the format with a hair of padding; no wrapping. */
+    .posts-table th,
+    .posts-table td {
+        padding: 0.25lh 1ch;
+        vertical-align: top;
+    }
+    .posts-table th {
+        text-align: left;
+        background-color: var(--background1);
+    }
+    /* Date column: 14ch matches the talks table's Date column exactly so
+       the two align. No wrapping; dimmed to --foreground2 like talks. */
     .posts-table td:first-child,
     .posts-table th:first-child {
         white-space: nowrap;
-        width: 11ch;
+        width: 14ch;
     }
-    /* Title cell: take whatever's left and wrap inside it; break long
-       URL-ish tokens at any character so they don't bleed past the
-       column edge. */
-    .posts-table td:nth-child(2),
-    .posts-table th:nth-child(2) {
-        width: auto;
-        overflow-wrap: anywhere;
-        word-break: break-word;
+    .posts-table td:first-child {
+        color: var(--foreground2);
+    }
+    .posts-table tbody tr:nth-child(even) {
+        background-color: oklch(from var(--background1) l c h / 0.5);
     }
     .posts-table a {
         text-decoration: none;
