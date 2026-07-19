@@ -112,19 +112,37 @@ Theme example
 .callout {
   --callout-color: var(--blue, #118cc2);
   --callout-bg: oklch(from var(--callout-color) calc(l * var(--oklch-scale, 1.12)) c h / 0.1);
-  --callout-summary-bg: oklch(from var(--callout-color) calc(l * var(--oklch-scale, 1.08)) c h / 0.025);
   background-color: var(--callout-bg);
   color: var(--callout-color);
-  margin-block: 0.5rem;
+  /* Rest: a faint accent-tinted full border + a bold 2px accent bar on
+     the left. Hover swaps the full border to the solid accent and drops a
+     hard offset shadow; the transition animates it. */
+  border: 1px solid oklch(from var(--callout-color) l c h / 0.25);
+  border-left: 2px solid var(--callout-color);
+  padding: 0.15lh 1.25ch;
+  margin-block: 1lh;
+  transition: border-color 120ms ease-out, box-shadow 120ms ease-out;
 }
-.callout > :not(summary) { margin-inline-start: -1ch; }
+.callout:hover {
+  border-color: var(--callout-color);
+  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.55);
+}
 .callout summary {
-  background-color: var(--callout-summary-bg);
+  display: flex;
+  align-items: baseline;
   color: var(--callout-color);
   font-weight: bold;
+  line-height: 1lh;
 }
-.callout > summary::before { content: '+'; }
+/* +/x toggle pushed to the far right of the summary row */
+.callout > summary::before {
+  content: '+';
+  order: 1;
+  margin-inline-start: auto;
+  padding-inline-start: 1ch;
+}
 .callout[open] > summary::before { content: 'x'; }
+.callout[open]::details-content { padding-left: 0; }
 .callout p { margin: 0; color: var(--foreground1); }
 .callout-note { --callout-color: var(--blue, #118cc2); }
 .callout-tip { --callout-color: var(--foreground2, #838383); }
