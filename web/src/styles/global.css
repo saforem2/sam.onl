@@ -681,19 +681,16 @@
             box-shadow 120ms ease-out,
             background-color 120ms linear;
     }
-    /* Hover: reproduce the samforeman.me callout effect — the full border
-       turns the per-type accent color and a hard offset drop-shadow
-       appears. samforeman.me keeps a fixed BLACK 2px 2px shadow in both
-       light and dark themes (not theme-adaptive), so use a fixed dark ink
-       here too — a near-black that still reads against the dark theme's
-       callout tint. The block rule below sets a faint full border at rest
-       and `transition` so this animates smoothly. Written with the
-       [is-~='accordion'] attribute to match the block rule's specificity
-       (0,2,1) and win by source order — a bare .callout:hover (0,2,0)
-       would lose. Flat selector per the Lightning-CSS flattener caveats
-       noted elsewhere. */
+    /* Hover: reproduce the samforeman.me callout effect — a hard offset
+       drop-shadow appears. samforeman.me keeps a fixed BLACK 2px 2px shadow
+       in both light and dark themes (not theme-adaptive), so use a fixed
+       dark ink here too — a near-black that still reads against the dark
+       theme's callout tint. The block rule below sets `transition` so this
+       animates smoothly. Written with the [is-~='accordion'] attribute to
+       match the block rule's specificity (0,2,1) and win by source order —
+       a bare .callout:hover (0,2,0) would lose. Flat selector per the
+       Lightning-CSS flattener caveats noted elsewhere. */
     details[is-~='accordion'].callout:not(.callout-inline):hover {
-        border-color: var(--callout-color);
         box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.55);
     }
     /* Inside the landing widget grid, the cell tracks are sized exactly
@@ -929,17 +926,11 @@
         ):not(.callout-inline) {
         background-color: var(--callout-bg);
         color: var(--callout-color);
-        /* Rest state: a thick per-type accent bar on the left + a faint
-           accent-TINTED full border on the other sides (not neutral grey).
-           The hover rule above swaps the full border to the solid accent
-           and drops a shadow (samforeman.me effect); `transition` animates
-           it. The left border is re-declared full-strength AFTER the faint
-           `border` shorthand so it keeps the bold accent bar at rest. */
-        border: 1px solid oklch(from var(--callout-color) l c h / 0.25);
+        /* Rest state: just a thick per-type accent bar on the left, no
+           full perimeter border. The hover rule above drops a shadow
+           (samforeman.me effect); `transition` animates it. */
         border-left: 2px solid var(--callout-color);
-        transition:
-            border-color 120ms ease-out,
-            box-shadow 120ms ease-out;
+        transition: box-shadow 120ms ease-out;
         /* Breathing room inside the box so the title/body aren't cramped
            against the border/edges. Tight (0.15lh) so compact collapsed
            toggles don't feel bloated. */
