@@ -383,6 +383,13 @@ const articleSchema =
                                 (() => {
                                     const hasMeta =
                                         frontmatter.date || isPost || isTalk
+                                    // Skip the whole block when it would hold
+                                    // nothing (no meta row AND no action row,
+                                    // e.g. /about) — otherwise the empty div
+                                    // still claims its 2ch top margin as a
+                                    // phantom gap. Meta-less docs that DO show
+                                    // actions (webtui) keep the block.
+                                    if (!hasMeta && !showActions) return null
                                     return (
                                         <div
                                             class="post-meta"
