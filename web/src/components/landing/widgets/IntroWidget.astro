@@ -297,9 +297,10 @@ const { variant, total, home = false } = Astro.props
         gap: 1ch;
     }
     .iw-title-row .iw-about-title {
-        /* Let the badge size to its content so the CTA can sit beside it
-           instead of the badge stretching full-width. */
-        flex: 0 1 auto;
+        /* Stretch the title band across the row (up to the [a]bout CTA),
+           so its tinted background spans the available width instead of
+           hugging just the name. */
+        flex: 1 1 auto;
     }
     .iw-title-about {
         margin-left: auto;
