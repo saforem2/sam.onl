@@ -10,6 +10,27 @@ const { variant, total, home = false } = Astro.props
 
 <column box-="square" class="widget" pad-="2 1" id="intro-widget" tabindex="0">
     {
+        /* Title-bar controls sheared into the top-right box border (WebTUI
+           window-control notch). Holds search + the [a]bout CTA on the home
+           widget; these are removed from the bottom social row so they don't
+           duplicate. */
+        home && (
+            <div class="iw-titlebar">
+                <button
+                    type="button"
+                    class="iw-tb-btn iw-social-search-btn"
+                    title="Search"
+                    aria-label="Open search"
+                    data-iw-search>
+                    &#xf002;
+                </button>
+                <a href="/about" class="iw-tb-about">
+                    [a]bout &rarr;
+                </a>
+            </div>
+        )
+    }
+    {
         !home && (
             <row class="iw-variant-header">
                 <span
@@ -123,22 +144,7 @@ const { variant, total, home = false } = Astro.props
             <a href="/rss.xml" target="_blank" title="RSS" size-="small"
                 >&#xf09e;</a
             >
-            <button
-                type="button"
-                class="iw-social-search-btn"
-                title="Search"
-                size-="small"
-                aria-label="Open search"
-                data-iw-search>&#xf002;</button
-            >
         </row>
-        {
-            home && (
-                <a href="/about" class="iw-nav-home">
-                    [a]bout &rarr;
-                </a>
-            )
-        }
     </div>
     {
         variant === 16 && (
@@ -262,6 +268,8 @@ const { variant, total, home = false } = Astro.props
     #intro-widget {
         pointer-events: auto;
         gap: 0.5lh;
+        /* Anchor for the sheared title-bar controls below. */
+        position: relative;
 
         h1 {
             display: inline-flex;
@@ -285,6 +293,99 @@ const { variant, total, home = false } = Astro.props
                 );
                 text-decoration: none;
             }
+        }
+    }
+
+    /* ── Sheared title-bar controls ─────────────────────────────────────
+       Seat the search + [a]bout controls on the widget's top-right border,
+       like a terminal window's title-bar controls. The box border is drawn
+       by box-="square"'s ::before, inset 0.5lh from the top; sitting the
+       cluster at top:0 with translateY(-50%) straddles that line, and its
+       own --background0 fill masks the border behind it (the "shear"). */
+    .iw-titlebar {
+        position: absolute;
+        top: 0;
+        right: 2ch;
+        transform: translateY(-50%);
+        z-index: 2;
+        display: flex;
+        align-items: stretch;
+        gap: 0.5ch;
+        /* Mask the box border line where the controls sit. */
+        background-color: var(--background0);
+        padding: 0 0.25ch;
+        line-height: 1lh;
+    }
+    /* Shared chip look for both the search button and the [a]bout link —
+       same keycap language as the bottom social row. */
+    .iw-titlebar .iw-tb-btn,
+    .iw-titlebar .iw-tb-about {
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 1lh;
+        padding: 0 1ch;
+        line-height: 1lh;
+        text-decoration: none !important;
+        font-family: var(--font-family);
+        font-size: inherit;
+        cursor: pointer;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--foreground0) 5%
+        );
+        border: 1px solid
+            color-mix(in srgb, var(--background0), var(--foreground0) 18%);
+        color: var(--foreground1);
+        --chip-accent: var(--foreground2);
+        transition:
+            background-color 0.1s linear,
+            color 0.1s linear,
+            border-color 0.1s linear,
+            transform 0.1s ease-out,
+            box-shadow 0.1s ease-out;
+    }
+    .iw-titlebar .iw-tb-btn {
+        appearance: none;
+        padding: 0 0.75ch;
+    }
+    .iw-titlebar .iw-tb-about {
+        font-weight: bold;
+        --chip-accent: var(--url, var(--blue));
+    }
+    .iw-titlebar .iw-tb-btn:hover,
+    .iw-titlebar .iw-tb-btn:focus-visible,
+    .iw-titlebar .iw-tb-btn[data-vim-focused='true'],
+    .iw-titlebar .iw-tb-about:hover,
+    .iw-titlebar .iw-tb-about:focus-visible,
+    .iw-titlebar .iw-tb-about[data-vim-focused='true'] {
+        transform: translate(-1px, -1px);
+        box-shadow: 2px 2px 0 0 var(--chip-accent);
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--chip-accent) 18%
+        );
+        border-color: var(--chip-accent);
+        color: var(--chip-accent);
+    }
+    .iw-titlebar .iw-tb-btn:active,
+    .iw-titlebar .iw-tb-about:active {
+        transform: translate(0, 0);
+        box-shadow: 1px 1px 0 0 var(--chip-accent);
+    }
+    /* Search chip gets the green accent it had in the bottom row. */
+    .iw-titlebar .iw-social-search-btn {
+        --chip-accent: var(--green);
+        color: var(--foreground2);
+    }
+    /* On narrow widths the controls would collide with the avatar title;
+       tuck them tighter to the right edge. */
+    @media (max-width: 480px) {
+        .iw-titlebar {
+            right: 1ch;
         }
     }
 
