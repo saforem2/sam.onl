@@ -24,9 +24,16 @@ const { variant, total, home = false } = Astro.props
     }
     {
         (variant === 20 || variant === 21) && (
-            <span is-="badge" class="iw-about-title">
-                &#xf2bd; Sam Foreman
-            </span>
+            <div class="iw-title-row">
+                <span is-="badge" class="iw-about-title">
+                    &#xf2bd; Sam Foreman
+                </span>
+                {home && (
+                    <a href="/about" class="iw-title-about">
+                        [a]bout &rarr;
+                    </a>
+                )}
+            </div>
         )
     }
     {
@@ -132,13 +139,6 @@ const { variant, total, home = false } = Astro.props
                 data-iw-search>&#xf002;</button
             >
         </row>
-        {
-            home && (
-                <a href="/about" class="iw-nav-home">
-                    [a]bout &rarr;
-                </a>
-            )
-        }
     </div>
     {
         variant === 16 && (
@@ -286,6 +286,74 @@ const { variant, total, home = false } = Astro.props
                 text-decoration: none;
             }
         }
+    }
+
+    /* ── Title row: avatar name + right-justified [a]bout CTA ────────────
+       The "Sam Foreman" title badge and the [a]bout link share one line,
+       with [a]bout pushed to the far right (margin-left:auto). */
+    .iw-title-row {
+        display: flex;
+        align-items: center;
+        gap: 1ch;
+    }
+    .iw-title-row .iw-about-title {
+        /* Let the badge size to its content so the CTA can sit beside it
+           instead of the badge stretching full-width. */
+        flex: 0 1 auto;
+    }
+    .iw-title-about {
+        margin-left: auto;
+        flex: 0 0 auto;
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 1lh;
+        padding: 0 1ch;
+        line-height: 1lh;
+        text-decoration: none !important;
+        font-weight: bold;
+        white-space: nowrap;
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--foreground0) 5%
+        );
+        border: 1px solid
+            color-mix(in srgb, var(--background0), var(--foreground0) 18%);
+        color: var(--foreground1);
+        /* Subtle resting drop-shadow so the CTA reads as a raised "click me"
+           chip; hover deepens it to the accent color. */
+        box-shadow: 2px 2px 0 0
+            color-mix(in srgb, var(--background0), var(--foreground0) 18%);
+        --chip-accent: var(--url, var(--blue));
+        transition:
+            background-color 0.1s linear,
+            color 0.1s linear,
+            border-color 0.1s linear,
+            transform 0.1s ease-out,
+            box-shadow 0.1s ease-out;
+    }
+    /* !important on the hover background: the chip is an <a>, so the base
+       layer's `body a:hover` relative-color rule otherwise repaints it a
+       10%-opacity tint. Same cascade quirk (and fix) as the .iw-social-links
+       chips below. */
+    .iw-title-about:hover,
+    .iw-title-about:focus-visible,
+    .iw-title-about[data-vim-focused='true'] {
+        transform: translate(-1px, -1px);
+        box-shadow: 2px 2px 0 0 var(--chip-accent);
+        background-color: color-mix(
+            in srgb,
+            var(--background0),
+            var(--chip-accent) 18%
+        ) !important;
+        border-color: var(--chip-accent);
+        color: var(--chip-accent) !important;
+    }
+    .iw-title-about:active {
+        transform: translate(0, 0);
+        box-shadow: 1px 1px 0 0 var(--chip-accent);
     }
 
     .iw-tagline {
