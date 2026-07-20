@@ -191,6 +191,13 @@
         grid-column: 2 / 4;
         grid-row: 1 / 3;
         min-height: 0;
+        /* Flush 1px border instead of box-="square"'s inset ::before, so the
+           grid's edge-drawn hover/active shadow hugs the border. */
+        border: 1px solid var(--foreground3);
+        padding: 0.5lh 1ch;
+    }
+    #stats-widget::before {
+        content: none !important;
     }
 
     .history-section {

@@ -135,11 +135,8 @@ const works = [
         min-height: 0;
         display: flex;
         flex-direction: column;
-        /* Replace WebTUI's box-="square" inset pseudo-border with a plain
-           1px border on all four edges. The inset ::before border (0.5ch/
-           0.5lh in from the card edge) left the bottom/right sides looking
-           faded/cut where the scrolling list met them; a flush 1px border is
-           uniform on every side. */
+        /* Flush 1px border instead of box-="square"'s inset ::before, so the
+           grid's edge-drawn hover/active shadow hugs the border. */
         border: 1px solid var(--foreground3);
         padding: 0.5lh 1ch;
     }

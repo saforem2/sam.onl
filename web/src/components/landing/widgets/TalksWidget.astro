@@ -51,8 +51,8 @@ function formatDate(date: Date): string {
         min-height: 0;
         display: flex;
         flex-direction: column;
-        /* Plain flush 1px border instead of box-="square"'s inset ::before
-           (which left the bottom/right edges looking faded/cut). */
+        /* Flush 1px border instead of box-="square"'s inset ::before, so the
+           grid's edge-drawn hover/active shadow hugs the border. */
         border: 1px solid var(--foreground3);
         padding: 0.5lh 1ch;
     }
