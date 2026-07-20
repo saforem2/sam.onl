@@ -2154,6 +2154,26 @@ html[data-webtui-theme='catppuccin-latte'] {
         padding-top: 0 !important;
     }
 
+    /* ── Terminal table style (`data-table-style="terminal"`) ────────────
+       Opt-in ascii-box grid: keeps WebTUI's native single-line pseudo
+       borders on every cell (drawn by table.css), and layers on the same
+       reading affordances the default style gets — a darker heading band
+       and subtle zebra stripes. Body cells stay on one line so wide tables
+       scroll horizontally in .table-scroll-wrapper instead of folding. */
+    table[data-table-style='terminal'] thead :is(td, th),
+    table[data-table-style='terminal'] tr:first-child th {
+        background-color: var(--background2);
+    }
+    table[data-table-style='terminal']
+        :is(tbody, :scope)
+        > tr:nth-child(even):not(:has(th))
+        > :is(td, th) {
+        background-color: oklch(from var(--background1) l c h / 0.5);
+    }
+    .table-scroll-wrapper > table[data-table-style='terminal'] tbody td {
+        white-space: nowrap;
+    }
+
     /* Link styling — applies to all themes (was previously scoped to
        [data-webtui-theme|='custom'] in theme-custom). */
     :is(p, blockquote, li, [is-~='typography-block']) a {
