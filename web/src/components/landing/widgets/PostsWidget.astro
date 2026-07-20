@@ -58,6 +58,13 @@ function stripEmoji(text: string): string {
         min-height: 0;
         display: flex;
         flex-direction: column;
+        /* Plain flush 1px border instead of box-="square"'s inset ::before
+           (which left the bottom/right edges looking faded/cut). */
+        border: 1px solid var(--foreground3);
+        padding: 0.5lh 1ch;
+    }
+    .posts-widget::before {
+        content: none !important;
     }
 
     .pw-title {
