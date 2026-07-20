@@ -50,7 +50,11 @@ function stripEmoji(text: string): string {
 <style>
     .posts-widget {
         gap: 1lh;
-        overflow: hidden;
+        /* clip (not hidden) + a clip margin so the card still clips its
+           scrolling list, but the hover/scroll-active hard-offset shadow
+           can paint past the edge into the grid gap instead of being cut. */
+        overflow: clip;
+        overflow-clip-margin: 4px;
         min-height: 0;
         display: flex;
         flex-direction: column;

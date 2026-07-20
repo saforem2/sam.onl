@@ -136,9 +136,14 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
         grid-auto-rows: auto;
     }
 
-    /* Home page: tight content-height grid */
+    /* Home page: tight content-height grid. Use `overflow: clip` (not
+       hidden) with a clip margin so each card still clips its scrolling
+       content, but the hover/scroll-active hard-offset box-shadow (2px 2px,
+       set below) can paint past the card edge into the grid gap instead of
+       being sheared off. */
     #widgets-grid.home-grid > :global(*) {
-        overflow: hidden;
+        overflow: clip;
+        overflow-clip-margin: 4px;
         min-height: 0;
     }
 
