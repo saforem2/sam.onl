@@ -1423,18 +1423,19 @@ article {
    their content unless explicitly collapsed via the toggle button */
 
 /* Intermediate widths (just above the mobile stack, up to comfortable
-   desktop): tighten the sidebar floor from 25ch to 18ch so the article
-   isn't squeezed to ~59ch. The tree's post-title rows (.tree-label)
-   truncate cleanly with ellipsis, so a narrower floor just shows fewer
-   label chars — no overflow into the article. Above ~110ch there's room
-   for the roomy 25ch default again. Only applies when NOT collapsed and
-   only to the width *fallback*: if the user dragged the resizer,
-   --sidebar-width is set and their choice still wins. */
+   desktop): tighten the sidebar floor from 25ch to 23ch so the article
+   isn't squeezed, while still fitting most post-title label chars. The
+   tree's post-title rows (.tree-label) truncate cleanly with ellipsis, so
+   a narrower floor just shows fewer label chars — no overflow into the
+   article. Above ~110ch there's room for the roomy 25ch default again.
+   Only applies when NOT collapsed and only to the width *fallback*: if the
+   user dragged the resizer, --sidebar-width is set and their choice still
+   wins (down to the 23ch min-width floor). */
 @media (min-width: 80ch) and (max-width: 110ch) {
     #sidebar-container:not(.collapsed) {
-        min-width: 18ch;
-        width: var(--sidebar-width, 18ch);
-        flex-basis: var(--sidebar-width, 18ch);
+        min-width: 23ch;
+        width: var(--sidebar-width, 23ch);
+        flex-basis: var(--sidebar-width, 23ch);
     }
 }
 
