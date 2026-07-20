@@ -2155,12 +2155,34 @@ html[data-webtui-theme='catppuccin-latte'] {
     }
 
     /* ── Terminal table style (`data-table-style="terminal"`) ────────────
-       Opt-in ascii-box grid: keeps WebTUI's native single-line pseudo
-       borders on every cell (drawn by table.css), and layers on the same
-       reading affordances the default style gets — a subtle heading band,
-       zebra stripes, and row hover. Body cells stay on one line so wide
-       tables scroll horizontally in .table-scroll-wrapper instead of
-       folding. */
+       A crisp single-line grid: every cell gets a plain 1px collapsed
+       border, plus a subtle heading band, zebra stripes, and row hover.
+       Body cells stay on one line so wide tables scroll horizontally in
+       .table-scroll-wrapper instead of folding.
+
+       NB: this deliberately does NOT use WebTUI's native ascii-box pseudo
+       borders (table.css draws them inset 0.5ch/0.5lh from the cell edges,
+       so cell backgrounds — zebra/hover — bled past the frame). Plain
+       collapsed borders sit exactly at the cell edges, so the fills stay
+       flush. The default table style's border/zebra/hover rules are all
+       scoped :not([data-table-style='terminal']), so re-declare them here. */
+    table[data-table-style='terminal'] {
+        border-collapse: collapse;
+        border-spacing: 0;
+    }
+    /* Kill WebTUI's pseudo-box (outer frame + per-cell inset borders). */
+    table[data-table-style='terminal']::before,
+    table[data-table-style='terminal'] tr :is(td, th)::before,
+    table[data-table-style='terminal'] tr :is(td, th)::after {
+        border: none !important;
+        content: none !important;
+    }
+    /* Plain 1px grid + even cell padding (WebTUI's default is 0 top / 1lh
+       bottom, which reads lopsided without the pseudo-box). */
+    table[data-table-style='terminal'] tr :is(td, th) {
+        border: 1px solid var(--foreground3);
+        padding: 0.25lh 1ch !important;
+    }
     table[data-table-style='terminal'] thead :is(td, th),
     table[data-table-style='terminal'] tr:first-child th {
         background-color: var(--background1);
