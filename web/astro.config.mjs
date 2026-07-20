@@ -208,7 +208,9 @@ const rehypeGitHubCallouts = () => {
             // marker paragraph was deleted and the rest of the paragraph
             // (case b) or the entire body paragraph (case c) was either
             // dropped or stranded as a sibling of the marker text.
-            const remainingTextOnFirstLine = remainingLines.join('\n').replace(/^\s+/, '')
+            const remainingTextOnFirstLine = remainingLines
+                .join('\n')
+                .replace(/^\s+/, '')
             const hasInlineBody = remainingTextOnFirstLine.trim().length > 0
             const hasMoreSiblingsInMarkerParagraph =
                 paragraph.children.indexOf(firstTextNode) <
@@ -230,10 +232,15 @@ const rehypeGitHubCallouts = () => {
                     1,
                 )
                 // Trim a leading newline-text remnant if remark left one.
-                const next = paragraph.children[
-                    paragraph.children.indexOf(firstTextNode)
-                ]
-                if (next && next.type === 'text' && typeof next.value === 'string') {
+                const next =
+                    paragraph.children[
+                        paragraph.children.indexOf(firstTextNode)
+                    ]
+                if (
+                    next &&
+                    next.type === 'text' &&
+                    typeof next.value === 'string'
+                ) {
                     next.value = next.value.replace(/^\s+/, '')
                 }
             }
@@ -344,6 +351,47 @@ const rehypeMarkdownTabIndex = () => {
     }
 }
 
+// Propagate a `data-table-style` attribute from a wrapper element down to the
+// <table> it contains. Markdown pipe tables can't carry an inline attribute,
+// so wrapping one in `<div data-table-style="terminal"> … </div>` (with blank
+// lines so the pipe table still parses as markdown) is the only way to opt a
+// markdown table into the terminal ascii-box style. The CSS keys off the attr
+// being on the <table> itself, so copy it there.
+//
+// In the MDX pipeline the wrapper is an `mdxJsxFlowElement` (attrs live on
+// `node.attributes`), not a hast `element` (attrs on `node.properties`), so
+// handle both. The inner <table> is always a hast element by the time this
+// runs, so we set `properties` on it either way.
+const rehypePropagateTableStyle = () => {
+    // @ts-expect-error hast/mdast node typing not worth importing
+    return (tree) => {
+        const stampTables = (node, style) => {
+            visit(node, 'element', (child) => {
+                if (
+                    child.tagName === 'table' &&
+                    !child.properties.dataTableStyle
+                )
+                    child.properties.dataTableStyle = style
+            })
+        }
+        // hast <div data-table-style="…"> wrappers
+        visit(tree, 'element', (node) => {
+            const style = node.properties?.['dataTableStyle']
+            if (style && node.tagName !== 'table') stampTables(node, style)
+        })
+        // MDX <div data-table-style="…"> wrappers
+        visit(tree, 'mdxJsxFlowElement', (node) => {
+            const attr = (node.attributes || []).find(
+                (a) =>
+                    a.type === 'mdxJsxAttribute' &&
+                    a.name === 'data-table-style',
+            )
+            if (attr && typeof attr.value === 'string')
+                stampTables(node, attr.value)
+        })
+    }
+}
+
 // https://astro.build/config
 export default defineConfig({
     devToolbar: { enabled: false },
@@ -355,6 +403,7 @@ export default defineConfig({
             rehypeHeadingIds,
             rehypeGitHubCallouts,
             rehypeMarkdownTabIndex,
+            rehypePropagateTableStyle,
             rehypeKatex,
             rehypeMermaidClientSide,
             rehypeTaskListInteractive,
@@ -397,6 +446,7 @@ export default defineConfig({
             remarkPlugins: [remarkMath, remarkSlides],
             rehypePlugins: [
                 rehypeGitHubCallouts,
+                rehypePropagateTableStyle,
                 rehypeKatex,
                 rehypeMermaidClientSide,
                 rehypeTaskListInteractive,
@@ -451,7 +501,8 @@ function stubUnusedMermaidDiagrams() {
     // so don't require all-uppercase. Also match the bare relative
     // form mermaid emits (no `mermaid/dist/` prefix) since the
     // importer is already inside mermaid's dist.
-    const CHUNK_RE = /chunks[/\\]mermaid\.(?:core|esm)[/\\]([A-Za-z][A-Za-z0-9-]*)-[A-Za-z0-9]+\.mjs$/
+    const CHUNK_RE =
+        /chunks[/\\]mermaid\.(?:core|esm)[/\\]([A-Za-z][A-Za-z0-9-]*)-[A-Za-z0-9]+\.mjs$/
 
     return {
         name: 'stub-unused-mermaid-diagrams',
@@ -501,4 +552,3 @@ function stubUnusedMermaidDiagrams() {
         },
     }
 }
-

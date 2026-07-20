@@ -195,7 +195,7 @@ Pre-Training group] for the [AuroraGPT] project.
 
 ## 📬 Posts
 
-<table class="recent-posts-table">
+<table data-table-style="terminal">
 <thead><tr><th>Date</th><th>Title</th></tr></thead>
 <tbody>
 {recentPosts.map((post) => (
@@ -217,7 +217,7 @@ Pre-Training group] for the [AuroraGPT] project.
 > - HTML: [https://samforeman.me/talks/ai-for-science-2024/](https://samforeman.me/talks/ai-for-science-2024/)
 > - Slides: [https://samforeman.me/talks/ai-for-science-2024/slides](https://samforeman.me/talks/ai-for-science-2024/slides)
 
-<table class="recent-posts-table">
+<table data-table-style="terminal">
 <thead><tr><th>Date</th><th>Title</th><th>Location</th></tr></thead>
 <tbody>
 {recentTalks.map((talk) => (
@@ -796,6 +796,8 @@ Pre-Training group] for the [AuroraGPT] project.
 > [!TIP|inline]
 > For a full list of my publications, see my [Google Scholar](https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en)
 
+<div data-table-style="terminal">
+
 | Year | Title |
 | ---- | ----- |
 | 2026 | [Extending µP: Spectral Conditions for Feature Learning Across Optimizers][extending-mup] |
@@ -824,6 +826,8 @@ Pre-Training group] for the [AuroraGPT] project.
 | 2018 | [RG inspired Machine Learning for lattice field theory] |
 | 2018 | [Large Energy Density in Three-Plate Nanocapacitors due to Coulomb Blockade] |
 | 2014 | [Superconductivity of In and Sn Samples] |
+
+</div>
 
 [^aeris-bell]: ✨ [*2025 ACM Gordon Bell Prize for Climate Modeling Finalist*]
 [^mprot-bell]: 🌟 [*2024 ACM Gordon Bell Finalist*]
@@ -1634,34 +1638,4 @@ Full list at [/projects](/projects).
 [Machine Learning and Quantum Computing for Earth Sciences]: https://17.usnccm.org/702
 [guestbooks]: https://guestbooks.meadow.cafe/guestbook/745
 
-<style>{`
-.recent-posts-table {
-    /* width: auto sizes the table to its content instead of stretching
-       full-width. max-width: 100% + table-layout: auto + per-cell
-       overflow-wrap still keep long titles from overflowing the mobile
-       viewport (they break mid-token, and the scroll wrapper is the final
-       fallback). (Was width: 100%, which always stretched edge-to-edge.) */
-    width: auto;
-    max-width: 100%;
-    border-collapse: collapse;
-}
-.recent-posts-table th,
-.recent-posts-table td {
-    border: 1px solid var(--foreground3);
-    padding: 0 1ch;
-    /* Anywhere-break wins over white-space defaults so a long URL
-       or PascalCase title doesn't force the column to max-content. */
-    overflow-wrap: anywhere;
-    word-break: break-word;
-}
-.recent-posts-table th {
-    background-color: var(--background1);
-}
-/* Date column: short fixed-width content (YYYY/MM/DD), no wrap. */
-.recent-posts-table td:first-child,
-.recent-posts-table th:first-child {
-    white-space: nowrap;
-    width: 11ch;
-}
-`}</style>
 

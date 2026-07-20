@@ -1551,20 +1551,6 @@ img {
     height: auto;
 }
 
-/* Disable webtui table component borders on .recent-posts-table
-   (it uses simple custom borders instead) */
-.recent-posts-table::before,
-.recent-posts-table tr :is(td, th)::before,
-.recent-posts-table tr :is(td, th)::after {
-    display: none !important;
-}
-.recent-posts-table tr :is(td, th) {
-    padding-bottom: 0 !important;
-}
-.recent-posts-table :first-child > tr:first-child > :is(td, th) {
-    padding-top: 0 !important;
-}
-
 /* ── Reader view ──────────────────────────────────────────────────────
    Per-page distraction-free mode, toggled by html[data-reader] (set by
    the toggleReader() script in Doc.astro). Pure CSS overlay: hides the
