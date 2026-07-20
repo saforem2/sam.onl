@@ -348,21 +348,49 @@ const total = variants.length
                     if (userScrolled) return
                     userScrolled = true
                     window.removeEventListener('scroll', onFirstScroll, true)
-                    const focusables =
-                        grid.querySelectorAll<HTMLElement>('[tabindex="0"]')
+                    const focusables = Array.from(
+                        grid.querySelectorAll<HTMLElement>('[tabindex="0"]'),
+                    )
+                    // Track each widget's live visibility ratio. Highlighting
+                    // "whichever just crossed 0.5" broke at the page ends,
+                    // where two widgets are ≥50% visible at once and the last
+                    // one processed won — so the last widget (e.g. talks) got
+                    // skipped in favor of the one after it. Instead, always
+                    // highlight the MOST-visible widget, tie-broken by document
+                    // order (topmost), which is stable when several overlap.
+                    const ratios = new Map<HTMLElement, number>()
                     const observer = new IntersectionObserver(
                         (entries) => {
                             for (const entry of entries) {
-                                const el = entry.target as HTMLElement
-                                if (entry.isIntersecting) {
-                                    focusables.forEach((f) =>
-                                        f.removeAttribute('data-vim-focused'),
-                                    )
-                                    el.setAttribute('data-vim-focused', 'true')
+                                ratios.set(
+                                    entry.target as HTMLElement,
+                                    entry.isIntersecting
+                                        ? entry.intersectionRatio
+                                        : 0,
+                                )
+                            }
+                            let best: HTMLElement | null = null
+                            let bestRatio = 0
+                            for (const el of focusables) {
+                                const r = ratios.get(el) ?? 0
+                                // Strictly-greater keeps the earlier (topmost)
+                                // widget on ties.
+                                if (r > bestRatio) {
+                                    bestRatio = r
+                                    best = el
+                                }
+                            }
+                            for (const f of focusables) {
+                                if (f === best) {
+                                    f.setAttribute('data-vim-focused', 'true')
+                                } else {
+                                    f.removeAttribute('data-vim-focused')
                                 }
                             }
                         },
-                        { threshold: 0.5 },
+                        // Multiple thresholds so the ratio updates smoothly as
+                        // widgets scroll, not just at the single 0.5 crossing.
+                        { threshold: [0, 0.25, 0.5, 0.75, 1] },
                     )
                     for (const el of focusables) observer.observe(el)
                 }
