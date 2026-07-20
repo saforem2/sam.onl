@@ -3,8 +3,11 @@
     gap: 1ch;
     position: fixed;
     bottom: 0;
-    left: 0;
-    right: 0;
+    /* Symmetric 0.5ch gutter on both sides so the bar isn't flush to the
+       screen edges. left/right (not width) define the box, so it can't
+       overflow the way width:100vw + margin-inline would. */
+    left: 0.5ch;
+    right: 0.5ch;
     z-index: 100;
     padding: 0.5lh 1ch;
     background-color: var(--background0, white);
