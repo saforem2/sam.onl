@@ -4,7 +4,7 @@ title: 'Local AI Apps on ALCF: Argo, Inference Endpoints, and One Gateway'
 date: 2026-06-27
 date-created: 2026-06-27
 date-modified: today
-description: 'Wiring Claude Code, OpenCode, and the Hermes One desktop app through a single local llm-rosetta gateway that reaches both ALCF Argo (via argo-shim) and ALCF Inference Endpoints (Sophia/Metis), making Claude, GPT, and open models reachable from any client.'
+description: 'Wiring Claude Code, OpenCode, Codex, and the Hermes One desktop app through a single local llm-rosetta gateway that reaches both ALCF Argo (via argo-shim) and ALCF Inference Endpoints (Sophia/Metis), making Claude, GPT, and open models reachable from any client.'
 ---
 
 ALCF exposes multiple useful model gateways. [Argo][argo] gives me Claude and
@@ -14,8 +14,9 @@ service exposes open models on Sophia and Metis through a public
 OpenAI-compatible API protected by Globus auth.
 
 I wanted to use both from _local_ desktop apps on my Mac ([Claude Code][claude-code],
-[OpenCode][opencode], and the [Hermes One][hermes] desktop app) without exposing
-ports, juggling client-specific API keys, or paying a third-party provider.
+[OpenCode][opencode], [Codex][codex], and the [Hermes One][hermes] desktop app)
+without exposing ports, juggling client-specific API keys, or paying a
+third-party provider.
 
 This post documents the full stack I ended up with: a single local
 `llm-rosetta` gateway that fans out to either `argo-shim` (for Argo) or ALCF's
@@ -27,13 +28,14 @@ token rotation.
 [alcf-infer]: https://docs.alcf.anl.gov/services/inference-endpoints/
 [claude-code]: https://docs.claude.com/en/docs/claude-code
 [opencode]: https://opencode.ai
+[codex]: https://developers.openai.com/codex/cli/
 [hermes]: https://github.com/NousResearch/hermes-agent
 
 > **TL;DR**: `argo-shim` turns the SSH-gated Argo service into a localhost API.
 > `llm-rosetta` sits in front of it, translates OpenAI ⇆ Anthropic, and also
 > exposes ALCF's native Sophia/Metis inference endpoints. Point Claude Code,
-> OpenCode, Hermes, or anything OpenAI-compatible at one local port and route by
-> model name.
+> OpenCode, Codex, Hermes, or anything OpenAI-compatible at one local port and
+> route by model name.
 
 ## The problem
 
@@ -86,8 +88,10 @@ The end-state architecture solves all of this with one local front door
          ALCF Argo (apps.inside.anl.gov)      Sophia / Metis endpoints
 ```
 
-- **Claude Code**, **OpenCode**, **Hermes**, and **vtcode** can all point at
-  rosetta if you want one dashboard/request log.
+- **Claude Code**, **OpenCode**, **Codex**, **Hermes**, and **vtcode** can all
+  point at rosetta if you want one dashboard/request log. **Codex** is another
+  OpenAI-format client, so it joins the **OpenCode**/**Hermes** group above
+  (talking OpenAI to rosetta).
 - The Anthropic-native clients (**Claude Code**, **vtcode**) can also skip
   rosetta and talk to `argo-shim` directly, since `argo-shim` already speaks
   Anthropic `/v1/messages` (the dotted path above). Routing them through rosetta
@@ -369,7 +373,50 @@ The gateway also ships a web admin panel at
 > provider). Manage the model list from the config file instead. I keep a
 > [regen script](#a-regen-script) for exactly this.
 
-### 5. Hermes One desktop app
+### 5. Codex (OpenAI-format, via a custom provider)
+
+[Codex][codex] reads `~/.codex/config.toml`. It's OpenAI-format, so — like
+OpenCode and Hermes — it points at the rosetta gateway rather than the shim.
+Define a custom provider and select it as the default:
+
+```toml
+model = "gpt-5.5"
+model_provider = "rosetta"
+
+[model_providers.rosetta]
+name = "ALCF via llm-rosetta"
+# wire_api = "chat" → OpenAI Chat Completions (what rosetta exposes on /v1).
+# The default "responses" wire API would hit /v1/responses, which the gateway
+# doesn't serve.
+base_url = "http://127.0.0.1:8765/v1"
+wire_api = "chat"
+# No env_key: the gateway is loopback-only and runs no-auth, so there's no key
+# to supply (same reason Codex's built-in Ollama provider omits it). Codex is
+# happy without one against a local endpoint.
+```
+
+A few Codex-specific notes:
+
+- The provider id (`rosetta` here) can be anything **except** the reserved
+  built-ins `openai`, `ollama`, and `lmstudio`.
+- Any rosetta model works as the top-level `model` — swap `gpt-5.5` for
+  `claude-opus-4-8`, `alcf-sophia/openai/gpt-oss-120b`, etc. (use the exact
+  ids you registered in the gateway config above).
+- To switch models per session without editing the config, pass them on the
+  command line:
+
+```bash
+codex --model claude-opus-4-8 --model-provider rosetta
+```
+
+Sanity-check that Codex is reaching the gateway (this hits the same
+`/v1/chat/completions` the earlier `curl` did, just through Codex's config):
+
+```bash
+codex exec --model gpt-5.5 --model-provider rosetta "say hi"
+```
+
+### 6. Hermes One desktop app
 
 Hermes' backend reads `~/.hermes/config.yaml`. Point its `custom` provider at
 the rosetta gateway:
@@ -678,8 +725,8 @@ That's the `isinstance` check you see in the snippet above.
 
 ## Wrapping up
 
-The result: **Claude Code, OpenCode, vtcode, and the Hermes One desktop app**
-all talking to one local gateway. Argo models go through the SSH-backed shim;
+The result: **Claude Code, OpenCode, Codex, vtcode, and the Hermes One desktop
+app** all talking to one local gateway. Argo models go through the SSH-backed shim;
 ALCF inference models go straight to Sophia/Metis with Globus auth. From the
 client side it all looks like `http://127.0.0.1:8765/v1`.
 
