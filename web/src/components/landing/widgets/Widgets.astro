@@ -163,11 +163,12 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
         color: var(--foreground0);
         --box-border-color: var(--foreground0);
     }
-    /* The posts/talks/work cards use a plain `border` (not the box-="square"
-       pseudo-border), so --box-border-color doesn't reach them — darken the
-       real border on active to match the other widgets. */
+    /* The intro/posts/talks/work cards use a plain `border` (not the
+       box-="square" pseudo-border), so --box-border-color doesn't reach them
+       — darken the real border on active to match the other widgets. */
     #widgets-grid
         > :global(
+            #intro-widget[data-scroll-active='true'],
             .posts-widget[data-scroll-active='true'],
             .talks-widget[data-scroll-active='true'],
             .work-widget[data-scroll-active='true']
