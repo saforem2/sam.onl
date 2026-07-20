@@ -2157,18 +2157,39 @@ html[data-webtui-theme='catppuccin-latte'] {
     /* ── Terminal table style (`data-table-style="terminal"`) ────────────
        Opt-in ascii-box grid: keeps WebTUI's native single-line pseudo
        borders on every cell (drawn by table.css), and layers on the same
-       reading affordances the default style gets — a darker heading band
-       and subtle zebra stripes. Body cells stay on one line so wide tables
-       scroll horizontally in .table-scroll-wrapper instead of folding. */
+       reading affordances the default style gets — a subtle heading band,
+       zebra stripes, and row hover. Body cells stay on one line so wide
+       tables scroll horizontally in .table-scroll-wrapper instead of
+       folding. */
     table[data-table-style='terminal'] thead :is(td, th),
     table[data-table-style='terminal'] tr:first-child th {
-        background-color: var(--background2);
+        background-color: var(--background1);
     }
+    /* Zebra: tint from --background2 (not --background1) so the stripe
+       stays visible on dark themes, where background1 sits too close to
+       the page background to register. */
     table[data-table-style='terminal']
         :is(tbody, :scope)
         > tr:nth-child(even):not(:has(th))
         > :is(td, th) {
-        background-color: oklch(from var(--background1) l c h / 0.5);
+        background-color: oklch(from var(--background2) l c h / 0.45);
+    }
+    /* Row hover — same accent tint + left-rail stripe the default table
+       style uses, so wide terminal tables get the same reading affordance.
+       The :hover rules win over the zebra rule via specificity + source
+       order. */
+    table[data-table-style='terminal']
+        :is(tbody, :scope)
+        > tr:not(:has(th)):hover
+        > :is(td, th) {
+        background-color: oklch(from var(--accent, var(--blue)) l c h / 0.14);
+        transition: background-color 100ms linear;
+    }
+    table[data-table-style='terminal']
+        :is(tbody, :scope)
+        > tr:not(:has(th)):hover
+        > :is(td, th):first-child {
+        box-shadow: inset 3px 0 0 0 var(--accent, var(--blue));
     }
     .table-scroll-wrapper > table[data-table-style='terminal'] tbody td {
         white-space: nowrap;
