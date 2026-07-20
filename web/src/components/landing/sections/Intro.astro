@@ -101,7 +101,11 @@ const current = variants[variant - 1]
 const total = variants.length
 ---
 
-<header id="intro" {...variant === 7 ? { 'data-webtui-theme': 'nord' } : {}}>
+<main
+    class="intro"
+    id="main-content"
+    tabindex="-1"
+    {...variant === 7 ? { 'data-webtui-theme': 'nord' } : {}}>
     {variant >= 8 && <Navbar />}
     <Widgets {variant} {home} />
     {
@@ -384,7 +388,7 @@ const total = variants.length
         @import '@/layouts/Doc.css' layer(doc);
     </style>
     <style>
-        #intro {
+        .intro {
             position: relative;
             background-color: var(--background0);
             overflow: hidden;
@@ -486,7 +490,7 @@ const total = variants.length
         }
 
         @media (max-width: 50ch) {
-            #intro {
+            .intro {
                 #content,
                 #main {
                     padding: 1lh 1ch;
@@ -593,7 +597,7 @@ const total = variants.length
         }
 
         /* Allow vertical overflow when grid content exceeds viewport */
-        #intro:has(:global(.intro-in-grid)) {
+        .intro:has(:global(.intro-in-grid)) {
             overflow: visible;
             overflow-x: clip;
 
@@ -602,4 +606,4 @@ const total = variants.length
             }
         }
     </style>
-</header>
+</main>
