@@ -136,41 +136,47 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
         grid-auto-rows: auto;
     }
 
-    /* Home page: tight content-height grid. Use `overflow: clip` (not
-       hidden) with a clip margin so each card still clips its scrolling
-       content, but the hover/scroll-active hard-offset box-shadow (2px 2px)
-       can paint past the card edge into the grid gap instead of being
-       sheared off.
+    /* Home page: tight content-height grid — each card clips its own
+       scrolling list.
        NB: this block is `is:global`, so every selector is ALREADY global —
        wrapping in `:global(...)` here emits the pseudo literally into the
        output, which the browser then drops as invalid. Use plain selectors. */
     #widgets-grid.home-grid > * {
-        overflow: clip;
-        overflow-clip-margin: 4px;
+        overflow: hidden;
         min-height: 0;
     }
 
-    /* TUI hard-offset shadow on the active/focused/hovered widget. The
-       site-wide tactile-lift rule (global.css: `#main-content
-       [box-~='square']:is(:hover,:focus-within)`) already draws this shadow +
-       translate and out-specifies anything we could write at grid level, but
-       it paints in `var(--box-border-color)` (default: the faint
-       --background3). Point that variable at --foreground0 on these cards so
-       the shared rule renders a crisp dark shadow that hugs each card's flush
-       border — the same treatment #intro-widget already gets. */
+    /* Hover / focus / scroll-active: the SAME hard-offset drop-shadow the
+       callouts and collapsed-heading chips use (2px 2px 0 0 near-black,
+       theme-invariant). The cards use WebTUI box-="square", whose visible
+       border is an INSET ::before (0.5ch/0.5lh in from the element edge), so
+       the shadow is drawn on that ::before — anchored to the frame the user
+       actually sees — instead of on the element edge, where it floated
+       detached. The site-wide tactile-lift (global.css `#main-content
+       [box-~='square']:is(:hover,:focus-within)` -> element box-shadow +
+       translate) out-specifies any grid-level selector, so suppress its
+       detached element shadow + translate with !important. */
     #widgets-grid > [tabindex='0'] {
-        --box-border-color: var(--foreground0);
-        transition:
-            box-shadow 100ms linear,
-            transform 100ms linear,
-            color 100ms linear;
+        transition: color 100ms linear;
     }
-    /* Mobile scroll-highlight: :hover never fires on touch scroll, so the
-       tactile-lift rule can't match. Redraw the same lift explicitly for the
-       most-visible card (marked data-scroll-active by the observer below). */
+    #widgets-grid > [tabindex='0']::before {
+        transition:
+            box-shadow 120ms ease-out,
+            border-color 120ms ease-out;
+    }
+    #widgets-grid > [tabindex='0']:hover,
+    #widgets-grid > [tabindex='0']:focus-within,
     #widgets-grid > [tabindex='0'][data-scroll-active='true'] {
-        transform: translate(-1px, -1px);
-        box-shadow: 2px 2px 0 0 var(--foreground0);
+        box-shadow: none !important;
+        transform: none !important;
+    }
+    #widgets-grid > [tabindex='0']:hover::before,
+    #widgets-grid > [tabindex='0']:focus-within::before,
+    #widgets-grid > [tabindex='0'][data-scroll-active='true']::before {
+        border-color: var(--foreground0);
+        box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.55);
+    }
+    #widgets-grid > [tabindex='0'][data-scroll-active='true'] {
         color: var(--foreground0);
     }
 

@@ -43,21 +43,10 @@ function formatDate(date: Date): string {
 <style>
     .talks-widget {
         gap: 1lh;
-        /* clip (not hidden) + a clip margin so the card still clips its
-           scrolling list, but the hover/scroll-active hard-offset shadow
-           can paint past the edge into the grid gap instead of being cut. */
-        overflow: clip;
-        overflow-clip-margin: 4px;
+        overflow: hidden;
         min-height: 0;
         display: flex;
         flex-direction: column;
-        /* Flush 1px border instead of box-="square"'s inset ::before, so the
-           grid's edge-drawn hover/active shadow hugs the border. */
-        border: 1px solid var(--foreground3);
-        padding: 0.5lh 1ch;
-    }
-    .talks-widget::before {
-        content: none !important;
     }
 
     .tw-title {

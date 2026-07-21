@@ -262,16 +262,6 @@ const { variant, total, home = false } = Astro.props
     #intro-widget {
         pointer-events: auto;
         gap: 0.5lh;
-        /* Flush 1px border instead of box-="square"'s ::before (inset
-           0.5ch/0.5lh from the edge). The grid's hover/active box-shadow is
-           drawn at the element edge, so a flush border keeps the shadow
-           hugging it instead of floating past the inset frame. */
-        border: 1px solid var(--foreground3);
-        padding: 0.5lh 1ch;
-
-        &::before {
-            content: none !important;
-        }
 
         h1 {
             display: inline-flex;
