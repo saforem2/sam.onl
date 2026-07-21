@@ -1,0 +1,16 @@
+# Cloudflare Pages redirects. This file is copied verbatim to the build
+# output root (public/ -> dist/). NB: an identical-looking file under
+# src/pages/_redirects does NOT work — Astro ignores underscore-prefixed
+# files there, so it never reaches dist. Keep redirects here.
+
+# Legacy Quarto slide path -> current post route.
+/qmd/dope-slides/ /posts/dope-slides/ 301
+
+# Old landing route -> about page.
+/landing /about 301
+/landing/ /about 301
+
+# samforeman.me (Quarto) lowercased URLs -> case-sensitive Astro routes.
+# The l2hmc 4D SU(3) notebook builds at .../4dSU3/; preserve inbound links
+# to the old lowercase path.
+/posts/jupyter/l2hmc/4dsu3/ /posts/jupyter/l2hmc/4dSU3/ 301
