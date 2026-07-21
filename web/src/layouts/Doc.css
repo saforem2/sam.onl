@@ -594,7 +594,9 @@ h6::before {
        article text, which reads as a stray dark vertical seam at the boundary.
        Keeping the floor at/above content width prevents that collision. */
     width: var(--sidebar-width, auto);
-    max-width: 100vw;
+    /* Cap at 90vw (not 100vw) so a wide drag / long tree row always leaves
+       a viewport-edge gutter and can't push the article fully offscreen. */
+    max-width: 90vw;
     min-width: 23ch;
     flex: 0 0 var(--sidebar-width, auto);
     /* No extra left inset: #doc-columns already sits ~2ch in from the
