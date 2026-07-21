@@ -597,7 +597,9 @@ h6::before {
     max-width: 100vw;
     min-width: 23ch;
     flex: 0 0 var(--sidebar-width, auto);
-    margin-left: 1ch;
+    /* No extra left inset: #doc-columns already sits ~2ch in from the
+       viewport edge (outer wrapper gutter), so the file tree lines up with
+       the page's natural left margin without an additional 1ch here. */
 }
 
 #sidebar-container.collapsed {
