@@ -324,11 +324,16 @@ const total = variants.length
                 grid,
                 '[tabindex="0"], a[href], button:not([disabled])',
             )
-            // Focus the intro widget on load. The widget sits at the top
-            // of the page so this won't scroll past anything on mobile.
+            // Highlight the intro widget on load as the default selection.
+            // Use the SOFT data-vim-focused marker, not a hard focus() —
+            // real DOM focus would pin :focus-within on the intro widget so it
+            // stays lit even after you scroll away (markActiveWidget clears the
+            // attribute on scroll but can't blur a focused element). The
+            // attribute is styled identically to focus and is the same signal
+            // markActiveWidget manages, so highlighting stays single-source.
             const intro = document.getElementById('intro-widget')
             if (intro) {
-                vimFocusElement(intro)
+                intro.setAttribute('data-vim-focused', 'true')
             }
 
             const shortcuts: Record<string, string> = {
@@ -339,63 +344,13 @@ const total = variants.length
                 l: '#stats-widget',
                 m: '.iw-nav-home',
             }
-            // On mobile, visually highlight widgets as they scroll into view
-            // Uses data-vim-focused attribute only — no focus() call to avoid
-            // browser scroll snapping
-            if (window.innerWidth <= 768) {
-                let userScrolled = false
-                const onFirstScroll = () => {
-                    if (userScrolled) return
-                    userScrolled = true
-                    window.removeEventListener('scroll', onFirstScroll, true)
-                    const focusables = Array.from(
-                        grid.querySelectorAll<HTMLElement>('[tabindex="0"]'),
-                    )
-                    // Track each widget's live visibility ratio. Highlighting
-                    // "whichever just crossed 0.5" broke at the page ends,
-                    // where two widgets are ≥50% visible at once and the last
-                    // one processed won — so the last widget (e.g. talks) got
-                    // skipped in favor of the one after it. Instead, always
-                    // highlight the MOST-visible widget, tie-broken by document
-                    // order (topmost), which is stable when several overlap.
-                    const ratios = new Map<HTMLElement, number>()
-                    const observer = new IntersectionObserver(
-                        (entries) => {
-                            for (const entry of entries) {
-                                ratios.set(
-                                    entry.target as HTMLElement,
-                                    entry.isIntersecting
-                                        ? entry.intersectionRatio
-                                        : 0,
-                                )
-                            }
-                            let best: HTMLElement | null = null
-                            let bestRatio = 0
-                            for (const el of focusables) {
-                                const r = ratios.get(el) ?? 0
-                                // Strictly-greater keeps the earlier (topmost)
-                                // widget on ties.
-                                if (r > bestRatio) {
-                                    bestRatio = r
-                                    best = el
-                                }
-                            }
-                            for (const f of focusables) {
-                                if (f === best) {
-                                    f.setAttribute('data-vim-focused', 'true')
-                                } else {
-                                    f.removeAttribute('data-vim-focused')
-                                }
-                            }
-                        },
-                        // Multiple thresholds so the ratio updates smoothly as
-                        // widgets scroll, not just at the single 0.5 crossing.
-                        { threshold: [0, 0.25, 0.5, 0.75, 1] },
-                    )
-                    for (const el of focusables) observer.observe(el)
-                }
-                window.addEventListener('scroll', onFirstScroll, true)
-            }
+            // Mobile/tablet scroll-highlight is handled by markActiveWidget()
+            // in Widgets.astro (data-scroll-active, <=1024px). It drives both
+            // the frame shadow and the content-opacity brightening, and clears
+            // any stale data-vim-focused as you scroll — so a single widget is
+            // ever lit. (A separate ratio-based observer used to live here for
+            // <=768px, but running two highlighters left the frame and content
+            // out of sync in the 769-1024 band; markActiveWidget subsumes it.)
 
             grid.addEventListener('keydown', (e) => {
                 if (isUserTyping()) return
@@ -578,9 +533,18 @@ const total = variants.length
             transition: opacity 0.15s;
         }
 
+        /* Brighten the active widget's content. Must cover the SAME set of
+           states as the frame-shadow rule in Widgets.astro (:hover,
+           :focus-within/:focus, data-scroll-active, data-vim-focused) so a
+           widget's border and its contents always light up together. */
+        :global(#widgets-grid.intro-in-grid [tabindex='0']:hover),
         :global(#widgets-grid.intro-in-grid [tabindex='0']:focus),
         :global(
             #widgets-grid.intro-in-grid [tabindex='0'][data-vim-focused='true']
+        ),
+        :global(
+            #widgets-grid.intro-in-grid
+                [tabindex='0'][data-scroll-active='true']
         ),
         :global(#widgets-grid.intro-in-grid [tabindex='0']:has(:focus)) {
             opacity: 1;

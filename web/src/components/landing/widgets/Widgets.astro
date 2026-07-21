@@ -164,19 +164,28 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
             box-shadow 120ms ease-out,
             border-color 120ms ease-out;
     }
+    /* Active = hovered, focused, or flagged by either mobile highlighter
+       (data-scroll-active from markActiveWidget below, data-vim-focused from
+       the scroll observer / vim nav). All four must drive BOTH the frame
+       shadow here AND the content brightening (opacity rule in Intro.astro),
+       so a widget's border and its contents light up together — otherwise a
+       scrolled-in card gets the frame but its text stays dim. */
     #widgets-grid > [tabindex='0']:hover,
     #widgets-grid > [tabindex='0']:focus-within,
-    #widgets-grid > [tabindex='0'][data-scroll-active='true'] {
+    #widgets-grid > [tabindex='0'][data-scroll-active='true'],
+    #widgets-grid > [tabindex='0'][data-vim-focused='true'] {
         box-shadow: none !important;
         transform: none !important;
     }
     #widgets-grid > [tabindex='0']:hover::before,
     #widgets-grid > [tabindex='0']:focus-within::before,
-    #widgets-grid > [tabindex='0'][data-scroll-active='true']::before {
+    #widgets-grid > [tabindex='0'][data-scroll-active='true']::before,
+    #widgets-grid > [tabindex='0'][data-vim-focused='true']::before {
         border-color: var(--foreground0);
         box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.55);
     }
-    #widgets-grid > [tabindex='0'][data-scroll-active='true'] {
+    #widgets-grid > [tabindex='0'][data-scroll-active='true'],
+    #widgets-grid > [tabindex='0'][data-vim-focused='true'] {
         color: var(--foreground0);
     }
 
@@ -748,6 +757,14 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
        widget's, so the short one never wins focus.
        Closest-center fixes that: tall widgets only win while their
        midline is actually near the focus point. */
+    /* data-scroll-active is a MOBILE-only signal. The v21 grid only stacks
+       and scrolls at <=1024px; on desktop it fits in the viewport and never
+       scrolls, so markActiveWidget would mark the top widget once on load and
+       leave it stuck active forever (the intro-widget kept a permanent hover
+       shadow). Match the same 1024px breakpoint the stacked layout + snap
+       use, so on desktop the shadow is driven purely by :hover/:focus-within. */
+    const mobileScroll = window.matchMedia('(max-width: 1024px)')
+
     function markActiveWidget() {
         const grid = document.querySelector(
             '#widgets-grid.intro-v21',
@@ -757,6 +774,17 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
             grid.querySelectorAll<HTMLElement>(':scope > [tabindex="0"]'),
         )
         if (!widgets.length) return
+
+        // Desktop: no scrolling layout — clear any active flag and let hover /
+        // focus-within own the selected-widget shadow.
+        if (!mobileScroll.matches) {
+            for (const w of widgets) {
+                if (w.getAttribute('data-scroll-active') === 'true') {
+                    w.setAttribute('data-scroll-active', 'false')
+                }
+            }
+            return
+        }
 
         const focusY = window.innerHeight * 0.33
         let best: HTMLElement | null = null
@@ -781,6 +809,14 @@ const layoutClass = isIntroWidget ? `intro-v${variant}` : ''
             const cur = w.getAttribute('data-scroll-active') === 'true'
             if (cur !== active) {
                 w.setAttribute('data-scroll-active', String(active))
+            }
+            // Scroll position is the sole highlight authority on mobile/tablet.
+            // Clear any stale data-vim-focused (set by the load-time
+            // vimFocusElement(intro) or keyboard nav) on non-active widgets so
+            // scrolling doesn't leave two widgets lit at once. The actually
+            // keyboard-focused widget still lights via :focus-within/:focus.
+            if (!active && w.getAttribute('data-vim-focused') === 'true') {
+                w.removeAttribute('data-vim-focused')
             }
         }
     }
