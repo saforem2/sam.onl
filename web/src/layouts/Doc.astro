@@ -246,9 +246,22 @@ if (sourceFilePath) {
     }
 }
 
+// Parse a date value into a Date, anchoring bare `YYYY-MM-DD` frontmatter
+// strings at LOCAL noon. A date-only string parses as UTC midnight, which
+// rolls back a calendar day when formatted in a behind-UTC build zone (e.g.
+// `2024-06-17` renders "Jun 16" in Chicago). Noon keeps the intended day in
+// any zone. Mirrors the same fix in utils/lastModified.ts.
+function parseDocDate(d: string | Date): Date {
+    if (d instanceof Date) return d
+    const s = String(d).trim()
+    return /^\d{4}-\d{2}-\d{2}$/.test(s)
+        ? new Date(`${s}T12:00:00`)
+        : new Date(s)
+}
+
 // Format date helper
 function formatDate(d: string | Date): string {
-    return new Date(d).toLocaleDateString('en-US', {
+    return parseDocDate(d).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -256,7 +269,7 @@ function formatDate(d: string | Date): string {
 }
 
 function formatDateShort(d: string | Date): string {
-    const dt = new Date(d)
+    const dt = parseDocDate(d)
     const mm = String(dt.getMonth() + 1).padStart(2, '0')
     const dd = String(dt.getDate()).padStart(2, '0')
     const yy = String(dt.getFullYear()).slice(-2)
