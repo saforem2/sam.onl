@@ -7,10 +7,24 @@ interface Props {
     title?: string
     ogType?: 'website' | 'article'
     publishedTime?: string
+    // Preload the mIosevka-Term (code) woff2. Defaults true so every doc/post
+    // page (all wrap through Doc.astro) is unchanged. The landing page has no
+    // code above the fold — its only Term-using elements are keybind hints in
+    // the closed command palette (display:none until opened) — so it opts out
+    // to keep ~109 KiB off the first-paint critical path. Term's @font-face
+    // stays defined, so it still loads on demand (font-display:swap) if the
+    // palette opens.
+    preloadCodeFont?: boolean
 }
 
-const { ogSlug, description, title, ogType, publishedTime } =
-    Astro.props as Props
+const {
+    ogSlug,
+    description,
+    title,
+    ogType,
+    publishedTime,
+    preloadCodeFont = true,
+} = Astro.props as Props
 const pageDescription = description || "Sam Foreman's Personal Website"
 const pageTitle = title || 'Sam Foreman'
 const ogImage = ogSlug
@@ -219,13 +233,17 @@ const resolvedOgType = ogType ?? 'website'
             type="font/woff2"
             crossorigin
         />
-        <link
-            rel="preload"
-            href="/fonts/miosevka-term/MIosevkaTerm-Regular.woff2"
-            as="font"
-            type="font/woff2"
-            crossorigin
-        />
+        {
+            preloadCodeFont && (
+                <link
+                    rel="preload"
+                    href="/fonts/miosevka-term/MIosevkaTerm-Regular.woff2"
+                    as="font"
+                    type="font/woff2"
+                    crossorigin
+                />
+            )
+        }
         <link href="/fonts/miosevka-qp/miosevka-qp.css" rel="stylesheet" />
         <link href="/fonts/miosevka-term/miosevka-term.css" rel="stylesheet" />
         <!-- Alternate font CSS files — @font-face decls only, ~1-2 KB

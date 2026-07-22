@@ -169,8 +169,25 @@
         }
     }
 
-    setLastFM()
-    setInterval(setLastFM, 10 * 5000)
+    // Defer the first last.fm fetch off the initial critical path — it's a
+    // third-party request (ws.audioscrobbler.com) that Lighthouse flags as the
+    // max critical-path latency (~474ms). The widget already shows "Loading..."
+    // in static HTML, so nothing above the fold waits on it. rIC's 2nd arg
+    // must be an options object ({ timeout }), NOT a bare number (a bare number
+    // throws and silently kills the callback); mirror Layout.astro's
+    // scheduleIdle helper. The periodic refresh still starts once the first
+    // fetch has been scheduled.
+    const scheduleIdle = (fn) => {
+        if (window.requestIdleCallback) {
+            window.requestIdleCallback(fn, { timeout: 3000 })
+        } else {
+            window.setTimeout(fn, 1)
+        }
+    }
+    scheduleIdle(() => {
+        setLastFM()
+        setInterval(setLastFM, 10 * 5000)
+    })
 </script>
 
 <style>

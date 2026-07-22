@@ -18,12 +18,38 @@ const visibleExtensions = new Set<string>([
 ])
 const maxChildEntries = 12
 
-const pageModules = import.meta.glob([
-    '/src/pages/**/*.astro',
-    '/src/pages/**/*.md',
-    '/src/pages/**/*.mdx',
-    '!/src/pages/index.astro',
-])
+// Build-time filesystem walk of src/pages to list every page path for the
+// decorative file tree. This deliberately does NOT use `import.meta.glob`:
+// a glob registers a dynamic-import module-graph edge from this widget to
+// EVERY page, and Astro's CSS plugin walks importers *backward* (following
+// dynamic importers too — core/build/plugins/graph.js concats
+// info.dynamicImporters), so the glob made the landing page a "parent" of
+// every scoped-component CSS module on the site and linked ~5 unrelated
+// slide/doc CSS chunks into the landing critical path. FileTree only ever
+// reads the path list (never imports the modules), so a plain fs read gives
+// the identical output with zero graph edges. Anchor on process.cwd()
+// (= the `web/` workspace at build time), NOT import.meta.url — a bundled
+// import.meta.url resolves into dist/ (the resolveSourceFile footgun).
+import { readdirSync } from 'node:fs'
+import { join } from 'node:path'
+
+const pagesRoot = join(process.cwd(), 'src/pages')
+const pageModuleKeys: string[] = []
+const walkPages = (dir: string, prefix: string): void => {
+    for (const dirent of readdirSync(dir, { withFileTypes: true })) {
+        const rel = prefix ? `${prefix}/${dirent.name}` : dirent.name
+        if (dirent.isDirectory()) {
+            walkPages(`${dir}/${dirent.name}`, rel)
+        } else if (
+            /\.(astro|md|mdx)$/.test(dirent.name) &&
+            rel !== 'index.astro'
+        ) {
+            pageModuleKeys.push(rel)
+        }
+    }
+}
+walkPages(pagesRoot, '')
+
 const syntheticPaths = [
     '_redirects',
     'index.astro',
@@ -35,12 +61,7 @@ const syntheticPaths = [
     'posts/index.xml',
 ]
 const relativePaths = Array.from(
-    new Set([
-        ...Object.keys(pageModules).map((absolutePath) =>
-            absolutePath.replace(/^\/src\/pages\//, ''),
-        ),
-        ...syntheticPaths,
-    ]),
+    new Set([...pageModuleKeys, ...syntheticPaths]),
 ).filter((path) => path.length > 0 && path !== 'landing.mdx copy')
 
 const extensionOf = (name: string): string => {
