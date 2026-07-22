@@ -99,6 +99,17 @@ function stripEmoji(text: string): string {
         }
     }
 
+    /* On touch pointers the flush one-line rows (~19-22px) fall under the
+       WCAG 24px tap-target minimum. Grow them only for coarse pointers so
+       desktop keeps its dense TUI listing; center the content in the taller
+       box. lh keeps the target scaling with the font. */
+    @media (pointer: coarse) {
+        .pw-item {
+            min-height: 1.3lh;
+            align-items: center;
+        }
+    }
+
     .pw-date {
         color: var(--foreground2);
         flex-shrink: 0;
