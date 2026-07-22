@@ -552,6 +552,13 @@
         .astro-code > & {
             color: inherit;
             background-color: inherit;
+            /* Cap a code block at ~2/3 of the viewport so a very long
+               listing scrolls in place instead of pushing the rest of the
+               article far down the page. Rounded to the lh grid to match the
+               deck cap above; overflow-y:auto so it scrolls (max-height
+               alone would clip). */
+            max-height: round(calc(0.66 * 100vh), 1lh);
+            overflow-y: auto;
         }
     }
 
