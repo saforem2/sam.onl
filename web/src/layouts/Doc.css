@@ -154,6 +154,13 @@
     flex-shrink: 0;
     margin-block-start: 2ch;
     margin-block-end: 0;
+    /* Cap to the prose measure so space-between doesn't fling the actions
+       group out to the full #main-content width (~429px past where the
+       article text ends). max-width, not width: --prose-measure is a flat
+       84ch with no responsive override, so a fixed width would resolve to
+       ~672px and overflow a 372px mobile column. Mirrors the body prose cap
+       (global.css). */
+    max-width: var(--prose-measure);
 }
 
 .post-description {
