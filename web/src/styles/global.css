@@ -2231,25 +2231,40 @@ html[data-webtui-theme='catppuccin-latte'] {
         text-decoration: none;
     }
 
-    /* Body link hover effect: vim-style reverse-video flash. fg/bg invert
-       on the accent color. `box-decoration-break: clone` makes the
-       background paint cleanly on each line fragment when a link wraps. */
+    /* Body link hover effect: poolside-style left-to-right wipe. The accent
+       fill is a gradient sized 0% wide at rest and grown to 100% on hover,
+       anchored left, so the reverse-video fill sweeps in from the left edge
+       (vs. the old whole-band fade). The end state is identical to the prior
+       flash — accent fill, background0 text — only the fill is animated.
+       The `transition` (background-size + color) lives on the doc-article
+       focusable rule in Doc.css:1220 (layer(doc)), which wins over this
+       layer(components) rule regardless of specificity — declaring transition
+       here would be silently overridden. `background-size` transitions aren't
+       GPU-composited but this is hover-only on short inline text, so cost is
+       negligible; the global prefers-reduced-motion block (below) collapses it
+       to instant. Scoped to :hover only (not :focus-visible) so keyboard focus
+       keeps the dedicated focus-ring treatment in Doc.css; poolside's effect
+       is pointer-only too. `box-decoration-break: clone` paints the fill
+       cleanly on each line fragment when a link wraps (each fragment fills at
+       once — a minor cosmetic quirk on multi-line links, acceptable). */
     #main-content
         :is(p, blockquote, li, [is-~='typography-block'])
         a:not(.heading-anchor):not([data-footnote-ref]):not(
             [data-footnote-backref]
         ) {
-        background-color: transparent;
         padding-inline: 0.25ch;
+        background-image: linear-gradient(
+            var(--accent, var(--blue)),
+            var(--accent, var(--blue))
+        );
+        background-repeat: no-repeat;
+        background-position: left center;
+        background-size: 0% 100%;
         -webkit-box-decoration-break: clone;
         box-decoration-break: clone;
-        transition:
-            background-color 0.15s ease-out,
-            color 0.15s ease-out;
 
-        &:hover,
-        &:focus-visible {
-            background-color: var(--accent, var(--blue));
+        &:hover {
+            background-size: 100% 100%;
             color: var(--background0);
             text-decoration: none;
         }
