@@ -2232,21 +2232,19 @@ html[data-webtui-theme='catppuccin-latte'] {
     }
 
     /* Body link hover effect: poolside-style left-to-right wipe. The accent
-       fill is a gradient sized 0% wide at rest and grown to 100% on hover,
+       fill is a gradient sized 0% wide at rest, grown to 100% on hover,
        anchored left, so the reverse-video fill sweeps in from the left edge
-       (vs. the old whole-band fade). The end state is identical to the prior
-       flash — accent fill, background0 text — only the fill is animated.
-       The `transition` (background-size + color) lives on the doc-article
-       focusable rule in Doc.css:1220 (layer(doc)), which wins over this
-       layer(components) rule regardless of specificity — declaring transition
-       here would be silently overridden. `background-size` transitions aren't
-       GPU-composited but this is hover-only on short inline text, so cost is
-       negligible; the global prefers-reduced-motion block (below) collapses it
-       to instant. Scoped to :hover only (not :focus-visible) so keyboard focus
-       keeps the dedicated focus-ring treatment in Doc.css; poolside's effect
-       is pointer-only too. `box-decoration-break: clone` paints the fill
-       cleanly on each line fragment when a link wraps (each fragment fills at
-       once — a minor cosmetic quirk on multi-line links, acceptable). */
+       (vs. the old whole-band fade). End state is identical to the prior flash
+       — accent fill, background0 text — only the fill is animated. The fill
+       (background-size) and the text color flip share the SAME 150ms duration
+       + ease-out curve (set on the Doc.css layer(doc) focusable rule, which
+       wins the cascade over this layer(components) rule — declaring transition
+       here would be silently dropped) so the wipe edge and the color flip land
+       together; a lagging fill was what washed the text out and read as chunky.
+       Scoped to :hover only (not :focus-visible) so keyboard focus keeps the
+       dedicated focus-ring in Doc.css; poolside's effect is pointer-only too.
+       box-decoration-break: clone paints the fill cleanly on each line fragment
+       when a link wraps. */
     #main-content
         :is(p, blockquote, li, [is-~='typography-block'])
         a:not(.heading-anchor):not([data-footnote-ref]):not(
