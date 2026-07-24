@@ -2231,38 +2231,67 @@ html[data-webtui-theme='catppuccin-latte'] {
         text-decoration: none;
     }
 
-    /* Body link hover effect: poolside-style left-to-right wipe. The accent
-       fill is a gradient sized 0% wide at rest, grown to 100% on hover,
-       anchored left, so the reverse-video fill sweeps in from the left edge
-       (vs. the old whole-band fade). End state is identical to the prior flash
-       — accent fill, background0 text — only the fill is animated. The fill
-       (background-size) and the text color flip share the SAME 150ms duration
-       + ease-out curve (set on the Doc.css layer(doc) focusable rule, which
-       wins the cascade over this layer(components) rule — declaring transition
-       here would be silently dropped) so the wipe edge and the color flip land
-       together; a lagging fill was what washed the text out and read as chunky.
-       Scoped to :hover only (not :focus-visible) so keyboard focus keeps the
-       dedicated focus-ring in Doc.css; poolside's effect is pointer-only too.
-       box-decoration-break: clone paints the fill cleanly on each line fragment
-       when a link wraps. */
+    /* Body link hover effect: grow-from-underline highlight. At rest the accent
+       is a short bar pinned to the BOTTOM of the link (reads as a fat
+       underline); on hover it grows up to fill the whole line-box and the text
+       flips to background0 — a reverse-video reveal that expands vertically
+       rather than sweeping across.
+       Implemented as a bottom-anchored background-size on the Y axis (not a
+       ::before with z-index:-1 as in the reference — that negative z-index
+       hides the bar behind callout/box backgrounds; a background layer stays
+       put and also clones per line-fragment for wrapped links). The transition
+       (background-size + color, 150ms) lives on the Doc.css layer(doc)
+       focusable rule, which wins the cascade over this layer(components) rule —
+       declaring it here would be silently dropped. Scoped to :hover only (not
+       :focus-visible) so keyboard focus keeps the dedicated focus-ring in
+       Doc.css. reduced-motion collapses the transition via the global reset. */
     #main-content
         :is(p, blockquote, li, [is-~='typography-block'])
         a:not(.heading-anchor):not([data-footnote-ref]):not(
             [data-footnote-backref]
         ) {
-        padding-inline: 0.25ch;
-        background-image: linear-gradient(
-            var(--accent, var(--blue)),
-            var(--accent, var(--blue))
-        );
-        background-repeat: no-repeat;
-        background-position: left center;
-        background-size: 0% 100%;
+        /* Two stacked background layers (comma-separated), both bottom-anchored:
+             1. PINK grow bar — a solid --accent gradient, 0 height at rest,
+                grown to full line height on hover; painted ON TOP.
+             2. BLUE underline — a static bar tinted from the link's OWN colour
+                at low alpha (codebase var is --url, not --url-color as in the
+                source snippet), 0.18lh tall, always present; painted UNDER.
+           REST: only the blue underline shows (pink is 0 height). HOVER: the
+           pink grows up over the blue and the text flips to background0; on
+           unhover it retracts and the blue underline returns. Only the pink
+           layer's size changes, so the background-size transition in Doc.css
+           animates the grow. Extra horizontal padding makes the band read
+           bigger. */
+        padding-inline: 0.5ch;
+        background-image:
+            linear-gradient(
+                var(--accent, var(--blue)),
+                var(--accent, var(--blue))
+            ),
+            linear-gradient(
+                oklch(
+                    from var(--url, var(--accent, var(--blue)))
+                        calc(l * var(--oklch-scale, 1.08)) c h / 0.15
+                ),
+                oklch(
+                    from var(--url, var(--accent, var(--blue)))
+                        calc(l * var(--oklch-scale, 1.08)) c h / 0.15
+                )
+            );
+        background-repeat: no-repeat, no-repeat;
+        background-position:
+            left bottom,
+            left bottom;
+        background-size:
+            100% 0,
+            100% 0.18lh;
         -webkit-box-decoration-break: clone;
         box-decoration-break: clone;
 
         &:hover {
-            background-size: 100% 100%;
+            background-size:
+                100% 100%,
+                100% 0.18lh;
             color: var(--background0);
             text-decoration: none;
         }
