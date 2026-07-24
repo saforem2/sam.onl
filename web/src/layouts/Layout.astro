@@ -35,6 +35,31 @@ const ogImage = ogSlug
 // the page (sam.onl, *.pages.dev preview builds, etc.).
 const pageUrl = new URL(Astro.url.pathname, Astro.site).href
 const resolvedOgType = ogType ?? 'website'
+
+// Inline every font stylesheet's @font-face rules at build time instead of
+// linking them. Each was a render-blocking <link rel=stylesheet> round-trip
+// (~450ms each on Slow 4G, serialized = the bulk of the mobile render-blocking
+// penalty), yet the files hold ONLY @font-face decls (a few KB total). Inlining
+// removes 4 render-blocking requests with zero behaviour change: the default
+// woff2 are still preloaded (below), font-display:swap still keeps text
+// unblocked, and the alternate weights still fetch lazily only when an element
+// resolves to that family (i.e. when the user picks it in the palette).
+// Build-time node:fs read anchored on process.cwd() (= the web/ workspace),
+// NOT import.meta.url (which resolves into dist/ after bundling — the
+// resolveSourceFile footgun). Nerd Font's @font-face lives in global.css, so
+// it is not part of this set.
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+const fontFaceCss = [
+    'miosevka-qp/miosevka-qp.css',
+    'miosevka-term/miosevka-term.css',
+    'iosevka/iosevka.css',
+    'victor-mono/victor-mono.css',
+]
+    .map((rel) =>
+        readFileSync(join(process.cwd(), 'public/fonts', rel), 'utf8'),
+    )
+    .join('\n')
 ---
 
 <!doctype html>
@@ -244,14 +269,13 @@ const resolvedOgType = ogType ?? 'website'
                 />
             )
         }
-        <link href="/fonts/miosevka-qp/miosevka-qp.css" rel="stylesheet" />
-        <link href="/fonts/miosevka-term/miosevka-term.css" rel="stylesheet" />
-        <!-- Alternate font CSS files — @font-face decls only, ~1-2 KB
-             each. Browsers fetch the actual WOFF2 weights only when an
-             element resolves to one of these families (i.e. only when
-             the user picks the font in the command palette). -->
-        <link href="/fonts/iosevka/iosevka.css" rel="stylesheet" />
-        <link href="/fonts/victor-mono/victor-mono.css" rel="stylesheet" />
+        <!-- All @font-face decls (default + alternate families) inlined at
+             build time from public/fonts/*.css — see fontFaceCss in the
+             frontmatter. Replaces 4 render-blocking <link rel=stylesheet>
+             round-trips. The actual WOFF2 weights still fetch lazily (only
+             when an element resolves to a family), and the two defaults are
+             preloaded above. -->
+        <style is:inline set:html={fontFaceCss}></style>
         <style is:inline>
             svg[id^='mermaid-'] {
                 display: block;

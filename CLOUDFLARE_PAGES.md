@@ -37,6 +37,24 @@ Mirrors what `netlify.toml` used to encode.
   `web/dist/_headers` by Astro's build. CF Pages reads it natively.
 - **No redirects** currently; if needed, add `web/public/_redirects`.
 
+## Scrape Shield — Email Obfuscation (render-blocking script)
+
+Cloudflare's **Email Address Obfuscation** (Scrape Shield) rewrites any
+`mailto:` in the HTML into an encoded blob and injects
+`/cdn-cgi/scripts/.../email-decode.min.js` to decode it client-side. That
+script is **render-blocking** and shows up in Lighthouse's render-blocking
+list (~1.2 KiB, ~150ms on Slow 4G) even though it is not in this repo — CF
+adds it at the edge. The site has one `mailto:` (`sf@omg.lol`, in
+`about/index.mdx`), which is what triggers it.
+
+To remove it from the critical path, turn the feature off:
+**dashboard → the zone (sam.onl) → Scrape Shield → Email Address
+Obfuscation → Off.** (It is a zone/Scrape-Shield setting, not a Pages
+build setting, so there is no file to change — it must be toggled in the
+dashboard.) Trade-off: the raw `mailto:` address becomes scrapeable by
+bots again. Low stakes for a single `omg.lol` alias; leave it on if you'd
+rather keep the obfuscation and eat the ~150ms.
+
 ## Skip-build keyword
 
 Netlify recognized `[skip netlify]`. **Cloudflare uses `[CI Skip]`** (or
