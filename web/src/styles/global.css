@@ -1,6 +1,9 @@
 /* Contains all core base styles, utilities, and components */
 @layer base, utils, components;
-@import 'katex/dist/katex.min.css';
+/* KaTeX CSS is NOT imported here — it was ~3.6KB gz of the every-page global
+   chunk but is only needed on pages that render math (posts/talks via
+   Doc.astro). Moved to Doc.astro's <style is:global> so the landing and other
+   Layout-direct pages skip it off their render-blocking critical path. */
 @import '@webtui/css/base.css';
 @import '@webtui/css/utils/box.css';
 

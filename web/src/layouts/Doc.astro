@@ -337,6 +337,11 @@ const articleSchema =
   block, or restart the dev server. Production builds always pick it up.
 -->
 <style is:global>
+    /* KaTeX first, then Doc.css. KaTeX lives here (not in global.css) so only
+       math-bearing pages — all of which render through Doc.astro — pay for it;
+       the landing/non-doc pages skip ~3.6KB gz off their critical CSS. Must
+       precede Doc.css in the cascade, same as the ordering rationale above. */
+    @import 'katex/dist/katex.min.css';
     @import './Doc.css';
 </style>
 
