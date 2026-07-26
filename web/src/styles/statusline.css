@@ -1,0 +1,208 @@
+/* Vim statusline (lualine look) — shared partial.
+
+   Extracted from Doc.css (was lines 331-522) so the LANDING page can load just
+   these rules instead of the whole 1842-line Doc.css. Previously Intro.astro
+   `@import`-ed all of Doc.css into layer(doc), dragging ~40KB of doc/prose CSS
+   (toc, reader, post-meta, sidebar) onto the landing critical path even though
+   the landing only renders the statusline. Now both consumers import THIS:
+     - Doc.astro's <style is:global> (doc pages), before ./Doc.css in the cascade
+     - Intro.astro (landing), unlayered
+   All rules are unlayered and use theme tokens (--foreground*, --background*,
+   --url, --accent, --oklch-scale) present on every page via global.css, so this
+   file works standalone wherever it's imported.
+
+   Note: the reader-mode / mobile `#vim-statusline { display:none }` rules stay
+   in Doc.css (they only apply on doc pages) — they are NOT part of this block. */
+
+/* ── Statusline: flat lualine look ───────────────────────────────────────
+   Modeled on a real nvim lualine: one continuous near-white bar (not the
+   page white), a single saturated green mode cap, neutral body segments on a
+   light-grey fill, and green as the through-line accent (git branch, file,
+   right-hand position blocks) with semantic colors for warnings/counts.
+   Replaces the earlier washed-out blue/grey mix. */
+#vim-statusline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    /* height: calc(1lh + 4px); */
+    height: 1lh;
+    /* box-shadow: inset 0 1px 0 var(--background2), inset 0 -1px 0 var(--background2); */
+    line-height: 1lh;
+    /* Continuous bar fill — the body sits one step off page-white so the bar
+       reads as a solid strip, like lualine's section_c background. */
+    background-color: var(--background1);
+    color: var(--foreground1);
+    white-space: nowrap;
+    overflow: hidden;
+    z-index: 10;
+    flex-shrink: 0;
+    /* margin-block-end: 1ch; */
+    /* width: round(calc(100vw), 1ch); */
+    /* margin-inline: -1ch; */
+    /* border-left: 2px solid var(--background0); */
+    /* border-right: 2px solid var(--background0); */
+    /* border: 1px solid var(--background2); */
+    /* padding-bottom: 1ch; */
+}
+
+#vim-statusline > span {
+    padding: 0 1ch;
+}
+
+.vsl-site {
+    /* First section (formerly NORMAL mode / branch): the left bookend, holding
+       the repo icon + "sam.onl". Uses the same dim-tint / bright-text chip
+       style as the date/time/pos chips, but neutral grey — so the end-caps no
+       longer starkly contrast with the rest of the bar (matching .vsl-loc on
+       the right). */
+    background-color: oklch(
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.1
+    );
+    color: oklch(from var(--foreground1) l c h);
+    font-weight: 500;
+    letter-spacing: 0.05ch;
+    padding-inline: 1ch !important;
+}
+
+/* The path — now a container for per-segment breadcrumb crumbs (.vsl-crumb)
+   joined by "/" separators (.vsl-crumb-sep). Linked crumbs (real routes) take
+   the blue site link colour; non-link crumbs + separators are neutral grey, so
+   colour alone signals which segments are clickable. */
+.vsl-file {
+    padding-inline-start: 1ch;
+    display: inline-flex;
+    align-items: baseline;
+}
+/* Plain (non-link) segments: neutral grey. */
+.vsl-crumb {
+    color: oklch(from var(--foreground2) l c h);
+}
+/* Separators dimmer still so the segment names read as the content. */
+.vsl-crumb-sep {
+    color: oklch(from var(--foreground3) l c h / 0.7);
+}
+/* Linked segments: the blue site link colour (--url) marks them clickable. */
+a.vsl-crumb {
+    color: oklch(from var(--url) calc(l * var(--oklch-scale, 0.95)) c h);
+}
+
+/* Statusline segments that are real links — defeat the global body-link
+   reverse-video flash and underline so they look the same at rest, just
+   clickable. */
+a.vsl-site,
+a.vsl-crumb {
+    text-decoration: none !important;
+    cursor: pointer;
+    transition:
+        background-color 100ms linear,
+        color 100ms linear;
+}
+/* Site cap hover: brighten the grey fill a touch. */
+a.vsl-site:hover,
+a.vsl-site:focus-visible {
+    color: oklch(from var(--foreground0) l c h) !important;
+    background-color: oklch(
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
+    ) !important;
+}
+/* Crumb link hover: fill with the link colour, invert text. */
+a.vsl-crumb:hover,
+a.vsl-crumb:focus-visible {
+    color: oklch(from var(--background0) l c h) !important;
+    background-color: oklch(
+        from var(--url) calc(l * var(--oklch-scale, 0.95)) c h
+    ) !important;
+}
+
+.vsl-spacer {
+    flex: 1;
+    padding: 0 !important;
+}
+
+/* Right-side cluster: clock (date · time) · pos · loc. Tones ramp the OTHER way
+   from the old crescendo — lightest at the clock (left-most, nearest centre),
+   brightening through pos, and ending in a loc cap that is an exact twin of the
+   .vsl-site / "sam.onl" cap on the far left. So the bar is symmetric: identical
+   grey caps bookend each end, with the info chips fading toward the middle.
+   Tabular numerals keep the live clock + scroll-% from jittering. */
+.vsl-clock {
+    /* Faintest chip: lowest tint, dimmest (foreground3) text. */
+    color: oklch(from var(--foreground3) l c h);
+    background-color: oklch(
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.04
+    );
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1ch;
+    font-variant-numeric: tabular-nums;
+}
+.vsl-clock-sep {
+    color: var(--foreground3);
+    opacity: 0.6;
+}
+
+/* pos (scroll %) — middle step: a touch more tint, foreground2 text. */
+.vsl-pos {
+    background-color: oklch(
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.07
+    );
+    color: oklch(from var(--foreground2) l c h);
+    font-variant-numeric: tabular-nums;
+}
+
+/* loc (line:col) — the right-hand cap, styled to MATCH .vsl-site exactly so the
+   two far ends frame the bar symmetrically. Keep these values in sync with
+   .vsl-site above. */
+.vsl-loc {
+    background-color: oklch(
+        from var(--foreground2) calc(l * var(--oklch-scale, 1.15)) c h / 0.1
+    );
+    color: oklch(from var(--foreground1) l c h);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.vsl-vim-icon {
+    /* background-color: var(--green, var(--accent)); */
+    background-color: var(--blue, oklch(from #339af0 l c h));
+    color: var(--background0);
+    padding: 0 0.5ch !important;
+    padding-inline-start: 1ch !important;
+    padding-inline-end: 0.5ch !important;
+}
+
+.vsl-keys {
+    display: flex;
+    gap: 1;
+    padding: 0 !important;
+    /* background-color: var(--background1); */
+    color: var(--foreground3);
+    background-color: oklch(
+        from var(--foreground3) calc(l * var(--oklch-scale, 1.15)) c h / 0.2
+    );
+
+    #vsl-last-key {
+        padding: 0 1ch;
+        color: var(--background0);
+        background-color: var(--accent);
+        min-width: 1ch;
+        text-align: center;
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    button {
+        all: unset;
+        padding: 0 1ch;
+        color: var(--foreground2);
+        cursor: default;
+        border-right: 1px solid var(--background1);
+        transition: color 0.1s;
+
+        &:last-child {
+            border-right: none;
+        }
+    }
+}

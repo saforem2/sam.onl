@@ -368,7 +368,12 @@ const total = variants.length
     </script>
 
     <style is:global>
-        @import '@/layouts/Doc.css' layer(doc);
+        /* The landing only needs the vim-statusline rules from the doc layout,
+           NOT all of Doc.css (toc/reader/post-meta/prose it never renders).
+           Import just the shared statusline partial — unlayered, since the
+           landing has no competing layer(doc) and nothing layered targets
+           .vsl-*. This keeps ~40KB of doc CSS off the landing's chunk. */
+        @import '@/styles/statusline.css';
     </style>
     <style>
         .intro {
