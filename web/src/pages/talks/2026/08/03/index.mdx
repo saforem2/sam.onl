@@ -1615,27 +1615,147 @@ Full writeup:
 
 </Slide>
 
+{/* source: net-new capstone — ties together yeet + the fault-tolerance flags from Part 2 */}
 <Slide id="capstone">
 
-## The full resilient launch
+## Putting it together: one resilient launch
 
-{/* TODO(part2) — net-new capstone */}
+Everything in Part 2 collapses into a startup ritual and a single launch line.
+Nothing here is aspirational: each flag is one we saw earn its keep.
+
+```bash
+# 1. stage the env node-local (off Lustre) — Part 1
+ezpz yeet --compress
+source /tmp/.venv/bin/activate
+
+# 2. launch with all three recovery layers armed — Part 2
+ezpz launch \
+    --auto-retry \                 # NODE:    swap bad hosts from the spare pool
+    --np 512 \                     #          (allocate 522, keep 10 spare)
+    --timeout 1800 \               # PROCESS: kill on 30 min of stdout silence
+    --retries 3 \                  #          re-exec with exponential backoff
+    -- python3 -m torchtitan.train --config-file ./config.toml
+# JOB layer: a chained PBS resubmit wraps the whole thing (hours scope)
+```
+
+- **Data** blended + pinned, **env** broadcast off Lustre, **checkpoints** async
+  and node-local-stageable, **failures** caught at process / node / job scope.
+- The person who launches this can **close the laptop**. The 9:36-PM-Friday
+  silent hang recovered itself.
+
+> [!TIP] The whole talk in one line
+> You do not prevent failures at this scale. You make recovery so cheap that
+> failure stops being an event.
 
 </Slide>
 
+{/* source: net-new recap — the takeaways + where to actually start */}
 <Slide id="recap">
 
-## Start here
+## What to take home
 
-{/* TODO */}
+<Cols>
+<Col>
+
+**The five lessons**
+
+1. **Data prep is a distributed-systems problem.** Tokenize once, blend by
+   weight, pin everything for reproducibility.
+2. **Do not hit Lustre from every rank.** Stage node-local; broadcast the env.
+3. **Add parallelism in order of pain:** `DP → FSDP/ZeRO → TP → PP`, and stay
+   under the critical batch size.
+4. **Loss is not ground truth.** Gate on evals; a bit-exact smoke test catches
+   silent corruption.
+5. **Do not prevent failures, recover cheaply.** Async checkpoints + layered
+   auto-restart.
+
+</Col>
+<Col>
+
+**Start here**
+
+- 🍋 **ezpz** (launch anywhere, `--auto-retry`, `yeet`):
+  [github.com/saforem2/ezpz](https://github.com/saforem2/ezpz) · [ezpz.cool](https://ezpz.cool)
+- 🧠 **torchtitan fork** (XPU + our experiments):
+  [github.com/saforem2/torchtitan](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz)
+- 📚 **blendcorpus** (weighted data blending):
+  [github.com/zhenghh04/blendcorpus](https://github.com/zhenghh04/blendcorpus)
+
+**Deeper write-ups**
+
+- [Running 50k Python processes on Aurora with `ezpz yeet`](https://samf.sh/posts/2026/05/01)
+- [BlendCorpus + TorchTitan @ ALCF](https://samf.sh/posts/2025/09/12)
+
+</Col>
+</Cols>
 
 </Slide>
 
+{/* source: reuse — thanks/QR pattern from 2026/07/14:1671 */}
 <Slide id="thanks">
+
+<a
+    class="thanks-qr"
+    href="https://samf.sh/talks/2026/08/03"
+    aria-label="QR code linking to these slides">
+    {/* TODO: generate qr-slides.svg into public/talks/2026-08-03/figures/ */}
+    <img
+        src="/talks/2026-08-03/figures/qr-slides.svg"
+        alt="QR code linking to samf.sh/talks/2026/08/03"
+    />
+    <span>samf.sh/talks/2026/08/03</span>
+</a>
 
 ## Thanks
 
-{/* TODO */}
+**AuroraGPT team**: Venkat Vishwanath, the AI/ML Group at ALCF, collaborators
+across ANL.
+
+**Argonne Leadership Computing Facility**: Aurora time, Sunspot staging.
+
+**Intel**: Intel Max 1550 XPU + oneAPI / XCCL / IPEX support throughout.
+
+**Code & docs**
+
+- `ezpz`: [github.com/saforem2/ezpz](https://github.com/saforem2/ezpz)
+- `torchtitan` fork (experiments/ezpz):
+  [github.com/saforem2/torchtitan](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz)
+- These slides: [samf.sh/talks/2026/08/03](https://samf.sh/talks/2026/08/03)
+
+> This research used resources of the Argonne Leadership Computing Facility, which
+> is a DOE Office of Science User Facility supported under Contract
+> DE-AC02-06CH11357.
+
+Questions?
+
+<style>{`
+  #thanks .thanks-qr {
+    position: absolute;
+    top: 2lh;
+    right: 4ch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25lh;
+    text-decoration: none;
+    color: var(--foreground0);
+  }
+  #thanks .thanks-qr img { width: 11ch; height: 11ch; display: block; }
+  #thanks .thanks-qr span { font-size: 0.75em; color: var(--foreground1); white-space: nowrap; }
+  #thanks .slide-inner > h2,
+  #thanks .slide-inner > h2 + p,
+  #thanks .slide-inner > h2 + p + p,
+  #thanks .slide-inner > h2 + p + p + p {
+    padding-inline-end: 18ch;
+  }
+  @media (max-width: 768px) {
+    #thanks .thanks-qr { display: none; }
+    #thanks .slide-inner > h2,
+    #thanks .slide-inner > h2 + p,
+    #thanks .slide-inner > h2 + p + p,
+    #thanks .slide-inner > h2 + p + p + p { padding-inline-end: 0; }
+  }
+`}</style>
 
 </Slide>
 
@@ -1647,10 +1767,23 @@ Full writeup:
 
 </Slide>
 
+{/* source: reuse pattern — appendix "backup slides" index from 2026/07/14:1760 */}
 <Slide id="appendix">
 
-## Appendix
+## Appendix: backup slides
 
-{/* TODO: eval charts, CPT/SFT/GRPO, MoE-on-XPU, AERIS — for Q&A. */}
+Material that didn't make the main path but is here for Q&A. Pull the full slides
+from the [AuroraGPT-at-scale deck](https://samf.sh/talks/2026/07/14) as needed:
+
+- **Evaluation:** 2B vs 20B across ARC / HellaSwag / WinoGrande
+- **Post-training:** CPT · SFT · GRPO curves
+- **MoE on Intel XPU:** throughput and where it stands
+- **AERIS:** a production case study on the same stack
+- **Failover engineering:** the full silent-hang recovery write-up
+- **Open questions** we'd like this community's help on
+
+{/* TODO: lift the actual eval/CPT/SFT/GRPO/MoE/AERIS slides + figures from
+   2026/07/14 if you want them inline rather than linked. Figures would need
+   copying into public/talks/2026-08-03/figures/. */}
 
 </Slide>
