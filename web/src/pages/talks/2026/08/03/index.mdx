@@ -326,31 +326,21 @@ nudged a setting is a multi-hour, whole-allocation tax.
 
 Start from the site module. Layer a `venv` on top. Do not fight it.
 
-<Cols widths="2 5">
-<Col>
-
-> [!TIP]+ The rule
-> Never `pip install` into base. `venv` first, clone last.
-
-</Col>
-<Col>
-
 ```bash
 # 1. site frameworks module (torch, MPI, GPU prebuilt)
 module load frameworks
 
 # 2. venv on top: shares system packages
-python3 -m venv --system-site-packages \
-    "venvs/$(basename $CONDA_PREFIX)"
+python3 -m venv --system-site-packages "venvs/$(basename $CONDA_PREFIX)"
 source "venvs/$(basename $CONDA_PREFIX)/bin/activate"
-uv pip install "git+https://github.com/saforem2/ezpz"  # uv: fast, resolves in seconds
+uv pip install "git+https://github.com/saforem2/ezpz"  # uv: resolves in seconds
 
 # 3. clone base ONLY if a package requires conda
 conda create --clone base --prefix=/path/to/base-clone
 ```
 
-</Col>
-</Cols>
+> [!TIP]+ The rule
+> Never `pip install` into base. **`venv` first, clone last.**
 
 <SpeakerNotes>
 The most common way to lose your first hour on a supercomputer is a broken env.
@@ -481,6 +471,14 @@ almost nothing; everything else is a response to a specific "will not fit"
 problem. TP wants NVLink / on-node; PP spans nodes fine. EP only matters if you
 chose MoE.
 </SpeakerNotes>
+
+<style>{`
+  #parallelism-menu table { table-layout: fixed; width: 100%; }
+  #parallelism-menu table th:nth-child(1), #parallelism-menu table td:nth-child(1) { width: 16ch; }
+  #parallelism-menu table th:nth-child(2), #parallelism-menu table td:nth-child(2) { width: 7ch; white-space: nowrap; }
+  #parallelism-menu table th:nth-child(3), #parallelism-menu table td:nth-child(3) { width: auto; }
+  #parallelism-menu table th:nth-child(4), #parallelism-menu table td:nth-child(4) { width: 28ch; }
+`}</style>
 
 </Slide>
 
