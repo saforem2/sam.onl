@@ -104,7 +104,7 @@ Not a download. A distributed-systems problem, before the first GPU step.
 - **Reproducible** every rank, every run
 - **Survivable** flaky FS · node failures · noisy neighbors
 
-> [!NOTE] The order it bites you
+> [!NOTE]+ The order it bites you
 > tokenize → blend → pin
 
 <SpeakerNotes>
@@ -179,7 +179,7 @@ Three repos, one job each. No `cuda` in user code.
 - 🧠 [saforem2/`torchtitan@ezpz`](https://github.com/saforem2/torchtitan/tree/ezpz) — train (XPU fork: FSDP · TP · PP · EP · MoE)
 - 📚 [zhenghh04/`blendcorpus`](https://github.com/zhenghh04/blendcorpus) — data (weighted blend + shard)
 
-> [!TIP] Hardware agnostic
+> [!TIP]+ Hardware agnostic
 > Write it once on Aurora's XPUs, run it anywhere.
 
 <SpeakerNotes>
@@ -295,7 +295,7 @@ Raw text → **tokenized, sharded binaries** before you can blend.
 - **Decide doc packing** up front → it changes the loss
 - **Bottleneck is the filesystem**, not the tokenizer
 
-> [!WARNING] Tokenize once, reuse forever
+> [!WARNING]+ Tokenize once, reuse forever
 > Re-tokenizing 2T tokens is a whole-allocation tax.
 
 <SpeakerNotes>
@@ -329,7 +329,7 @@ Start from the site module. Layer a `venv` on top. Do not fight it.
 <Cols widths="2 5">
 <Col>
 
-> [!TIP] The rule
+> [!TIP]+ The rule
 > Never `pip install` into base. `venv` first, clone last.
 
 </Col>
@@ -378,7 +378,7 @@ One `import torch` = thousands of `stat()` / `open()`. Now × 50,000 ranks.
 - Laptop-seconds → **cluster-minutes** before step 1
 - Per-file `rsync` past 256 nodes: **1-2 hours**
 
-> [!NOTE] Python is pathologically small-file
+> [!NOTE]+ Python is pathologically small-file
 > The fix is not a faster FS. It is not hitting the FS from every rank.
 
 <SpeakerNotes>
@@ -468,7 +468,7 @@ stacked). The only question is _what each one splits_.
 | **Sequence / Context** | `SP` | the _sequence dimension_ (long context) across GPUs | context length blows up activation memory |
 | **Expert Parallel** | `EP` | _experts_ of an MoE layer across GPUs | you are training a Mixture-of-Experts |
 
-> [!TIP] Read it as a hierarchy of cost
+> [!TIP]+ Read it as a hierarchy of cost
 > `DP` is nearly free (no model changes). `TP` is chatty (all-reduce inside every
 > layer, keep it on-node). `PP` needs careful micro-batch scheduling. Add them in
 > that order of pain.
@@ -499,7 +499,7 @@ Still data parallel: shard the replicated state, gather on demand.
 </Col>
 <Col>
 
-> [!NOTE] The trade
+> [!NOTE]+ The trade
 > Buy memory with **comms**: an all-gather per step. More stages = less memory,
 > more comms.
 
@@ -544,7 +544,7 @@ Climb only when memory forces you: **`DP → FSDP/ZeRO → TP → PP`**.
 - **A layer won't fit** → `TP` on-node, `PP` across
 - **Long context** → `SP` · **MoE** → `EP`
 
-> [!TIP] `ezpz launch`
+> [!TIP]+ `ezpz launch`
 > Same script, every machine. No `mpiexec` / `srun` / bind wrappers.
 
 </Col>
@@ -618,7 +618,7 @@ That was the easy part.
   step?"
 - It becomes: **how cheaply do you recover when (not if) something breaks?**
 
-> [!NOTE] The rest of this talk
+> [!NOTE]+ The rest of this talk
 > The good news is the loss curve. The bad news is everything that can interrupt
 > it. The restarts are how you survive the bad news.
 
@@ -666,7 +666,7 @@ data-parallel workers still buys near-linear speedup.[^cbs-openai]
 </Col>
 </Cols>
 
-> [!NOTE]
+> [!NOTE]+
 > The scheduling policy (grab the whole machine) and the training math (stay
 > under $B_{\text{crit}}$) pull in opposite directions. Every slide after this is
 > about living in that gap.
@@ -1115,7 +1115,7 @@ under budget.
 
 <img src="/talks/2026-08-03/figures/eval-20b-v1-vs-v2.webp" alt="v1 (bf16-master) ARC-Easy flat at 0.27 vs v2 (fp32-master) rising 0.27 to 0.44" />
 
-> [!WARNING] The lesson
+> [!WARNING]+ The lesson
 > Loss looks like training. lm-eval is the only ground truth for "is the model
 > actually learning?" Add a periodic eval gate, or you can burn 17K steps
 > teaching a model nothing.
@@ -1261,7 +1261,7 @@ cluster.
 The point is to overlap the 244 GB write with the next few hundred steps, so
 cadence costs you almost nothing.
 
-> [!WARNING] The naive version took the job down
+> [!WARNING]+ The naive version took the job down
 > At **20B / 512N+**, turning on `--checkpoint.async-mode=async` (that full **244
 > GB** background write, unbounded) **takes the whole job down**. The write
 > contends with training collectives on the same fabric and everything stalls.
@@ -1567,7 +1567,7 @@ ezpz launch \
 - The person who launches this can **close the laptop**. The 9:36-PM-Friday
   silent hang recovered itself.
 
-> [!TIP] The whole talk in one line
+> [!TIP]+ The whole talk in one line
 > You do not prevent failures at this scale. You make recovery so cheap that
 > failure stops being an event.
 
