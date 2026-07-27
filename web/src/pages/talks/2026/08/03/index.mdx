@@ -19,24 +19,14 @@ export const ASSETS = 'https://samforeman.me/assets'
   ATPESC 2026 — "Pre-Training LLMs on a Supercomputer"
   Two-part talk: Part 1 12:00-12:30 (~30m), Part 2 13:30-14:30 (~60m).
   Structure = PIPELINE ORDER (get a run off the ground -> keep it alive).
-
-  SLIDE TAGS in the banners below:
-    [REUSE  <- deck:line]  lift near-verbatim from an existing deck
-    [REFRESH <- deck:line] exists but trim / modernize / re-cut
-    [NET-NEW]              write from scratch (SOAP, shared-FS, async-ckpt how-to, framing)
-
-  Primary reuse sources:
-    2026/07/14  Pre-Training AuroraGPT at Scale on Aurora  (newest, most complete)
-    2026/06/03  Production Pre-Training at Scale: Good/Bad/Restarts
-    2025/10/15  Training Foundation Models... (best parallelism teaching)
-    2025/12/16, SIAM25, llms-on-polaris, posts 2026/05/01 + 2025/09/12 + 2025/05/03
-  Figures live in public/talks/2026-07-14/figures/ and 2026-06-03/figures/;
-  copy/regenerate into public/talks/2026-08-03/figures/ before referencing.
-  This is a SKELETON: every slide is a placeholder to be filled in Part 1/Part 2 passes.
+  Content assembled from prior decks (2026/07/14, 2026/06/03, 2025/10/15,
+  2025/12/16, SIAM25, llms-on-polaris) + net-new (SOAP, shared-FS, async-ckpt
+  how-to, framing). Figures copied into public/talks/2026-08-03/figures/.
+  Open TODOs are marked {/* TODO / verify */} inline.
 ═══════════════════════════════════════════════════════════════════════════*/}
 
 {/*───────────────────────────────────────────────────────────────
-1 — Title  [REFRESH <- 2026/07/14:22 title-slide]
+1 — Title
 ───────────────────────────────────────────────────────────────*/}
 
 <Slide id="title-slide">
@@ -51,26 +41,26 @@ export const ASSETS = 'https://samforeman.me/assets'
 
 _{new Date(frontmatter.date).toISOString().slice(0, 10)} · ATPESC 2026_
 
-{/* TODO: copy qr-slides.svg into public/talks/2026-08-03/figures/, add
-   .title-slide-qr block + author list per 2026/07/14 title slide. */}
+{/* TODO: generate + drop a qr-slides.svg into public/talks/2026-08-03/figures/
+   and add the .title-slide-qr block from the 2026/07/14 title slide. */}
 
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-2 — Roadmap / two-part arc  [NET-NEW]
+2 — Roadmap / two-part arc
 ───────────────────────────────────────────────────────────────*/}
 
 <Slide id="roadmap">
 
 ## Roadmap
 
-**Part 1 — Getting a run off the ground** _(now, ~30 min)_
+**Part 1: getting a run off the ground** _(now, ~30 min)_
 
 - Data preparation
 - Python environments + Lustre at scale
 - Parallelism: enough to launch
 
-**Part 2 — Keeping it alive to the end** _(after the break, ~60 min)_
+**Part 2: keeping it alive to the end** _(after the break, ~60 min)_
 
 - Critical batch size + second-order optimizers
 - Failures, shared filesystems, checkpointing
@@ -84,7 +74,7 @@ everything that then tries to kill it.
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-3 — Who this is for / framing  [NET-NEW]
+3 — Who this is for / framing
 ───────────────────────────────────────────────────────────────*/}
 
 <Slide id="framing">
@@ -94,9 +84,8 @@ everything that then tries to kill it.
 - You know HPC. You may be new to training LLMs at scale.
 - This is **lessons-learned**, not a survey: do-this-not-that from real runs on
   Aurora / Polaris.
-- Complementary to Shilpika's talk — different topics on purpose.
-
-{/* TODO: one line naming what Shilpika covered so the complement is explicit. */}
+- Complementary to **Shilpika**'s talk: she covered {/* TODO(user): her topic(s) */},
+  so we focus on the rest of the pipeline.
 
 </Slide>
 
@@ -104,155 +93,576 @@ everything that then tries to kill it.
   PART 1 — GETTING A RUN OFF THE GROUND  (12:00-12:30)
 ═══════════════════════════════════════════════════════════════════════════*/}
 
-{/*───────────────────────────────────────────────────────────────
-4 — Why data prep is the first wall  [NET-NEW, short]
-───────────────────────────────────────────────────────────────*/}
-
+{/* source: net-new — framing built on 2025/12/16:294-311 "Training" 3-step data recipe */}
 <Slide id="data-why">
 
-## Data preparation is the first wall
+## Data prep is the first wall
 
-{/* TODO: scale reframes it — 2T+ tokens, not "download a dataset". */}
+At laptop scale, "data prep" means `load_dataset(...)`. At supercomputer scale it
+is a distributed-systems problem you hit _before_ a single GPU does useful work.
+
+- You are not downloading a dataset, you are **curating, blending, and sharding
+  2T+ tokens** from many corpora (ArXiv, GitHub, Wikipedia, Reddit,
+  StackExchange, ...).
+- It has to be **reproducible across thousands of ranks**: every rank must agree
+  on which token comes next, run after run.
+- The pipeline has to survive the same things training does: flaky filesystems,
+  node failures, and _other users_ on the machine.
+
+> [!NOTE] The order these bite you
+> Tokenize (raw text to shards) then blend (weighted sampling) then keep it
+> reproducible (pin everything). Skip a step and you debug it at 512 nodes
+> instead of on your laptop.
+
+<SpeakerNotes>
+Reset expectations. HPC folks are comfortable with big files and MPI, but the
+"which token is next on rank 4712" determinism problem is new. Everything
+downstream (loss curves, evals, being able to reproduce a run) rides on getting
+this boring plumbing right.
+</SpeakerNotes>
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
-5 — Blending data efficiently  [REUSE <- 2025/12/16:313 / SIAM25:352]
-───────────────────────────────────────────────────────────────*/}
-
+{/* source: reuse — 2025/12/16:294-342 & AuroraGPT-SIAM25:333-381 "Blending Data, Efficiently" */}
 <Slide id="data-blending">
 
 ## Blending data, efficiently
 
-{/* TODO: lift BlendCorpus weighted multi-corpus sampling slide. */}
+Training on trillions of tokens means sampling _each batch_ from many corpora at
+a **fixed target mixture**, not reading files end to end.
+
+<Cols widths="3 4">
+<Col>
+
+**Why not just concatenate?**
+
+- Naive `cat *.bin` trains on ArXiv for a week, then Wikipedia for a day: the
+  model forgets, and order becomes a hyperparameter.
+- You want **domain weights** (e.g. 60% web, 15% code, ...) honored _within
+  every batch_, deterministically.
+
+The recipe ([BlendCorpus](https://github.com/zhenghh04/blendcorpus)):
+
+1. **Aggregate** many corpora
+2. **Sample** each batch to a fixed distribution
+3. **Build indices** mapping batches to files
+
+</Col>
+<Col>
+
+<img src="/talks/2026-08-03/figures/data-processing.svg"
+     alt="Time to prepare 2T tokens: serial ~1 hr vs distributed ~2 min" />
+
+- 🐢 **Original**: serial, single device, **~1 hr** / 2T tokens
+- 🐇 **BlendCorpus**: distributed + async, **~2 min** / 2T tokens (**30x**)
+
+The old serial indexer was the bottleneck every time we touched the data
+pipeline at scale.
+
+</Col>
+</Cols>
+
+<SpeakerNotes>
+Domain weights are a real modeling decision, not a knob to leave at default. The
+30x is not vanity: index-building is on the critical path for every config
+change, so a 1 hr step means you iterate a handful of times a day. At 2 min you
+iterate freely.
+</SpeakerNotes>
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
-6 — The stack  [REUSE <- 2026/07/14:278 / 2026/06/03:205 "stack"]
-───────────────────────────────────────────────────────────────*/}
-
+{/* source: reuse — 2026/07/14:278-327 & 2026/06/03:205-228 "The stack" */}
 <Slide id="stack">
 
 ## The stack
 
-{/* TODO: BlendCorpus + TorchTitan(+XPU) + ezpz. Reuse stack slide. */}
+Three repos, one job each. Nothing here is `cuda`-specific: the same code runs on
+every vendor.
+
+- 🍋 [saforem2/`ezpz`](https://github.com/saforem2/ezpz): orchestration + launch.
+  Auto device/backend, no per-site `mpiexec` / `srun` / CPU-bind wrappers
+  ([ezpz.cool](https://ezpz.cool))
+- 🧠 [saforem2/`torchtitan@ezpz`](https://github.com/saforem2/torchtitan/tree/ezpz):
+  training. Our fork of TorchTitan patched for Intel XPU (FSDP · TP · PP · EP · MoE)
+- 📚 [zhenghh04/`blendcorpus`](https://github.com/zhenghh04/blendcorpus): data.
+  Weighted blending + sharding across corpora
+
+> [!TIP] Hardware agnostic
+> Same code, every vendor. No `cuda` in user code. Write it once on Aurora's
+> XPUs, run it anywhere.
+
+_Old stack (reference):_ 🪦
+[argonne-lcf/`Megatron-DeepSpeed`](https://github.com/argonne-lcf/Megatron-DeepSpeed),
+the AuroraGPT-2B reference run (~7.77T tokens), pre-`torchtitan`.
+
+<SpeakerNotes>
+The one line that matters: data / training / launch are three separable
+concerns, kept as three repos so each moves at its own pace. The
+Megatron-DeepSpeed fork is our reference run, but its maintenance cost is why we
+moved to TorchTitan (see the fork-tax slide).
+</SpeakerNotes>
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
-7 — Shard reproducibility + the fork tax  [REUSE <- 2026/06/03:710]
-───────────────────────────────────────────────────────────────*/}
-
+{/* source: reuse — 2026/06/03:710-748 "The fork tax" + mermaid smoke-test loop */}
 <Slide id="data-repro">
 
-## Reproducibility + the "fork tax"
+## Reproducibility and the fork tax
 
-{/* TODO: shard determinism, upstream data churn. */}
+Determinism is the whole game: same seed + same shards + same blend weights must
+give the same batch on every rank, every run. Two things constantly threaten it.
+
+<Cols widths="3 4">
+<Col>
+
+**Upstream churn.** We live on a fork of TorchTitan, and upstream moves fast:
+**46 upstream syncs in 7 weeks**. Any one can silently shift dataloader or RNG
+behavior.
+
+**Data churn.** Corpora get re-scraped and re-shuffled. If the shards move under
+you, "reproducible" is a lie.
+
+**So we pin everything:** exact repo SHAs, tokenizer version, shard file lists,
+and blend weights, all committed with the run.
+
+</Col>
+<Col>
+
+Every upstream sync runs a **deterministic smoke test** before we ship:
+
+```mermaid
+flowchart TB
+    A["upstream @ HEAD"] --> B["resync · 50 steps · deterministic"]
+    B --> D{"bit-exact?"}
+    D -->|yes| C["✓ ship"]
+    D -.->|no| F["bisect + fix"]
+    F -.-> B
+```
+
+Bit-exact means **loss + grad-norm + peak memory** match the pinned baseline.
+Anything off, we bisect before it reaches a production run.
+
+</Col>
+</Cols>
+
+<SpeakerNotes>
+The war story: an upstream commit that "just refactored the dataloader" changed
+shuffle order and quietly changed the loss curve. Bit-exact loss + grad-norm +
+peak-memory on 50 deterministic steps is cheap insurance. The "fork tax":
+forking buys you XPU support, and the bill comes due as continuous upstream-sync
+work.
+</SpeakerNotes>
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
-8 — (optional) raw-corpus -> tokens  [NET-NEW — DECIDE: include or cut?]
-───────────────────────────────────────────────────────────────*/}
-
+{/* source: net-new — grounded in posts/2025/09/12 (sptoken/SentencePiece, vocab 32000, file lists) */}
 <Slide id="data-tokenize">
 
 ## From raw corpus to tokens
 
-{/* OPEN QUESTION: current material frames prep as blending, not
-   tokenization-from-raw. Include this net-new slide, or cut? */}
+The step the other decks skip. Before any blending, raw text has to become
+**tokenized, sharded binaries** the blender can index.
+
+- **Pick the tokenizer first, and pin it.** AuroraGPT used a SentencePiece model
+  (`sptoken`, vocab 32000, borrowed from Gemma / Llama-2). Change it later and
+  every shard is stale.
+- **Tokenize in parallel, write shards.** Text is embarrassingly parallel: fan
+  out across ranks/nodes, append an EOD token per document, emit fixed-size
+  `.bin` shards + a **file list** the blender consumes.
+  {/* verify: exact shard size / .bin+.idx format for the ATPESC run */}
+- **Append EOD, decide on doc packing.** Document boundaries and whether you
+  pack to `seq_len` affect the loss: bake the choice into the shards, do not
+  leave it to the dataloader.
+- **Where it is slow at scale:** not the tokenizer, the **filesystem**. Millions
+  of small reads + many-writer output hammer a shared Lustre / DAOS mount. Read
+  in large chunks, write few large shards, stage to node-local storage where you
+  can.
+
+> [!WARNING] Tokenize once, reuse forever
+> Re-tokenizing 2T tokens because you nudged a setting is a multi-hour,
+> whole-allocation tax. Get the tokenizer + EOD + shard format right _before_
+> you scale out.
+
+<SpeakerNotes>
+Honest, do-this-not-that slide. Confident on: SentencePiece backend, vocab
+32000, per-doc EOD, file-list-driven blender (all from the Sept 2025 BlendCorpus
+run log). Shard-size / exact .bin+.idx layout marked verify since it depends on
+the specific config. The real lesson: tokenization is I/O-bound, not
+compute-bound, so the win is in how you touch the filesystem.
+</SpeakerNotes>
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
-9 — Python env that works  [REUSE <- llms-on-polaris:215]
-───────────────────────────────────────────────────────────────*/}
-
+{/* source: llms-on-polaris:215-297 (conda/venv/clone-base + module load) */}
 <Slide id="env-setup">
 
 ## A Python environment that works
 
-{/* TODO: conda/venv/clone-base, module load. */}
+The most common way to lose your first hour on a supercomputer is a broken env.
+Start from the site's prebuilt module, then layer on top. Do not fight it.
+
+<Cols widths="2 5">
+<Col>
+
+> [!TIP] The rule
+> Never `pip install` into the base env. It is read-only, and you will want it
+> back.
+
+</Col>
+<Col>
+
+**1. Load the site frameworks module** (PyTorch, MPI bindings, GPU support
+already built for you):
+
+```bash
+module load frameworks     # Aurora / generic
+# or on Polaris:
+module use /soft/modulefiles
+module load conda; conda activate base
+```
+
+**2. Build a `venv` on top of base** (fast, cheap, shares system packages):
+
+```bash
+python3 -m venv --system-site-packages \
+    "venvs/$(basename $CONDA_PREFIX)"
+source "venvs/$(basename $CONDA_PREFIX)/bin/activate"
+python3 -m pip install -e "git+https://github.com/saforem2/ezpz"
+```
+
+**3. Clone base only if you truly need it** (a package that _requires_ conda):
+
+```bash
+conda create --clone base --prefix=/path/to/base-clone
+```
+
+Cloning copies the entire base env. It is slow, huge, and gets out of hand fast.
+`venv` first, clone last.
+
+</Col>
+</Cols>
+
+<SpeakerNotes>
+Naming the venv after `$CONDA_PREFIX` keeps one venv per frameworks release, so a
+module bump does not silently mix ABIs. `--system-site-packages` is what lets the
+venv see the module's prebuilt torch instead of pulling a fresh CPU-only wheel.
+</SpeakerNotes>
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
-10 — numpy>2 war story  [REUSE <- post 2025/05/03]
-───────────────────────────────────────────────────────────────*/}
-
+{/* source: posts/2025/05/03 (numpy>2 breaks frameworks module; USE_TORCH=1 fix) */}
 <Slide id="env-numpy">
 
-## War story: numpy > 2 vs. the frameworks module
+## War story: `numpy > 2` vs the frameworks module
 
-{/* TODO: lift from posts/2025/05/03. */}
+The frameworks module's TensorFlow was built against `numpy==1.26.4`. Then you
+install one innocent package:
+
+```bash
+python3 -m pip install --upgrade transformers
+```
+
+`transformers` pulls in `numpy > 2`, and now a totally unrelated job dies on
+`import`:
+
+```text
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.2.5 as it may crash.
+...
+AttributeError: _ARRAY_API not found
+```
+
+The kicker: this crashes an app that only touches PyTorch. The stack trace runs
+through `intel_extension_for_pytorch` then `transformers` then
+`import tensorflow as tf`, all triggered transitively.
+
+<Cols widths="3 4">
+<Col>
+
+> [!WARNING] It is not just TF
+> `jax`, `jaxlib`, `ml-dtypes`, `opt-einsum`, `scipy` were all built with
+> `numpy < 2` and break the same way.
+
+</Col>
+<Col>
+
+**Fix 1** (the quick one): skip the TF import path entirely. Faster, too
+(10.8s to 7.5s to `import ezpz`):
+
+```bash
+export USE_TORCH=1
+```
+
+**Fix 2** (rebuild what broke against numpy 2):
+
+```bash
+python3 -m pip install --upgrade \
+    numpy jax jaxlib ml-dtypes opt-einsum scipy transformers
+```
+
+</Col>
+</Cols>
+
+<SpeakerNotes>
+Lesson: on a shared, pre-built module, a dependency upgrade is a blast radius,
+not a local change. Pin numpy, or set USE_TORCH=1 and never look back. This cost
+real debugging time because the failing import had nothing to do with the package
+that was installed.
+</SpeakerNotes>
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
-11 — Why python melts Lustre  [REUSE <- post 2026/05/01]
-───────────────────────────────────────────────────────────────*/}
-
+{/* source: posts/2026/05/01 (metadata I/O storm, per-file rsync projected 1-2h) */}
 <Slide id="lustre">
 
 ## Why `import` melts Lustre at scale
 
-{/* TODO: metadata I/O storm, 50k processes. */}
+A single `import torch` is not one file read. It is thousands of `stat()`,
+`open()`, and `read()` calls walking `site-packages` looking for modules, `.pyc`
+caches, and shared objects.
+
+Now run that on **50,000 ranks at once**, all pointed at the same shared
+filesystem.
+
+<Cols widths="2 5">
+<Col>
+
+> [!NOTE] The bottleneck is not bandwidth
+> Lustre has plenty of throughput. It is the **metadata server** that chokes:
+> millions of tiny concurrent `stat()`s, not big sequential reads.
+
+</Col>
+<Col>
+
+- Every rank independently discovers the same tree of files.
+- Metadata operations serialize on a small number of metadata servers.
+- Startup that takes seconds on your laptop takes **minutes** before the first
+  training step, paid every single job.
+- Per-file `rsync` of an env to all nodes was projected at **1 to 2 hours** past
+  256 nodes: the per-file metadata cost dominates, not the data.
+
+The small tax every `import` pays becomes dead time multiplied by the whole
+machine. At full scale, launch overhead can dwarf the science.
+
+</Col>
+</Cols>
+
+<SpeakerNotes>
+The intuition HPC folks already have for I/O is "avoid small files." Python is
+pathologically small-file. The fix is not a faster filesystem, it is not hitting
+the shared filesystem from every rank in the first place. That sets up the next
+slide.
+</SpeakerNotes>
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
-12 — ezpz yeet  [REUSE <- 2026/07/14:2056 + yeet-env-*.svg]
-───────────────────────────────────────────────────────────────*/}
-
-<Slide id="yeet">
+{/* source: posts/2026/05/01 + yeet-env slide 2026/07/14:2056; figure from 2026-06-03/figures/yeet-env-seconds.svg */}
+<Slide id="yeet" size="sm">
 
 ## `ezpz yeet`: broadcast the environment
 
-{/* TODO: /tmp staging, --copy/--compress, 8->4096-node scaling plot
-   (public/talks/.../yeet-env-seconds.svg, yeet-env-per-node.svg). */}
+Instead of 50k ranks each clawing at Lustre, copy the env **once** to node-local
+`/tmp/` and fan it out node-to-node. Imports then hit local SSD.
+
+<Cols widths="3 4">
+<Col>
+
+```bash
+# inside an allocation
+ezpz yeet --compress   # first copy: 1 tarball, minimal Lustre I/O
+
+# then switch to the local copy and launch
+deactivate 2>/dev/null
+source /tmp/.venv/bin/activate
+cd /path/to/project    # keep data/outputs on shared FS
+ezpz launch python3 -m your_app.train
+```
+
+- `--compress`: `tar.gz` then copy one file then extract locally (least metadata I/O).
+- `--copy`: `cp -a` for a fast initial copy.
+- _(default)_ `rsync`: only sends diffs after a `pip install`.
+
+Remote fan-out is a **greedy tree**: each node that finishes becomes a source for
+up to 8 more, so wall-clock stays near `O(log N)` until bandwidth contention
+kicks in.
+
+</Col>
+<Col>
+
+<figure>
+    <img
+        src="/talks/2026-08-03/figures/yeet-env-seconds.svg"
+        alt="yeet broadcast wall-clock vs node count, 8 to 4096 nodes"
+    />
+</figure>
+
+**8 to 4096 nodes on Aurora.** Two regimes: 8-64 nodes are extract-bound
+(~70-91s flat), ≥128 nodes are broadcast-bound (each 2x adds ~1.5-1.8x). Per-node
+cost falls **8.7s to 0.18s**, a 48x efficiency gain. Even at full-Aurora scale,
+pre-launch overhead stays under 13 minutes.
+
+</Col>
+</Cols>
+
+<SpeakerNotes>
+The one-tarball trick is why this scales: it turns the Lustre side into a single
+sequential read regardless of node count, so only the broadcast scales with N
+(the log-tree part). The old per-file rsync mode was the 1-2 hour disaster from
+the previous slide.
+</SpeakerNotes>
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
-13 — Parallelism menu  [REFRESH <- 2025/10/15:135, trimmed]
-───────────────────────────────────────────────────────────────*/}
-
+{/* source: 2025/10/15:135-159 (DP/MP), 533-554 (TP/PP/SP); EP net-new for MoE */}
 <Slide id="parallelism-menu">
 
 ## The parallelism menu
 
-{/* TODO: DP / TP / PP / SP / EP on one slide — a MAP, not a lecture. */}
+Five axes. You mix and match them ("4D parallelism" is just several of these
+stacked). The only question is _what each one splits_.
+
+| Strategy | Abbr. | What it splits | You reach for it when... |
+| --- | :---: | --- | --- |
+| **Data Parallel** | `DP` | the _batch_: every GPU holds a full model copy, sees different data | the model fits on one GPU |
+| **Tensor Parallel** | `TP` | individual _weight matrices_ across GPUs (within a layer) | a single layer is too big; needs fast interconnect |
+| **Pipeline Parallel** | `PP` | the model _by layer_ (stages), streaming micro-batches through | the model is deep and will not fit vertically |
+| **Sequence / Context** | `SP` | the _sequence dimension_ (long context) across GPUs | context length blows up activation memory |
+| **Expert Parallel** | `EP` | _experts_ of an MoE layer across GPUs | you are training a Mixture-of-Experts |
+
+> [!TIP] Read it as a hierarchy of cost
+> `DP` is nearly free (no model changes). `TP` is chatty (all-reduce inside every
+> layer, keep it on-node). `PP` needs careful micro-batch scheduling. Add them in
+> that order of pain.
+
+<SpeakerNotes>
+A map, not a tutorial. The one thing to leave with: DP is the default and costs
+almost nothing; everything else is a response to a specific "will not fit"
+problem. TP wants NVLink / on-node; PP spans nodes fine. EP only matters if you
+chose MoE.
+</SpeakerNotes>
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
-14 — ZeRO / FSDP in one slide  [REFRESH <- 2025/10/15:515, condensed]
-───────────────────────────────────────────────────────────────*/}
-
+{/* source: 2025/10/15:505-531 (ZeRO stages 1/2/3, FSDP) */}
 <Slide id="zero-fsdp">
 
-## ZeRO / FSDP: the memory ⇄ comms trade
+## ZeRO / FSDP: the memory vs comms trade
 
-{/* TODO: condensed single slide. */}
+Plain data parallelism replicates _everything_ on every GPU: params, gradients,
+and optimizer states. For an Adam-trained model that is the same tensor stored
+dozens of times over. ZeRO (DeepSpeed) and FSDP (PyTorch) ask: why?
+
+The idea: **shard** those replicated tensors across the DP group, and gather each
+piece back only when a GPU actually needs it.
+
+<Cols widths="3 3">
+<Col>
+
+**The stages** (each shards more, saves more memory):
+
+1. **Stage 1**: shard _optimizer states_
+2. **Stage 2**: shard _optimizer states + gradients_
+3. **Stage 3**: shard _params + gradients + optimizer states_ (this is what FSDP
+   does by default)
+
+Optimizer states are the biggest win first: with Adam they are ~2x the size of
+the params themselves.
+
+</Col>
+<Col>
+
+> [!NOTE] The trade
+> You buy memory with **communication**. Every forward/backward now does an
+> all-gather to reconstruct the shard, then re-shards. More stages = less memory,
+> more comms.
+
+**When it is worth it:** the model _almost_ fits, or you want a bigger batch. You
+stay in a pure-DP mental model (no model surgery) but pay a comms tax instead of
+buying more GPUs.
+
+**When it is not:** if a single _layer_ does not fit, sharding a replica will not
+save you. That is a `TP` / `PP` problem, not a ZeRO one.
+
+</Col>
+</Cols>
+
+<SpeakerNotes>
+Framing for the room: ZeRO/FSDP is still data parallelism. You do not rewrite the
+model, you change how the DP group stores state. That is why it is the first
+thing to try when you are memory-bound but the architecture still fits
+layer-wise. Stage 3 = FSDP full shard.
+</SpeakerNotes>
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
-15 — What you'll actually pick + ezpz diagram  [REUSE <- 2026/07/14:329] + [NET-NEW heuristic]
-───────────────────────────────────────────────────────────────*/}
-
+{/* source: ezpz hub-and-spoke mermaid verbatim from 2026/07/14:356-377; heuristic net-new */}
 <Slide id="what-to-pick">
 
 ## What you'll actually pick
 
-{/* TODO: decision heuristic by model size / hardware + ezpz launch
-   hub-and-spoke mermaid (Aurora/Polaris/Frontier/Mac). */}
+Most of the time the answer is boring, and that is good. Start at the cheapest
+strategy that fits, and only climb the ladder when memory forces you.
+
+<Cols widths="4 3">
+<Col>
+
+> [!TIP] A decision heuristic
+>
+> - **Model fits on one GPU?** Pure **`DP`**. Scale batch, done. (Most models
+>   under a few B params.)
+> - **Fits, but optimizer states are tight** (or you want a bigger batch)?
+>   **`FSDP` / `ZeRO`**. Same DP code, trade comms for memory. Try stage 1, then 3.
+> - **A single layer will not fit** (tens of B+ params)? Now split the model:
+>   **`TP`** within a node (fast interconnect), **`PP`** across nodes.
+> - **Long context** blowing up activations? Add **`SP`**.
+> - **MoE?** Add **`EP`**.
+>
+> Rule of thumb: add axes in order `DP → FSDP/ZeRO → TP → PP`. Each is more code
+> and more comms than the last.
+
+And whatever you pick, `ezpz launch` runs the same training script on every
+machine: no per-cluster `mpiexec` / `srun`, no CPU-binding wrappers.
+
+</Col>
+<Col>
+
+```mermaid
+flowchart LR
+    EZ(["<span style='font-weight:700'>ezpz launch</span>"])
+    EZ --> AURORA["<i>PBS · Intel</i><br/><span style='font-weight:700'>Aurora</span>"]
+    EZ --> POLARIS["<i>PBS · NVIDIA</i><br/><span style='font-weight:700'>Polaris</span>"]
+    EZ --> PM["<i>SLURM · NVIDIA</i><br/><span style='font-weight:700'>Perlmutter</span>"]
+    EZ --> FRONTIER["<i>SLURM · AMD</i><br/><span style='font-weight:700'>Frontier</span>"]
+    EZ --> MAC["<span style='font-weight:700'>Multi-CPU</span>"]
+
+    classDef hub        fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
+    classDef aurora     fill:#3b82f608,stroke:#3b82f6,color:#3b82f6,stroke-width:1.5px
+    classDef polaris    fill:#10b98108,stroke:#10b981,color:#10b981,stroke-width:1.5px
+    classDef perlmutter fill:#06b6d408,stroke:#06b6d4,color:#06b6d4,stroke-width:1.5px
+    classDef frontier   fill:#ef444408,stroke:#ef4444,color:#ef4444,stroke-width:1.5px
+    classDef mac        fill:#a78bfa08,stroke:#a78bfa,color:#a78bfa,stroke-width:1.5px
+    class EZ hub
+    class AURORA aurora
+    class POLARIS polaris
+    class PM perlmutter
+    class FRONTIER frontier
+    class MAC mac
+```
+
+</Col>
+</Cols>
+
+<SpeakerNotes>
+The heuristic is the net-new bit. Anchor it in memory, not vibes: DP until a
+replica is too big, FSDP/ZeRO until a layer is too big, then TP/PP. The mermaid
+is the hub-and-spoke from the July deck: you decide the parallelism, ezpz handles
+the scheduler/vendor differences.
+</SpeakerNotes>
 
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-16 — Part 1 close / cliffhanger  [NET-NEW]
+16 — Part 1 close / cliffhanger
 ───────────────────────────────────────────────────────────────*/}
 
 <Slide id="part1-close">
@@ -265,289 +675,192 @@ _See you after the break._
 
 {/*═══════════════════════════════════════════════════════════════════════════
   PART 2 — KEEPING IT ALIVE TO THE END  (13:30-14:30)
+  [placeholders below — filled in the Part 2 pass]
 ═══════════════════════════════════════════════════════════════════════════*/}
-
-{/*───────────────────────────────────────────────────────────────
-17 — Re-hook after break  [NET-NEW]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="part2-rehook">
 
 ## Where we left off
 
-{/* TODO: 1-slide recap; the run is training, now keep it alive. */}
+{/* TODO(part2): re-hook — the run is training, now keep it alive. */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-18 — Critical batch size  [REUSE <- 2026/07/14:219 / 2026/06/03:192]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="critical-batch-size">
 
 ## Critical batch size
 
-{/* TODO: what it is, why it caps useful scaling (Zhang'25, Zhou'25). */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-19 — Large batches  [REUSE <- 2026/07/14:964 large-batch caveat]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="large-batches">
 
 ## Training with large batches
 
-{/* TODO: caveats + stability. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-20 — Second-order optimizer landscape  [REFRESH <- SIAM25:401]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="optimizer-landscape">
 
 ## Second-order optimizers: the landscape
 
-{/* TODO: Shampoo / Muon / SOAP / Sophia / Lamb, modernized. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-21 — SOAP  [NET-NEW]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="soap">
 
 ## SOAP
 
-{/* NET-NEW: not covered in any existing deck. Write fresh. */}
+{/* TODO(part2) — net-new */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-22 — mano  [REUSE <- 2026/07/14:938]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="mano">
 
 ## `mano`: Muon quality at AdamW speed
 
-{/* TODO: lift mano slide + loss curves. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-23 — 80B optimizer cliff  [REUSE <- 2026/07/14:1022 + optimizer-loss / lr-finder-80b svg]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="optimizer-cliff">
 
 ## The 80B bf16 optimizer cliff
 
-{/* TODO: cliff story + LR-finder sweeps figures. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-24 — Failure is the default  [REUSE <- 2026/06/03:885 restarts-motivation]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="failure-default">
 
 ## Failure is the default
 
-{/* TODO: MTBF math at scale. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-25 — Failure taxonomy  [REFRESH <- 2026/06/03:6 abstract enumeration]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="failure-taxonomy">
 
 ## Taxonomy: HW / SW / network / system
 
-{/* TODO: transient vs. systemic. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-26 — Network flaps  [REFRESH <- failures material, make flaps explicit]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="network-flaps">
 
 ## Network flaps
 
-{/* TODO: fabric instability war story. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-27 — Silent bug #1: bf16 RMSNorm freeze  [REUSE <- 2026/06/03:1496]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="silent-rmsnorm">
 
 ## Silent corruption #1: bf16 RMSNorm freeze
 
-{/* TODO: lift case study. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-28 — Silent bug #2: TP loss-scaling  [REUSE <- 2026/06/03:1540]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="silent-tp">
 
 ## Silent corruption #2: TP loss-scaling bug
 
-{/* TODO: lift case study. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-29 — Working on a shared filesystem  [NET-NEW — assemble from Lustre/yeet]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="shared-fs">
 
 ## Working on a shared filesystem
 
-{/* NET-NEW: contention, rules of the road. Assemble from Lustre/yeet material. */}
+{/* TODO(part2) — net-new */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-30 — Checkpointing basics  [REFRESH <- SIAM25:363 "Fast! distributed, async"]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="checkpoint-basics">
 
 ## Checkpointing: what / when / how big
 
-{/* TODO: refresh basics slide. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-31 — Async checkpointing done right  [NET-NEW how-to + REUSE 2026/07/14 caveat]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="async-checkpoint">
 
 ## Asynchronous checkpointing done right
 
-{/* NET-NEW how-to. Pair with the cautionary tale: naive async melts the
-   cluster at 20B/512N (2026/07/14 auto-retry-native caveat). */}
+{/* TODO(part2) — net-new how-to */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-32 — Restart quickly  [REUSE <- 2025/12/16:324 converters]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="fast-restart">
 
 ## Restarting quickly
 
-{/* TODO: checkpoint converters, fast reload. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-33 — Recovery cascade  [REUSE <- 2026/07/14:1377 restart-cascade mermaid]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="restart-cascade">
 
 ## The three-layer recovery cascade
 
-{/* TODO: Job -> Node -> Process mermaid. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-34 — ezpz launch --auto-retry  [REUSE <- 2026/07/14:1580 auto-retry-native]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="auto-retry">
 
 ## `ezpz launch --auto-retry`
 
-{/* TODO: native fault tolerance + the 20B/512N stall story. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-35 — Hang watchdog  [REUSE <- 2026/07/14:1845 watchdog-fsm]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="watchdog">
 
 ## The hang watchdog
 
-{/* TODO: --timeout / --retries FSM, catching silent hangs. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-36 — Failover caught a real hang  [REUSE <- 2026/07/14:1942]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="failover-validation">
 
 ## It caught a real silent hang
 
-{/* TODO: validation story. */}
+{/* TODO(part2) */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-37 — Putting it together  [NET-NEW capstone]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="capstone">
 
 ## The full resilient launch
 
-{/* NET-NEW: one command that ties data + parallelism + checkpointing +
-   auto-retry together. */}
+{/* TODO(part2) — net-new capstone */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-38 — Recap / start here  [NET-NEW]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="recap">
 
 ## Start here
 
-{/* TODO: ezpz, links, blog posts. */}
+{/* TODO */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-39 — Thanks  [REFRESH <- 2026/07/14 thanks]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="thanks">
 
 ## Thanks
 
-{/* TODO: QR + contact + acknowledgements. */}
+{/* TODO */}
 
 </Slide>
-
-{/*───────────────────────────────────────────────────────────────
-40 — Footnotes  [mechanism]
-───────────────────────────────────────────────────────────────*/}
 
 <Slide id="footnotes">
 
@@ -557,15 +870,10 @@ _See you after the break._
 
 </Slide>
 
-{/*───────────────────────────────────────────────────────────────
-41+ — Appendix (Q&A deep dives)  [REUSE <- 2026/07/14 appendix]
-───────────────────────────────────────────────────────────────*/}
-
 <Slide id="appendix">
 
 ## Appendix
 
-{/* TODO: eval charts, CPT/SFT/GRPO post-training, MoE-on-XPU throughput,
-   AERIS case study — pulled from 2026/07/14 appendix for Q&A. */}
+{/* TODO: eval charts, CPT/SFT/GRPO, MoE-on-XPU, AERIS — for Q&A. */}
 
 </Slide>
