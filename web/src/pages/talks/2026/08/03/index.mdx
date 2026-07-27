@@ -22,7 +22,7 @@ export const ASSETS = 'https://samforeman.me/assets'
   Content assembled from prior decks (2026/07/14, 2026/06/03, 2025/10/15,
   2025/12/16, SIAM25, llms-on-polaris) + net-new (SOAP, shared-FS, async-ckpt
   how-to, framing). Figures copied into public/talks/2026-08-03/figures/.
-  Open TODOs are marked {/* TODO / verify */} inline.
+  Open TODOs are marked with TODO / verify tags inline.
 ═══════════════════════════════════════════════════════════════════════════*/}
 
 {/*───────────────────────────────────────────────────────────────
@@ -232,11 +232,22 @@ Every upstream sync runs a **deterministic smoke test** before we ship:
 
 ```mermaid
 flowchart TB
-    A["upstream @ HEAD"] --> B["resync · 50 steps · deterministic"]
+    A["<i>start</i><br/><span style='font-weight:700'>upstream @ HEAD</span>"] --> B["<i>resync · 50 steps · deterministic</i><br/><span style='font-weight:700'>smoke test</span>"]
     B --> D{"bit-exact?"}
-    D -->|yes| C["✓ ship"]
-    D -.->|no| F["bisect + fix"]
-    F -.-> B
+    D -->|✅| C["<i>diff = 0</i><br/><span style='font-weight:700'>✓ ship</span>"]
+    D -->|❌️| F["<i>diff &ne; 0</i><br/><span style='font-weight:700'>bisect + fix</span>"]
+    F -.->|retry| B
+
+    classDef source fill:#7c4ed508,stroke:#7c4ed5,color:#7c4ed5,stroke-width:1.5px
+    classDef stage  fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
+    classDef ship   fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    classDef gate   fill:#ee8f2410,stroke:#ee8f24,color:#c9750f,stroke-width:1.5px
+    classDef bad    fill:#e0556008,stroke:#e05560,color:#e05560,stroke-width:1.5px
+    class A source
+    class B stage
+    class D gate
+    class C ship
+    class F bad
 ```
 
 Bit-exact means **loss + grad-norm + peak memory** match the pinned baseline.
@@ -244,6 +255,31 @@ Anything off, we bisect before it reaches a production run.
 
 </Col>
 </Cols>
+
+<style>{`
+  /* Chip-badge styling for the smoke-test flowchart nodes (mirrors the
+     fork-tax diagram in the 2026/07/14 deck): each node's italic top line
+     is the descriptor, the bold bottom line the action, and the fill gets a
+     light tint of its classDef color. Color overrides force the classDef hue
+     onto the foreignObject span/p that mermaid otherwise paints black. */
+  #data-repro .mermaid g.node.source .nodeLabel,
+  #data-repro .mermaid g.node.source span,
+  #data-repro .mermaid g.node.source p { color: #7c4ed5 !important; }
+  #data-repro .mermaid g.node.stage .nodeLabel,
+  #data-repro .mermaid g.node.stage span,
+  #data-repro .mermaid g.node.stage p { color: #118cc2 !important; }
+  #data-repro .mermaid g.node.ship .nodeLabel,
+  #data-repro .mermaid g.node.ship span,
+  #data-repro .mermaid g.node.ship p { color: #1da811 !important; }
+  #data-repro .mermaid g.node.gate .nodeLabel,
+  #data-repro .mermaid g.node.gate span,
+  #data-repro .mermaid g.node.gate p { color: #838383 !important; }
+  #data-repro .mermaid g.node.bad .nodeLabel,
+  #data-repro .mermaid g.node.bad span,
+  #data-repro .mermaid g.node.bad p { color: #e05560 !important; }
+  #data-repro .mermaid g.node foreignObject { overflow: visible; }
+  #data-repro .mermaid g.node p { line-height: 1.35; padding-bottom: 0.1em; }
+`}</style>
 
 <SpeakerNotes>
 The war story: an upstream commit that "just refactored the dataloader" changed
