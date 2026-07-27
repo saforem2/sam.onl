@@ -1,0 +1,571 @@
+---
+layout: '@/layouts/SlideLayout.astro'
+title: 'Pre-Training LLMs on a Supercomputer'
+shortTitle: 'Pre-Training LLMs on a Supercomputer'
+subtitle: 'Lessons from the trenches at ALCF'
+description: 'A practical, lessons-learned tour of pre-training large language models on leadership-class HPC. Part 1 gets a run off the ground (data preparation, Python environments and Lustre at scale, and a parallelism landscape); Part 2 keeps it alive to the end (critical batch size and large batches, second-order optimizers, dealing with hardware/software/network failures, working on a shared filesystem, asynchronous checkpointing and fast restart, and fault-tolerant training with automatic restarts via ezpz launch --auto-retry).'
+date: 2026-08-03
+location: 'ATPESC 2026'
+---
+
+import Slide from '@/components/slides/Slide.astro'
+import SpeakerNotes from '@/components/slides/SpeakerNotes.astro'
+import Cols from '@/components/slides/Cols.astro'
+import Col from '@/components/slides/Col.astro'
+
+export const ASSETS = 'https://samforeman.me/assets'
+
+{/*═══════════════════════════════════════════════════════════════════════════
+  ATPESC 2026 — "Pre-Training LLMs on a Supercomputer"
+  Two-part talk: Part 1 12:00-12:30 (~30m), Part 2 13:30-14:30 (~60m).
+  Structure = PIPELINE ORDER (get a run off the ground -> keep it alive).
+
+  SLIDE TAGS in the banners below:
+    [REUSE  <- deck:line]  lift near-verbatim from an existing deck
+    [REFRESH <- deck:line] exists but trim / modernize / re-cut
+    [NET-NEW]              write from scratch (SOAP, shared-FS, async-ckpt how-to, framing)
+
+  Primary reuse sources:
+    2026/07/14  Pre-Training AuroraGPT at Scale on Aurora  (newest, most complete)
+    2026/06/03  Production Pre-Training at Scale: Good/Bad/Restarts
+    2025/10/15  Training Foundation Models... (best parallelism teaching)
+    2025/12/16, SIAM25, llms-on-polaris, posts 2026/05/01 + 2025/09/12 + 2025/05/03
+  Figures live in public/talks/2026-07-14/figures/ and 2026-06-03/figures/;
+  copy/regenerate into public/talks/2026-08-03/figures/ before referencing.
+  This is a SKELETON: every slide is a placeholder to be filled in Part 1/Part 2 passes.
+═══════════════════════════════════════════════════════════════════════════*/}
+
+{/*───────────────────────────────────────────────────────────────
+1 — Title  [REFRESH <- 2026/07/14:22 title-slide]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="title-slide">
+
+# <span style="color:var(--foreground0);">Pre-Training LLMs on a Supercomputer</span>
+
+<p class="title-slide-thesis">
+    What works, what breaks, and how cheaply you recover.
+</p>
+
+**Sam Foreman** — Argonne National Laboratory
+
+_{new Date(frontmatter.date).toISOString().slice(0, 10)} · ATPESC 2026_
+
+{/* TODO: copy qr-slides.svg into public/talks/2026-08-03/figures/, add
+   .title-slide-qr block + author list per 2026/07/14 title slide. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+2 — Roadmap / two-part arc  [NET-NEW]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="roadmap">
+
+## Roadmap
+
+**Part 1 — Getting a run off the ground** _(now, ~30 min)_
+
+- Data preparation
+- Python environments + Lustre at scale
+- Parallelism: enough to launch
+
+**Part 2 — Keeping it alive to the end** _(after the break, ~60 min)_
+
+- Critical batch size + second-order optimizers
+- Failures, shared filesystems, checkpointing
+- Fault-tolerant training + automatic restarts
+
+<SpeakerNotes>
+The break is a cliffhanger: Part 1 ends the moment the run launches; Part 2 is
+everything that then tries to kill it.
+</SpeakerNotes>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+3 — Who this is for / framing  [NET-NEW]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="framing">
+
+## Who this is for
+
+- You know HPC. You may be new to training LLMs at scale.
+- This is **lessons-learned**, not a survey: do-this-not-that from real runs on
+  Aurora / Polaris.
+- Complementary to Shilpika's talk — different topics on purpose.
+
+{/* TODO: one line naming what Shilpika covered so the complement is explicit. */}
+
+</Slide>
+
+{/*═══════════════════════════════════════════════════════════════════════════
+  PART 1 — GETTING A RUN OFF THE GROUND  (12:00-12:30)
+═══════════════════════════════════════════════════════════════════════════*/}
+
+{/*───────────────────────────────────────────────────────────────
+4 — Why data prep is the first wall  [NET-NEW, short]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="data-why">
+
+## Data preparation is the first wall
+
+{/* TODO: scale reframes it — 2T+ tokens, not "download a dataset". */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+5 — Blending data efficiently  [REUSE <- 2025/12/16:313 / SIAM25:352]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="data-blending">
+
+## Blending data, efficiently
+
+{/* TODO: lift BlendCorpus weighted multi-corpus sampling slide. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+6 — The stack  [REUSE <- 2026/07/14:278 / 2026/06/03:205 "stack"]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="stack">
+
+## The stack
+
+{/* TODO: BlendCorpus + TorchTitan(+XPU) + ezpz. Reuse stack slide. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+7 — Shard reproducibility + the fork tax  [REUSE <- 2026/06/03:710]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="data-repro">
+
+## Reproducibility + the "fork tax"
+
+{/* TODO: shard determinism, upstream data churn. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+8 — (optional) raw-corpus -> tokens  [NET-NEW — DECIDE: include or cut?]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="data-tokenize">
+
+## From raw corpus to tokens
+
+{/* OPEN QUESTION: current material frames prep as blending, not
+   tokenization-from-raw. Include this net-new slide, or cut? */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+9 — Python env that works  [REUSE <- llms-on-polaris:215]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="env-setup">
+
+## A Python environment that works
+
+{/* TODO: conda/venv/clone-base, module load. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+10 — numpy>2 war story  [REUSE <- post 2025/05/03]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="env-numpy">
+
+## War story: numpy > 2 vs. the frameworks module
+
+{/* TODO: lift from posts/2025/05/03. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+11 — Why python melts Lustre  [REUSE <- post 2026/05/01]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="lustre">
+
+## Why `import` melts Lustre at scale
+
+{/* TODO: metadata I/O storm, 50k processes. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+12 — ezpz yeet  [REUSE <- 2026/07/14:2056 + yeet-env-*.svg]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="yeet">
+
+## `ezpz yeet`: broadcast the environment
+
+{/* TODO: /tmp staging, --copy/--compress, 8->4096-node scaling plot
+   (public/talks/.../yeet-env-seconds.svg, yeet-env-per-node.svg). */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+13 — Parallelism menu  [REFRESH <- 2025/10/15:135, trimmed]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="parallelism-menu">
+
+## The parallelism menu
+
+{/* TODO: DP / TP / PP / SP / EP on one slide — a MAP, not a lecture. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+14 — ZeRO / FSDP in one slide  [REFRESH <- 2025/10/15:515, condensed]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="zero-fsdp">
+
+## ZeRO / FSDP: the memory ⇄ comms trade
+
+{/* TODO: condensed single slide. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+15 — What you'll actually pick + ezpz diagram  [REUSE <- 2026/07/14:329] + [NET-NEW heuristic]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="what-to-pick">
+
+## What you'll actually pick
+
+{/* TODO: decision heuristic by model size / hardware + ezpz launch
+   hub-and-spoke mermaid (Aurora/Polaris/Frontier/Mac). */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+16 — Part 1 close / cliffhanger  [NET-NEW]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="part1-close">
+
+## You've launched. Now everything tries to kill it.
+
+_See you after the break._
+
+</Slide>
+
+{/*═══════════════════════════════════════════════════════════════════════════
+  PART 2 — KEEPING IT ALIVE TO THE END  (13:30-14:30)
+═══════════════════════════════════════════════════════════════════════════*/}
+
+{/*───────────────────────────────────────────────────────────────
+17 — Re-hook after break  [NET-NEW]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="part2-rehook">
+
+## Where we left off
+
+{/* TODO: 1-slide recap; the run is training, now keep it alive. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+18 — Critical batch size  [REUSE <- 2026/07/14:219 / 2026/06/03:192]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="critical-batch-size">
+
+## Critical batch size
+
+{/* TODO: what it is, why it caps useful scaling (Zhang'25, Zhou'25). */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+19 — Large batches  [REUSE <- 2026/07/14:964 large-batch caveat]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="large-batches">
+
+## Training with large batches
+
+{/* TODO: caveats + stability. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+20 — Second-order optimizer landscape  [REFRESH <- SIAM25:401]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="optimizer-landscape">
+
+## Second-order optimizers: the landscape
+
+{/* TODO: Shampoo / Muon / SOAP / Sophia / Lamb, modernized. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+21 — SOAP  [NET-NEW]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="soap">
+
+## SOAP
+
+{/* NET-NEW: not covered in any existing deck. Write fresh. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+22 — mano  [REUSE <- 2026/07/14:938]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="mano">
+
+## `mano`: Muon quality at AdamW speed
+
+{/* TODO: lift mano slide + loss curves. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+23 — 80B optimizer cliff  [REUSE <- 2026/07/14:1022 + optimizer-loss / lr-finder-80b svg]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="optimizer-cliff">
+
+## The 80B bf16 optimizer cliff
+
+{/* TODO: cliff story + LR-finder sweeps figures. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+24 — Failure is the default  [REUSE <- 2026/06/03:885 restarts-motivation]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="failure-default">
+
+## Failure is the default
+
+{/* TODO: MTBF math at scale. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+25 — Failure taxonomy  [REFRESH <- 2026/06/03:6 abstract enumeration]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="failure-taxonomy">
+
+## Taxonomy: HW / SW / network / system
+
+{/* TODO: transient vs. systemic. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+26 — Network flaps  [REFRESH <- failures material, make flaps explicit]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="network-flaps">
+
+## Network flaps
+
+{/* TODO: fabric instability war story. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+27 — Silent bug #1: bf16 RMSNorm freeze  [REUSE <- 2026/06/03:1496]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="silent-rmsnorm">
+
+## Silent corruption #1: bf16 RMSNorm freeze
+
+{/* TODO: lift case study. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+28 — Silent bug #2: TP loss-scaling  [REUSE <- 2026/06/03:1540]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="silent-tp">
+
+## Silent corruption #2: TP loss-scaling bug
+
+{/* TODO: lift case study. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+29 — Working on a shared filesystem  [NET-NEW — assemble from Lustre/yeet]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="shared-fs">
+
+## Working on a shared filesystem
+
+{/* NET-NEW: contention, rules of the road. Assemble from Lustre/yeet material. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+30 — Checkpointing basics  [REFRESH <- SIAM25:363 "Fast! distributed, async"]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="checkpoint-basics">
+
+## Checkpointing: what / when / how big
+
+{/* TODO: refresh basics slide. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+31 — Async checkpointing done right  [NET-NEW how-to + REUSE 2026/07/14 caveat]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="async-checkpoint">
+
+## Asynchronous checkpointing done right
+
+{/* NET-NEW how-to. Pair with the cautionary tale: naive async melts the
+   cluster at 20B/512N (2026/07/14 auto-retry-native caveat). */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+32 — Restart quickly  [REUSE <- 2025/12/16:324 converters]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="fast-restart">
+
+## Restarting quickly
+
+{/* TODO: checkpoint converters, fast reload. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+33 — Recovery cascade  [REUSE <- 2026/07/14:1377 restart-cascade mermaid]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="restart-cascade">
+
+## The three-layer recovery cascade
+
+{/* TODO: Job -> Node -> Process mermaid. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+34 — ezpz launch --auto-retry  [REUSE <- 2026/07/14:1580 auto-retry-native]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="auto-retry">
+
+## `ezpz launch --auto-retry`
+
+{/* TODO: native fault tolerance + the 20B/512N stall story. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+35 — Hang watchdog  [REUSE <- 2026/07/14:1845 watchdog-fsm]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="watchdog">
+
+## The hang watchdog
+
+{/* TODO: --timeout / --retries FSM, catching silent hangs. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+36 — Failover caught a real hang  [REUSE <- 2026/07/14:1942]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="failover-validation">
+
+## It caught a real silent hang
+
+{/* TODO: validation story. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+37 — Putting it together  [NET-NEW capstone]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="capstone">
+
+## The full resilient launch
+
+{/* NET-NEW: one command that ties data + parallelism + checkpointing +
+   auto-retry together. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+38 — Recap / start here  [NET-NEW]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="recap">
+
+## Start here
+
+{/* TODO: ezpz, links, blog posts. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+39 — Thanks  [REFRESH <- 2026/07/14 thanks]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="thanks">
+
+## Thanks
+
+{/* TODO: QR + contact + acknowledgements. */}
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+40 — Footnotes  [mechanism]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="footnotes">
+
+## Footnotes
+
+<div id="footnotes-target"></div>
+
+</Slide>
+
+{/*───────────────────────────────────────────────────────────────
+41+ — Appendix (Q&A deep dives)  [REUSE <- 2026/07/14 appendix]
+───────────────────────────────────────────────────────────────*/}
+
+<Slide id="appendix">
+
+## Appendix
+
+{/* TODO: eval charts, CPT/SFT/GRPO post-training, MoE-on-XPU throughput,
+   AERIS case study — pulled from 2026/07/14 appendix for Q&A. */}
+
+</Slide>
