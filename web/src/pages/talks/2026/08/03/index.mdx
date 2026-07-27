@@ -632,10 +632,10 @@ we built to survive them. The restarts are how you survive the bad news.
 
 </Slide>
 
-{/* source: reuse · 2026/07/14:218-226 + 2026/06/03:191-197 critical-batch bullet promoted to a slide */}
+{/* source: merge · was critical-batch-size + large-batches; 2026/07/14:218-226 + 2026/06/03:191-197 + large-batch caveats */}
 <Slide id="critical-batch-size" size="sm">
 
-## Critical batch size: the ceiling on data-parallel scaling
+## Batch size: the ceiling, and the knobs
 
 $B_{\text{crit}}$: the largest batch where more data-parallel workers still buy
 near-linear speedup.[^cbs-openai]
@@ -643,32 +643,29 @@ near-linear speedup.[^cbs-openai]
 <Cols widths="1 1">
 <Col>
 
-**Below $B_{\text{crit}}$**
+**The ceiling**
 
-- 2x batch ≈ **half the steps** to target loss
-- more nodes → less wall-clock, nearly free
-
-**Above $B_{\text{crit}}$**
-
-- speedup **saturates**: more compute, _same_ loss
-- efficiency drops, training gets **unstable**[^cbs-zhang][^cbs-zhou]
+- below: 2x batch ≈ **half the steps**, more nodes nearly free
+- above: speedup **saturates**, training gets **unstable**[^cbs-zhang][^cbs-zhou]
+- HPC hits it first: INCITE jobs want **~2k nodes**, straight past $B_{\text{crit}}$
+- fix is **TP/PP/EP + a batch you _chose_**, not "more DP"
 
 </Col>
 <Col>
 
-**Why HPC hits this first**
+**The knobs (and where they break)**
 
-- INCITE jobs want **≥ 20% of the machine** (~2k nodes)
-- pure DP at that scale → batch past $B_{\text{crit}}$
-- fix is not "more DP": TP/PP/EP + a batch you _chose_
-- it's a **moving target you measure**, not assume
+- **LR scaling** (linear / $\sqrt{B}$)[^lb-openai] + **longer warmup** + grad clip
+- **linear LR backfires:** 80B NaN'd _earlier_ (step 7 vs 29)
+- **LRs don't transfer:** `mano`@48 loses to AdamW@384
 
 </Col>
 </Cols>
 
-> [!NOTE]+
+> [!TIP]+
 > Scheduling (grab the machine) and the math (stay under $B_{\text{crit}}$) pull
-> opposite ways. The rest of the talk lives in that gap.
+> opposite ways. **Re-tune at the target batch and node count**, don't extrapolate
+> a small-batch LR up a 100x jump and hope.
 
 <SpeakerNotes>
 The critical batch size is the largest batch where adding data-parallel workers
@@ -682,6 +679,16 @@ machine, about 2k nodes on Aurora. Pure data-parallel at that node count means a
 very large global batch, straight past B_crit. The fix is not "more DP", it is
 TP/PP/EP plus a batch you actually chose. B_crit grows with model and data scale
 but sub-linearly, so it is a moving target you measure, not assume.
+
+The knobs for actually running a large batch: raise the LR with the batch (linear
+or sqrt-B) so each step still moves the weights meaningfully; use longer warmup as
+the batch grows to survive the noisy early steps; and lean on stability aids like
+grad clipping, a large-batch-tuned optimizer such as LAMB, and a decent epsilon.
+Where they break: past B_crit sample efficiency degrades. Linear LR scaling
+backfires at the extreme; at 80B, LR-scaling the 16x batch moved the NaN earlier,
+step 7 vs step 29. And LRs do not transfer across batch: mano tuned at GBS=48 loses
+to AdamW at GBS=384 (2.88 vs 2.71) until re-tuned. Practical rule: re-tune at the
+target batch and node count.
 </SpeakerNotes>
 
 [^cbs-openai]: [An Empirical Model of Large-Batch Training](https://arxiv.org/abs/1812.06162) (McCandlish et al. 2018).
@@ -689,52 +696,6 @@ but sub-linearly, so it is a moving target you measure, not assume.
 [^cbs-zhang]: [How Does Critical Batch Size Scale in Pre-training?](https://arxiv.org/abs/2410.21676) (Zhang et al. 2025).
 
 [^cbs-zhou]: [How to Set the Batch Size for Large-Scale Pre-training?](https://arxiv.org/abs/2601.05034) (Zhou et al. 2025).
-
-</Slide>
-
-{/* source: reuse · 2026/07/14 large-batch caveats (~964 mano caveat; ~1087 LR-scaled cliff) */}
-<Slide id="large-batches" size="sm">
-
-## Large batches: the playbook, and where it breaks
-
-<Cols widths="1 1">
-<Col>
-
-**The standard knobs**
-
-- **LR scaling** with batch (linear or $\sqrt{B}$)[^lb-openai]
-- **Longer warmup** as the batch grows
-- **Stability aids:** grad clip, LAMB, sane $\varepsilon$
-
-</Col>
-<Col>
-
-**What actually breaks**
-
-- past $B_{\text{crit}}$: **efficiency degrades**
-- **linear LR backfires:** 80B NaN'd _earlier_ (step 7 vs 29)
-- **LRs don't transfer:** `mano`@48 loses to AdamW@384
-
-</Col>
-</Cols>
-
-> [!TIP]+
-> **Re-tune at the target batch and node count.** Don't extrapolate a small-batch
-> LR up a 100x jump and hope.
-
-<SpeakerNotes>
-The standard knobs for large batches: raise the LR with the batch (linear or
-sqrt-B) so each step still moves the weights meaningfully; use longer warmup as
-the batch grows to survive the noisy early steps before statistics settle; and
-lean on stability aids like grad clipping, a large-batch-tuned optimizer such as
-LAMB, and a decent epsilon.
-
-What actually breaks: past B_crit sample efficiency degrades, you pay more tokens
-for the same loss. Linear LR scaling backfires at the extreme; at 80B, LR-scaling
-the 16x batch moved the NaN earlier, step 7 vs step 29. And LRs do not transfer
-across batch: mano tuned at GBS=48 loses to AdamW at GBS=384 (2.88 vs 2.71) until
-re-tuned. Practical rule: re-tune at the target batch and node count.
-</SpeakerNotes>
 
 [^lb-openai]: [An Empirical Model of Large-Batch Training](https://arxiv.org/abs/1812.06162) (McCandlish et al. 2018): LR and warmup both need to grow with batch, and the payoff flattens at the critical batch size.
 
@@ -762,9 +723,38 @@ preconditioner) at some compute price.
 
 </div>
 
-- The bottom three (**Shampoo, SOAP, Muon**) are one family: precondition the
-  update with second-moment structure, differing only in **how cheaply** they
-  approximate it.
+- **Shampoo, SOAP, Muon are one family:** precondition with second-moment
+  structure, differing only in **how cheaply** they approximate it. **SOAP** =
+  Adam in Shampoo's eigenbasis (fewer knobs, refresh every $k$ steps); **Muon** =
+  the cheaper cousin, Newton-Schulz instead of an eigendecomposition.
+
+<SpeakerNotes>
+AdamW is the baseline; everything else buys curvature, a better preconditioner, at
+some compute price. Down the table: LAMB is Adam plus a layer-wise trust ratio on
+the LR to unlock huge batches. Adopt drops the current grad from the second moment
+so it converges for any beta_2. Sophia is a cheap clipped Hessian-diagonal
+preconditioner, light curvature. Shampoo, SOAP, and Muon are the structured/spectral
+family.
+
+Zoom in on SOAP since it is the cleanest to explain. Shampoo is preconditioned
+gradient descent: for each weight matrix it keeps a Kronecker-factored second-moment
+estimate (left factor from GG^T, right factor from G^T G) and steps along the
+preconditioned gradient. Powerful, but the eigendecompositions and extra knobs
+(grafting, epsilon, preconditioning power and frequency) make it expensive and
+fiddly at scale. SOAP's trick: Shampoo's preconditioner defines a rotated
+coordinate frame, its eigenbasis, so run plain Adam inside that frame and refresh
+the basis only every k steps because it drifts slowly, which amortizes the costly
+eigendecomposition. The paper's hook is that 1/2-power Shampoo equals
+Adafactor-in-the-eigenbasis, so SOAP is the natural generalization: full Adam in
+that basis. Result is fewer hyperparameters (essentially AdamW plus the refresh
+frequency), more stability, the preconditioning win at close to Adam's per-step
+cost. Their reported numbers are roughly 40% fewer steps and 35% less wall-clock vs
+AdamW, but those are the authors' runs so I keep them off the slide. Muon is the
+cheaper cousin in the same family: it approximates the same spectral update with
+Newton-Schulz orthogonalization instead of an explicit eigendecomposition, skipping
+the basis machinery entirely. mano, next, chases the same quality-per-flop from the
+opposite direction: manifold normalization instead of eigenbases.
+</SpeakerNotes>
 
 [^ol-adamw]: [Decoupled Weight Decay Regularization](https://arxiv.org/abs/1711.05101) (Loshchilov & Hutter 2019).
 
@@ -785,66 +775,6 @@ preconditioner) at some compute price.
   #optimizer-landscape table th, #optimizer-landscape table td { white-space: nowrap; }
   #optimizer-landscape table th:nth-child(3), #optimizer-landscape table td:nth-child(3) { white-space: normal; }
 `}</style>
-
-</Slide>
-
-{/* source: net-new · Vyas et al. 2024 (arXiv:2409.11321); authors' speedups kept off-slide */}
-<Slide id="soap" size="sm">
-
-## SOAP: Adam in Shampoo's eigenbasis
-
-Shampoo finds a good basis, then you do the cheap thing (Adam) inside it.[^soap-paper]
-
-<Cols widths="1 1">
-<Col>
-
-**The idea**
-
-- Shampoo's preconditioner → a **rotated frame** (eigenbasis)
-- run **plain Adam inside that frame**
-- refresh the basis **every $k$ steps** → eigendecomp **amortized**
-
-</Col>
-<Col>
-
-**Why it's nicer**
-
-- **fewer knobs:** ~AdamW + basis-refresh frequency
-- **more stable:** Adam normalization tames Shampoo
-- **keeps the win** at ~Adam per-step cost
-
-</Col>
-</Cols>
-
-- **vs Muon:** the cheaper cousin, Newton-Schulz orthogonalization instead of an
-  eigendecomposition, skips the basis machinery.[^soap-muon]
-
-[^soap-paper]: [SOAP: Improving and Stabilizing Shampoo using Adam](https://arxiv.org/abs/2409.11321) (Vyas, Morwani, Zhao, et al. 2024). The paper shows Shampoo (1/2 power) is equivalent to running Adafactor in Shampoo's eigenbasis; SOAP generalizes this by running full Adam there.
-
-[^soap-muon]: [Muon](https://arxiv.org/abs/2502.16982) (Jordan et al. 2024/2025): orthogonalized-momentum update as a low-overhead spectral approximation.
-
-<SpeakerNotes>
-Shampoo is preconditioned gradient descent: for each weight matrix it keeps a
-Kronecker-factored second-moment estimate (left factor from GG^T, right factor
-from G^T G) and steps along the preconditioned gradient. Powerful, but the
-eigendecompositions and extra knobs (grafting, epsilon, preconditioning
-power/frequency) make it expensive and fiddly at scale. SOAP's win is fewer
-hyperparameters (essentially AdamW plus the eigenbasis-update frequency), more
-stability (Adam's normalization tames Shampoo's rough edges), and it keeps the
-preconditioning benefit at close to Adam's per-step cost.
-
-One-sentence version: Shampoo tells you a good basis, then you do the boring
-cheap thing (Adam) in it. The equivalence in the paper is the hook: 1/2-power
-Shampoo is Adafactor-in-the-eigenbasis, so SOAP is the natural generalization
-(Adam, not Adafactor, in that basis). Cost story: the eigendecomposition is the
-expensive part, and you reuse the basis for many steps because it barely moves,
-so amortized overhead over AdamW is small. Their reported numbers (LLM
-pre-training vs AdamW) are roughly 40% fewer steps / 35% less wall-clock; I keep
-those off the slide since they are the authors' runs, not ours. Where it fits our
-story: the principled-but-heavier end of the family. mano (next) chases the same
-quality-per-flop from the opposite direction, manifold normalization instead of
-eigenbases.
-</SpeakerNotes>
 
 </Slide>
 
@@ -1258,7 +1188,7 @@ node-local. Measured on Aurora, staging is extract-bound at 8-64 nodes, about
 
 </Slide>
 
-{/* source: refresh · 20B ckpt = 244 GB (2026/07/14:1599); cadence marked verify */}
+{/* source: refresh · 20B ckpt = 232 GB + save/restart timings from ezpz.cool/guides/checkpoint-restart */}
 <Slide id="checkpoint-basics">
 
 ## Checkpointing: what, when, how big
@@ -1274,9 +1204,10 @@ Your only insurance policy. Resume from the last one, everything since is wasted
 - optimizer state (~2x the model)
 - LR sched, step, RNG, dataloader pos
 
-**How big**
+**How big (measured)**
 
-- **20B → 244 GB.** {/* verify from 2026/07/14 auto-retry-native */} Not a file you write casually.
+- **20B → 232 GB.** Sync save stalls training **~23.6 s**; reload is **~55-63 s**
+  (dominated by `dcp.load`).
 
 </Col>
 <Col>
@@ -1286,28 +1217,34 @@ Your only insurance policy. Resume from the last one, everything since is wasted
 - **too frequent:** write overhead eats throughput
 - **too rare:** a crash throws away hours
 
-EV rule: set the interval where **wasted work on a crash** ≈ **write overhead**.
-At a failure every few hours → **tens of minutes**. {/* verify exact cadence from run configs */}
+EV rule: interval where **wasted work on a crash** ≈ **write overhead**. At a
+failure every few hours, and a **~24 s** blocking save, that lands in the
+tens-of-minutes range.
 
 </Col>
 </Cols>
 
-Off the critical path → **async checkpointing**, next (and how it took down the cluster).
+The **~24 s** stall is why you push it off the critical path → **async**, next.
 
 <SpeakerNotes>
 A checkpoint is your only insurance policy: if the job dies you resume from the
 last one, so everything since then is wasted work. What goes in: model weights as
 the fp32 master, optimizer state (the big one, Adam-family is about 2x the model),
-and the LR scheduler, step count, RNG, dataloader position. Our 20B checkpoint is
-244 GB, not a file you write casually every step.
+and the LR scheduler, step count, RNG, dataloader position.
+
+How big, measured on our runs and written up in the ezpz checkpoint-restart guide:
+the 20B checkpoint is 232 GB. A synchronous save blocks the training thread for
+about 23.6 seconds, and a reload runs about 55 to 63 seconds, dominated by the
+232 GB dcp.load. For scale, restart time grows with the model: roughly 10 seconds
+for a debug model, 40 seconds at 2B (a 23 GB checkpoint), 60 seconds at 20B.
 
 When: two costs pull against each other. Too frequent and the write overhead eats
 throughput; too rare and a crash throws away hours of compute. Expected-value rule
 of thumb: pick an interval where the expected wasted work on a crash, about half an
 interval times your failure rate, is comparable to the write overhead you are
-paying. At a failure every few hours that lands in the tens-of-minutes range. The
-write cost is exactly why you want it off the critical path, which is asynchronous
-checkpointing.
+paying. With a 24-second blocking save and a failure every few hours, that lands in
+the tens-of-minutes range. The write cost is exactly why you want it off the
+critical path, which is asynchronous checkpointing.
 </SpeakerNotes>
 
 </Slide>
@@ -1317,38 +1254,55 @@ checkpointing.
 
 ## Asynchronous checkpointing, and how it melted the cluster
 
-**Done right**, async hides the 244 GB write behind the next few hundred steps:
+**Done right**, async hides the 232 GB write behind the next few hundred steps:
 
 1. **snapshot to host memory** (fast), then hand off
 2. **stage, then flush** on a background thread while GPUs train
 3. **bound concurrency:** cap how many ranks flush at once
 
-> [!WARNING]+ The naive version took the job down
-> At **20B / 512N+**, `--checkpoint.async-mode=async` (244 GB, unbounded) **takes
-> the whole job down**: the write contends with training collectives on the same
-> fabric. Blunt workaround today: `CHECKPOINT_ASYNC_MODE=disabled`.
+<div class="tight-table">
 
-A PBS **mid-save kill** once left a stale `step-4500/` **placeholder**. The sync
-path assumed it was complete → walltime-blocked for **weeks**. A half-written
-checkpoint is worse than none.
+| 20B save | Sync | Async |
+| --- | ---: | ---: |
+| training-thread stall | **~23.6 s** | **~5.4 s** (stage 1.7 + drain 3.7) |
+
+</div>
+
+Async cuts the per-save stall **~4.4x** (~18 s back per save).
+
+> [!WARNING]+ But the naive version took the job down
+> At **20B / 512N+**, unbounded `--checkpoint.async-mode=async` **takes the whole
+> job down**: the 232 GB write contends with training collectives on the same
+> fabric. A PBS **mid-save kill** once left a stale `step-4500/` **placeholder**,
+> the sync path assumed complete → walltime-blocked **weeks**. Bound the fan-out,
+> write a `.complete` marker last.
 
 <SpeakerNotes>
 Done right, async checkpointing hides the write behind compute. Snapshot to host
 memory on the training thread, which is fast, then hand off. A background thread
 stages then flushes the bytes to the filesystem while the GPUs keep training. And
 bound concurrency: cap how many ranks flush at once so you do not stampede the
-metadata server and the fabric simultaneously. The point is to overlap the 244 GB
+metadata server and the fabric simultaneously. The point is to overlap the 232 GB
 write with the next few hundred steps so cadence costs almost nothing.
 
-The naive version took the job down: at 20B/512N+, turning on
---checkpoint.async-mode=async, that full 244 GB background write unbounded, takes
-the whole job down because the write contends with training collectives on the
-same fabric and everything stalls. Today's workaround is blunt,
-CHECKPOINT_ASYNC_MODE=disabled. And the failure that hides inside checkpointing: a
-PBS mid-save kill once left a stale step-4500 placeholder directory; the sync path
-saw it, assumed the save was complete, and the run sat walltime-blocked for weeks.
-An --auto-retry relaunch finally drove it 4,400 to 5,400 cleanly. A half-written
-checkpoint is worse than no checkpoint.
+The numbers, from the ezpz checkpoint-restart guide: at 20B the synchronous save
+blocks the training thread about 23.6 seconds. Async drops that to about 5.4
+seconds, roughly a 1.7-second stage plus a 3.7-second drain of residual, so about
+4.4x less stall, roughly 18 seconds handed back per save. (At 2B, a 23 GB
+checkpoint, it is 3.75 seconds sync versus about 1.05 seconds async, about 3.6x.)
+Mechanism: PyTorch Distributed Checkpoint, dcp.async_save with a fan-out start and
+a try-finalize-if-ready, and a .complete marker written last so incomplete
+checkpoints are skipped; finalize uses an MPI probe on MPI's own communicator to
+avoid deadlocking with the xccl training group.
+
+The naive version took the job down: at 20B/512N+, turning on async unbounded takes
+the whole job down because the 232 GB background write contends with training
+collectives on the same fabric and everything stalls. And the failure that hides
+inside checkpointing: a PBS mid-save kill once left a stale step-4500 placeholder
+directory; the sync path saw it, assumed the save was complete, and the run sat
+walltime-blocked for weeks. An --auto-retry relaunch finally drove it 4,400 to
+5,400 cleanly. A half-written checkpoint is worse than no checkpoint, which is
+exactly why the bounded fan-out plus a .complete-marker-last discipline matters.
 </SpeakerNotes>
 
 </Slide>
@@ -1360,10 +1314,10 @@ checkpoint is worse than no checkpoint.
 
 The recovery clock runs crash → first-step-back-training, not crash → "file exists."
 
-**Reload fast**
+**Reload fast** (reload is **~55-63 s** at 20B, `dcp.load`-bound)
 
 - **stage node-local:** `ezpz yeet checkpoint-729` → `/tmp`, not 512 ranks pulling
-  244 GB off Lustre at once
+  232 GB off Lustre at once
 - same fan-out as the venv, any dir or tarball
 
 **Reload anywhere: converters**
@@ -1380,8 +1334,9 @@ clock runs from crash to first-step-back-training, not from crash to "file exist
 
 Reload fast: stage the checkpoint node-local. ezpz yeet ~/models/checkpoint-729
 pushes it to /tmp on every node so the reload hits local SSD instead of every rank
-pulling 244 GB off Lustre at once. Same fan-out that stages the venv works on
-checkpoints and datasets, any directory or tarball.
+pulling 232 GB off Lustre at once. Reload itself is about 55 to 63 seconds at 20B,
+dominated by the dcp.load of that 232 GB. Same fan-out that stages the venv works
+on checkpoints and datasets, any directory or tarball.
 
 Reload anywhere with checkpoint converters: Megatron, HF, ZeRO, Universal. The
 training-format checkpoint and the format you evaluate, serve, or fine-tune from
