@@ -17,3 +17,17 @@ const description = (Astro.props as Props).description ?? fm.description
         <slot />
     </Presentation>
 </Layout>
+
+{
+    /*
+  KaTeX CSS lives here (the deck path's analogue of Doc.astro) rather than in the
+  every-page global.css. Decks render via SlideLayout -> Layout -> Presentation and
+  never touch Doc.astro, so without this a deck's inline $...$ math shows twice: the
+  visual render plus KaTeX's hidden MathML copy (the .katex-mathml display:none rule
+  only ships inside katex.min.css). Keeping it deck-scoped leaves the landing and
+  other Layout-direct pages KaTeX-free.
+*/
+}
+<style is:global>
+    @import 'katex/dist/katex.min.css';
+</style>
