@@ -16,7 +16,7 @@ import Col from '@/components/slides/Col.astro'
 export const ASSETS = 'https://samforeman.me/assets'
 
 {/*═══════════════════════════════════════════════════════════════════════════
-  ATPESC 2026 — "Pre-Training LLMs on a Supercomputer"
+  ATPESC 2026 · "Pre-Training LLMs on a Supercomputer"
   Two-part talk: Part 1 12:00-12:30 (~30m), Part 2 13:30-14:30 (~60m).
   Structure = PIPELINE ORDER (get a run off the ground -> keep it alive).
   Content assembled from prior decks (2026/07/14, 2026/06/03, 2025/10/15,
@@ -26,7 +26,7 @@ export const ASSETS = 'https://samforeman.me/assets'
 ═══════════════════════════════════════════════════════════════════════════*/}
 
 {/*───────────────────────────────────────────────────────────────
-1 — Title
+1 · Title
 ───────────────────────────────────────────────────────────────*/}
 
 <Slide id="title-slide">
@@ -37,7 +37,7 @@ export const ASSETS = 'https://samforeman.me/assets'
     What works, what breaks, and how cheaply you recover.
 </p>
 
-**Sam Foreman** — Argonne National Laboratory
+**Sam Foreman**, Argonne National Laboratory
 
 _{new Date(frontmatter.date).toISOString().slice(0, 10)} · ATPESC 2026_
 
@@ -47,7 +47,7 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)} · ATPESC 2026_
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-2 — Roadmap / two-part arc
+2 · Roadmap / two-part arc
 ───────────────────────────────────────────────────────────────*/}
 
 <Slide id="roadmap">
@@ -74,7 +74,7 @@ everything that then tries to kill it.
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-3 — Who this is for / framing
+3 · Who this is for / framing
 ───────────────────────────────────────────────────────────────*/}
 
 <Slide id="framing">
@@ -90,10 +90,10 @@ everything that then tries to kill it.
 </Slide>
 
 {/*═══════════════════════════════════════════════════════════════════════════
-  PART 1 — GETTING A RUN OFF THE GROUND  (12:00-12:30)
+  PART 1 · GETTING A RUN OFF THE GROUND  (12:00-12:30)
 ═══════════════════════════════════════════════════════════════════════════*/}
 
-{/* source: net-new — framing built on 2025/12/16:294-311 "Training" 3-step data recipe */}
+{/* source: net-new · framing built on 2025/12/16:294-311 "Training" 3-step data recipe */}
 <Slide id="data-why">
 
 ## Data prep is the first wall
@@ -125,7 +125,7 @@ it at 512 nodes instead of on your laptop.
 
 </Slide>
 
-{/* source: reuse — 2025/12/16:294-342 & AuroraGPT-SIAM25:333-381 "Blending Data, Efficiently" */}
+{/* source: reuse · 2025/12/16:294-342 & AuroraGPT-SIAM25:333-381 "Blending Data, Efficiently" */}
 <Slide id="data-blending">
 
 ## Blending data, efficiently
@@ -168,16 +168,16 @@ iterate freely.
 
 </Slide>
 
-{/* source: reuse — 2026/07/14:278-327 & 2026/06/03:205-228 "The stack" */}
+{/* source: reuse · 2026/07/14:278-327 & 2026/06/03:205-228 "The stack" */}
 <Slide id="stack">
 
 ## The stack
 
 Three repos, one job each. No `cuda` in user code.
 
-- 🍋 [saforem2/`ezpz`](https://github.com/saforem2/ezpz) — launch, anywhere
-- 🧠 [saforem2/`torchtitan@ezpz`](https://github.com/saforem2/torchtitan/tree/ezpz) — train (XPU fork: FSDP · TP · PP · EP · MoE)
-- 📚 [zhenghh04/`blendcorpus`](https://github.com/zhenghh04/blendcorpus) — data (weighted blend + shard)
+- 🍋 [saforem2/`ezpz`](https://github.com/saforem2/ezpz) · launch, anywhere
+- 🧠 [saforem2/`torchtitan@ezpz`](https://github.com/saforem2/torchtitan/tree/ezpz) · train (XPU fork: FSDP · TP · PP · EP · MoE)
+- 📚 [zhenghh04/`blendcorpus`](https://github.com/zhenghh04/blendcorpus) · data (weighted blend + shard)
 
 > [!TIP]+ Hardware agnostic
 > Write it once on Aurora's XPUs, run it anywhere.
@@ -197,7 +197,7 @@ maintenance cost is why we moved to TorchTitan (see the fork-tax slide next).
 
 </Slide>
 
-{/* source: reuse — 2026/06/03:710-748 "The fork tax" + mermaid smoke-test loop */}
+{/* source: reuse · 2026/06/03:710-748 "The fork tax" + mermaid smoke-test loop */}
 <Slide id="data-repro">
 
 ## Reproducibility and the fork tax
@@ -283,7 +283,7 @@ buys you XPU support, and the bill comes due as continuous upstream-sync work.
 
 </Slide>
 
-{/* source: net-new — grounded in posts/2025/09/12 (sptoken/SentencePiece, vocab 32000, file lists) */}
+{/* source: net-new · grounded in posts/2025/09/12 (sptoken/SentencePiece, vocab 32000, file lists) */}
 <Slide id="data-tokenize">
 
 ## From raw corpus to tokens
@@ -339,11 +339,11 @@ Start from the site module. Layer a `venv` on top. Do not fight it.
 # 1. site frameworks module (torch, MPI, GPU prebuilt)
 module load frameworks
 
-# 2. venv on top — shares system packages
+# 2. venv on top: shares system packages
 python3 -m venv --system-site-packages \
     "venvs/$(basename $CONDA_PREFIX)"
 source "venvs/$(basename $CONDA_PREFIX)/bin/activate"
-python3 -m pip install -e "git+https://github.com/saforem2/ezpz"
+uv pip install "git+https://github.com/saforem2/ezpz"  # uv: fast, resolves in seconds
 
 # 3. clone base ONLY if a package requires conda
 conda create --clone base --prefix=/path/to/base-clone
@@ -356,11 +356,13 @@ conda create --clone base --prefix=/path/to/base-clone
 The most common way to lose your first hour on a supercomputer is a broken env.
 Start from the site's prebuilt frameworks module (on Polaris that is
 `module use /soft/modulefiles; module load conda; conda activate base`), then
-layer on top. Never pip-install into base: it is read-only and you will want it
 back. Build a venv with `--system-site-packages` so it sees the module's prebuilt
 torch instead of pulling a fresh CPU-only wheel; naming the venv after
 `$CONDA_PREFIX` keeps one venv per frameworks release so a module bump does not
-silently mix ABIs. Clone base only if some package truly requires conda: cloning
+silently mix ABIs. Use `uv pip install` rather than plain pip: it resolves and
+installs in seconds (a real difference on a shared login node) and honors the
+activated `--system-site-packages` venv, so it still picks up the module's
+prebuilt torch instead of pulling its own. Clone base only if some package truly requires conda: cloning
 copies the entire env, it is slow and huge and gets out of hand fast. venv first,
 clone last.
 </SpeakerNotes>
@@ -586,7 +588,7 @@ the scheduler/vendor differences.
 </Slide>
 
 {/*───────────────────────────────────────────────────────────────
-16 — Part 1 close / cliffhanger
+16 · Part 1 close / cliffhanger
 ───────────────────────────────────────────────────────────────*/}
 
 <Slide id="part1-close">
@@ -598,11 +600,11 @@ _See you after the break._
 </Slide>
 
 {/*═══════════════════════════════════════════════════════════════════════════
-  PART 2 — KEEPING IT ALIVE TO THE END  (13:30-14:30)
-  [placeholders below — filled in the Part 2 pass]
+  PART 2 · KEEPING IT ALIVE TO THE END  (13:30-14:30)
+  [placeholders below · filled in the Part 2 pass]
 ═══════════════════════════════════════════════════════════════════════════*/}
 
-{/* source: net-new — re-hook after the break */}
+{/* source: net-new · re-hook after the break */}
 <Slide id="part2-rehook">
 
 ## Part 2: now keep it alive
@@ -630,7 +632,7 @@ machinery we built to survive them.
 
 </Slide>
 
-{/* source: reuse — 2026/07/14:218-226 + 2026/06/03:191-197 critical-batch bullet promoted to a slide */}
+{/* source: reuse · 2026/07/14:218-226 + 2026/06/03:191-197 critical-batch bullet promoted to a slide */}
 <Slide id="critical-batch-size" size="sm">
 
 ## Critical batch size: the ceiling on data-parallel scaling
@@ -679,7 +681,7 @@ data-parallel workers still buys near-linear speedup.[^cbs-openai]
 
 </Slide>
 
-{/* source: reuse — 2026/07/14 large-batch caveats (~964 mano caveat; ~1087 LR-scaled cliff) */}
+{/* source: reuse · 2026/07/14 large-batch caveats (~964 mano caveat; ~1087 LR-scaled cliff) */}
 <Slide id="large-batches" size="sm">
 
 ## Training with large batches: the playbook (and where it breaks)
@@ -718,7 +720,7 @@ data-parallel workers still buys near-linear speedup.[^cbs-openai]
 
 </Slide>
 
-{/* source: refresh — SIAM25:399-405 optimizer roadmap list into an organized table */}
+{/* source: refresh · SIAM25:399-405 optimizer roadmap list into an organized table */}
 <Slide id="optimizer-landscape" size="sm">
 
 ## Second-order optimizers: the landscape
@@ -766,7 +768,7 @@ preconditioner) at some compute price.
 
 </Slide>
 
-{/* source: net-new — Vyas et al. 2024 (arXiv:2409.11321); authors' speedups kept off-slide */}
+{/* source: net-new · Vyas et al. 2024 (arXiv:2409.11321); authors' speedups kept off-slide */}
 <Slide id="soap" size="sm">
 
 ## SOAP: Adam in Shampoo's eigenbasis
@@ -828,7 +830,7 @@ eigenbases.
 
 </Slide>
 
-{/* source: reuse — 2026/07/14:938-1016 mano slide (table + figure + claims verbatim) */}
+{/* source: reuse · 2026/07/14:938-1016 mano slide (table + figure + claims verbatim) */}
 <Slide id="mano" size="sm">
 
 ## `mano`: Muon quality at AdamW speed
@@ -906,7 +908,7 @@ tax.
 
 </Slide>
 
-{/* source: reuse — 2026/07/14 cliff (~1022 table + ~1100 lr-finder-80b figure), merged */}
+{/* source: reuse · 2026/07/14 cliff (~1022 table + ~1100 lr-finder-80b figure), merged */}
 <Slide id="optimizer-cliff" size="sm">
 
 ## 80B: one bf16 cliff, three dead optimizers
@@ -987,7 +989,7 @@ flat (~12.9).
 
 </Slide>
 
-{/* source: reuse — restarts-motivation 2026/06/03:885, refreshed with MTBF/EV framing + external run refs */}
+{/* source: reuse · restarts-motivation 2026/06/03:885, refreshed with MTBF/EV framing + external run refs */}
 <Slide id="failure-default">
 
 ## At scale, failure is the default
@@ -1019,7 +1021,7 @@ You are running one job across thousands of nodes in lockstep. The job dies when
 
 </Slide>
 
-{/* source: refresh — 2026/06/03:6 abstract enumeration into a real slide */}
+{/* source: refresh · 2026/06/03:6 abstract enumeration into a real slide */}
 <Slide id="failure-taxonomy">
 
 ## A field guide to what breaks
@@ -1063,7 +1065,7 @@ still looks fine. Two of those coming up.
 
 </Slide>
 
-{/* source: refresh — real failure signatures (2025/12/16 restarts table; 2026/06/03 watchdog:1307) */}
+{/* source: refresh · real failure signatures (2025/12/16 restarts table; 2026/06/03 watchdog:1307) */}
 <Slide id="network-flaps">
 
 ## War story: the fabric that wouldn't sit still
@@ -1091,7 +1093,7 @@ the detector (see the watchdog, later).
 
 </Slide>
 
-{/* source: reuse — bf16-freeze 2026/06/03:1496 + evidence:1519; figure eval-20b-v1-vs-v2.webp */}
+{/* source: reuse · bf16-freeze 2026/06/03:1496 + evidence:1519; figure eval-20b-v1-vs-v2.webp */}
 <Slide id="silent-rmsnorm">
 
 ## Silent killer #1: bf16 master froze RMSNorm
@@ -1122,7 +1124,7 @@ under budget.
 
 </Slide>
 
-{/* source: reuse — tp-loss bug 2026/06/03:1540 */}
+{/* source: reuse · tp-loss bug 2026/06/03:1540 */}
 <Slide id="silent-tp">
 
 ## Silent killer #2: TP reported loss / `dp_world_size`
@@ -1153,7 +1155,7 @@ loss is invisible.
 
 </Slide>
 
-{/* source: net-new — assembled from the Lustre/yeet post (posts/2026/05/01) */}
+{/* source: net-new · assembled from the Lustre/yeet post (posts/2026/05/01) */}
 <Slide id="shared-fs">
 
 ## Working on a shared filesystem
@@ -1199,7 +1201,7 @@ tractable to 4,096 nodes.
 
 </Slide>
 
-{/* source: refresh — 20B ckpt = 244 GB (2026/07/14:1599); cadence marked verify */}
+{/* source: refresh · 20B ckpt = 244 GB (2026/07/14:1599); cadence marked verify */}
 <Slide id="checkpoint-basics">
 
 ## Checkpointing: what, when, how big
@@ -1275,7 +1277,7 @@ half-written checkpoint is worse than no checkpoint.
 
 </Slide>
 
-{/* source: reuse — checkpoint converters (SIAM25:363 / 2025-12-16) + node-local staging + checkpoint-729-hf */}
+{/* source: reuse · checkpoint converters (SIAM25:363 / 2025-12-16) + node-local staging + checkpoint-729-hf */}
 <Slide id="fast-restart">
 
 ## Restarting quickly
@@ -1307,7 +1309,7 @@ pre-training.
 
 </Slide>
 
-{/* source: reuse — restart-cascade mermaid VERBATIM from 2026/07/14:1377 (desktop + mobile + style) */}
+{/* source: reuse · restart-cascade mermaid VERBATIM from 2026/07/14:1377 (desktop + mobile + style) */}
 <Slide id="restart-cascade">
 
 ## "The restarts": three layers of recovery
@@ -1319,11 +1321,11 @@ scope.
 
 ```mermaid
 flowchart TB
-    subgraph job["📋 JOB scope — PBS · hours"]
+    subgraph job["📋 JOB scope: PBS · hours"]
         JOB_TXT["<i>crash / walltime</i> →<br/><span style='font-weight:700'>chained resubmit</span>"]
-        subgraph node["🖥 NODE scope — failover wrapper · minutes"]
+        subgraph node["🖥 NODE scope: failover wrapper · minutes"]
             NODE_TXT["<i>bad host detected</i> →<br/><span style='font-weight:700'>swap from spare pool</span>"]
-            subgraph proc["⏱ PROCESS scope — ezpz launch · seconds"]
+            subgraph proc["⏱ PROCESS scope: ezpz launch · seconds"]
                 PROC_TXT["<i>stdout idle ≥ N s</i> →<br/><span style='font-weight:700'>kill + backoff</span>"]
             end
         end
@@ -1427,7 +1429,7 @@ flowchart TB
 
 </Slide>
 
-{/* source: reuse — auto-retry 2026/07/14:1580 + 20B/512N stall story + ezpz#144 */}
+{/* source: reuse · auto-retry 2026/07/14:1580 + 20B/512N stall story + ezpz#144 */}
 <Slide id="auto-retry">
 
 ## `--auto-retry`: bad-node failover, on tap
@@ -1457,7 +1459,7 @@ scraper as the bash-lib path, a pure-Python loop on top.
 
 </Slide>
 
-{/* source: reuse — watchdog 2026/07/14:1845 + FSM:1874 (mermaid verbatim) */}
+{/* source: reuse · watchdog 2026/07/14:1845 + FSM:1874 (mermaid verbatim) */}
 <Slide id="watchdog">
 
 ## Catching silent hangs: `ezpz launch --timeout / --retries`
@@ -1498,7 +1500,7 @@ needs to live inside that script (or wrap the inner call with `ezpz launch` too)
 
 </Slide>
 
-{/* source: reuse — failover validation 2026/07/14:1942 (job 8505298 timeline verbatim) */}
+{/* source: reuse · failover validation 2026/07/14:1942 (job 8505298 timeline verbatim) */}
 <Slide id="failover-validation">
 
 ## It caught a real silent hang in production
@@ -1539,7 +1541,7 @@ Full writeup:
 
 </Slide>
 
-{/* source: net-new capstone — ties together yeet + the fault-tolerance flags from Part 2 */}
+{/* source: net-new capstone · ties together yeet + the fault-tolerance flags from Part 2 */}
 <Slide id="capstone">
 
 ## Putting it together: one resilient launch
@@ -1548,11 +1550,11 @@ Everything in Part 2 collapses into a startup ritual and a single launch line.
 Nothing here is aspirational: each flag is one we saw earn its keep.
 
 ```bash
-# 1. stage the env node-local (off Lustre) — Part 1
+# 1. stage the env node-local (off Lustre) · Part 1
 ezpz yeet --compress
 source /tmp/.venv/bin/activate
 
-# 2. launch with all three recovery layers armed — Part 2
+# 2. launch with all three recovery layers armed · Part 2
 ezpz launch \
     --auto-retry \                 # NODE:    swap bad hosts from the spare pool
     --np 512 \                     #          (allocate 522, keep 10 spare)
@@ -1573,7 +1575,7 @@ ezpz launch \
 
 </Slide>
 
-{/* source: net-new recap — the takeaways + where to actually start */}
+{/* source: net-new recap · the takeaways + where to actually start */}
 <Slide id="recap">
 
 ## What to take home
@@ -1615,7 +1617,7 @@ ezpz launch \
 
 </Slide>
 
-{/* source: reuse — thanks/QR pattern from 2026/07/14:1671 */}
+{/* source: reuse · thanks/QR pattern from 2026/07/14:1671 */}
 <Slide id="thanks">
 
 <a
@@ -1691,7 +1693,7 @@ Questions?
 
 </Slide>
 
-{/* source: reuse pattern — appendix "backup slides" index from 2026/07/14:1760 */}
+{/* source: reuse pattern · appendix "backup slides" index from 2026/07/14:1760 */}
 <Slide id="appendix">
 
 ## Appendix: backup slides
