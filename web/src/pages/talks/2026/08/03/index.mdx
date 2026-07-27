@@ -609,25 +609,25 @@ _See you after the break._
 
 ## Part 2: now keep it alive
 
-Before the break we got a run **started**: data blended, stack ported, launch
-portable across vendors. The loss is going down. Good.
+Part 1 got a run **started**. That was the easy part.
 
-That was the easy part.
-
-- A training run is not a program you start, it is a program you **babysit for
-  weeks**.
-- At full-machine scale the interesting question stops being "how fast is a
-  step?"
-- It becomes: **how cheaply do you recover when (not if) something breaks?**
+- Not a program you start: one you **babysit for weeks**
+- The question stops being "how fast is a step?"
+- It becomes: **how cheaply do you recover when (not if) it breaks?**
 
 > [!NOTE]+ The rest of this talk
-> The good news is the loss curve. The bad news is everything that can interrupt
-> it. The restarts are how you survive the bad news.
+> Good news: the loss curve. Bad news: everything that can interrupt it.
 
 <SpeakerNotes>
-Re-hook line: "Everyone can start a run. The trick at this scale is finishing
-one." The emotional core is next: fabric flaps, silent corruption, hangs, and the
-machinery we built to survive them.
+Before the break we got a run started: data blended, stack ported, launch
+portable across vendors. The loss is going down. Good, and that was the easy part.
+
+Re-hook line: "everyone can start a run; the trick at this scale is finishing
+one." A training run is not a program you start, it is a program you babysit for
+weeks. At full-machine scale the interesting question stops being how fast a step
+is; it becomes how cheaply you recover when (not if) something breaks. The
+emotional core is next: fabric flaps, silent corruption, hangs, and the machinery
+we built to survive them. The restarts are how you survive the bad news.
 </SpeakerNotes>
 
 </Slide>
@@ -637,41 +637,52 @@ machinery we built to survive them.
 
 ## Critical batch size: the ceiling on data-parallel scaling
 
-The **critical batch size** $B_{\text{crit}}$ is the largest batch where adding
-data-parallel workers still buys near-linear speedup.[^cbs-openai]
+$B_{\text{crit}}$: the largest batch where more data-parallel workers still buy
+near-linear speedup.[^cbs-openai]
 
 <Cols widths="1 1">
 <Col>
 
-**Below $B_{\text{crit}}$:**
+**Below $B_{\text{crit}}$**
 
-- doubling the global batch roughly **halves the steps** to a target loss
-- more nodes means less wall-clock, nearly free
+- 2x batch ≈ **half the steps** to target loss
+- more nodes → less wall-clock, nearly free
 
-**Above $B_{\text{crit}}$:**
+**Above $B_{\text{crit}}$**
 
-- speedup **saturates**: you burn more tokens/compute for the _same_ loss
-- sample efficiency drops; training gets **unstable**[^cbs-zhang][^cbs-zhou]
+- speedup **saturates**: more compute, _same_ loss
+- efficiency drops, training gets **unstable**[^cbs-zhang][^cbs-zhou]
 
 </Col>
 <Col>
 
-**Why HPC folks hit this wall first:**
+**Why HPC hits this first**
 
-- INCITE-scale jobs want **≥ 20% of the machine** (~2k nodes on Aurora)
-- pure data-parallel at that node count means a **very large global batch**,
-  straight past $B_{\text{crit}}$
-- the fix is not "more DP": it is TP/PP/EP + a batch you actually _chose_
-- $B_{\text{crit}}$ **grows with model and data scale**, but sub-linearly, so it
-  is a moving target you **measure**, not assume.[^cbs-zhang][^cbs-zhou]
+- INCITE jobs want **≥ 20% of the machine** (~2k nodes)
+- pure DP at that scale → batch past $B_{\text{crit}}$
+- fix is not "more DP": TP/PP/EP + a batch you _chose_
+- it's a **moving target you measure**, not assume
 
 </Col>
 </Cols>
 
 > [!NOTE]+
-> The scheduling policy (grab the whole machine) and the training math (stay
-> under $B_{\text{crit}}$) pull in opposite directions. Every slide after this is
-> about living in that gap.
+> Scheduling (grab the machine) and the math (stay under $B_{\text{crit}}$) pull
+> opposite ways. The rest of the talk lives in that gap.
+
+<SpeakerNotes>
+The critical batch size is the largest batch where adding data-parallel workers
+still buys near-linear speedup. Below it, doubling the global batch roughly halves
+the steps to a target loss, so more nodes means less wall-clock, nearly free.
+Above it, speedup saturates: you burn more tokens and compute for the same loss,
+sample efficiency drops, and training gets unstable.
+
+Why HPC folks hit this wall first: INCITE-scale jobs want at least 20% of the
+machine, about 2k nodes on Aurora. Pure data-parallel at that node count means a
+very large global batch, straight past B_crit. The fix is not "more DP", it is
+TP/PP/EP plus a batch you actually chose. B_crit grows with model and data scale
+but sub-linearly, so it is a moving target you measure, not assume.
+</SpeakerNotes>
 
 [^cbs-openai]: [An Empirical Model of Large-Batch Training](https://arxiv.org/abs/1812.06162) (McCandlish et al. 2018).
 
@@ -684,37 +695,46 @@ data-parallel workers still buys near-linear speedup.[^cbs-openai]
 {/* source: reuse · 2026/07/14 large-batch caveats (~964 mano caveat; ~1087 LR-scaled cliff) */}
 <Slide id="large-batches" size="sm">
 
-## Training with large batches: the playbook (and where it breaks)
+## Large batches: the playbook, and where it breaks
 
 <Cols widths="1 1">
 <Col>
 
 **The standard knobs**
 
-- **LR scaling:** raise the LR with batch (linear or $\sqrt{B}$) so each step
-  still moves the weights a meaningful amount[^lb-openai]
-- **Warmup:** longer warmup as the batch grows, to survive the noisy early steps
-  before statistics settle
-- **Stability aids:** grad clipping, a large-batch-tuned optimizer (LAMB), and a
-  decent $\varepsilon$
+- **LR scaling** with batch (linear or $\sqrt{B}$)[^lb-openai]
+- **Longer warmup** as the batch grows
+- **Stability aids:** grad clip, LAMB, sane $\varepsilon$
 
 </Col>
 <Col>
 
 **What actually breaks**
 
-- Past $B_{\text{crit}}$: **sample efficiency degrades**, you pay more tokens for
-  the same loss
-- **Linear LR scaling backfires** at the extreme: at 80B, LR-scaling the 16x
-  batch moved the NaN **earlier** (step 7 vs step 29)
-- **LRs do not transfer across batch:** `mano` tuned at GBS=48 loses to AdamW at
-  GBS=384 (**2.88 vs 2.71**) until re-tuned
+- past $B_{\text{crit}}$: **efficiency degrades**
+- **linear LR backfires:** 80B NaN'd _earlier_ (step 7 vs 29)
+- **LRs don't transfer:** `mano`@48 loses to AdamW@384
 
 </Col>
 </Cols>
 
-- Practical rule: **re-tune at the target batch and node count**, do not
-  extrapolate a small-batch LR up a 100x jump and hope.
+> [!TIP]+
+> **Re-tune at the target batch and node count.** Don't extrapolate a small-batch
+> LR up a 100x jump and hope.
+
+<SpeakerNotes>
+The standard knobs for large batches: raise the LR with the batch (linear or
+sqrt-B) so each step still moves the weights meaningfully; use longer warmup as
+the batch grows to survive the noisy early steps before statistics settle; and
+lean on stability aids like grad clipping, a large-batch-tuned optimizer such as
+LAMB, and a decent epsilon.
+
+What actually breaks: past B_crit sample efficiency degrades, you pay more tokens
+for the same loss. Linear LR scaling backfires at the extreme; at 80B, LR-scaling
+the 16x batch moved the NaN earlier, step 7 vs step 29. And LRs do not transfer
+across batch: mano tuned at GBS=48 loses to AdamW at GBS=384 (2.88 vs 2.71) until
+re-tuned. Practical rule: re-tune at the target batch and node count.
+</SpeakerNotes>
 
 [^lb-openai]: [An Empirical Model of Large-Batch Training](https://arxiv.org/abs/1812.06162) (McCandlish et al. 2018): LR and warmup both need to grow with batch, and the payoff flattens at the critical batch size.
 
@@ -773,48 +793,46 @@ preconditioner) at some compute price.
 
 ## SOAP: Adam in Shampoo's eigenbasis
 
-**Shampoo** is preconditioned gradient descent: for each weight matrix it keeps a
-**Kronecker-factored** second-moment estimate (left factor from $GG^\top$, right
-factor from $G^\top G$) and steps along the preconditioned gradient. Powerful,
-but the eigendecompositions and extra knobs (grafting, $\varepsilon$,
-preconditioning power/frequency) make it **expensive and fiddly** at scale.
+Shampoo finds a good basis, then you do the cheap thing (Adam) inside it.[^soap-paper]
 
 <Cols widths="1 1">
 <Col>
 
-**The SOAP idea**[^soap-paper]
+**The idea**
 
-- Shampoo's preconditioner defines a **rotated coordinate frame** (its
-  eigenbasis)
-- **Run plain Adam inside that frame:** cheap per-coordinate 2nd moments, done in
-  the good basis
-- Refresh the eigenbasis only **every $k$ steps** (it drifts slowly), so the
-  costly eigendecomp is **amortized**
+- Shampoo's preconditioner → a **rotated frame** (eigenbasis)
+- run **plain Adam inside that frame**
+- refresh the basis **every $k$ steps** → eigendecomp **amortized**
 
 </Col>
 <Col>
 
-**Why it is nicer**
+**Why it's nicer**
 
-- **Fewer hyperparameters** than Shampoo: essentially AdamW + one knob (eigenbasis
-  update frequency)
-- **More stable:** Adam's normalization tames Shampoo's rough edges
-- **Keeps the win:** the preconditioning benefit survives, at close to Adam's
-  per-step cost
+- **fewer knobs:** ~AdamW + basis-refresh frequency
+- **more stable:** Adam normalization tames Shampoo
+- **keeps the win** at ~Adam per-step cost
 
 </Col>
 </Cols>
 
-- **Relation to Muon:** Muon is the **cheaper cousin** in the same family. It
-  approximates the same spectral/preconditioned update with **Newton-Schulz
-  orthogonalization** instead of an explicit eigendecomposition, so it skips
-  SOAP's basis machinery entirely.[^soap-muon]
+- **vs Muon:** the cheaper cousin, Newton-Schulz orthogonalization instead of an
+  eigendecomposition, skips the basis machinery.[^soap-muon]
 
 [^soap-paper]: [SOAP: Improving and Stabilizing Shampoo using Adam](https://arxiv.org/abs/2409.11321) (Vyas, Morwani, Zhao, et al. 2024). The paper shows Shampoo (1/2 power) is equivalent to running Adafactor in Shampoo's eigenbasis; SOAP generalizes this by running full Adam there.
 
 [^soap-muon]: [Muon](https://arxiv.org/abs/2502.16982) (Jordan et al. 2024/2025): orthogonalized-momentum update as a low-overhead spectral approximation.
 
 <SpeakerNotes>
+Shampoo is preconditioned gradient descent: for each weight matrix it keeps a
+Kronecker-factored second-moment estimate (left factor from GG^T, right factor
+from G^T G) and steps along the preconditioned gradient. Powerful, but the
+eigendecompositions and extra knobs (grafting, epsilon, preconditioning
+power/frequency) make it expensive and fiddly at scale. SOAP's win is fewer
+hyperparameters (essentially AdamW plus the eigenbasis-update frequency), more
+stability (Adam's normalization tames Shampoo's rough edges), and it keeps the
+preconditioning benefit at close to Adam's per-step cost.
+
 One-sentence version: Shampoo tells you a good basis, then you do the boring
 cheap thing (Adam) in it. The equivalence in the paper is the hook: 1/2-power
 Shampoo is Adafactor-in-the-eigenbasis, so SOAP is the natural generalization
@@ -1026,42 +1044,49 @@ You are running one job across thousands of nodes in lockstep. The job dies when
 
 ## A field guide to what breaks
 
-Two axes matter. **Where** it broke (so you know who fixes it), and whether it is
-**transient** (retry and move on) or **systemic** (stop, or you corrupt the whole
-run).
+Two axes: **where** it broke, and **transient** (retry) vs **systemic** (stop).
 
 <Cols>
 <Col>
 
 **By layer**
 
-- **Hardware:** ECC errors, dead XPU, thermal throttle, a bad node in your
-  allocation
-- **Software:** CheckpointError from routing non-determinism, OOM, a bad upstream
-  commit
-- **Network:** fabric flaps, gloo `Connection closed by peer`, collective hangs
-- **System:** Lustre stalls, PBS walltime, the scheduler handing you a node it
-  should have drained
+- **HW:** ECC, dead XPU, thermal, bad node
+- **SW:** CheckpointError, OOM, bad commit
+- **Net:** fabric flaps, gloo drop, hangs
+- **Sys:** Lustre stalls, PBS walltime
 
 </Col>
 <Col>
 
 **Transient vs systemic**
 
-- **Transient:** one bad node, a flaked collective, a mid-save kill. Retry on
-  fresh hardware and you are fine.
-- **Systemic:** a config bug, a corrupted shard, a silent numerical bug. Retrying
-  just reproduces it faster.
+- **transient:** bad node, flaked collective → retry, fine
+- **systemic:** config bug, corrupt shard → retry reproduces it
 
-**The whole operational cost is telling these two apart.** Retry a systemic fault
-and you burn the spare pool. Halt on a transient one and you waste walltime you
-already paid for.
+**The cost is telling them apart.**
 
 </Col>
 </Cols>
 
-The nasty ones are the **silent** faults: no traceback, no crash, the loss curve
-still looks fine. Two of those coming up.
+The nasty ones are **silent**: no traceback, loss still looks fine. Two coming up.
+
+<SpeakerNotes>
+Two axes matter. Where it broke, so you know who fixes it, and whether it is
+transient (retry and move on) or systemic (stop, or you corrupt the whole run).
+
+By layer: hardware is ECC errors, dead XPU, thermal throttle, a bad node in your
+allocation. Software is CheckpointError from routing non-determinism, OOM, a bad
+upstream commit. Network is fabric flaps, gloo "Connection closed by peer",
+collective hangs. System is Lustre stalls, PBS walltime, the scheduler handing you
+a node it should have drained.
+
+Transient means one bad node, a flaked collective, a mid-save kill: retry on fresh
+hardware and you are fine. Systemic means a config bug, a corrupted shard, a
+silent numerical bug: retrying just reproduces it faster. The whole operational
+cost is telling these two apart. Retry a systemic fault and you burn the spare
+pool; halt on a transient one and you waste walltime you already paid for.
+</SpeakerNotes>
 
 </Slide>
 
@@ -1070,26 +1095,37 @@ still looks fine. Two of those coming up.
 
 ## War story: the fabric that wouldn't sit still
 
+At full-machine scale the interconnect is never fully healthy. It shows up two
+ways:
+
+- **Loud:** `gloo` `Connection closed by peer` (job `8470102`). You get an exit code.
+- **Quiet:** a collective just **stops**. Every rank blocks in the same `all_reduce`.
+
+The quiet one is dangerous:
+
+- **alive** by `kill -0`, nothing crashed
+- `xccl` ignores `train_timeout_seconds` → eats **full PBS walltime**
+- job `8479579` hung at **step 803**, heartbeat still ticking
+
+**The one signal you can trust:** a hang **quiets stdout**. Absence of progress is
+the detector (→ watchdog, later).
+
+<SpeakerNotes>
 At full-machine scale the interconnect is never fully healthy. A link flaps, a
-switch hiccups, and one collective somewhere stops making progress. How it shows
-up depends on the backend:
+switch hiccups, and one collective somewhere stops making progress. The loud
+version is gloo TCP "Connection closed by peer" a few hours in (job 8470102,
+20B/256N); at least it crashed, so you get an exit code to act on. The quiet
+version is a collective that just stops: every rank blocks in the same all_reduce,
+waiting on a peer that will never answer.
 
-- **Loud version:** `gloo` TCP `Connection closed by peer` a few hours in (job
-  `8470102`, 20B/256N). At least it crashed, so you get an exit code to act on.
-- **Quiet version:** a collective just **stops**. Every rank blocks in the same
-  `all_reduce`, waiting on a peer that will never answer.
-
-The quiet version is the dangerous one:
-
-- The process is **alive** by `kill -0`. Nothing has crashed.
-- On XPU, `xccl` silently ignores `train_timeout_seconds`, so the hung collective
-  sits there consuming your **entire PBS walltime**.
-- We watched job `8479579` (20B/512N) hang at **step 803** with the heartbeat
-  still ticking. Alive, and doing nothing.
-
-**The one signal you can trust:** a collective hang **quiets stdout**. Every rank
-is blocked in the same call, so nothing reaches the log. Absence of progress is
-the detector (see the watchdog, later).
+The quiet version is the dangerous one. The process is alive by kill -0, nothing
+has crashed. On XPU, xccl silently ignores train_timeout_seconds, so the hung
+collective sits there consuming your entire PBS walltime. We watched job 8479579
+(20B/512N) hang at step 803 with the heartbeat still ticking: alive, and doing
+nothing. The one signal you can trust is that a collective hang quiets stdout,
+because every rank is blocked in the same call so nothing reaches the log.
+Absence of progress is the detector, which is exactly what the watchdog keys on.
+</SpeakerNotes>
 
 </Slide>
 
@@ -1098,29 +1134,34 @@ the detector (see the watchdog, later).
 
 ## Silent killer #1: bf16 master froze RMSNorm
 
-**Symptom.** Loss curves looked reasonable. But lm-eval scores never moved:
-ARC-Easy stuck at **~0.27** (random baseline) for **17,000+ steps**.
-
-**Cause.** `training.dtype=bfloat16` gave us a bf16 master copy. RMSNorm weights
-init at `1.0`, and bf16 ULP at scale 1.0 is `~7.8e-3`. The per-step optimizer
-update is `~1.6e-5`, so **every update rounds to zero**. All 25 RMSNorm tensors
-sat at exactly `1.0` from step 100 to step 17,400.
-
-**Why everything else trained fine.** Linear layers init at `std≈0.02`, where
-bf16 ULP is `~3.8e-5`: same magnitude as the update, so it registers. RMSNorm's
-larger init scale means coarser ULP, and the update vanishes in rounding.
-
-**Fix.** Default `training.dtype=float32`, FSDP
-`MixedPrecisionPolicy(param_dtype=bf16, reduce_dtype=fp32)`. Master is fp32,
-forward/backward stay bf16. Costs ~1 GB extra master at 2B, ~10 GB at 20B, both
-under budget.
+- **Symptom:** loss fine, but ARC-Easy stuck at **~0.27** (random) for **17K+ steps**
+- **Cause:** bf16 master + RMSNorm init `1.0` → ULP `7.8e-3` ≫ update `1.6e-5`, so
+  **every update rounds to zero**
+- **Why only RMSNorm:** linear layers init `std≈0.02` → finer ULP, update registers
+- **Fix:** fp32 master + `MixedPrecisionPolicy(param=bf16, reduce=fp32)`; ~10 GB at 20B
 
 <img src="/talks/2026-08-03/figures/eval-20b-v1-vs-v2.webp" alt="v1 (bf16-master) ARC-Easy flat at 0.27 vs v2 (fp32-master) rising 0.27 to 0.44" />
 
 > [!WARNING]+ The lesson
-> Loss looks like training. lm-eval is the only ground truth for "is the model
-> actually learning?" Add a periodic eval gate, or you can burn 17K steps
-> teaching a model nothing.
+> Loss looks like training. lm-eval is the only ground truth. Add a periodic eval
+> gate, or burn 17K steps teaching a model nothing.
+
+<SpeakerNotes>
+Symptom: loss curves looked reasonable, but lm-eval scores never moved, ARC-Easy
+stuck at about 0.27, the random baseline, for 17,000-plus steps.
+
+Cause: training.dtype=bfloat16 gave us a bf16 master copy. RMSNorm weights init at
+1.0, and bf16 ULP at scale 1.0 is about 7.8e-3. The per-step optimizer update is
+about 1.6e-5, so every update rounds to zero. All 25 RMSNorm tensors sat at
+exactly 1.0 from step 100 to step 17,400. Everything else trained fine because
+linear layers init at std about 0.02, where bf16 ULP is about 3.8e-5, the same
+magnitude as the update, so it registers. RMSNorm's larger init scale means
+coarser ULP and the update vanishes in rounding.
+
+Fix: default training.dtype=float32 with FSDP MixedPrecisionPolicy(param_dtype=bf16,
+reduce_dtype=fp32). Master is fp32, forward/backward stay bf16. Costs about 1 GB
+extra master at 2B, about 10 GB at 20B, both under budget.
+</SpeakerNotes>
 
 </Slide>
 
@@ -1129,29 +1170,33 @@ under budget.
 
 ## Silent killer #2: TP reported loss / `dp_world_size`
 
-**Symptom.** Step-1 loss for `agpt_*` (vocab = 256,128) should be
-`ln(256128) ≈ 12.45`.
+- **Symptom:** step-1 loss should be `ln(256128) ≈ 12.45`
+  - TP=1 → `12.95` ✓, TP=2 → **`1.07`** ✗ (exactly `12.84 / 12`, `dp_world_size=12`)
+- **Cause:** `_dist_reduce()` short-circuits DTensor; loss is Replicated on the TP
+  mesh but reduced over `batch_mesh` → cross-batch sum silently dropped
+- **Survived review:** grads/steps **correct**, only the logged `loss:` is `1/12` off
+- Filed `torchtitan#3204`; workaround `loss.full_tensor()` before `dist_sum`
 
-- On **TP=1** we saw `12.95` ✓
-- On **TP=2**, after upstream commit `1786292d` (2026-04-27): step-1 reported as
-  **`1.07`** ✗
-- That is exactly `12.84 / 12`, where `dp_world_size = 12`. The loss was being
-  divided by the wrong world size.
+> [!TIP]+ Lesson
+> A **bit-exact smoke gate** caught this. The 2B TP=1 baseline gave a number to
+> disagree with. Without a reference, a wrong-but-plausible loss is invisible.
 
-**Cause.** `_dist_reduce()` short-circuits on DTensor via `full_tensor()`. But the
-loss is **Replicated on the TP mesh**, and the reduction was requested over
-`batch_mesh` (orthogonal). The short-circuit silently drops the cross-batch sum.
+<SpeakerNotes>
+Symptom: step-1 loss for agpt_* (vocab 256,128) should be ln(256128), about 12.45.
+On TP=1 we saw 12.95, good. On TP=2, after upstream commit 1786292d on 2026-04-27,
+step 1 reported as 1.07. That is exactly 12.84 divided by 12, where dp_world_size
+is 12: the loss was being divided by the wrong world size.
 
-**Why it survived review.** Gradients and optimizer steps are **correct**. Only
-the `loss:` field that lands in stdout and W&B is wrong: the curves look
-reasonable, just `1/12` of the true value.
-
-- Filed as `pytorch/torchtitan#3204`; our workaround calls `loss.full_tensor()`
-  before `dist_sum` in `ezpz/trainer.py:503-516`.
-
-**Lesson.** A **bit-exact smoke gate** caught this immediately. The prior 2B TP=1
-baseline gave us a number to disagree with. Without a reference, a wrong-but-plausible
-loss is invisible.
+Cause: _dist_reduce() short-circuits on DTensor via full_tensor(). But the loss is
+Replicated on the TP mesh, and the reduction was requested over batch_mesh, which
+is orthogonal, so the short-circuit silently drops the cross-batch sum. It
+survived review because gradients and optimizer steps are correct; only the loss
+field that lands in stdout and W&B is wrong, the curves look reasonable, just
+one-twelfth of the true value. Filed as pytorch/torchtitan#3204; our workaround
+calls loss.full_tensor() before dist_sum in ezpz/trainer.py:503-516. The lesson: a
+bit-exact smoke gate caught this immediately because the prior 2B TP=1 baseline
+gave us a number to disagree with.
+</SpeakerNotes>
 
 </Slide>
 
@@ -1160,44 +1205,56 @@ loss is invisible.
 
 ## Working on a shared filesystem
 
-Lustre is shared by the whole facility, and your job is one of many tenants.
-Every file operation is a small tax, and at scale a small tax paid by every rank
-turns into minutes of dead time before training even starts.
+Lustre is shared by the whole facility. Every file op is a small tax, paid by every
+rank.
 
 <Cols>
 <Col>
 
 **How it bites**
 
-- **Metadata pressure.** `rsync` `stat()`s every file; a venv is tens of
-  thousands of tiny files. The first copy is slow not because of bytes but
-  because of **metadata round-trips**.
-- **Contention.** You share bandwidth and metadata servers with everyone else on
-  the machine. Your "fast" copy is at the mercy of their job.
-- **Fan-out limits.** A single source saturates its NIC at ~8 targets, so naive
-  broadcast to thousands of nodes is `O(N)`.
+- **metadata:** `rsync` `stat()`s 10K tiny venv files
+- **contention:** you share MDS with every other job
+- **fan-out:** one source saturates at ~8 targets → `O(N)`
 
 </Col>
 <Col>
 
 **Rules of the road**
 
-- **Stage to node-local `/tmp`.** `ezpz yeet` copies the venv (or dataset, or
-  checkpoint) to `/tmp` on every node once, then imports hit local SSD instead of
-  Lustre.
-- **Avoid per-rank small files.** Prefer one tarball over 10K loose files:
-  `--compress` does `tar.gz` then copy one file then extract locally.
-- **Coordinate checkpoint writes.** Do not have every rank hammer the MDS at once
-  (more on async next).
-- Keep **inputs/outputs** on shared FS; keep **hot reads** node-local.
+- **stage to node-local `/tmp`** (`ezpz yeet`)
+- **one tarball, not 10K files** (`--compress`)
+- **coordinate checkpoint writes** (→ async)
+- inputs/outputs shared, hot reads local
 
 </Col>
 </Cols>
 
-Measured on Aurora: staging is **extract-bound at 8-64 nodes** (~70-91s flat) and
-**broadcast-bound past 128 nodes** (each 2x in node count adds ~1.5-1.8x
-wall-clock). A greedy `O(log N)` fan-out tree, not a star, is what keeps it
-tractable to 4,096 nodes.
+> [!NOTE]+ Measured on Aurora
+> Extract-bound at 8-64 nodes (~70-91s flat), broadcast-bound past 128. An
+> `O(log N)` fan-out tree, not a star, keeps it tractable to 4,096 nodes.
+
+<SpeakerNotes>
+Lustre is shared by the whole facility and your job is one of many tenants. Every
+file operation is a small tax, and at scale a small tax paid by every rank turns
+into minutes of dead time before training even starts.
+
+How it bites: metadata pressure, since rsync stat()s every file and a venv is tens
+of thousands of tiny files, so the first copy is slow because of metadata
+round-trips, not bytes. Contention, since you share bandwidth and metadata servers
+with everyone else, so your "fast" copy is at the mercy of their job. And fan-out
+limits, since a single source saturates its NIC at about 8 targets, so naive
+broadcast to thousands of nodes is O(N).
+
+Rules of the road: stage to node-local /tmp with ezpz yeet, which copies the venv
+(or dataset, or checkpoint) once so imports hit local SSD. Avoid per-rank small
+files, prefer one tarball over 10K loose files; --compress does tar.gz then copies
+one file then extracts locally. Coordinate checkpoint writes, do not have every
+rank hammer the MDS at once. Keep inputs/outputs on shared FS, hot reads
+node-local. Measured on Aurora, staging is extract-bound at 8-64 nodes, about
+70-91s flat, and broadcast-bound past 128 nodes, each doubling adding about
+1.5-1.8x; a greedy O(log N) fan-out tree keeps it tractable to 4,096 nodes.
+</SpeakerNotes>
 
 </Slide>
 
@@ -1206,44 +1263,52 @@ tractable to 4,096 nodes.
 
 ## Checkpointing: what, when, how big
 
-A checkpoint is your only insurance policy. If the job dies, you resume from the
-last one, so everything since then is wasted work.
+Your only insurance policy. Resume from the last one, everything since is wasted.
 
 <Cols>
 <Col>
 
 **What goes in**
 
-- Model weights (fp32 master)
-- Optimizer state (the big one: Adam-family is ~2x the model)
-- LR scheduler, step count, RNG, dataloader position
+- model weights (fp32 master)
+- optimizer state (~2x the model)
+- LR sched, step, RNG, dataloader pos
 
 **How big**
 
-- Our **20B** checkpoint is **244 GB**. {/* verify from 2026/07/14 auto-retry-native */}
-- That is not a file you write casually every step.
+- **20B → 244 GB.** {/* verify from 2026/07/14 auto-retry-native */} Not a file you write casually.
 
 </Col>
 <Col>
 
 **When: the cadence tradeoff**
 
-Two costs pull against each other:
+- **too frequent:** write overhead eats throughput
+- **too rare:** a crash throws away hours
 
-- **Too frequent:** checkpoint write overhead eats throughput.
-- **Too rare:** a crash throws away hours of compute.
-
-Expected-value rule of thumb: pick an interval where the **expected wasted work
-on a crash** (about half an interval, times your failure rate) is comparable to
-the **write overhead** you are paying. At a failure every few hours, that lands
-you in the tens-of-minutes range. {/* verify exact cadence from run configs */}
+EV rule: set the interval where **wasted work on a crash** ≈ **write overhead**.
+At a failure every few hours → **tens of minutes**. {/* verify exact cadence from run configs */}
 
 </Col>
 </Cols>
 
-The write cost is exactly why you want it **off the critical path**. That is
-asynchronous checkpointing, next, along with the way it once took down the whole
-cluster.
+Off the critical path → **async checkpointing**, next (and how it took down the cluster).
+
+<SpeakerNotes>
+A checkpoint is your only insurance policy: if the job dies you resume from the
+last one, so everything since then is wasted work. What goes in: model weights as
+the fp32 master, optimizer state (the big one, Adam-family is about 2x the model),
+and the LR scheduler, step count, RNG, dataloader position. Our 20B checkpoint is
+244 GB, not a file you write casually every step.
+
+When: two costs pull against each other. Too frequent and the write overhead eats
+throughput; too rare and a crash throws away hours of compute. Expected-value rule
+of thumb: pick an interval where the expected wasted work on a crash, about half an
+interval times your failure rate, is comparable to the write overhead you are
+paying. At a failure every few hours that lands in the tens-of-minutes range. The
+write cost is exactly why you want it off the critical path, which is asynchronous
+checkpointing.
+</SpeakerNotes>
 
 </Slide>
 
@@ -1252,28 +1317,39 @@ cluster.
 
 ## Asynchronous checkpointing, and how it melted the cluster
 
-**Done right**, async checkpointing hides the write behind compute:
+**Done right**, async hides the 244 GB write behind the next few hundred steps:
 
-1. **Snapshot to host memory** on the training thread (fast), then hand off.
-2. **Stage, then flush.** A background thread writes staged bytes to the
-   filesystem while the GPUs keep training.
-3. **Bound concurrency.** Cap how many ranks flush at once so you do not stampede
-   the metadata server and the fabric simultaneously.
-
-The point is to overlap the 244 GB write with the next few hundred steps, so
-cadence costs you almost nothing.
+1. **snapshot to host memory** (fast), then hand off
+2. **stage, then flush** on a background thread while GPUs train
+3. **bound concurrency:** cap how many ranks flush at once
 
 > [!WARNING]+ The naive version took the job down
-> At **20B / 512N+**, turning on `--checkpoint.async-mode=async` (that full **244
-> GB** background write, unbounded) **takes the whole job down**. The write
-> contends with training collectives on the same fabric and everything stalls.
-> Today's workaround is blunt: `CHECKPOINT_ASYNC_MODE=disabled`.
+> At **20B / 512N+**, `--checkpoint.async-mode=async` (244 GB, unbounded) **takes
+> the whole job down**: the write contends with training collectives on the same
+> fabric. Blunt workaround today: `CHECKPOINT_ASYNC_MODE=disabled`.
 
-And the failure that hides inside checkpointing: a PBS **mid-save kill** once left
-a stale `step-4500/` **placeholder** directory. The sync path saw it, assumed the
-save was complete, and the run sat walltime-blocked for **weeks**. An
-`--auto-retry` relaunch (next) finally drove it **4,400 to 5,400** cleanly. A
-half-written checkpoint is worse than no checkpoint.
+A PBS **mid-save kill** once left a stale `step-4500/` **placeholder**. The sync
+path assumed it was complete → walltime-blocked for **weeks**. A half-written
+checkpoint is worse than none.
+
+<SpeakerNotes>
+Done right, async checkpointing hides the write behind compute. Snapshot to host
+memory on the training thread, which is fast, then hand off. A background thread
+stages then flushes the bytes to the filesystem while the GPUs keep training. And
+bound concurrency: cap how many ranks flush at once so you do not stampede the
+metadata server and the fabric simultaneously. The point is to overlap the 244 GB
+write with the next few hundred steps so cadence costs almost nothing.
+
+The naive version took the job down: at 20B/512N+, turning on
+--checkpoint.async-mode=async, that full 244 GB background write unbounded, takes
+the whole job down because the write contends with training collectives on the
+same fabric and everything stalls. Today's workaround is blunt,
+CHECKPOINT_ASYNC_MODE=disabled. And the failure that hides inside checkpointing: a
+PBS mid-save kill once left a stale step-4500 placeholder directory; the sync path
+saw it, assumed the save was complete, and the run sat walltime-blocked for weeks.
+An --auto-retry relaunch finally drove it 4,400 to 5,400 cleanly. A half-written
+checkpoint is worse than no checkpoint.
+</SpeakerNotes>
 
 </Slide>
 
@@ -1282,30 +1358,40 @@ half-written checkpoint is worse than no checkpoint.
 
 ## Restarting quickly
 
-A checkpoint you cannot reload fast is only half an insurance policy. The recovery
-clock runs from crash to first-step-back-training, not from crash to "file
-exists."
+The recovery clock runs crash → first-step-back-training, not crash → "file exists."
 
 **Reload fast**
 
-- **Stage the checkpoint node-local.** `ezpz yeet ~/models/checkpoint-729` pushes
-  it to `/tmp` on every node, so the reload hits local SSD instead of every rank
-  pulling 244 GB off Lustre at once.
-- Same fan-out that stages the venv works on checkpoints and datasets: any
-  directory or tarball.
+- **stage node-local:** `ezpz yeet checkpoint-729` → `/tmp`, not 512 ranks pulling
+  244 GB off Lustre at once
+- same fan-out as the venv, any dir or tarball
 
-**Reload anywhere: checkpoint converters**
+**Reload anywhere: converters**
 
-- **Megatron ⇄ 🤗 HF ⇄ ZeRO ⇄ Universal.** The training-format checkpoint and the
-  format you evaluate, serve, or fine-tune from are not the same thing.
-- **Universal** decouples the checkpoint from the parallelism layout, so you can
-  resume at a **different** TP/PP/DP config than you saved at (recover on whatever
-  the scheduler gives you, not only on an identical allocation).
+- **Megatron ⇄ 🤗 HF ⇄ ZeRO ⇄ Universal**
+- **Universal** decouples from the parallelism layout → resume at a _different_
+  TP/PP/DP than you saved at
 
-**It pays off downstream too:** `checkpoint-729-hf` is now a first-class
-production asset. It is the base our SFT and GRPO stages build on, so "fast,
-portable reload" is not just a restart nicety, it is how the model leaves
-pre-training.
+**Pays off downstream:** `checkpoint-729-hf` is the base our SFT and GRPO build on.
+
+<SpeakerNotes>
+A checkpoint you cannot reload fast is only half an insurance policy. The recovery
+clock runs from crash to first-step-back-training, not from crash to "file exists."
+
+Reload fast: stage the checkpoint node-local. ezpz yeet ~/models/checkpoint-729
+pushes it to /tmp on every node so the reload hits local SSD instead of every rank
+pulling 244 GB off Lustre at once. Same fan-out that stages the venv works on
+checkpoints and datasets, any directory or tarball.
+
+Reload anywhere with checkpoint converters: Megatron, HF, ZeRO, Universal. The
+training-format checkpoint and the format you evaluate, serve, or fine-tune from
+are not the same thing. Universal decouples the checkpoint from the parallelism
+layout, so you can resume at a different TP/PP/DP config than you saved at,
+recovering on whatever the scheduler gives you, not only an identical allocation.
+It pays off downstream too: checkpoint-729-hf is now a first-class production
+asset, the base our SFT and GRPO stages build on, so fast portable reload is not
+just a restart nicety, it is how the model leaves pre-training.
+</SpeakerNotes>
 
 </Slide>
 
@@ -1434,8 +1520,8 @@ flowchart TB
 
 ## `--auto-retry`: bad-node failover, on tap
 
-The NODE layer of the cascade. Allocate spares up front, swap them in on failure.
-This moved **out of bash and into `ezpz`**:
+The NODE layer: allocate spares up front, swap them in on failure. Out of bash,
+into `ezpz`.
 
 ```bash
 # 522 nodes allocated, train on 512, keep 10 as spares.
@@ -1443,19 +1529,27 @@ This moved **out of bash and into `ezpz`**:
 ezpz launch --auto-retry --np 512 -- python -m torchtitan.train …
 ```
 
-- Classifies each attempt's exit: `success` / `walltime` / `bad-node` /
-  `stuck-pre-training`.
-- On **bad-node**: scrapes the failing host from the log, swaps in a spare,
-  re-execs.
-- **Guards against config bugs**: 2 consecutive attempts with zero `step=`
-  markers, and it stops. Do not burn the whole spare pool on a broken run.
+- classifies exit: `success` / `walltime` / `bad-node` / `stuck-pre-training`
+- **bad-node** → scrape host from log, swap spare, re-exec
+- **config-bug guard:** 2 attempts with zero `step=` → stop
 
-**It broke the 20B/512N stall.** That stale `step-4500/` placeholder from a PBS
-mid-save kill had the sync chain walltime-blocked for **weeks**. An `--auto-retry`
-relaunch drove it **4,400 to 5,400** cleanly.
+**Broke the 20B/512N stall:** that stale placeholder → walltime-blocked **weeks**;
+relaunch drove it **4,400 → 5,400**. Ships in [`ezpz#144`](https://github.com/saforem2/ezpz/pull/144).
 
-Ships in [`saforem2/ezpz#144`](https://github.com/saforem2/ezpz/pull/144). Same
-scraper as the bash-lib path, a pure-Python loop on top.
+<SpeakerNotes>
+The NODE layer of the cascade: allocate spares up front, swap them in on failure.
+This moved out of bash and into ezpz. Allocate 522, train on 512, keep 10 spare,
+and loop until success, walltime, or spare exhaustion.
+
+It classifies each attempt's exit as success, walltime, bad-node, or
+stuck-pre-training. On bad-node it scrapes the failing host from the log, swaps in
+a spare, and re-execs. It guards against config bugs: two consecutive attempts
+with zero step= markers and it stops, so you do not burn the whole spare pool on a
+broken run. It broke the 20B/512N stall: that stale step-4500 placeholder from a
+PBS mid-save kill had the sync chain walltime-blocked for weeks, and an auto-retry
+relaunch drove it 4,400 to 5,400 cleanly. Ships in saforem2/ezpz#144, same scraper
+as the bash-lib path with a pure-Python loop on top.
+</SpeakerNotes>
 
 </Slide>
 
@@ -1464,23 +1558,15 @@ scraper as the bash-lib path, a pure-Python loop on top.
 
 ## Catching silent hangs: `ezpz launch --timeout / --retries`
 
-The PROCESS layer, and the one that catches what nothing else does.
-
-**The problem.** `xccl` on XPU silently ignores `train_timeout_seconds`, so a job
-stuck in a hung collective sits consuming the full PBS walltime instead of
-aborting. But every collective hang **quiets stdout** (every rank blocks in the
-same call, nothing reaches the log). That silence is the signal we act on.
+The PROCESS layer. A hang **quiets stdout**, and that silence is the signal.
 
 ```bash
 ezpz launch --timeout 600 --retries 3 \
     python -m torchtitan.train --config-file ./config.toml
 ```
 
-- **`--timeout SECONDS`**: kill the launched process if its stdout goes **idle**
-  (not walltime) for this many consecutive seconds. Returns exit code 124
-  (matches GNU `timeout(1)`).
-- **`--retries N`**: re-execute on any non-zero exit (including the watchdog's
-  124) up to N times. Exponential backoff: 5s, 10s, 20s, 40s, 60s (capped).
+- **`--timeout SECONDS`**: kill if stdout goes **idle** (not walltime); exit 124
+- **`--retries N`**: re-exec on non-zero exit, backoff 5/10/20/40/60s
 
 ```mermaid
 stateDiagram-v2
@@ -1491,12 +1577,27 @@ stateDiagram-v2
     Killed --> Running: backoff, re-exec
 ```
 
-The watchdog fires on the **absence of progress**, not on a heartbeat ping. A
-hung job is "alive" by `kill -0`, which is exactly why a heartbeat can lie to you.
+Fires on **absence of progress**, not a heartbeat ping (a hung job is "alive" by
+`kill -0`).
 
-**Scope caveat.** It watches only the process `ezpz launch` spawns directly. If
-`qsub` runs a wrapper that internally invokes `python train.py`, the watchdog
-needs to live inside that script (or wrap the inner call with `ezpz launch` too).
+<SpeakerNotes>
+The PROCESS layer, and the one that catches what nothing else does. The problem:
+xccl on XPU silently ignores train_timeout_seconds, so a job stuck in a hung
+collective sits consuming the full PBS walltime instead of aborting. But every
+collective hang quiets stdout, since every rank blocks in the same call and
+nothing reaches the log. That silence is the signal we act on.
+
+--timeout SECONDS kills the launched process if its stdout goes idle, not
+walltime, for that many consecutive seconds, returning exit code 124 to match GNU
+timeout(1). --retries N re-executes on any non-zero exit, including the watchdog's
+124, up to N times, with exponential backoff 5, 10, 20, 40, 60 seconds capped. The
+watchdog fires on the absence of progress, not a heartbeat ping; a hung job is
+alive by kill -0, which is exactly why a heartbeat can lie to you.
+
+Scope caveat: it watches only the process ezpz launch spawns directly. If qsub
+runs a wrapper that internally invokes python train.py, the watchdog needs to live
+inside that script, or wrap the inner call with ezpz launch too.
+</SpeakerNotes>
 
 </Slide>
 
@@ -1505,9 +1606,8 @@ needs to live inside that script (or wrap the inner call with `ezpz launch` too)
 
 ## It caught a real silent hang in production
 
-None of this is theory. **Job `8505298`, 2026-05-23.** Attempt 1 trains cleanly
-steps 1 to 37, then the log goes **completely silent** at step 37. No traceback,
-no MPI error, no rank dying. Just dead.
+**Job `8505298`, 2026-05-23.** Trains steps 1-37, then the log goes **silent**. No
+traceback, no rank dying. Just dead.
 
 <div class="tight-table">
 
@@ -1522,14 +1622,25 @@ no MPI error, no rank dying. Just dead.
 
 </div>
 
-**Three new pieces had to fire in sequence on a real hang to prove
-production-readiness:** the `--timeout=1800` watchdog, the `exit 124`
-classification (distinct from PBS `exit 143`), and `failover_swap_one_blind()`
-for when no specific bad node can be identified. They did. The run kept going,
-unattended, at 9:36 PM on a Friday.
+**Three new pieces fired in sequence on a real hang:** the `--timeout=1800`
+watchdog, the `exit 124` classification, and `failover_swap_one_blind()`.
+Unattended, 9:36 PM on a Friday. [Full writeup.](https://github.com/saforem2/torchtitan/blob/ezpz/torchtitan/experiments/ezpz/docs/experiments/agpt/aurora/20260523-failover-silent-hang-recovery-8505298.md)
 
-Full writeup:
-[`20260523-failover-silent-hang-recovery-8505298.md`](https://github.com/saforem2/torchtitan/blob/ezpz/torchtitan/experiments/ezpz/docs/experiments/agpt/aurora/20260523-failover-silent-hang-recovery-8505298.md)
+<SpeakerNotes>
+None of this is theory. Job 8505298, 2026-05-23. Attempt 1 trains cleanly steps 1
+to 37, then the log goes completely silent at step 37: no traceback, no MPI error,
+no rank dying, just dead. Walk the timeline: step 37 logged at 21:06, then 30
+minutes of dead air until ezpz launch --timeout=1800 SIGTERMs at 21:36; the
+wrapper classifies exit 124 as silent-hang, not walltime; with no traceback to
+scrape it does a blind swap of the rank-0 host; attempt 2 launches on the swapped
+node set two seconds later and runs to walltime at step 296.
+
+Three new pieces had to fire in sequence on a real hang to prove
+production-readiness: the --timeout=1800 watchdog, the exit 124 classification
+(distinct from PBS exit 143), and failover_swap_one_blind() for when no specific
+bad node can be identified. They did. The run kept going, unattended, at 9:36 PM
+on a Friday.
+</SpeakerNotes>
 
 <style>{`
   #failover-validation table { table-layout: fixed; width: max-content; max-width: 100%; }
