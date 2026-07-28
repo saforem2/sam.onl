@@ -29,6 +29,14 @@ const style = `gap: ${gap};${widths ? ` --col-widths: ${widths};` : ''}`
         align-items: flex-start;
         width: 100%;
     }
+    /* Breathing room above the columns so they don't sit flush against a
+       preceding intro paragraph or heading. Scoped as a slide-inner child
+       (matching the figure rule's specificity) so it isn't lost to the
+       slide's own child-spacing rules; :not(:first-child) so a <Cols> that
+       opens a slide doesn't get a leading gap. */
+    .slide-inner > .slide-cols:not(:first-child) {
+        margin-block-start: 1lh;
+    }
     .slide-col {
         flex: 1 1 0;
         /* Don't shrink narrower than the column's natural intrinsic
