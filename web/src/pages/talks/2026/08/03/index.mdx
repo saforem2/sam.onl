@@ -596,11 +596,11 @@ the curve, don't guess a number and burn 2k nodes finding out it was wrong.
 <Cols widths="4 5">
 <Col>
 
-- **flat/high** at small LR: steps too tiny to learn
-- **basin**: the usable band
+- **flat/high** at small LR: trains, just slowly
+- **basin**: loss drops into the usable band
 - **cliff**: one step too big → grads to `inf` → `NaN`
-- **pick just below the cliff**, not at the minimum: the
-  minimum has no safety margin as the run heats up
+- **pick just below the cliff**: the fastest rate that
+  still has safety margin as the run heats up
 
 > [!TIP]+ Cheap insurance
 > A few hundred steps to sweep saves a full-scale run that NaNs at step 7.
@@ -638,9 +638,10 @@ Do this cheaply at small scale: a few hundred steps of sweep is nothing against 
 </SpeakerNotes>
 
 <style>{`
+  #lr-finder .slide-cols { margin-top: 1lh; }
   #lr-finder figure { margin: 0; }
   #lr-finder img { width: 100%; height: auto; max-height: 26lh; }
-  @media (max-width: 768px) { #lr-finder .cols { gap: 1lh; } }
+  @media (max-width: 768px) { #lr-finder .slide-cols { gap: 1lh; } }
 `}</style>
 
 </Slide>

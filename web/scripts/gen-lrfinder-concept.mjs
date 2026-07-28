@@ -32,31 +32,30 @@ const FIG_DIR = join(
 const OUT = join(FIG_DIR, 'lr-finder-concept.svg')
 const OUT_MOBILE = join(FIG_DIR, 'lr-finder-concept-mobile.svg')
 
-// Synthetic loss-vs-log10(lr). Flat-high on the left (too small a step to learn),
-// a smooth basin (the useful band), then a steep climb into divergence.
-// x is log10(lr): sweep 1e-5 .. 1e-2.
+// Synthetic loss-vs-log10(lr). Flat-high plateau on the left (steps too tiny to
+// learn), a monotone decline into the basin, then a steep cliff into divergence.
+// A smaller-than-ideal LR only trains slower, it does NOT push the loss back up,
+// so the curve is non-increasing until the cliff. x is log10(lr): 1e-5 .. 1e-2.
 const X_MIN = -5 // 1e-5
 const X_MAX = -2 // 1e-2
 const Y_MIN = 2.5
 const Y_MAX = 7.0
 // finite curve stops at the cliff; past CLIFF_X it's NaN (dotted -> top strip)
-const CLIFF_X = -2.55 // ~2.8e-3
-const MIN_X = -3.35 // ~4.5e-4, the basin minimum
+const CLIFF_X = -2.5
+const CLIFF_KNEE = -2.95 // where the wall starts to bite
 const NAN_Y = 6.72
 const DIV_Y = 6.45
 
 function loss(x) {
-    // high plateau on the left easing into a quadratic basin, then a sharp wall.
-    const plateau = 5.7
-    const basin = 3.05
-    // sigmoid drop from plateau into the basin as lr grows
-    const drop = 1 / (1 + Math.exp(-(x - -4.1) * 3.2))
-    const base = plateau - (plateau - basin) * drop
-    // parabolic lift away from the minimum (both sides), stronger to the right
-    const dx = x - MIN_X
-    // steep wall to the right so it visibly cliffs into NaN; gentle on the left
-    const lift = dx > 0 ? 3.4 * dx * dx + 22 * Math.pow(dx, 4) : 1.1 * dx * dx
-    return base + lift
+    const plateau = 5.6
+    const floor = 3.05
+    // sigmoid decline from the flat plateau down to the basin as lr grows
+    const drop = 1 / (1 + Math.exp(-(x - -3.9) * 3.4))
+    const base = plateau - (plateau - floor) * drop
+    // cliff: ~0 until the knee, then a steep quartic wall into NaN
+    const dc = x - CLIFF_KNEE
+    const cliff = dc > 0 ? 6 * dc * dc + 120 * Math.pow(dc, 4) : 0
+    return base + cliff
 }
 
 const FONT = FONT_STACK
@@ -99,7 +98,7 @@ function buildSVG(cfg) {
 
     // title + subtitle
     body += `<text x="${W / 2}" y="34" text-anchor="middle" font-family="${FONT}" font-size="${cfg.titleSize}" font-weight="700" fill="#838383">LR-finder: sweep the rate on a short run</text>`
-    body += `<text x="${W / 2}" y="58" text-anchor="middle" font-family="${FONT}" font-size="${cfg.subSize}" fill="#838383">pick just below the cliff, not at the minimum</text>`
+    body += `<text x="${W / 2}" y="58" text-anchor="middle" font-family="${FONT}" font-size="${cfg.subSize}" fill="#838383">pick the fastest rate still clear of the cliff</text>`
 
     // axes box
     body += `<rect x="${ax}" y="${ay}" width="${aw}" height="${ah}" fill="none" stroke="#83838355" stroke-width="1"/>`
@@ -149,10 +148,12 @@ function buildSVG(cfg) {
     // three region bands (very faint fills) to label too-low / sweet / cliff
     const bandY = ay + 4
     const bandH = ah - 8
+    const SWEET_X0 = -3.55 // basin has flattened out
+    const SWEET_X1 = CLIFF_KNEE // ends where the wall starts
     const regions = [
-        { x0: X_MIN, x1: -3.75, fill: '#83838308' }, // too low
-        { x0: -3.75, x1: -2.95, fill: '#1da81112' }, // sweet spot
-        { x0: -2.95, x1: X_MAX, fill: '#e0556012' }, // cliff
+        { x0: X_MIN, x1: SWEET_X0, fill: '#83838308' }, // too low
+        { x0: SWEET_X0, x1: SWEET_X1, fill: '#1da81112' }, // sweet spot
+        { x0: SWEET_X1, x1: X_MAX, fill: '#e0556012' }, // cliff
     ]
     for (const r of regions) {
         const x0 = sx(r.x0)
@@ -162,17 +163,17 @@ function buildSVG(cfg) {
     g += '</g>'
     body += g
 
-    // sweet-spot marker: circle the minimum + a "pick here" tick just left of it
-    const cmx = sx(MIN_X)
-    const cmy = sy(loss(MIN_X))
-    body += `<circle cx="${cmx.toFixed(1)}" cy="${cmy.toFixed(1)}" r="13" fill="none" stroke="#1da811" stroke-width="2.4"/>`
-    // "pick here" a touch below the minimum
-    const pickX = sx(MIN_X - 0.18)
-    body += `<circle cx="${pickX.toFixed(1)}" cy="${sy(loss(MIN_X - 0.18)).toFixed(1)}" r="5.5" fill="#1da811" stroke="#fff" stroke-width="0.8"/>`
+    // "pick here" marker: the last safe rate, just below the cliff knee
+    const PICK_X = -3.05
+    const px = sx(PICK_X)
+    const py = sy(loss(PICK_X))
+    body += `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="13" fill="none" stroke="#1da811" stroke-width="2.4"/>`
+    body += `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="5" fill="#1da811" stroke="#fff" stroke-width="0.8"/>`
 
     // region annotations (kept clear of the curve + strip label)
-    body += `<text x="${sx(-4.72).toFixed(1)}" y="${sy(4.4).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.annSize}" fill="#838383">too low:<tspan x="${sx(-4.72).toFixed(1)}" dy="${cfg.annSize + 3}">underfits</tspan></text>`
-    body += `<text x="${sx(-3.35).toFixed(1)}" y="${(sy(loss(MIN_X)) + 46).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.annSize}" font-weight="700" fill="#1da811">sweet spot</text>`
+    const midSweet = (SWEET_X0 + SWEET_X1) / 2
+    body += `<text x="${sx(-4.72).toFixed(1)}" y="${sy(4.4).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.annSize}" fill="#838383">too low:<tspan x="${sx(-4.72).toFixed(1)}" dy="${cfg.annSize + 3}">trains slow</tspan></text>`
+    body += `<text x="${sx(midSweet).toFixed(1)}" y="${(sy(loss(midSweet)) + 52).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.annSize}" font-weight="700" fill="#1da811">sweet spot</text>`
     body += `<text x="${sx(-2.28).toFixed(1)}" y="${sy(4.4).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.annSize}" font-weight="700" fill="#e05560">cliff:<tspan x="${sx(-2.28).toFixed(1)}" dy="${cfg.annSize + 3}">diverges</tspan></text>`
 
     // axis labels
