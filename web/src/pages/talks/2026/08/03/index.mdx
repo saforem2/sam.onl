@@ -585,8 +585,68 @@ the scheduler/vendor differences.
 
 </Slide>
 
+{/* source: net-new · LR-finder method (concept curve); pays off in Part 2 optimizer-cliff */}
+<Slide id="lr-finder" size="sm">
+
+## Before you commit: find the learning rate
+
+The last knob before a full-machine run. Sweep the LR on a **short** run and read
+the curve, don't guess a number and burn 2k nodes finding out it was wrong.
+
+<Cols widths="4 5">
+<Col>
+
+- **flat/high** at small LR: steps too tiny to learn
+- **basin**: the usable band
+- **cliff**: one step too big → grads to `inf` → `NaN`
+- **pick just below the cliff**, not at the minimum: the
+  minimum has no safety margin as the run heats up
+
+> [!TIP]+ Cheap insurance
+> A few hundred steps to sweep saves a full-scale run that NaNs at step 7.
+
+</Col>
+<Col>
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/lr-finder-concept-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/lr-finder-concept.svg"
+            alt="Conceptual LR-finder: loss vs learning rate on a log axis, flat at small LR, a basin (sweet spot, circled) in the middle, then a steep cliff diverging to NaN at large LR"
+        />
+    </picture>
+</figure>
+
+</Col>
+</Cols>
+
+<SpeakerNotes>
+The last thing to settle before you spend real machine time. An LR-finder is a
+short run where you ramp the learning rate across a log-spaced sweep and watch the
+loss. Three regions: at small LR the loss is flat and high because each step barely
+moves the weights; there is a basin where it actually trains; and past a cliff the
+step is too large, the gradient norm blows to inf one step before the loss, and you
+NaN. Pick a rate just below the cliff, not exactly at the minimum, because the
+minimum has no headroom once the run warms up, the batch grows, or numerics drift.
+Do this cheaply at small scale: a few hundred steps of sweep is nothing against a
+2k-node run that dies at step 7. This is the setup for the Part 2 story, where at
+80B every optimizer we tried cliffed to NaN in the first dozen steps.
+</SpeakerNotes>
+
+<style>{`
+  #lr-finder figure { margin: 0; }
+  #lr-finder img { width: 100%; height: auto; max-height: 26lh; }
+  @media (max-width: 768px) { #lr-finder .cols { gap: 1lh; } }
+`}</style>
+
+</Slide>
+
 {/*───────────────────────────────────────────────────────────────
-16 · Part 1 close / cliffhanger
+17 · Part 1 close / cliffhanger
 ───────────────────────────────────────────────────────────────*/}
 
 <Slide id="part1-close">
