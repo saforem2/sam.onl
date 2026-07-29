@@ -31,6 +31,17 @@ export const ASSETS = 'https://samforeman.me/assets'
 
 <Slide id="title-slide">
 
+<a
+    class="title-slide-qr"
+    href="https://samf.sh/talks/2026/08/03"
+    aria-label="QR code linking to these slides">
+    <img
+        src="/talks/2026-08-03/figures/qr-slides.svg"
+        alt="QR code linking to samf.sh/talks/2026/08/03"
+    />
+    <span>samf.sh/talks/2026/08/03</span>
+</a>
+
 # <span style="color:var(--foreground0);">Pre-Training LLMs on a Supercomputer</span>
 
 <p class="title-slide-thesis">
@@ -41,8 +52,41 @@ export const ASSETS = 'https://samforeman.me/assets'
 
 _{new Date(frontmatter.date).toISOString().slice(0, 10)} · ATPESC 2026_
 
-{/* TODO: generate + drop a qr-slides.svg into public/talks/2026-08-03/figures/
-   and add the .title-slide-qr block from the 2026/07/14 title slide. */}
+<style>{`
+  /* Thesis / tagline under the title: muted italic so it reads as a
+     subtitle, not a second heading. Capped clear of the top-right QR. */
+  #title-slide .title-slide-thesis {
+    max-width: 44ch;
+    margin-block-start: 0.5lh;
+    font-style: italic;
+    color: var(--foreground1);
+  }
+  /* QR top-right, big enough to scan from the back, URL underneath. */
+  #title-slide .title-slide-qr {
+    position: absolute;
+    top: 2lh;
+    right: 4ch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25lh;
+    text-decoration: none;
+    color: var(--foreground0);
+  }
+  #title-slide .title-slide-qr img { width: 11ch; height: 11ch; display: block; }
+  #title-slide .title-slide-qr span { font-size: 0.75em; color: var(--foreground1); white-space: nowrap; }
+  /* QR SVG ships stroke=currentColor but as an <img> resolves to black;
+     invert on dark themes so both QRs (title + thanks) read white-on-dark. */
+  html[data-webtui-theme='custom-dark'] :is(.title-slide-qr, .thanks-qr) img,
+  html[data-webtui-theme='catppuccin'] :is(.title-slide-qr, .thanks-qr) img,
+  html[data-webtui-theme='nvim-dark'] :is(.title-slide-qr, .thanks-qr) img {
+    filter: invert(1);
+  }
+  @media (max-width: 768px) {
+    #title-slide .title-slide-thesis { max-width: 100%; }
+    #title-slide .title-slide-qr { display: none; }
+  }
+`}</style>
 
 </Slide>
 
@@ -142,11 +186,11 @@ Sample **every batch** to a fixed mixture. Do not concatenate.
 </Col>
 <Col width={4}>
 
-<img src="/talks/2026-08-03/figures/data-processing.svg"
-     alt="Time to prepare 2T tokens: serial ~1 hr vs distributed ~2 min" />
-
-- 🐢 serial: **~1 hr** / 2T tokens
-- 🐇 BlendCorpus: **~2 min** / 2T tokens (**30x**)
+<figure>
+    <img src="/talks/2026-08-03/figures/data-processing.svg"
+         alt="Time to prepare 2T tokens: serial ~1 hr vs distributed ~2 min, a 30x speedup" />
+    <figcaption>Index-build time for 2T tokens: serial ~1 hr vs distributed ~2 min (**30x**).</figcaption>
+</figure>
 
 </Col>
 </Cols>
@@ -165,6 +209,12 @@ Domain weights are a real modeling decision, not a knob to leave at default. The
 change, so a 1 hr step means you iterate a handful of times a day. At 2 min you
 iterate freely.
 </SpeakerNotes>
+
+<style>{`
+  #data-blending figure { margin: 0; }
+  #data-blending img { width: 100%; height: auto; max-height: 20lh; }
+  #data-blending figcaption { font-size: 0.8em; color: var(--foreground2, #838383); margin-block-start: 0.4lh; line-height: 1.35; }
+`}</style>
 
 </Slide>
 
@@ -602,6 +652,10 @@ is the hub-and-spoke from the July deck: you decide the parallelism, ezpz handle
 the scheduler/vendor differences.
 </SpeakerNotes>
 
+<style>{`
+  #what-to-pick .mermaid svg { width: 100%; max-width: 100%; height: auto; }
+`}</style>
+
 </Slide>
 
 {/* source: net-new · LR-finder method (concept curve); pays off in Part 2 optimizer-cliff */}
@@ -731,7 +785,7 @@ near-linear speedup.[^cbs-openai]
 
 **The knobs (and where they break)**
 
-- **LR scaling** (linear / $\sqrt{B}$)[^lb-openai] + **longer warmup** + grad clip
+- **LR scaling** (linear / $\sqrt{B}$)[^cbs-openai] + **longer warmup** + grad clip
 - **linear LR backfires:** 80B NaN'd _earlier_ (step 7 vs 29)
 - **LRs don't transfer:** `mano`@48 loses to AdamW@384
 
@@ -767,13 +821,11 @@ to AdamW at GBS=384 (2.88 vs 2.71) until re-tuned. Practical rule: re-tune at th
 target batch and node count.
 </SpeakerNotes>
 
-[^cbs-openai]: [An Empirical Model of Large-Batch Training](https://arxiv.org/abs/1812.06162) (McCandlish et al. 2018).
+[^cbs-openai]: [An Empirical Model of Large-Batch Training](https://arxiv.org/abs/1812.06162) (McCandlish et al. 2018): LR and warmup both need to grow with batch, and the payoff flattens at the critical batch size.
 
 [^cbs-zhang]: [How Does Critical Batch Size Scale in Pre-training?](https://arxiv.org/abs/2410.21676) (Zhang et al. 2025).
 
 [^cbs-zhou]: [How to Set the Batch Size for Large-Scale Pre-training?](https://arxiv.org/abs/2601.05034) (Zhou et al. 2025).
-
-[^lb-openai]: [An Empirical Model of Large-Batch Training](https://arxiv.org/abs/1812.06162) (McCandlish et al. 2018): LR and warmup both need to grow with batch, and the payoff flattens at the critical batch size.
 
 </Slide>
 
@@ -1146,7 +1198,10 @@ Absence of progress is the detector, which is exactly what the watchdog keys on.
 - **Why only RMSNorm:** linear layers init `std≈0.02` → finer ULP, update registers
 - **Fix:** fp32 master + `MixedPrecisionPolicy(param=bf16, reduce=fp32)`; ~10 GB at 20B
 
-<img src="/talks/2026-08-03/figures/eval-20b-v1-vs-v2.webp" alt="v1 (bf16-master) ARC-Easy flat at 0.27 vs v2 (fp32-master) rising 0.27 to 0.44" />
+<figure>
+    <img src="/talks/2026-08-03/figures/eval-20b-v1-vs-v2.webp" alt="v1 (bf16-master) ARC-Easy flat at 0.27 vs v2 (fp32-master) rising 0.27 to 0.44" />
+    <figcaption>ARC-Easy: v1 (bf16 master) flat at random ~0.27 for 17K steps; v2 (fp32 master) climbs 0.27 → 0.44.</figcaption>
+</figure>
 
 > [!WARNING]+ The lesson
 > Loss looks like training. lm-eval is the only ground truth. Add a periodic eval
@@ -1168,6 +1223,12 @@ Fix: default training.dtype=float32 with FSDP MixedPrecisionPolicy(param_dtype=b
 reduce_dtype=fp32). Master is fp32, forward/backward stay bf16. Costs about 1 GB
 extra master at 2B, about 10 GB at 20B, both under budget.
 </SpeakerNotes>
+
+<style>{`
+  #silent-rmsnorm figure { margin: 0.4lh 0 0; }
+  #silent-rmsnorm img { width: 100%; height: auto; max-height: 14lh; }
+  #silent-rmsnorm figcaption { font-size: 0.78em; color: var(--foreground2, #838383); margin-block-start: 0.3lh; line-height: 1.35; }
+`}</style>
 
 </Slide>
 
@@ -1650,6 +1711,10 @@ Scope caveat: it watches only the process ezpz launch spawns directly. If qsub
 runs a wrapper that internally invokes python train.py, the watchdog needs to live
 inside that script, or wrap the inner call with ezpz launch too.
 </SpeakerNotes>
+
+<style>{`
+  #watchdog .mermaid svg { width: 100%; max-width: 100%; height: auto; }
+`}</style>
 
 </Slide>
 
