@@ -487,14 +487,24 @@ chose MoE.
 
 ## ZeRO / FSDP: the memory vs comms trade
 
-Still data parallel: shard the replicated state, gather on demand.
+Still data parallel: shard the replicated state, gather on demand. Each stage
+shards one more thing, so per-GPU memory drops.[^zero]
 
-<Cols widths="3 3">
+<Cols widths="3 2">
 <Col>
 
-- **Stage 1:** shard optimizer states (biggest win: ~2x params)
-- **Stage 2:** + gradients
-- **Stage 3:** + params (= FSDP default)
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/zero-memory-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/zero-memory.svg"
+            alt="ZeRO memory partitioning: rows Baseline / P_os / P_os+g / P_os+g+p, columns gpu_0 / gpu_i / gpu_N-1. Each stage shards one more of parameters, gradients, optimizer states from a full-width replicated strip into a narrow 1/N per-GPU column, so per-GPU memory shrinks down the stages."
+        />
+    </picture>
+</figure>
 
 </Col>
 <Col>
@@ -508,6 +518,8 @@ Still data parallel: shard the replicated state, gather on demand.
 
 </Col>
 </Cols>
+
+[^zero]: [ZeRO: Memory Optimizations Toward Training Trillion Parameter Models](https://arxiv.org/abs/1910.02054) (Rajbhandari et al. 2020), Fig. 7. Per-param Adam mixed-precision budget: 2 (fp16 params) + 2 (fp16 grads) + 12 (fp32 master + momentum + variance) = 16 bytes; sharding across `N` ranks drives the sharded piece toward `16/N`.
 
 <SpeakerNotes>
 Plain data parallelism replicates everything on every GPU: params, gradients,
@@ -526,6 +538,11 @@ framing for the room: ZeRO/FSDP is still data parallelism, you just change how
 the DP group stores state, which is why it is the first thing to try when you are
 memory-bound but the architecture still fits layer-wise.
 </SpeakerNotes>
+
+<style>{`
+  #zero-fsdp figure { margin: 0; }
+  #zero-fsdp img { width: 100%; height: auto; max-height: 26lh; }
+`}</style>
 
 </Slide>
 
