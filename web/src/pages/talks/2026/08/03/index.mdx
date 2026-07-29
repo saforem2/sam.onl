@@ -1774,13 +1774,56 @@ on a Friday.
 
 </Slide>
 
+{/* source: net-new · 2B MDS 3-stage loss; W&B pull via docs/production/agpt/2b-mds/loss_data */}
+<Slide id="results-2b">
+
+## The flagship run: AuroraGPT-2B to 7.77T tokens
+
+One continuous run, **154K steps**, three data-mix stages. It rode the whole
+Part 2 machinery: async checkpoints, layered auto-restart, silent-hang recovery.
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/mds-loss-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/mds-loss.svg"
+            alt="AuroraGPT-2B loss vs tokens over one continuous 7.77T-token run: train and val loss track together, plateau, then step down sharply at each of two data-mix stage transitions (4.673T and 7.064T tokens), ending at loss 2.03."
+        />
+    </picture>
+    <figcaption>Each data-mix transition (dashed) steps the loss down; train and val stay locked together to a final 2.03.</figcaption>
+</figure>
+
+<SpeakerNotes>
+This is the flagship: AuroraGPT-2B, one continuous 154,000-step pretraining run to
+about 7.77T tokens, and the reason it is here rather than in the appendix is that
+it rode the entire Part 2 machinery, async checkpointing, the layered auto-restart
+cascade, the silent-hang watchdog, across weeks of wall-clock. The curve is the
+proof it survived: train (solid) and validation (dashed) loss stay locked
+together, which means no silent divergence, and each of the two data-mix stage
+transitions, at 4.673T and 7.064T tokens, steps the loss down cleanly, ending
+around 2.03. The x-axis is tokens, computed from the iteration count times the
+50.3M tokens per step (GBS 6144 x seq 8192). Data pulled from the production W&B
+run. The next slide is the 20B, same story one scale up.
+</SpeakerNotes>
+
+<style>{`
+  #results-2b figure { margin: 0.4lh 0 0; }
+  #results-2b img { width: 100%; height: auto; max-height: 26lh; }
+  #results-2b figcaption { font-size: 0.8em; color: var(--foreground2, #838383); margin-block-start: 0.4lh; line-height: 1.35; }
+`}</style>
+
+</Slide>
+
 {/* source: net-new · results payoff; loss from docs/experiments/agpt/aurora + eval from docs/evals/agpt/20b */}
 <Slide id="results-payoff">
 
-## The payoff: it actually trained
+## Same story, one scale up: 20B
 
-All that machinery is in service of one thing: a model that trains cleanly and
-learns. **AuroraGPT-20B on Aurora**, ~600B tokens.
+The **20B** on Aurora, ~600B tokens: loss falls the same way, and the eval gate
+moves, well above random on every benchmark.
 
 <figure>
     <picture>
