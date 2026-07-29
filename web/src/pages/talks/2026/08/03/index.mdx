@@ -1285,57 +1285,32 @@ gave us a number to disagree with.
 {/* source: net-new · assembled from the Lustre/yeet post (posts/2026/05/01) */}
 <Slide id="shared-fs">
 
-## Working on a shared filesystem
+## The Lustre tax comes back, now on the write path
 
-Lustre is shared by the whole facility. Every file op is a small tax, paid by every
-rank.
+In Part 1 the shared-FS tax hit **reads**: staging the env off Lustre with
+`ezpz yeet`. Checkpointing hits the **same wall from the other side**.
 
-<Cols>
-<Col>
+- **reads** (Part 1): every rank `stat()`s the same env → stage node-local
+- **writes** (now): every rank flushes a **232 GB** checkpoint to the **same MDS**
+- same fix, same fan-out: **coordinate the writes**, don't stampede
 
-**How it bites**
-
-- **metadata:** `rsync` `stat()`s 10K tiny venv files
-- **contention:** you share MDS with every other job
-- **fan-out:** one source saturates at ~8 targets → `O(N)`
-
-</Col>
-<Col>
-
-**Rules of the road**
-
-- **stage to node-local `/tmp`** (`ezpz yeet`)
-- **one tarball, not 10K files** (`--compress`)
-- **coordinate checkpoint writes** (→ async)
-- inputs/outputs shared, hot reads local
-
-</Col>
-</Cols>
-
-> [!NOTE]+ Measured on Aurora
-> Extract-bound at 8-64 nodes (~70-91s flat), broadcast-bound past 128. An
-> `O(log N)` fan-out tree, not a star, keeps it tractable to 4,096 nodes.
+> [!NOTE]+ Why it's worse for checkpoints
+> A stale env costs you a slow startup. A checkpoint write that contends with
+> training collectives can take the **whole job** down (next slide).
 
 <SpeakerNotes>
-Lustre is shared by the whole facility and your job is one of many tenants. Every
-file operation is a small tax, and at scale a small tax paid by every rank turns
-into minutes of dead time before training even starts.
+Deliberate callback, not a re-teach. In Part 1 the shared-filesystem tax showed up
+on the read path: every rank stat()ing the same tens-of-thousands-of-files venv,
+which is why we stage node-local with ezpz yeet. The same wall is now in front of
+us from the other side, on the write path. When you checkpoint, every rank flushes
+its shard of a 232 GB checkpoint to the same metadata server and the same fabric.
 
-How it bites: metadata pressure, since rsync stat()s every file and a venv is tens
-of thousands of tiny files, so the first copy is slow because of metadata
-round-trips, not bytes. Contention, since you share bandwidth and metadata servers
-with everyone else, so your "fast" copy is at the mercy of their job. And fan-out
-limits, since a single source saturates its NIC at about 8 targets, so naive
-broadcast to thousands of nodes is O(N).
-
-Rules of the road: stage to node-local /tmp with ezpz yeet, which copies the venv
-(or dataset, or checkpoint) once so imports hit local SSD. Avoid per-rank small
-files, prefer one tarball over 10K loose files; --compress does tar.gz then copies
-one file then extracts locally. Coordinate checkpoint writes, do not have every
-rank hammer the MDS at once. Keep inputs/outputs on shared FS, hot reads
-node-local. Measured on Aurora, staging is extract-bound at 8-64 nodes, about
-70-91s flat, and broadcast-bound past 128 nodes, each doubling adding about
-1.5-1.8x; a greedy O(log N) fan-out tree keeps it tractable to 4,096 nodes.
+The reason to re-raise it here rather than assume it: writes are more dangerous
+than reads. A slow env stage costs you minutes of startup. A checkpoint write that
+lands unbounded on the shared fabric contends with the training collectives and can
+stall or crash the whole job, which is exactly the async-checkpoint meltdown on the
+next slide. Same discipline as Part 1: coordinate and bound the fan-out instead of
+letting every rank hammer the MDS at once.
 </SpeakerNotes>
 
 </Slide>
