@@ -4,7 +4,7 @@ title: 'Local AI Apps on ALCF: Argo, Inference Endpoints, and One Gateway'
 date: 2026-06-27
 date-created: 2026-06-27
 date-modified: today
-description: 'Wiring Claude Code, OpenCode, Codex, and the Hermes One desktop app through a single local llm-rosetta gateway that reaches both ALCF Argo (via argo-shim) and ALCF Inference Endpoints (Sophia/Metis), making Claude, GPT, and open models reachable from any client.'
+description: 'Wiring Claude Code, OpenCode, Codex, and Hermes (CLI + desktop) through a single local llm-rosetta gateway that reaches both ALCF Argo (via argo-shim) and ALCF Inference Endpoints (Sophia/Metis), making Claude, GPT, and open models reachable from any client.'
 ---
 
 ALCF exposes multiple useful model gateways. [Argo][argo] gives me Claude and
@@ -13,16 +13,17 @@ from inside the lab network. The newer [ALCF Inference Endpoints][alcf-infer]
 service exposes open models on Sophia and Metis through a public
 OpenAI-compatible API protected by Globus auth.
 
-I wanted to use both from _local_ desktop apps on my Mac ([Claude Code][claude-code],
-[OpenCode][opencode], [Codex][codex], and the [Hermes One][hermes] desktop app)
-without exposing ports, juggling client-specific API keys, or paying a
-third-party provider.
+I wanted to use both from _local_ clients on my Mac ([Claude Code][claude-code],
+[OpenCode][opencode], [Codex][codex], and [Hermes][hermes], both its CLI and its
+`hermes desktop` app) without exposing ports, juggling client-specific API keys,
+or paying a third-party provider.
 
 This post documents the full stack I ended up with: a single local
 `llm-rosetta` gateway that fans out to either `argo-shim` (for Argo) or ALCF's
 native inference API (for Sophia/Metis), while presenting one localhost API to
 every client. Everything runs on `127.0.0.1`, bills through ALCF, and survives
-token rotation.
+token rotation. But the minimal version is just two steps ([Quick
+start](#quick-start) below); everything after that is optional.
 
 [argo]: https://www.alcf.anl.gov/
 [alcf-infer]: https://docs.alcf.anl.gov/services/inference-endpoints/
@@ -37,7 +38,69 @@ token rotation.
 > OpenCode, Codex, Hermes, or anything OpenAI-compatible at one local port and
 > route by model name.
 
-## The problem
+## Quick start
+
+Everything here assumes **macOS** with [`uv`][uv] installed and working SSH
+access to the ALCF jump host.
+
+[uv]: https://docs.astral.sh/uv/
+
+The minimal setup is two steps: start `argo-shim`, and Claude Code picks it up
+automatically. If Claude Code with Argo is all you want, you can stop after this
+section.
+
+### Install and start `argo-shim`
+
+```bash
+# A recent argo-shim already includes the bearer-auth + user-injection support
+# (see "Contributing back"). Install from PyPI, or from a local checkout.
+uv tool install argo-shim
+
+# If your ALCF username differs from your local login name, tell the shim:
+export CELS_USERNAME=<your-alcf-username>
+
+# Start it (creates the SSH tunnel, writes a token to ~/.claude/settings.json)
+argo-shim
+```
+
+`argo-shim` listens on `127.0.0.1:25940`, derives a per-user port for the SSH
+tunnel, and prints the token. Each restart **rotates** the token (important
+later).
+
+Quick sanity check (the token lives in `~/.claude/settings.json`):
+
+```bash
+TOKEN=$(python3 -c "import json;print(json.load(open('$HOME/.claude/settings.json'))['apiKeyHelper'].split()[-1])")
+
+# Claude via Anthropic Messages: should return JSON
+curl -sS -H "x-api-key: $TOKEN" -H "anthropic-version: 2023-06-01" \
+  -H "content-type: application/json" \
+  http://127.0.0.1:25940/argoapi/v1/messages \
+  -d '{"model":"Claude Sonnet 4.5","max_tokens":20,
+       "messages":[{"role":"user","content":"say hi"}]}'
+```
+
+### Claude Code (Anthropic, native)
+
+Claude Code needs no extra config; `argo-shim` writes the base URL and token
+into `~/.claude/settings.json` for you:
+
+```json
+{
+    "apiKeyHelper": "echo <ROTATING_TOKEN>",
+    "env": {
+        "ANTHROPIC_BASE_URL": "http://127.0.0.1:25940/argoapi"
+    }
+}
+```
+
+That's it. `claude` now routes through Argo.
+
+That's the whole minimal setup. Everything below is optional: a shared gateway
+so OpenAI-format tools (OpenCode, Codex, Hermes) can reach the same models, plus
+the ALCF Inference Endpoints. Add only the pieces you need.
+
+## The full picture
 
 Argo speaks the **Anthropic Messages API** for Claude models
 (`/v1/messages`) and the **OpenAI Chat Completions API** for GPT/Gemini
@@ -62,7 +125,7 @@ The end-state architecture solves all of this with one local front door
 
 ```c
       ┌─────────────┐ ┌─────────────┐         ┌─────────────┐ ┌─────────────┐
-      │ Claude Code │ │    vtcode   │         │   OpenCode  │ │  Hermes One │
+      │ Claude Code │ │    vtcode   │         │   OpenCode  │ │    Hermes   │
       └─────────────┘ └─────────────┘         └─────────────┘ └─────────────┘
             │ Anthropic     │ Anthropic             │ OpenAI        │ OpenAI
             └───────┬───────┘                       └───────┬───────┘
@@ -140,68 +203,22 @@ intermediate representation. The gateway routes by model name:
 [rosetta]: https://github.com/Oaklight/llm-rosetta
 [oaklight]: https://github.com/Oaklight
 
-### Hermes + the Hermes One desktop app
+### Hermes (CLI + desktop)
 
-[Hermes][hermes] is a tool-calling agent. The **Hermes One** desktop app
-(Electron) spawns a local backend that reads `~/.hermes/config.yaml`. Point its
-`custom` provider at the rosetta gateway and you get every Argo model in a
-native chat UI.
+[Hermes][hermes] is a tool-calling agent. One install ships both a CLI
+(`hermes`) and a native Electron desktop app you launch with `hermes desktop`
+(alias `hermes gui`); both read the same `~/.hermes/config.yaml`. Point its
+model at the rosetta gateway with `provider: custom` and you get every Argo
+model in either the terminal or a native chat UI.
 
-## Reproducing it
+## Adding the other clients
 
-Everything below assumes **macOS** with [`uv`][uv] installed and working SSH
-access to the ALCF jump host.
+These are all optional add-ons to the [Quick start](#quick-start) above. Each is
+one config block pointed at the same local stack; add only the clients you use.
+OpenCode can talk to `argo-shim` directly; Codex and Hermes are OpenAI-format,
+so they go through the `llm-rosetta` gateway (set up in step 2 below).
 
-[uv]: https://docs.astral.sh/uv/
-
-### 1. Install and start `argo-shim`
-
-```bash
-# A recent argo-shim already includes the bearer-auth + user-injection support
-# (see "Contributing back"). Install from PyPI, or from a local checkout.
-uv tool install argo-shim
-
-# If your ALCF username differs from your local login name, tell the shim:
-export CELS_USERNAME=<your-alcf-username>
-
-# Start it (creates the SSH tunnel, writes a token to ~/.claude/settings.json)
-argo-shim
-```
-
-`argo-shim` listens on `127.0.0.1:25940`, derives a per-user port for the SSH
-tunnel, and prints the token. Each restart **rotates** the token (important
-later).
-
-Quick sanity check (the token lives in `~/.claude/settings.json`):
-
-```bash
-TOKEN=$(python3 -c "import json;print(json.load(open('$HOME/.claude/settings.json'))['apiKeyHelper'].split()[-1])")
-
-# Claude via Anthropic Messages: should return JSON
-curl -sS -H "x-api-key: $TOKEN" -H "anthropic-version: 2023-06-01" \
-  -H "content-type: application/json" \
-  http://127.0.0.1:25940/argoapi/v1/messages \
-  -d '{"model":"Claude Sonnet 4.5","max_tokens":20,
-       "messages":[{"role":"user","content":"say hi"}]}'
-```
-
-### 2. Claude Code (Anthropic, native)
-
-Claude Code needs no extra config; `argo-shim` writes the base URL and token
-into `~/.claude/settings.json` for you:
-
-```json
-{
-    "apiKeyHelper": "echo <ROTATING_TOKEN>",
-    "env": {
-        "ANTHROPIC_BASE_URL": "http://127.0.0.1:25940/argoapi"
-    }
-}
-```
-
-That's it. `claude` now routes through Argo.
-
-### 3. OpenCode (OpenAI-format, via a custom provider)
+### 1. OpenCode (OpenAI-format, via a custom provider)
 
 OpenCode reads `~/.config/opencode/opencode.json`. Add an Anthropic-compatible
 custom provider pointed at the shim (OpenCode's `@ai-sdk/anthropic` sends
@@ -233,7 +250,7 @@ Export the token so `{env:ARGO_SHIM_TOKEN}` resolves (see
 export ARGO_SHIM_TOKEN=$(python3 -c "import json;print(json.load(open('$HOME/.claude/settings.json'))['apiKeyHelper'].split()[-1])")
 ```
 
-### 4. `llm-rosetta` gateway (for OpenAI-only clients)
+### 2. `llm-rosetta` gateway (for OpenAI-only clients)
 
 Install the gateway:
 
@@ -373,10 +390,10 @@ The gateway also ships a web admin panel at
 > provider). Manage the model list from the config file instead. I keep a
 > [regen script](#a-regen-script) for exactly this.
 
-### 5. Codex (OpenAI-format, via a custom provider)
+### 3. Codex (OpenAI-format, via a custom provider)
 
-[Codex][codex] reads `~/.codex/config.toml`. It's OpenAI-format, so — like
-OpenCode and Hermes — it points at the rosetta gateway rather than the shim.
+[Codex][codex] reads `~/.codex/config.toml`. It's OpenAI-format, so (like
+OpenCode and Hermes) it points at the rosetta gateway rather than the shim.
 Define a custom provider and select it as the default:
 
 ```toml
@@ -399,7 +416,7 @@ A few Codex-specific notes:
 
 - The provider id (`rosetta` here) can be anything **except** the reserved
   built-ins `openai`, `ollama`, and `lmstudio`.
-- Any rosetta model works as the top-level `model` — swap `gpt-5.5` for
+- Any rosetta model works as the top-level `model`: swap `gpt-5.5` for
   `claude-opus-4-8`, `alcf-sophia/openai/gpt-oss-120b`, etc. (use the exact
   ids you registered in the gateway config above).
 - To switch models per session without editing the config, pass them on the
@@ -416,31 +433,41 @@ Sanity-check that Codex is reaching the gateway (this hits the same
 codex exec --model gpt-5.5 --model-provider rosetta "say hi"
 ```
 
-### 6. Hermes One desktop app
+### 4. Hermes (CLI + `hermes desktop`)
 
-Hermes' backend reads `~/.hermes/config.yaml`. Point its `custom` provider at
-the rosetta gateway:
+Hermes installs a CLI (`hermes`) and a native Electron app together, and both
+read the same `~/.hermes/config.yaml`. Point the main model at the rosetta
+gateway with a `custom` provider:
 
 ```yaml
 model:
     base_url: 'http://127.0.0.1:8765/v1'
-    default: 'claude-opus-4-7'
+    default: 'claude-opus-4-8'
     provider: 'custom'
 ```
 
-Because the rosetta gateway runs **no-auth** (loopback only), no API key is
-needed. Hermes' "API Key required for remote endpoints, optional for
-localhost" note applies.
+`provider: custom` + `base_url` is Hermes' documented path for a self-hosted /
+OpenAI-compatible endpoint (`base_url` takes precedence over any named
+provider). Because the rosetta gateway runs **no-auth** (loopback only), no API
+key is needed. Use any id you registered in the gateway config for `default`
+(`gpt-5.5`, `alcf-sophia/openai/gpt-oss-120b`, …).
 
-In the desktop app: **Settings → Providers → Local / Others**, set:
+Prefer to configure it interactively? `hermes model` walks you through adding a
+custom endpoint and writes the same block. Then confirm the CLI reaches the
+gateway:
 
-| Field        | Value                         |
-| ------------ | ----------------------------- |
-| **Model**    | `claude-opus-4-7`             |
-| **Base URL** | `http://127.0.0.1:8765/v1`    |
-| **API Key**  | _(optional, gateway is open)_ |
+```bash
+hermes chat "say hi"
+```
 
-Click **Done**, restart the app, start a New Chat. 🎉
+Launch the desktop app from the same install (it picks up the same config):
+
+```bash
+hermes desktop     # alias: hermes gui
+```
+
+Start a New Chat and you're talking to Argo (or any registered model) through
+the local gateway. 🎉
 
 ## Gotchas
 
@@ -522,9 +549,9 @@ and the GPT-5/o-series get `text + vision + tools + reasoning`; GPT-4o/4.1 get
 `text + vision + tools`). After regenerating, images flow through to Argo
 instead of being quietly discarded.
 
-### 5. Duplicated responses in Hermes One
+### 5. Duplicated responses in the Hermes desktop app
 
-After everything worked, Hermes One started showing **every reply twice**:
+After everything worked, `hermes desktop` started showing **every reply twice**:
 once as a slightly-reworded partial, then again in full. My first instinct was
 that the proxy chain was double-emitting.
 
@@ -670,7 +697,7 @@ argo-shim                    # in a terminal: creates tunnel, rotates token
 refresh-argo-token           # sync Argo token into env
 rosetta-gateway-restart      # restart rosetta after config/token changes
 route-claude-through-rosetta # optional: send Claude Code through rosetta too
-# then open the Hermes One app
+# then run `hermes desktop` (or `hermes chat`)
 ```
 
 If I also want the ALCF Inference Endpoints in that same gateway:
@@ -725,8 +752,8 @@ That's the `isinstance` check you see in the snippet above.
 
 ## Wrapping up
 
-The result: **Claude Code, OpenCode, Codex, vtcode, and the Hermes One desktop
-app** all talking to one local gateway. Argo models go through the SSH-backed shim;
+The result: **Claude Code, OpenCode, Codex, vtcode, and Hermes (CLI +
+`hermes desktop`)** all talking to one local gateway. Argo models go through the SSH-backed shim;
 ALCF inference models go straight to Sophia/Metis with Globus auth. From the
 client side it all looks like `http://127.0.0.1:8765/v1`.
 
