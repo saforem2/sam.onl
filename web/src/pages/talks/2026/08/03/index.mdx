@@ -490,8 +490,8 @@ chose MoE.
 Still data parallel: shard the replicated state, gather on demand. Each stage
 shards one more thing, so per-GPU memory drops.[^zero]
 
-<Cols widths="3 2">
-<Col>
+<Cols>
+<Col width={7}>
 
 <figure>
     <picture>
@@ -501,13 +501,14 @@ shards one more thing, so per-GPU memory drops.[^zero]
         />
         <img
             src="/talks/2026-08-03/figures/zero-memory.svg"
-            alt="ZeRO memory partitioning: rows Baseline / P_os / P_os+g / P_os+g+p, columns gpu_0 / gpu_i / gpu_N-1. Each stage shards one more of parameters, gradients, optimizer states from a full-width replicated strip into a narrow 1/N per-GPU column, so per-GPU memory shrinks down the stages."
+            alt="ZeRO / FSDP memory partitioning: horizontal memory-proportional bars per GPU across four stages (Baseline/DDP, ZeRO-1 shard optimizer, ZeRO-2 +gradients, ZeRO-3/FULL_SHARD shard everything). Each stage replaces a full-width component bar with a 1/N per-GPU slice over a greyed freed-memory track, so per-GPU memory drops from 16 GB toward 16/N GB."
         />
     </picture>
+    <figcaption>Each stage shards one more component into a 1/N per-GPU slice; the greyed track is memory freed on that GPU.</figcaption>
 </figure>
 
 </Col>
-<Col>
+<Col width={5}>
 
 > [!NOTE]+ The trade
 > Buy memory with **comms**: an all-gather per step. More stages = less memory,
@@ -541,7 +542,8 @@ memory-bound but the architecture still fits layer-wise.
 
 <style>{`
   #zero-fsdp figure { margin: 0; }
-  #zero-fsdp img { width: 100%; height: auto; max-height: 26lh; }
+  #zero-fsdp img { width: 100%; height: auto; max-height: 30lh; }
+  #zero-fsdp figcaption { font-size: 0.8em; color: var(--foreground2, #838383); margin-block-start: 0.4lh; line-height: 1.35; }
 `}</style>
 
 </Slide>
@@ -1329,20 +1331,35 @@ critical path, which is asynchronous checkpointing.
 ## Asynchronous checkpointing, and how it melted the cluster
 
 **Done right**, async hides the 232 GB write behind the next few hundred steps:
+snapshot to host memory, flush on a background thread, bound the fan-out.
 
-1. **snapshot to host memory** (fast), then hand off
-2. **stage, then flush** on a background thread while GPUs train
-3. **bound concurrency:** cap how many ranks flush at once
+<Cols>
+<Col width={7}>
 
-<div class="tight-table">
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/async-ckpt-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/async-ckpt.svg"
+            alt="Per-save training-thread stall, sync vs async, at 2B (23 GB) and 20B (232 GB). Sync blocks on the full write (3.75s / 23.6s); async pays only a short stage + drain (1.05s / 5.4s), 3.6x and 4.4x less stall."
+        />
+    </picture>
+    <figcaption>Sync blocks the training thread on the whole write; async pays only stage + drain while the GPUs keep going. Measured on Aurora ([ezpz guide](https://ezpz.cool/guides/checkpoint-restart/)).</figcaption>
+</figure>
 
-| 20B save | Sync | Async |
-| --- | ---: | ---: |
-| training-thread stall | **~23.6 s** | **~5.4 s** (stage 1.7 + drain 3.7) |
+</Col>
+<Col width={5}>
 
-</div>
+- **snapshot to host memory** (fast), then hand off
+- **stage, then flush** on a background thread
+- **bound concurrency:** cap ranks flushing at once
+- reload is **~55-63 s** at 20B (`dcp.load`-bound)
 
-Async cuts the per-save stall **~4.4x** (~18 s back per save).
+</Col>
+</Cols>
 
 > [!WARNING]+ But the naive version took the job down
 > At **20B / 512N+**, unbounded `--checkpoint.async-mode=async` **takes the whole
@@ -1378,6 +1395,12 @@ walltime-blocked for weeks. An --auto-retry relaunch finally drove it 4,400 to
 5,400 cleanly. A half-written checkpoint is worse than no checkpoint, which is
 exactly why the bounded fan-out plus a .complete-marker-last discipline matters.
 </SpeakerNotes>
+
+<style>{`
+  #async-checkpoint figure { margin: 0; }
+  #async-checkpoint img { width: 100%; height: auto; max-height: 22lh; }
+  #async-checkpoint figcaption { font-size: 0.78em; color: var(--foreground2, #838383); margin-block-start: 0.4lh; line-height: 1.35; }
+`}</style>
 
 </Slide>
 
