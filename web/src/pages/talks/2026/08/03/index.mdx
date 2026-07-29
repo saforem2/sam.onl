@@ -1774,6 +1774,50 @@ on a Friday.
 
 </Slide>
 
+{/* source: net-new · results payoff; loss from docs/experiments/agpt/aurora + eval from docs/evals/agpt/20b */}
+<Slide id="results-payoff">
+
+## The payoff: it actually trained
+
+All that machinery is in service of one thing: a model that trains cleanly and
+learns. **AuroraGPT-20B on Aurora**, ~600B tokens.
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/results-payoff-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/results-payoff.svg"
+            alt="Two panels for AuroraGPT-20B: left, pretraining loss falling from 12.9 to 5.2 over ~1,700 steps; right, final lm-eval scores (HellaSwag 0.61, ARC-Easy 0.65, ARC-Challenge 0.36, Winogrande 0.58, PIQA 0.76, BoolQ 0.58) all above their random baselines."
+        />
+    </picture>
+</figure>
+
+<SpeakerNotes>
+The one results slide in a how-to talk, placed right before the capstone so the
+machinery has a payoff. Everything in Parts 1 and 2, the data pipeline, the
+portable launch, the parallelism choices, the failure recovery, exists to get a
+model that trains cleanly and learns. This is AuroraGPT-20B on Aurora, the v2
+(fp32-master) run, about 600B tokens.
+
+Left panel: pretraining loss falls from 12.9 at init to about 5.2. Right panel:
+final lm-eval, every benchmark clears its random baseline (the red dashed line,
+0.25 for the 4-way ARC/HellaSwag tasks, 0.5 for the binary Winogrande/PIQA/BoolQ)
+by a wide margin: HellaSwag 0.61, ARC-Easy 0.65, ARC-Challenge 0.36, Winogrande
+0.58, PIQA 0.76, BoolQ 0.58. Post-training (CPT, SFT, GRPO) and the full
+per-benchmark eval curves are in the backup slides and the July AuroraGPT deck.
+Data from the ezpz production docs.
+</SpeakerNotes>
+
+<style>{`
+  #results-payoff figure { margin: 0.4lh 0 0; }
+  #results-payoff img { width: 100%; height: auto; max-height: 26lh; }
+`}</style>
+
+</Slide>
+
 {/* source: net-new capstone · ties together yeet + the fault-tolerance flags from Part 2 */}
 <Slide id="capstone">
 
