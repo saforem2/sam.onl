@@ -1833,7 +1833,7 @@ moves, well above random on every benchmark.
         />
         <img
             src="/talks/2026-08-03/figures/results-payoff.svg"
-            alt="Two panels for AuroraGPT-20B: left, pretraining loss falling from 12.9 to 5.2 over ~1,700 steps; right, final lm-eval scores (HellaSwag 0.61, ARC-Easy 0.65, ARC-Challenge 0.36, Winogrande 0.58, PIQA 0.76, BoolQ 0.58) all above their random baselines."
+            alt="Two panels for AuroraGPT-20B: left, pretraining loss falling from 12.9 to 2.44 over ~605B tokens; right, final lm-eval scores (HellaSwag 0.61, ARC-Easy 0.65, ARC-Challenge 0.36, Winogrande 0.58, PIQA 0.76, BoolQ 0.58) all above their random baselines."
         />
     </picture>
 </figure>
@@ -1845,7 +1845,8 @@ portable launch, the parallelism choices, the failure recovery, exists to get a
 model that trains cleanly and learns. This is AuroraGPT-20B on Aurora, the v2
 (fp32-master) run, about 600B tokens.
 
-Left panel: pretraining loss falls from 12.9 at init to about 5.2. Right panel:
+Left panel: pretraining loss falls from 12.9 at init to about 2.44 over ~605B
+tokens (the full v2 512N chain, stitched across all its restarts). Right panel:
 final lm-eval, every benchmark clears its random baseline (the red dashed line,
 0.25 for the 4-way ARC/HellaSwag tasks, 0.5 for the binary Winogrande/PIQA/BoolQ)
 by a wide margin: HellaSwag 0.61, ARC-Easy 0.65, ARC-Challenge 0.36, Winogrande
@@ -1857,6 +1858,53 @@ Data from the ezpz production docs.
 <style>{`
   #results-payoff figure { margin: 0.4lh 0 0; }
   #results-payoff img { width: 100%; height: auto; max-height: 26lh; }
+`}</style>
+
+</Slide>
+
+{/* source: net-new · all canonical chains overlaid; reproduces the loss panel of torchtitan utils/plot_production_combined.py, data via the repo's W&B chain concat */}
+<Slide id="results-all">
+
+## The whole program, one axis
+
+Every canonical AuroraGPT pretraining run, loss vs tokens. Bigger models fall
+**faster per token**; the 2B reference rides three data-mix stages the furthest.
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/all-production-loss-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/all-production-loss.svg"
+            alt="Training loss vs tokens for five overlaid AuroraGPT chains: 2B-MDS reference (blue dashed) descending through two data-mix stage transitions to 2.03 at 7.77T tokens; 2B torchtitan n256 (salmon) and n512 (dark red) tracking near 2.65-2.71; and the two 20B chains (n256 orange dashed, n512 green) dropping steeply per token to about 2.44."
+        />
+    </picture>
+    <figcaption>The 20B chains (green, orange) drop fastest per token; the 2B-MDS reference (blue) goes furthest, stepping down at each data-mix transition to 2.03.</figcaption>
+</figure>
+
+<SpeakerNotes>
+This is the zoom-out: every canonical production trajectory on one loss-vs-tokens
+axis, reproduced from the torchtitan combined-production chart. Five chains: the
+2B-MDS SophiaG reference (blue dashed, the pre-torchtitan Megatron-DeepSpeed run,
+carried to 7.77T tokens, 166% of the 4.67T stage-1 target, ending at 2.03); the
+two 2B torchtitan v2 chains, n256 (salmon, to 4.67T / 100%) and n512
+(dark red, to 3.07T / 66%); and the two 20B chains, n256 (orange dashed, a one-off
+to 158B) and n512 (green, the canonical 20B, to 605B). The reading: the 20B
+curves descend visibly faster per token than the 2B curves, which is the expected
+scaling signal, and the 2B-MDS reference goes furthest because it ran longest,
+stepping the loss down at each of its two data-mix transitions (dotted verticals
+at 4.67T and 7.06T). Every torchtitan chain here is stitched live from W&B across
+all its restarts via the repo's canonical concat, so it reflects the current
+state of each run. The 20B-256 tokens use GBS 3072 (LBS=1), not the 6144 the
+shared registry assumes.
+</SpeakerNotes>
+
+<style>{`
+  #results-all figure { margin: 0.4lh 0 0; }
+  #results-all img { width: 100%; height: auto; max-height: 25lh; }
+  #results-all figcaption { font-size: 0.8em; color: var(--foreground2, #838383); margin-block-start: 0.4lh; line-height: 1.35; }
 `}</style>
 
 </Slide>
