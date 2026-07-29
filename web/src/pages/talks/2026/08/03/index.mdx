@@ -1122,32 +1122,20 @@ some went NaN. The takeaway: plan for the failure, not the happy path.
 
 ## A field guide to what breaks
 
-Two axes: **where** it broke, and **transient** (retry) vs **systemic** (stop).
+**The cost is telling transient (retry, fine) from systemic (retry reproduces it).**
 
-<Cols>
-<Col>
-
-**By layer**
-
-- **HW:** ECC, dead XPU, thermal, bad node
-- **SW:** CheckpointError, OOM, bad commit
-- **Net:** fabric flaps, gloo drop, hangs
-- **Sys:** Lustre stalls, PBS walltime
-
-</Col>
-<Col>
-
-**Transient vs systemic**
-
-- **transient:** bad node, flaked collective → retry, fine
-- **systemic:** config bug, corrupt shard → retry reproduces it
-
-**The cost is telling them apart.**
-
-</Col>
-</Cols>
-
-The nasty ones are **silent**: no traceback, loss still looks fine. Two coming up.
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/failure-taxonomy-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/failure-taxonomy.svg"
+            alt="Failure taxonomy grid: rows are where it broke (Hardware, Software, Network, System), columns are transient (retry and you're fine) vs systemic (retrying just reproduces it). Silent failures with no traceback (corrupt shard, bad upstream commit, collective hang) are marked as the dangerous ones."
+        />
+    </picture>
+</figure>
 
 <SpeakerNotes>
 Two axes matter. Where it broke, so you know who fixes it, and whether it is
@@ -1163,8 +1151,15 @@ Transient means one bad node, a flaked collective, a mid-save kill: retry on fre
 hardware and you are fine. Systemic means a config bug, a corrupted shard, a
 silent numerical bug: retrying just reproduces it faster. The whole operational
 cost is telling these two apart. Retry a systemic fault and you burn the spare
-pool; halt on a transient one and you waste walltime you already paid for.
+pool; halt on a transient one and you waste walltime you already paid for. The
+dangerous cells are the silent ones, marked with a dot: no traceback, the loss
+still looks fine. The next two slides are exactly those.
 </SpeakerNotes>
+
+<style>{`
+  #failure-taxonomy figure { margin: 0.3lh 0 0; }
+  #failure-taxonomy img { width: 100%; height: auto; max-height: 24lh; }
+`}</style>
 
 </Slide>
 
