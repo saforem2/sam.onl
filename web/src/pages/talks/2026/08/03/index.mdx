@@ -836,37 +836,30 @@ target batch and node count.
 
 ## Second-order optimizers: the landscape
 
-AdamW is the baseline. Everything else is buying **curvature** (a better
-preconditioner) at some compute price.
+AdamW is the baseline. Everything else buys **curvature** at some compute price.
 
 <div class="tight-table">
 
-| Optimizer | Family | Core idea |
-| --- | --- | --- |
-| **AdamW**[^ol-adamw] | first-order baseline | per-coordinate (diagonal) 2nd moment + decoupled weight decay |
-| **LAMB**[^ol-lamb] | large-batch 1st-order | Adam + layer-wise **trust ratio** on the LR (unlocks huge batches) |
-| **Adopt**[^ol-adopt] | fixed-Adam | drops the current grad from the 2nd moment, converges for **any** $\beta_2$ |
-| **Sophia**[^ol-sophia] | diagonal 2nd-order | cheap **Hessian-diagonal** preconditioner, clipped; light curvature |
-| **Shampoo**[^ol-shampoo] | structured 2nd-order | **Kronecker-factored** preconditioner per layer (factors of $GG^\top$) |
-| **SOAP**[^ol-soap] | Shampoo + Adam | run Adam **in Shampoo's eigenbasis**: stabler, fewer knobs |
-| **Muon**[^ol-muon] | spectral / precond. | **Newton-Schulz orthogonalize** the momentum: a cheap Shampoo-like step |
+| Optimizer | Core idea |
+| --- | --- |
+| **AdamW**[^ol-adamw] | diagonal 2nd moment + decoupled weight decay |
+| **Shampoo**[^ol-shampoo] | Kronecker-factored preconditioner per layer |
+| **SOAP**[^ol-soap] | Adam in Shampoo's eigenbasis: stabler, fewer knobs |
+| **Muon**[^ol-muon] | Newton-Schulz orthogonalize: a cheap Shampoo-like step |
 
 </div>
 
-- **Shampoo, SOAP, Muon are one family:** precondition with second-moment
-  structure, differing only in **how cheaply** they approximate it. **SOAP** =
-  Adam in Shampoo's eigenbasis (fewer knobs, refresh every $k$ steps); **Muon** =
-  the cheaper cousin, Newton-Schulz instead of an eigendecomposition.
+**Shampoo → SOAP → Muon** is one family: same second-moment structure, cheaper each step.[^ol-others]
 
 <SpeakerNotes>
 AdamW is the baseline; everything else buys curvature, a better preconditioner, at
-some compute price. Down the table: LAMB is Adam plus a layer-wise trust ratio on
-the LR to unlock huge batches. Adopt drops the current grad from the second moment
-so it converges for any beta_2. Sophia is a cheap clipped Hessian-diagonal
-preconditioner, light curvature. Shampoo, SOAP, and Muon are the structured/spectral
-family.
+some compute price. I keep the on-slide table to the four that carry the story:
+AdamW, then the Shampoo/SOAP/Muon family. Three others live in the footnote: LAMB
+(Adam plus a layer-wise trust ratio on the LR, unlocks huge batches), Adopt (drops
+the current grad from the second moment so it converges for any beta_2), and Sophia
+(a cheap clipped Hessian-diagonal preconditioner, light curvature).
 
-Zoom in on SOAP since it is the cleanest to explain. Shampoo is preconditioned
+Zoom in on the family since it is the cleanest to explain. Shampoo is preconditioned
 gradient descent: for each weight matrix it keeps a Kronecker-factored second-moment
 estimate (left factor from GG^T, right factor from G^T G) and steps along the
 preconditioned gradient. Powerful, but the eigendecompositions and extra knobs
@@ -880,30 +873,26 @@ that basis. Result is fewer hyperparameters (essentially AdamW plus the refresh
 frequency), more stability, the preconditioning win at close to Adam's per-step
 cost. Their reported numbers are roughly 40% fewer steps and 35% less wall-clock vs
 AdamW, but those are the authors' runs so I keep them off the slide. Muon is the
-cheaper cousin in the same family: it approximates the same spectral update with
-Newton-Schulz orthogonalization instead of an explicit eigendecomposition, skipping
-the basis machinery entirely. mano, next, chases the same quality-per-flop from the
-opposite direction: manifold normalization instead of eigenbases.
+cheaper cousin: it approximates the same spectral update with Newton-Schulz
+orthogonalization instead of an explicit eigendecomposition, skipping the basis
+machinery entirely. mano, next, chases the same quality-per-flop from the opposite
+direction: manifold normalization instead of eigenbases.
 </SpeakerNotes>
 
 [^ol-adamw]: [Decoupled Weight Decay Regularization](https://arxiv.org/abs/1711.05101) (Loshchilov & Hutter 2019).
 
-[^ol-lamb]: [Large Batch Optimization for Deep Learning: Training BERT in 76 minutes](https://arxiv.org/abs/1904.00962) (You et al. 2020).
+[^ol-shampoo]: [Shampoo: Preconditioned Stochastic Tensor Optimization](https://arxiv.org/abs/1802.09568) (Gupta et al. 2018). Kronecker factors of $GG^\top$.
 
-[^ol-adopt]: [ADOPT: Modified Adam Can Converge with Any $\beta_2$ with the Optimal Rate](https://arxiv.org/abs/2411.02853) (Taniguchi et al. 2024).
-
-[^ol-sophia]: [Sophia: A Scalable Stochastic Second-order Optimizer](https://arxiv.org/abs/2305.14342) (Liu et al. 2023).
-
-[^ol-shampoo]: [Shampoo: Preconditioned Stochastic Tensor Optimization](https://arxiv.org/abs/1802.09568) (Gupta et al. 2018).
-
-[^ol-soap]: [SOAP: Improving and Stabilizing Shampoo using Adam](https://arxiv.org/abs/2409.11321) (Vyas et al. 2024).
+[^ol-soap]: [SOAP: Improving and Stabilizing Shampoo using Adam](https://arxiv.org/abs/2409.11321) (Vyas et al. 2024). Runs Adam in Shampoo's eigenbasis, refreshed every $k$ steps.
 
 [^ol-muon]: [Muon: MomentUm Orthogonalized by Newton-Schulz](https://arxiv.org/abs/2502.16982) (Jordan et al. 2024/2025).
 
+[^ol-others]: Also common: **LAMB** ([You et al. 2020](https://arxiv.org/abs/1904.00962)), layer-wise trust ratio for huge batches; **Adopt** ([Taniguchi et al. 2024](https://arxiv.org/abs/2411.02853)), converges for any $\beta_2$; **Sophia** ([Liu et al. 2023](https://arxiv.org/abs/2305.14342)), clipped Hessian-diagonal.
+
 <style>{`
-  #optimizer-landscape table { table-layout: auto; width: max-content; max-width: 100%; font-size: 0.9em; }
+  #optimizer-landscape table { table-layout: auto; width: max-content; max-width: 100%; }
   #optimizer-landscape table th, #optimizer-landscape table td { white-space: nowrap; }
-  #optimizer-landscape table th:nth-child(3), #optimizer-landscape table td:nth-child(3) { white-space: normal; }
+  #optimizer-landscape table th:nth-child(2), #optimizer-landscape table td:nth-child(2) { white-space: normal; }
 `}</style>
 
 </Slide>
@@ -1009,13 +998,9 @@ flat (~12.9).
 
 </div>
 
-- **`mano` (our 2B speed win) died first** (step 5), despite the _safest_-looking
-  LR band. **Early-step ranking does not predict sustained stability.**
-- Shared failure across 3 optimizers means a **corner-level instability (bf16 at
-  dim=9216)**, not tuning. Grad-path triggers: `LBS>1`, large `dp_degree`.
-- **Fix in flight:** long warmup (≥200 steps) + grad clipping, possibly an fp32
-  grad path. Stable corner today: **TP=4 · LBS=1 · GBS=372**, 100/100 steps
-  NaN-free (loss 12.93 to 7.72) at ~9.8% MFU.
+- **`mano` died first** (step 5), despite the _safest_-looking LR band
+- shared failure across 3 → a **bf16-at-dim=9216 corner**, not tuning
+- **fix:** long warmup + grad clip; stable at **TP=4 · LBS=1**
 
 </div>
 
@@ -1033,16 +1018,32 @@ flat (~12.9).
         />
     </picture>
     <figcaption>
-        80B LR-finder at the production batch (GBS=6,144). **AdamW and muon cliff
-        straight to NaN** with no usable minimum (× marks the diverged LRs);
-        `mano` and SophiaG reach a real minimum first (circled, ~11.9 / ~11.8)
-        but SophiaG blows up just past it.
+        80B LR-finder (GBS=6,144): **AdamW and muon cliff straight to NaN**; `mano`
+        and SophiaG reach a minimum first, then blow up past it.
     </figcaption>
 </figure>
 
 </div>
 
 </div>
+
+<SpeakerNotes>
+At 80B (dim=9216), every constant-LR finder NaN'd in the first dozen steps:
+grad_norm went to inf one step before the loss, while the loss was still flat
+around 12.9. The table: mano died at step 5, AdamW at step 9, SophiaG at step 14
+(a Hessian-term overflow that burned about 6,100 node-hours before it went).
+
+The lesson: mano, our 2B speed win, died first despite sitting in the
+safest-looking LR band, so early-step ranking does not predict sustained
+stability. And because all three failed, this is a corner-level instability, bf16
+at dim=9216, not an optimizer-tuning problem; the grad-path triggers are LBS>1 and
+a large dp_degree. Fix in flight: long warmup (at least 200 steps) plus grad
+clipping, possibly an fp32 grad path. The stable corner today is TP=4, LBS=1,
+GBS=372, which ran 100/100 steps NaN-free (loss 12.93 down to 7.72) at about 9.8%
+MFU. The figure is the LR-finder at the production batch: AdamW and muon cliff
+straight to NaN with no usable minimum (x marks the diverged LRs), while mano and
+SophiaG reach a real minimum around 11.9 and 11.8 before SophiaG blows up.
+</SpeakerNotes>
 
 <style>{`
   #optimizer-cliff .cliff-grid {
@@ -1075,19 +1076,31 @@ flat (~12.9).
 You are running one job across thousands of nodes in lockstep. The job dies when
 **any** node dies, so cluster MTBF is roughly single-node MTBF divided by N.
 
-- Say each node is healthy: it fails on average **once a year**.
-- Put 16,000 of them in one job: that is **~44 failures a day**, purely from
-  expected value.
-- The math is unforgiving, and everyone who has done it confirms it:
+- one node fails **~once a year**; put **16,000** in one job → **~44 failures/day**
 
 | Run | Scale | Failures |
 | --- | --- | --- |
-| **Llama 3 405B**[^llama3] | 16K H100s · 54 days | **419** failures (≈ **1 every 3h**); 99% auto-recovered |
-| **OPT-175B**[^opt] | ~1K A100s · 2 mo | 35 manual restarts + 100+ cycled hosts |
-| **BLOOM-176B**[^bloom] | 384 A100s · 3.5 mo | frequent loss spikes; embedding-norm + checkpoint cadence |
-| **GLM-130B**[^glm] | | spikes "increasingly frequent"; some recover, some go NaN |
+| **Llama 3 405B**[^llama3] | 16K H100s · 54 d | **419** (1 every 3h); 99% auto-recovered |
+| **OPT-175B**[^opt] | ~1K A100s · 2 mo | 35 manual restarts + 100+ hosts cycled |
+| **BLOOM-176B**[^bloom] | 384 A100s · 3.5 mo | frequent loss spikes |
+| **GLM-130B**[^glm] | 768 A100s · 2 mo | spikes worsen; some NaN |
 
 **Plan for the failure, not for the happy path.**
+
+<SpeakerNotes>
+You are running one job across thousands of nodes in lockstep. The job dies when
+any node dies, so cluster MTBF is roughly single-node MTBF divided by N. Say each
+node is healthy and fails on average once a year; put 16,000 of them in one job and
+that is about 44 failures a day, purely from expected value. The math is
+unforgiving and everyone who has done it confirms it.
+
+Llama 3 405B: 16K H100s over 54 days saw 419 interruptions, about one every three
+hours, 99% auto-recovered. OPT-175B: roughly 1K A100s over two months needed 35
+manual restarts and cycled 100-plus hosts. BLOOM-176B: 384 A100s over 3.5 months,
+frequent loss spikes handled with embedding-norm and checkpoint cadence. GLM-130B:
+768 A100s over two months, spikes that got increasingly frequent, some recovered,
+some went NaN. The takeaway: plan for the failure, not the happy path.
+</SpeakerNotes>
 
 [^llama3]: [Llama 3 herd of models](https://arxiv.org/abs/2407.21783) (Meta AI, 2024), §3.3.2 (Training reliability).
 
@@ -1802,6 +1815,21 @@ ezpz launch \
 > [!TIP]+ The whole talk in one line
 > You do not prevent failures at this scale. You make recovery so cheap that
 > failure stops being an event.
+
+<SpeakerNotes>
+This is the payoff slide: everything in Part 2 collapses into a startup ritual and
+one launch line, and nothing here is aspirational, every flag is one we watched
+earn its keep. Walk the two blocks. First, stage the env node-local off Lustre with
+ezpz yeet and activate from /tmp, the Part 1 lesson. Then launch with all three
+recovery layers armed: --auto-retry is the NODE layer (allocate 522, train on 512,
+swap bad hosts from the 10 spare); --timeout 1800 plus --retries 3 is the PROCESS
+layer (kill on 30 minutes of stdout silence, re-exec with exponential backoff); and
+a chained PBS resubmit wraps the whole thing at the JOB layer, the hours scope.
+
+The one-liner to land: at this scale you do not prevent failures, you make recovery
+so cheap that failure stops being an event. The person who launches this can close
+the laptop; the 9:36-PM-Friday silent hang from the previous slide recovered itself.
+</SpeakerNotes>
 
 </Slide>
 
