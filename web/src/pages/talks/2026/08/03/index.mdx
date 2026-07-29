@@ -387,8 +387,8 @@ Start from the site module. Layer a `venv` on top. Do not fight it.
 # 1. site frameworks module (torch, MPI, GPU prebuilt)
 module load frameworks
 
-# 2. venv on top: shares system packages
-python3 -m venv --system-site-packages "venvs/$(basename $CONDA_PREFIX)"
+# 2. venv on top: uv, pinned to the module's python so it inherits torch/MPI
+uv venv --system-site-packages --python python3 "venvs/$(basename $CONDA_PREFIX)"
 source "venvs/$(basename $CONDA_PREFIX)/bin/activate"
 uv pip install "git+https://github.com/saforem2/ezpz"  # uv: resolves in seconds
 
@@ -403,15 +403,17 @@ conda create --clone base --prefix=/path/to/base-clone
 The most common way to lose your first hour on a supercomputer is a broken env.
 Start from the site's prebuilt frameworks module (on Polaris that is
 `module use /soft/modulefiles; module load conda; conda activate base`), then
-back. Build a venv with `--system-site-packages` so it sees the module's prebuilt
-torch instead of pulling a fresh CPU-only wheel; naming the venv after
+back. Build the venv with `--system-site-packages` so it sees the module's
+prebuilt torch instead of pulling a fresh CPU-only wheel; naming it after
 `$CONDA_PREFIX` keeps one venv per frameworks release so a module bump does not
-silently mix ABIs. Use `uv pip install` rather than plain pip: it resolves and
-installs in seconds (a real difference on a shared login node) and honors the
-activated `--system-site-packages` venv, so it still picks up the module's
-prebuilt torch instead of pulling its own. Clone base only if some package truly requires conda: cloning
-copies the entire env, it is slow and huge and gets out of hand fast. venv first,
-clone last.
+silently mix ABIs. One `uv venv` gotcha: it defaults to a uv-managed CPython
+download, which would build the venv against the wrong interpreter and inherit the
+wrong site-packages, so pin it to the module's python with `--python python3`
+(uv resolves it on PATH). Then `uv pip install` (not plain pip) resolves and
+installs in seconds, a real difference on a shared login node, and honors the
+`--system-site-packages` venv so it still picks up the module's prebuilt torch.
+Clone base only if some package truly requires conda: cloning copies the entire
+env, it is slow and huge and gets out of hand fast. venv first, clone last.
 </SpeakerNotes>
 
 </Slide>
