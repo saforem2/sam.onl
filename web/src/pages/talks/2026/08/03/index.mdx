@@ -132,15 +132,15 @@ it at 512 nodes instead of on your laptop.
 
 Sample **every batch** to a fixed mixture. Do not concatenate.
 
-<Cols widths="3 4">
-<Col>
+<Cols>
+<Col width={3}>
 
 - **Concatenation forgets:** order becomes a hyperparameter
 - **Domain weights** honored per batch, deterministically
 - [BlendCorpus](https://github.com/zhenghh04/blendcorpus): aggregate → sample → index
 
 </Col>
-<Col>
+<Col width={4}>
 
 <img src="/talks/2026-08-03/figures/data-processing.svg"
      alt="Time to prepare 2T tokens: serial ~1 hr vs distributed ~2 min" />
@@ -204,15 +204,15 @@ maintenance cost is why we moved to TorchTitan (see the fork-tax slide next).
 
 Same seed + shards + weights → same batch, every rank, every run.
 
-<Cols widths="3 4">
-<Col>
+<Cols>
+<Col width={3}>
 
 - **Upstream churn:** 46 syncs in 7 weeks, any can shift RNG
 - **Data churn:** re-scraped shards break determinism
 - **Pin everything:** SHAs · tokenizer · shard lists · weights
 
 </Col>
-<Col>
+<Col width={4}>
 
 Every sync runs a **deterministic smoke test** first:
 
@@ -399,8 +399,8 @@ it is not hitting the shared filesystem from every rank, which sets up yeet next
 Copy the env **once** to node-local `/tmp`, fan out node-to-node. Imports hit
 local SSD.
 
-<Cols widths="3 4">
-<Col>
+<Cols>
+<Col width={3}>
 
 ```bash
 ezpz yeet --compress          # 1 tarball off Lustre
@@ -413,7 +413,7 @@ ezpz launch python3 -m your_app.train
 - Full Aurora: pre-launch **under 13 min**
 
 </Col>
-<Col>
+<Col width={4}>
 
 <figure>
     <img
@@ -555,8 +555,8 @@ memory-bound but the architecture still fits layer-wise.
 
 Climb only when memory forces you: **`DP → FSDP/ZeRO → TP → PP`**.
 
-<Cols widths="4 3">
-<Col>
+<Cols>
+<Col width={4}>
 
 - **Fits on one GPU** → `DP`, scale batch
 - **Almost fits** → `FSDP`/`ZeRO` (stage 1, then 3)
@@ -567,7 +567,7 @@ Climb only when memory forces you: **`DP → FSDP/ZeRO → TP → PP`**.
 > Same script, every machine. No `mpiexec` / `srun` / bind wrappers.
 
 </Col>
-<Col>
+<Col width={3}>
 
 ```mermaid
 flowchart LR
@@ -612,8 +612,8 @@ the scheduler/vendor differences.
 The last knob before a full-machine run. Sweep the LR on a **short** run and read
 the curve, don't guess a number and burn 2k nodes finding out it was wrong.
 
-<Cols widths="4 5">
-<Col>
+<Cols>
+<Col width={4}>
 
 - **flat/high** at small LR: trains, just slowly
 - **basin**: loss drops into the usable band
@@ -625,7 +625,7 @@ the curve, don't guess a number and burn 2k nodes finding out it was wrong.
 > A few hundred steps to sweep saves a full-scale run that NaNs at step 7.
 
 </Col>
-<Col>
+<Col width={5}>
 
 <figure>
     <picture>
@@ -716,8 +716,8 @@ we built to survive them. The restarts are how you survive the bad news.
 $B_{\text{crit}}$: the largest batch where more data-parallel workers still buy
 near-linear speedup.[^cbs-openai]
 
-<Cols widths="1 1">
-<Col>
+<Cols>
+<Col width={1}>
 
 **The ceiling**
 
@@ -727,7 +727,7 @@ near-linear speedup.[^cbs-openai]
 - fix is **TP/PP/EP + a batch you _chose_**, not "more DP"
 
 </Col>
-<Col>
+<Col width={1}>
 
 **The knobs (and where they break)**
 
