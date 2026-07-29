@@ -1983,6 +1983,16 @@ Questions?
 
 <div id="footnotes-target"></div>
 
+<style>{`
+  /* 14 footnotes on one slide: tighten the reference list. The global
+     li:has(>p) group-break (1lh) is meant for content lists, not a dense
+     citation list, so collapse per-item spacing and the <p> line-height. */
+  #footnotes-target ol { font-size: 0.82em; }
+  #footnotes-target li { margin-block-start: 0.3lh; }
+  #footnotes-target li:first-child { margin-block-start: 0; }
+  #footnotes-target li > p { line-height: 1.3; margin-block: 0; }
+`}</style>
+
 </Slide>
 
 {/* source: reuse pattern · appendix "backup slides" index from 2026/07/14:1760 */}
