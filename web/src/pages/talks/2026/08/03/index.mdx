@@ -265,14 +265,19 @@ Same seed + shards + weights → same batch, every rank, every run.
 <Cols>
 <Col width={3}>
 
-- **Upstream churn:** 46 syncs in 7 weeks, any can shift RNG
-- **Data churn:** re-scraped shards break determinism
-- **Pin everything:** SHAs · tokenizer · shard lists · weights
+**Universal:**
+
+- **data churn:** re-scraped shards break determinism
+- **pin everything:** SHAs · tokenizer · shard lists · weights
+
+**If you fork upstream** (we fork `torchtitan` for XPU):
+
+- **upstream churn:** 46 syncs in 7 weeks, any can shift RNG
 
 </Col>
 <Col width={4}>
 
-Every sync runs a **deterministic smoke test** first:
+Every **fork sync** runs a deterministic smoke test first:
 
 ```mermaid
 flowchart TB
