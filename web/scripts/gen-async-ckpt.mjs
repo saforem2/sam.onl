@@ -140,14 +140,16 @@ function buildSVG(cfg) {
         body += `<rect x="${axx.toFixed(1)}" y="${stageTop.toFixed(1)}" width="${cfg.barW}" height="${stageH.toFixed(1)}" fill="${C.stage}" stroke="#fff" stroke-width="0.75"/>`
         body += `<rect x="${axx.toFixed(1)}" y="${drainTop.toFixed(1)}" width="${cfg.barW}" height="${drainH.toFixed(1)}" fill="${C.drain}" stroke="#fff" stroke-width="0.75"/>`
         const asyncTotal = (g.stage + g.drain).toFixed(1)
+        // value label just above the async bar
         body += `<text x="${(axx + cfg.barW / 2).toFixed(1)}" y="${(drainTop - 8).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.valSize}" font-weight="700" fill="${C.drain}">${asyncTotal}s</text>`
+        // speedup chip ABOVE the value label (one line higher), so they stack
+        // cleanly over the async bar instead of overprinting each other
+        body += `<text x="${(axx + cfg.barW / 2).toFixed(1)}" y="${(drainTop - 8 - cfg.valSize - 6).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${(cfg.valSize * 0.95).toFixed(0)}" font-weight="700" fill="#1da811">${esc(g.x)} less</text>`
         body += `<text x="${(axx + cfg.barW / 2).toFixed(1)}" y="${(sBot + cfg.labelSize + 4).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.labelSize}" fill="#838383">async</text>`
 
-        // group label (model + size) centered under the pair, close to the axis
+        // group label (model + size) centered under the pair, on its own row
         const cx = gx + groupW / 2
-        body += `<text x="${cx.toFixed(1)}" y="${(sBot + 2 * cfg.labelSize + 6).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.labelSize}" font-weight="700" fill="#838383">${esc(g.label)} <tspan font-weight="400" font-size="${(cfg.labelSize * 0.82).toFixed(0)}">(${esc(g.sub)})</tspan></text>`
-        // speedup chip: over the async bar specifically, clear of the sync value label
-        body += `<text x="${(axx + cfg.barW / 2).toFixed(1)}" y="${(sBot + cfg.labelSize + 4 - barH(g.stage + g.drain) - 30).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${(cfg.valSize * 0.92).toFixed(0)}" font-weight="700" fill="#1da811">${esc(g.x)} less</text>`
+        body += `<text x="${cx.toFixed(1)}" y="${(sBot + 2 * cfg.labelSize + 8).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.labelSize}" font-weight="700" fill="#838383">${esc(g.label)} <tspan font-weight="400" font-size="${(cfg.labelSize * 0.82).toFixed(0)}">(${esc(g.sub)})</tspan></text>`
 
         gx += groupW + cfg.groupGap
     }
@@ -161,8 +163,10 @@ function buildSVG(cfg) {
         [C.stage, 'async: stage'],
         [C.drain, 'async: drain residual'],
     ]
-    const sw = 18
-    const legendY = H - 22
+    const sw = 16
+    // legend sits under the subtitle, inside the top margin, so the bottom row
+    // is free for the per-group model labels (which used to collide with it)
+    const legendY = 82
     const approxW = items.reduce(
         (a, [, lbl]) => a + sw + 8 + lbl.length * cfg.legendSize * 0.58 + 24,
         0,

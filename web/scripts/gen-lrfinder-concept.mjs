@@ -125,9 +125,11 @@ function buildSVG(cfg) {
         }
     }
 
-    // diverged (NaN) strip: dotted separator + single label at left
+    // NaN ceiling: a dotted line the cliff punches through. Label sits at the
+    // RIGHT end (over the cliff), not the calm left region, so it reads as
+    // "cross this line and you're at NaN" rather than mislabeling low-LR.
     body += `<line x1="${ax}" y1="${sy(DIV_Y).toFixed(1)}" x2="${ax + aw}" y2="${sy(DIV_Y).toFixed(1)}" stroke="#83838355" stroke-width="1" stroke-dasharray="2 3"/>`
-    body += `<text x="${ax + 8}" y="${(sy(NAN_Y) + 5).toFixed(1)}" text-anchor="start" font-family="${FONT}" font-size="${cfg.tickSize}" fill="#838383">diverged (NaN)</text>`
+    body += `<text x="${ax + aw - 8}" y="${(sy(NAN_Y) + 5).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-size="${cfg.tickSize}" fill="#83838399">NaN ceiling</text>`
 
     const clipId = `plot-${cfg.W}`
     body += `<clipPath id="${clipId}"><rect x="${ax}" y="${ay}" width="${aw}" height="${ah}"/></clipPath>`
