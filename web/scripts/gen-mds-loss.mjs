@@ -307,18 +307,18 @@ function buildSVG(cfg) {
     const clipId = `plot-${cfg.W}`
     body += `<clipPath id="${clipId}"><rect x="${ax}" y="${ay}" width="${aw}" height="${ah}"/></clipPath>`
     let g = `<g clip-path="url(#${clipId})">`
-    // val (lighter, behind)
-    let dv = ''
-    VAL.forEach(([it, v], i) => {
-        dv += `${i ? 'L' : 'M'}${sx(it).toFixed(1)} ${sy(v).toFixed(1)} `
-    })
-    g += `<path d="${dv.trim()}" fill="none" stroke="#ee8f24" stroke-width="${cfg.lw}" stroke-dasharray="6 4"/>`
-    // train (solid blue, on top)
+    // train (solid blue, behind)
     let dt = ''
     TRAIN.forEach(([it, v], i) => {
         dt += `${i ? 'L' : 'M'}${sx(Math.min(it, X_MAX)).toFixed(1)} ${sy(Math.max(Math.min(v, Y_MAX + 1), Y_MIN - 1)).toFixed(1)} `
     })
     g += `<path d="${dt.trim()}" fill="none" stroke="#118cc2" stroke-width="${cfg.lw + 0.4}"/>`
+    // val (dashed orange, on top)
+    let dv = ''
+    VAL.forEach(([it, v], i) => {
+        dv += `${i ? 'L' : 'M'}${sx(it).toFixed(1)} ${sy(v).toFixed(1)} `
+    })
+    g += `<path d="${dv.trim()}" fill="none" stroke="#ee8f24" stroke-width="${cfg.lw}" stroke-dasharray="6 4"/>`
     g += '</g>'
     body += g
 
