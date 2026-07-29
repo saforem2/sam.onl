@@ -148,8 +148,9 @@ Not a download. A distributed-systems problem, before the first GPU step.
 - **Reproducible** every rank, every run
 - **Survivable** flaky FS · node failures · noisy neighbors
 
-> [!NOTE]+ The order it bites you
-> tokenize → blend → pin
+> [!NOTE]+ The three steps, in order
+> **tokenize** (text → shards) → **blend** (weighted mix) → **pin** (make it
+> reproducible)
 
 <SpeakerNotes>
 At laptop scale "data prep" means `load_dataset(...)`. At supercomputer scale it
@@ -165,6 +166,42 @@ run) rides on getting this boring plumbing right. The order the next slides go
 in is the order it bites you: tokenize (raw text to shards), then blend (weighted
 sampling), then keep it reproducible (pin everything). Skip a step and you debug
 it at 512 nodes instead of on your laptop.
+</SpeakerNotes>
+
+</Slide>
+
+{/* source: net-new · grounded in posts/2025/09/12 (sptoken/SentencePiece, vocab 32000, file lists) */}
+<Slide id="data-tokenize">
+
+## From raw corpus to tokens
+
+Raw text → **tokenized, sharded binaries** before you can blend.
+
+- **Pin the tokenizer** (SentencePiece, vocab 32k) → or every shard is stale
+- **Tokenize in parallel** → EOD per doc, fixed-size `.bin` shards + file list
+- **Decide doc packing** up front → it changes the loss
+- **Bottleneck is the filesystem**, not the tokenizer
+
+> [!WARNING]+ Tokenize once, reuse forever
+> Re-tokenizing 2T tokens is a whole-allocation tax.
+
+<SpeakerNotes>
+The step the other decks skip: before any blending, raw text has to become
+tokenized, sharded binaries the blender can index. Pick the tokenizer first and
+pin it: AuroraGPT used a SentencePiece model (sptoken, vocab 32000, borrowed from
+Gemma / Llama-2); change it later and every shard is stale. Tokenize in parallel:
+text is embarrassingly parallel, so fan out across ranks/nodes, append an EOD
+token per document, and emit fixed-size .bin shards plus a file list the blender
+consumes. Document boundaries and whether you pack to seq_len affect the loss, so
+bake that choice into the shards, do not leave it to the dataloader.
+
+Where it is slow at scale: not the tokenizer, the filesystem. Millions of small
+reads plus many-writer output hammer a shared Lustre / DAOS mount. Read in large
+chunks, write few large shards, stage to node-local storage where you can. The
+real lesson: tokenization is I/O-bound, not compute-bound, so the win is in how
+you touch the filesystem. And tokenize once: re-tokenizing 2T tokens because you
+nudged a setting is a multi-hour, whole-allocation tax.
+{/* verify: exact shard size / .bin+.idx format for the ATPESC run */}
 </SpeakerNotes>
 
 </Slide>
@@ -215,35 +252,6 @@ iterate freely.
   #data-blending img { width: 100%; height: auto; max-height: 20lh; }
   #data-blending figcaption { font-size: 0.8em; color: var(--foreground2, #838383); margin-block-start: 0.4lh; line-height: 1.35; }
 `}</style>
-
-</Slide>
-
-{/* source: reuse · 2026/07/14:278-327 & 2026/06/03:205-228 "The stack" */}
-<Slide id="stack">
-
-## The stack
-
-Three repos, one job each. No `cuda` in user code.
-
-- 🍋 [saforem2/`ezpz`](https://github.com/saforem2/ezpz) · launch, anywhere
-- 🧠 [saforem2/`torchtitan@ezpz`](https://github.com/saforem2/torchtitan/tree/ezpz) · train (XPU fork: FSDP · TP · PP · EP · MoE)
-- 📚 [zhenghh04/`blendcorpus`](https://github.com/zhenghh04/blendcorpus) · data (weighted blend + shard)
-
-> [!TIP]+ Hardware agnostic
-> Write it once on Aurora's XPUs, run it anywhere.
-
-<SpeakerNotes>
-Three repos, one job each, and nothing here is cuda-specific: the same code runs
-on every vendor. ezpz is orchestration + launch (auto device/backend, no per-site
-mpiexec / srun / CPU-bind wrappers, ezpz.cool). torchtitan@ezpz is training: our
-fork of TorchTitan patched for Intel XPU. blendcorpus is data: weighted blending
-and sharding across corpora.
-
-The one line that matters: data / training / launch are three separable concerns,
-kept as three repos so each moves at its own pace. The old stack, argonne-lcf's
-Megatron-DeepSpeed fork, was the AuroraGPT-2B reference run (~7.77T tokens); its
-maintenance cost is why we moved to TorchTitan (see the fork-tax slide next).
-</SpeakerNotes>
 
 </Slide>
 
@@ -333,38 +341,32 @@ buys you XPU support, and the bill comes due as continuous upstream-sync work.
 
 </Slide>
 
-{/* source: net-new · grounded in posts/2025/09/12 (sptoken/SentencePiece, vocab 32000, file lists) */}
-<Slide id="data-tokenize">
+{/* source: reuse · 2026/07/14:278-327 & 2026/06/03:205-228 "The stack" */}
+<Slide id="stack">
 
-## From raw corpus to tokens
+## The stack
 
-Raw text → **tokenized, sharded binaries** before you can blend.
+Three repos, one job each. No `cuda` in user code.
 
-- **Pin the tokenizer** (SentencePiece, vocab 32k) → or every shard is stale
-- **Tokenize in parallel** → EOD per doc, fixed-size `.bin` shards + file list
-- **Decide doc packing** up front → it changes the loss
-- **Bottleneck is the filesystem**, not the tokenizer
+- 🍋 [saforem2/`ezpz`](https://github.com/saforem2/ezpz) · launch, anywhere
+- 🧠 [saforem2/`torchtitan@ezpz`](https://github.com/saforem2/torchtitan/tree/ezpz) · train (XPU fork: FSDP · TP · PP · EP · MoE)
+- 📚 [zhenghh04/`blendcorpus`](https://github.com/zhenghh04/blendcorpus) · data (weighted blend + shard)
 
-> [!WARNING]+ Tokenize once, reuse forever
-> Re-tokenizing 2T tokens is a whole-allocation tax.
+> [!TIP]+ Hardware agnostic
+> Write it once on Aurora's XPUs, run it anywhere.
 
 <SpeakerNotes>
-The step the other decks skip: before any blending, raw text has to become
-tokenized, sharded binaries the blender can index. Pick the tokenizer first and
-pin it: AuroraGPT used a SentencePiece model (sptoken, vocab 32000, borrowed from
-Gemma / Llama-2); change it later and every shard is stale. Tokenize in parallel:
-text is embarrassingly parallel, so fan out across ranks/nodes, append an EOD
-token per document, and emit fixed-size .bin shards plus a file list the blender
-consumes. Document boundaries and whether you pack to seq_len affect the loss, so
-bake that choice into the shards, do not leave it to the dataloader.
+Three repos, one job each, and nothing here is cuda-specific: the same code runs
+on every vendor. ezpz is orchestration + launch (auto device/backend, no per-site
+mpiexec / srun / CPU-bind wrappers, ezpz.cool). torchtitan@ezpz is training: our
+fork of TorchTitan patched for Intel XPU. blendcorpus is data: weighted blending
+and sharding across corpora.
 
-Where it is slow at scale: not the tokenizer, the filesystem. Millions of small
-reads plus many-writer output hammer a shared Lustre / DAOS mount. Read in large
-chunks, write few large shards, stage to node-local storage where you can. The
-real lesson: tokenization is I/O-bound, not compute-bound, so the win is in how
-you touch the filesystem. And tokenize once: re-tokenizing 2T tokens because you
-nudged a setting is a multi-hour, whole-allocation tax.
-{/* verify: exact shard size / .bin+.idx format for the ATPESC run */}
+The one line that matters: data / training / launch are three separable concerns,
+kept as three repos so each moves at its own pace. The old stack, argonne-lcf's
+Megatron-DeepSpeed fork, was the AuroraGPT-2B reference run (~7.77T tokens); its
+maintenance cost is why we moved to TorchTitan (the fork tax, covered on the
+reproducibility slide just before this).
 </SpeakerNotes>
 
 </Slide>
