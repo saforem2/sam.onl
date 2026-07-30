@@ -45,7 +45,7 @@ export const ASSETS = 'https://samforeman.me/assets'
 # <span style="color:var(--foreground0);">Pre-Training LLMs on a Supercomputer</span>
 
 <p class="title-slide-thesis">
-    What works, what breaks, and how cheaply you recover.
+    The most model per GPU-hour: what works, what breaks, and what it costs.
 </p>
 
 **Sam Foreman**, Argonne National Laboratory
@@ -98,6 +98,9 @@ _{new Date(frontmatter.date).toISOString().slice(0, 10)} · ATPESC 2026_
 
 ## Roadmap
 
+One goal, two halves: **get the most model per GPU-hour.** Part 1 spends the
+compute well; Part 2 keeps a crash from wasting it.
+
 **Part 1: getting a run off the ground** _(now, ~30 min)_
 
 - Data preparation
@@ -125,11 +128,25 @@ everything that then tries to kill it.
 
 ## Who this is for
 
+One goal runs through all of it: **the best model you can get per GPU-hour.**
+Every choice ahead trades compute for model quality; the job is to spend it well.
+
 - You know HPC. You may be new to training LLMs at scale.
 - This is **lessons-learned**, not a survey: do-this-not-that from real runs on
   Aurora / Polaris.
 - Complementary to **Shilpika**'s talk: she covered {/* TODO(user): her topic(s) */},
   so we focus on the rest of the pipeline.
+
+<SpeakerNotes>
+The through-line for the whole talk: you are trying to get the best model you can
+for a fixed compute budget. That is the lens for every decision that follows.
+Data blending decides whether your tokens are worth spending. The parallelism and
+batch-size choices decide whether the FLOPs you pour in actually buy speedup.
+Second-order optimizers try to reach the same loss in fewer steps. yeet and the
+Lustre work keep you from burning node-hours on startup. And the entire Part 2,
+failure recovery, exists so a crash does not throw away the compute you already
+spent. Keep asking, of every slide: how does this get more model per GPU-hour?
+</SpeakerNotes>
 
 </Slide>
 
@@ -790,6 +807,8 @@ Do this cheaply at small scale: a few hundred steps of sweep is nothing against 
 
 ## You've launched. Now everything tries to kill it.
 
+Part 1 spent the compute well. Part 2 is about not **wasting** what you've spent.
+
 _See you after the break._
 
 </Slide>
@@ -807,8 +826,8 @@ _See you after the break._
 Part 1 got a run **started**. That was the easy part.
 
 - Not a program you start: one you **babysit for weeks**
-- The question stops being "how fast is a step?"
-- It becomes: **how cheaply do you recover when (not if) it breaks?**
+- Every crash you don't recover is **compute you already paid for, thrown away**
+- So the question becomes: **how cheaply do you recover when (not if) it breaks?**
 
 > [!NOTE]+ The rest of this talk
 > Good news: the loss curve. Bad news: everything that can interrupt it.
@@ -2017,8 +2036,9 @@ ezpz launch \
   silent hang recovered itself.
 
 > [!TIP]+ The whole talk in one line
-> You do not prevent failures at this scale. You make recovery so cheap that
-> failure stops being an event.
+> It all serves one number: **model quality per GPU-hour.** Spend the compute
+> well (Part 1), and make recovery so cheap that a failure wastes almost none of
+> it (Part 2).
 
 <SpeakerNotes>
 This is the payoff slide: everything in Part 2 collapses into a startup ritual and
@@ -2041,6 +2061,8 @@ the laptop; the 9:36-PM-Friday silent hang from the previous slide recovered its
 <Slide id="recap">
 
 ## What to take home
+
+Five ways to get more model per GPU-hour:
 
 <Cols>
 <Col>
