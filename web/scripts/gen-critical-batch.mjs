@@ -41,22 +41,22 @@ const lg = (x) => Math.log2(x)
 const LANDSCAPE = {
     W: 720,
     H: 500,
-    M: { top: 44, right: 22, bottom: 56, left: 60 },
+    M: { top: 52, right: 26, bottom: 64, left: 66 },
     titleSize: 0, // title lives on the slide, not the figure
-    axisSize: 17,
-    tickSize: 15,
-    labelSize: 16,
-    lw: 3.2,
+    axisSize: 23,
+    tickSize: 20,
+    labelSize: 22,
+    lw: 3.6,
 }
 const MOBILE = {
     W: 620,
-    H: 360,
-    M: { top: 36, right: 16, bottom: 56, left: 54 },
+    H: 400,
+    M: { top: 44, right: 20, bottom: 62, left: 60 },
     titleSize: 0,
-    axisSize: 15,
-    tickSize: 13,
-    labelSize: 14,
-    lw: 3.2,
+    axisSize: 20,
+    tickSize: 18,
+    labelSize: 19,
+    lw: 3.6,
 }
 
 function buildSVG(cfg) {
@@ -108,13 +108,15 @@ function buildSVG(cfg) {
     body += `<circle cx="${xbc.toFixed(1)}" cy="${sy(actual(BC)).toFixed(1)}" r="4" fill="#e05560"/>`
     body += `<text x="${(xbc + 8).toFixed(1)}" y="${(ay + 16).toFixed(1)}" font-family="${FONT}" font-size="${cfg.labelSize}" font-weight="700" fill="#e05560">B_crit</text>`
 
-    // region labels
-    body += `<text x="${((ax + xbc) / 2).toFixed(1)}" y="${(ay + ah - 10).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.labelSize}" fill="#1da811">2× batch ≈ ½ the steps</text>`
-    body += `<text x="${((xbc + ax + aw) / 2).toFixed(1)}" y="${(ay + 30).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.labelSize}" fill="#838383">speedup saturates</text>`
+    // region labels: "near-linear" low in the green zone, "saturates" in the
+    // grey right zone between the two curves (kept clear of the top B_crit label).
+    body += `<text x="${((ax + xbc) / 2).toFixed(1)}" y="${(ay + ah - 12).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.labelSize}" fill="#1da811">2× batch ≈ ½ the steps</text>`
+    body += `<text x="${sx(22).toFixed(1)}" y="${(ay + ah * 0.42).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.labelSize}" fill="#838383">speedup saturates</text>`
 
-    // curve labels (near their right ends)
-    body += `<text x="${(sx(B_MAX) - 4).toFixed(1)}" y="${(sy(ideal(B_MAX)) + 14).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-size="${cfg.tickSize}" fill="#838383">ideal (linear)</text>`
-    body += `<text x="${(sx(B_MAX) - 4).toFixed(1)}" y="${(sy(actual(B_MAX)) - 8).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-size="${cfg.tickSize}" font-weight="700" fill="#118cc2">actual</text>`
+    // curve labels: "ideal" above the dashed line mid-span (clear of the right
+    // edge + the saturates label); "actual" on the flattened tail, pulled inside.
+    body += `<text x="${sx(26).toFixed(1)}" y="${(sy(ideal(26)) - 10).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.tickSize}" fill="#838383">ideal (linear)</text>`
+    body += `<text x="${(sx(B_MAX) - 6).toFixed(1)}" y="${(sy(actual(B_MAX)) - 10).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-size="${cfg.tickSize}" font-weight="700" fill="#118cc2">actual</text>`
 
     // axis labels
     body += `<text x="${(ax + aw / 2).toFixed(1)}" y="${(H - 10).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-size="${cfg.axisSize}" fill="#838383">global batch (data-parallel workers) →</text>`
