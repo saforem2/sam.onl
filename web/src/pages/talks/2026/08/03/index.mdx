@@ -948,13 +948,15 @@ AdamW is the baseline. Everything else buys **curvature** at some compute price.
 | Optimizer | Core idea |
 | --- | --- |
 | **AdamW**[^ol-adamw] | diagonal 2nd moment + decoupled weight decay |
+| **SophiaG**[^ol-sophia] | clipped Hessian-diagonal: light curvature, cheap |
 | **Shampoo**[^ol-shampoo] | Kronecker-factored preconditioner per layer |
 | **SOAP**[^ol-soap] | Adam in Shampoo's eigenbasis: stabler, fewer knobs |
 | **Muon**[^ol-muon] | Newton-Schulz orthogonalize: a cheap Shampoo-like step |
 
 </div>
 
-**Shampoo → SOAP → Muon** is one family: same second-moment structure, cheaper each step.[^ol-others]
+**Shampoo → SOAP → Muon** is one family: same second-moment structure, cheaper
+each step. **SophiaG** takes the other cheap route: a clipped diagonal Hessian.[^ol-others]
 
 <SpeakerNotes>
 AdamW is the baseline; everything else buys curvature, a better preconditioner, at
@@ -991,6 +993,8 @@ direction: manifold normalization instead of eigenbases.
 [^ol-soap]: [SOAP: Improving and Stabilizing Shampoo using Adam](https://arxiv.org/abs/2409.11321) (Vyas et al. 2024). Runs Adam in Shampoo's eigenbasis, refreshed every $k$ steps.
 
 [^ol-muon]: [Muon: MomentUm Orthogonalized by Newton-Schulz](https://arxiv.org/abs/2502.16982) (Jordan et al. 2024/2025).
+
+[^ol-sophia]: [Sophia: A Scalable Stochastic Second-order Optimizer](https://arxiv.org/abs/2305.14342) (Liu et al. 2023). A clipped diagonal-Hessian preconditioner; SophiaG estimates the diagonal with the Gauss-Newton-Bartlett trick.
 
 [^ol-others]: Also common: **LAMB** ([You et al. 2020](https://arxiv.org/abs/1904.00962)), layer-wise trust ratio for huge batches; **Adopt** ([Taniguchi et al. 2024](https://arxiv.org/abs/2411.02853)), converges for any $\beta_2$; **Sophia** ([Liu et al. 2023](https://arxiv.org/abs/2305.14342)), clipped Hessian-diagonal.
 
