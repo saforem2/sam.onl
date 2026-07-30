@@ -484,6 +484,30 @@ ezpz launch python3 -m your_app.train
 </Col>
 </Cols>
 
+```mermaid
+flowchart LR
+    S(["source<br/>(shared FS)"]) --> L["node00<br/>/tmp"]
+    L --> A1["node01"]
+    L --> A2["node02"]
+    L --> A3["…"]
+    L --> A8["node08"]
+    A1 --> B1["node09"]
+    A1 --> B2["node10"]
+    A2 --> B3["node11"]
+    A2 --> B4["node12"]
+
+    classDef src  fill:#ee8f2410,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
+    classDef g1   fill:#118cc210,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
+    classDef g2   fill:#1da81110,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    classDef dots fill:#83838308,stroke:#83838388,color:#838383,stroke-width:1px
+    class S,L src
+    class A1,A2,A8 g1
+    class A3 dots
+    class B1,B2,B3,B4 g2
+```
+
+_Each finished node becomes a source for up to 8 more → the tree grows `O(log N)`._
+
 <SpeakerNotes>
 Instead of 50k ranks each clawing at Lustre, copy the env once to node-local /tmp
 and fan it out node-to-node; imports then hit local SSD. Modes: `--compress`
@@ -499,7 +523,18 @@ Measured 8 to 4096 nodes on Aurora, two regimes: 8-64 nodes extract-bound
 trick is why it scales: it turns the Lustre side into a single sequential read
 regardless of node count, so only the broadcast scales with N. The old per-file
 rsync mode was the 1-2 hour disaster from the previous slide.
+
+The fan-out diagram (from the yeet write-up): a single source only pushes to ~8
+nodes before its NIC saturates, so each node that finishes becomes a source for
+the next batch. The tree grows recursively, so wall-clock is ~O(log N), not O(N).
 </SpeakerNotes>
+
+<style>{`
+  /* Compact fan-out tree under the two columns; cap it so the sm slide fits. */
+  #yeet .mermaid svg { width: 100%; max-width: 100%; height: auto; max-height: 11lh; }
+  #yeet .mermaid { margin: 0.3lh 0 0; }
+  #yeet .slide-inner > p:last-of-type { font-size: 0.82em; color: var(--foreground2, #838383); margin-block-start: 0.3lh; }
+`}</style>
 
 </Slide>
 
@@ -779,6 +814,19 @@ we built to survive them. The restarts are how you survive the bad news.
 $B_{\text{crit}}$: the largest batch where more data-parallel workers still buy
 near-linear speedup.[^cbs-openai]
 
+<figure class="cbs-fig">
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/critical-batch-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/critical-batch.svg"
+            alt="Speedup vs global batch on log-log axes. An actual (blue) speedup curve tracks the ideal linear reference closely at small batch (green 'near-linear' region, labelled '2x batch is about half the steps'), then bends away and flattens past a red dashed B_crit marker (grey 'speedup saturates' region)."
+        />
+    </picture>
+</figure>
+
 <Cols>
 <Col width={1}>
 
@@ -835,6 +883,16 @@ target batch and node count.
 [^cbs-zhang]: [How Does Critical Batch Size Scale in Pre-training?](https://arxiv.org/abs/2410.21676) (Zhang et al. 2025).
 
 [^cbs-zhou]: [How to Set the Batch Size for Large-Scale Pre-training?](https://arxiv.org/abs/2601.05034) (Zhou et al. 2025).
+
+<style>{`
+  /* The B_crit schematic sits under the definition line, above the two
+     columns. Cap it so the dense slide (2 cols + tip) still fits. */
+  #critical-batch-size .cbs-fig { margin: 0.3lh 0 0.5lh; }
+  #critical-batch-size .cbs-fig img { width: 100%; height: auto; max-height: 12lh; }
+  @media (max-width: 768px) {
+    #critical-batch-size .cbs-fig img { max-height: 16lh; }
+  }
+`}</style>
 
 </Slide>
 
