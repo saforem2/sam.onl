@@ -2037,6 +2037,55 @@ shared registry assumes.
 
 </Slide>
 
+{/* source: net-new · perf companion to results-all; reproduces panels 2+3 of torchtitan plot_production_combined.py, data via the repo's W&B chain concat + on-disk MDS tps */}
+<Slide id="results-perf">
+
+## What it costs: throughput and MFU
+
+Same chains, the compute side: sustained per-GPU throughput and how much of the
+hardware's FLOPs we actually use.
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/all-production-perf-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/all-production-perf.svg"
+            alt="Two panels vs tokens for the five chains. Left, tokens/sec/GPU: 2B-MDS sustains ~4,700, the 2B torchtitan chains ~2,500-3,200, the 20B chains ~350-450 (a 10x-bigger model does fewer tokens/sec/GPU). Right, model FLOPs utilization: the 20B chains run higher (~17-22%) than the 2B chains (~9-12%)."
+        />
+    </picture>
+    <figcaption>Bigger model = fewer tokens/sec/GPU but <strong>higher MFU</strong> (20B ~17-22% vs 2B ~9-12%): the 20B keeps the XPUs busier per step.</figcaption>
+</figure>
+
+<SpeakerNotes>
+The compute-cost companion to the loss overlay: the same five chains, now on
+throughput and MFU, reproduced from panels 2 and 3 of the combined-production
+chart. Left panel, per-GPU tokens/sec: the 2B-MDS reference sustains about 4,700
+tok/sec/GPU, the 2B torchtitan chains sit around 2,500 to 3,200 (n256 async a bit
+above n512 sync), and the two 20B chains are much lower at roughly 350 to 450,
+which is expected: a 10x-bigger model does far fewer tokens per second per GPU.
+Throughput is the per-GPU number torchtitan logs, not aggregated.
+
+Right panel, MFU: this flips. The 20B chains run at roughly 17 to 22 percent model
+FLOPs utilization versus about 9 to 12 percent for the 2B, because the larger model
+has bigger matmuls that keep the XPUs busier per step, so even though its
+tokens/sec is lower, it is using the hardware more efficiently. MDS does not log
+MFU, so it is absent from the right panel (same as the source chart). Data: the 2B
+MDS throughput from its on-disk per-step CSV, the four torchtitan chains pulled
+live from W&B via the canonical concat, bin-meaned. The dips in the 2B-MDS
+throughput line are checkpoint/eval pauses, not slowdowns.
+</SpeakerNotes>
+
+<style>{`
+  #results-perf figure { margin: 0.4lh 0 0; }
+  #results-perf img { width: 100%; height: auto; max-height: 25lh; }
+  #results-perf figcaption { font-size: 0.8em; color: var(--foreground2, #838383); margin-block-start: 0.4lh; line-height: 1.35; }
+`}</style>
+
+</Slide>
+
 {/* source: net-new capstone · ties together yeet + the fault-tolerance flags from Part 2 */}
 <Slide id="capstone">
 
