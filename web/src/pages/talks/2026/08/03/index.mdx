@@ -943,6 +943,9 @@ target batch and node count.
 
 AdamW is the baseline. Everything else buys **curvature** at some compute price.
 
+<Cols>
+<Col width={3}>
+
 <div class="tight-table">
 
 | Optimizer | Core idea |
@@ -957,6 +960,26 @@ AdamW is the baseline. Everything else buys **curvature** at some compute price.
 
 **Shampoo → SOAP → Muon** is one family: same second-moment structure, cheaper
 each step. **SophiaG** takes the other cheap route: a clipped diagonal Hessian.[^ol-others]
+
+</Col>
+<Col width={4}>
+
+<figure class="opt-cmp-fig">
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/optimizer-comparison-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/optimizer-comparison.svg"
+            alt="AuroraGPT-2B optimizer comparison at 50M tokens/batch on 256 nodes. Left: training loss (log) vs consumed tokens for AdamW, Lamb, Muon, SophiaG; SophiaG reaches the lowest loss. Right: gradient norm (log); Muon's grad norm spikes ~six orders of magnitude at ~1.1T tokens (divergence) while SophiaG stays lowest and bounded."
+        />
+    </picture>
+    <figcaption>Real 2B runs at GBS 6,144: <strong>SophiaG</strong> reaches the lowest loss with bounded grad norm; <strong>Muon</strong> diverges at ~1.1T tokens.</figcaption>
+</figure>
+
+</Col>
+</Cols>
 
 <SpeakerNotes>
 AdamW is the baseline; everything else buys curvature, a better preconditioner, at
@@ -1002,6 +1025,9 @@ direction: manifold normalization instead of eigenbases.
   #optimizer-landscape table { table-layout: auto; width: max-content; max-width: 100%; }
   #optimizer-landscape table th, #optimizer-landscape table td { white-space: nowrap; }
   #optimizer-landscape table th:nth-child(2), #optimizer-landscape table td:nth-child(2) { white-space: normal; }
+  #optimizer-landscape .opt-cmp-fig { margin: 0; }
+  #optimizer-landscape .opt-cmp-fig img { width: 100%; height: auto; max-height: 20lh; }
+  #optimizer-landscape .opt-cmp-fig figcaption { font-size: 0.78em; color: var(--foreground2, #838383); margin-block-start: 0.3lh; line-height: 1.3; }
 `}</style>
 
 </Slide>
