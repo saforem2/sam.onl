@@ -484,30 +484,6 @@ ezpz launch python3 -m your_app.train
 </Col>
 </Cols>
 
-```mermaid
-flowchart LR
-    S(["source<br/>(shared FS)"]) --> L["node00<br/>/tmp"]
-    L --> A1["node01"]
-    L --> A2["node02"]
-    L --> A3["…"]
-    L --> A8["node08"]
-    A1 --> B1["node09"]
-    A1 --> B2["node10"]
-    A2 --> B3["node11"]
-    A2 --> B4["node12"]
-
-    classDef src  fill:#ee8f2410,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
-    classDef g1   fill:#118cc210,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
-    classDef g2   fill:#1da81110,stroke:#1da811,color:#1da811,stroke-width:1.5px
-    classDef dots fill:#83838308,stroke:#83838388,color:#838383,stroke-width:1px
-    class S,L src
-    class A1,A2,A8 g1
-    class A3 dots
-    class B1,B2,B3,B4 g2
-```
-
-_Each finished node becomes a source for up to 8 more → the tree grows `O(log N)`._
-
 <SpeakerNotes>
 Instead of 50k ranks each clawing at Lustre, copy the env once to node-local /tmp
 and fan it out node-to-node; imports then hit local SSD. Modes: `--compress`
@@ -516,24 +492,69 @@ a fast initial copy), and the default rsync (only sends diffs after a pip
 install). After yeet, activate `/tmp/.venv` and `cd` back to your project so
 data/outputs stay on the shared FS.
 
-Remote fan-out is a greedy tree: each node that finishes becomes a source for up
-to 8 more, so wall-clock stays near O(log N) until bandwidth contention kicks in.
 Measured 8 to 4096 nodes on Aurora, two regimes: 8-64 nodes extract-bound
 (~70-91s flat), ≥128 broadcast-bound (each 2x adds ~1.5-1.8x). The one-tarball
 trick is why it scales: it turns the Lustre side into a single sequential read
 regardless of node count, so only the broadcast scales with N. The old per-file
-rsync mode was the 1-2 hour disaster from the previous slide.
+rsync mode was the 1-2 hour disaster from the previous slide. The next slide
+shows *why* it stays O(log N): the greedy fan-out tree.
+</SpeakerNotes>
 
-The fan-out diagram (from the yeet write-up): a single source only pushes to ~8
-nodes before its NIC saturates, so each node that finishes becomes a source for
-the next batch. The tree grows recursively, so wall-clock is ~O(log N), not O(N).
+</Slide>
+
+{/* source: net-new · greedy fan-out tree from the yeet write-up (2026/05/01#greedy-fan-out) */}
+<Slide id="yeet-fanout">
+
+## Why it stays `O(log N)`: greedy fan-out
+
+A single source saturates its NIC at ~8 outbound copies. So **each node that
+finishes becomes a source** for the next batch: the tree grows recursively.
+
+```mermaid
+flowchart LR
+    S(["source<br/>(shared FS)"]) --> L["node00<br/>/tmp"]
+    L --> A1["node01"]
+    L --> A2["node02"]
+    L --> Ad["…"]
+    L --> A8["node08"]
+    A1 --> B1["node09"]
+    A1 --> Bd["…"]
+    A1 --> B8["node16"]
+    A2 --> C1["node17"]
+    A2 --> Cd["…"]
+    A2 --> C8["node24"]
+
+    classDef src  fill:#ee8f2410,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
+    classDef g1   fill:#118cc210,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
+    classDef g2   fill:#1da81110,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    classDef dots fill:#83838308,stroke:#83838388,color:#838383,stroke-width:1px
+    class S,L src
+    class A1,A2,A8 g1
+    class B1,B8,C1,C8 g2
+    class Ad,Bd,Cd dots
+```
+
+- Cap **8 outbound / source**; a thread pool load-balances to the least-busy one
+- Faster nodes don't wait: finish early → serve early
+- Result: **~O(log N)** wall-clock, not the O(N) of a single-source star
+
+<SpeakerNotes>
+This is the mechanism behind the O(log N) curve on the previous slide, straight
+from the yeet write-up. A single source can only push to about 8 nodes before its
+NIC saturates, so yeet uses a greedy streaming fan-out: a single thread pool
+manages all rsyncs, each source capped at MAX_PER_SOURCE=8 concurrent outbound
+transfers. As each rsync completes, that node is registered as a new source, and
+new transfers go to whichever source has the fewest active ones (load-balanced).
+The tree grows recursively: source to node00, node00 to gen-1 (node01..08), each
+of those to gen-2, and so on. Faster nodes don't wait for slower ones: if node01
+finishes in 15s but node08 takes 30s, node01 is already serving new targets. That
+is why the wall-clock is approximately O(log N) at moderate scale rather than the
+O(N) you'd get pushing from one source.
 </SpeakerNotes>
 
 <style>{`
-  /* Compact fan-out tree under the two columns; cap it so the sm slide fits. */
-  #yeet .mermaid svg { width: 100%; max-width: 100%; height: auto; max-height: 11lh; }
-  #yeet .mermaid { margin: 0.3lh 0 0; }
-  #yeet .slide-inner > p:last-of-type { font-size: 0.82em; color: var(--foreground2, #838383); margin-block-start: 0.3lh; }
+  #yeet-fanout .mermaid svg { width: 100%; max-width: 100%; height: auto; max-height: 17lh; }
+  #yeet-fanout .mermaid { margin: 0.5lh 0; }
 `}</style>
 
 </Slide>
@@ -814,6 +835,9 @@ we built to survive them. The restarts are how you survive the bad news.
 $B_{\text{crit}}$: the largest batch where more data-parallel workers still buy
 near-linear speedup.[^cbs-openai]
 
+<Cols>
+<Col width={3}>
+
 <figure class="cbs-fig">
     <picture>
         <source
@@ -827,18 +851,15 @@ near-linear speedup.[^cbs-openai]
     </picture>
 </figure>
 
-<Cols>
-<Col width={1}>
+</Col>
+<Col width={4}>
 
 **The ceiling**
 
 - below: 2x batch ≈ **half the steps**, more nodes nearly free
 - above: speedup **saturates**, training gets **unstable**[^cbs-zhang][^cbs-zhou]
-- HPC hits it first: INCITE jobs want **~2k nodes**, straight past $B_{\text{crit}}$
+- HPC hits it first: INCITE jobs want **~2k nodes**, past $B_{\text{crit}}$
 - fix is **TP/PP/EP + a batch you _chose_**, not "more DP"
-
-</Col>
-<Col width={1}>
 
 **The knobs (and where they break)**
 
@@ -885,10 +906,10 @@ target batch and node count.
 [^cbs-zhou]: [How to Set the Batch Size for Large-Scale Pre-training?](https://arxiv.org/abs/2601.05034) (Zhou et al. 2025).
 
 <style>{`
-  /* The B_crit schematic sits under the definition line, above the two
-     columns. Cap it so the dense slide (2 cols + tip) still fits. */
-  #critical-batch-size .cbs-fig { margin: 0.3lh 0 0.5lh; }
-  #critical-batch-size .cbs-fig img { width: 100%; height: auto; max-height: 12lh; }
+  /* B_crit schematic in the left column, ceiling+knobs stacked right, tip full
+     width below — uses the horizontal space instead of leaving a dead gap. */
+  #critical-batch-size .cbs-fig { margin: 0; }
+  #critical-batch-size .cbs-fig img { width: 100%; height: auto; max-height: 20lh; }
   @media (max-width: 768px) {
     #critical-batch-size .cbs-fig img { max-height: 16lh; }
   }

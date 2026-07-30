@@ -39,14 +39,14 @@ const actual = (b) => b / (1 + b / BC)
 const lg = (x) => Math.log2(x)
 
 const LANDSCAPE = {
-    W: 900,
-    H: 340,
-    M: { top: 40, right: 20, bottom: 52, left: 58 },
+    W: 720,
+    H: 500,
+    M: { top: 44, right: 22, bottom: 56, left: 60 },
     titleSize: 0, // title lives on the slide, not the figure
-    axisSize: 16,
-    tickSize: 14,
-    labelSize: 15,
-    lw: 3,
+    axisSize: 17,
+    tickSize: 15,
+    labelSize: 16,
+    lw: 3.2,
 }
 const MOBILE = {
     W: 620,
