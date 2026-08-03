@@ -164,6 +164,36 @@ welcome, so there is no technical overlap to dodge there.
   PART 1 · GETTING A RUN OFF THE GROUND  (12:00-12:30)
 ═══════════════════════════════════════════════════════════════════════════*/}
 
+{/* source: reuse · 2026/07/14:278-327 & 2026/06/03:205-228 "The stack" */}
+<Slide id="stack">
+
+## The stack
+
+Three repos, one job each. No `cuda` in user code.
+
+- 🍋 [saforem2/`ezpz`](https://github.com/saforem2/ezpz) · launch, anywhere
+- 🧠 [saforem2/`torchtitan@ezpz`](https://github.com/saforem2/torchtitan/tree/ezpz) · train (XPU fork: FSDP · TP · PP · EP · MoE)
+- 📚 [zhenghh04/`blendcorpus`](https://github.com/zhenghh04/blendcorpus) · data (weighted blend + shard)
+
+> [!TIP]+ Hardware agnostic
+> Write it once on Aurora's XPUs, run it anywhere.
+
+<SpeakerNotes>
+The map for the whole talk before we dive in: three repos, one job each, and
+nothing here is cuda-specific, the same code runs on every vendor. ezpz is
+orchestration + launch (auto device/backend, no per-site mpiexec / srun / CPU-bind
+wrappers, ezpz.cool). torchtitan@ezpz is training: our fork of TorchTitan patched
+for Intel XPU. blendcorpus is data: weighted blending and sharding across corpora.
+
+Data / training / launch are three separable concerns, kept as three repos so each
+moves at its own pace. Keep these three names in mind: the data section uses
+blendcorpus, and forking torchtitan is what creates the "fork tax" a few slides on.
+The old stack, argonne-lcf's Megatron-DeepSpeed fork, was the AuroraGPT-2B
+reference run (~7.77T tokens); its maintenance cost is why we moved to TorchTitan.
+</SpeakerNotes>
+
+</Slide>
+
 {/* source: net-new · framing built on 2025/12/16:294-311 "Training" 3-step data recipe */}
 <Slide id="data-why">
 
@@ -369,36 +399,6 @@ The war story: an upstream commit that "just refactored the dataloader" changed
 shuffle order and quietly changed the loss curve. Bit-exact loss + grad-norm +
 peak-memory on 50 deterministic steps is cheap insurance. The "fork tax": forking
 buys you XPU support, and the bill comes due as continuous upstream-sync work.
-</SpeakerNotes>
-
-</Slide>
-
-{/* source: reuse · 2026/07/14:278-327 & 2026/06/03:205-228 "The stack" */}
-<Slide id="stack">
-
-## The stack
-
-Three repos, one job each. No `cuda` in user code.
-
-- 🍋 [saforem2/`ezpz`](https://github.com/saforem2/ezpz) · launch, anywhere
-- 🧠 [saforem2/`torchtitan@ezpz`](https://github.com/saforem2/torchtitan/tree/ezpz) · train (XPU fork: FSDP · TP · PP · EP · MoE)
-- 📚 [zhenghh04/`blendcorpus`](https://github.com/zhenghh04/blendcorpus) · data (weighted blend + shard)
-
-> [!TIP]+ Hardware agnostic
-> Write it once on Aurora's XPUs, run it anywhere.
-
-<SpeakerNotes>
-Three repos, one job each, and nothing here is cuda-specific: the same code runs
-on every vendor. ezpz is orchestration + launch (auto device/backend, no per-site
-mpiexec / srun / CPU-bind wrappers, ezpz.cool). torchtitan@ezpz is training: our
-fork of TorchTitan patched for Intel XPU. blendcorpus is data: weighted blending
-and sharding across corpora.
-
-The one line that matters: data / training / launch are three separable concerns,
-kept as three repos so each moves at its own pace. The old stack, argonne-lcf's
-Megatron-DeepSpeed fork, was the AuroraGPT-2B reference run (~7.77T tokens); its
-maintenance cost is why we moved to TorchTitan (the fork tax, covered on the
-reproducibility slide just before this).
 </SpeakerNotes>
 
 </Slide>
