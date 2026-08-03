@@ -1160,8 +1160,8 @@ body[data-speaker-window] [is-~='notes'] {
         width: 100% !important;
         height: 100% !important;
         transform: none !important;
-        /* Same shrink + clip as the .slides-print-mode ruleset below. */
-        font-size: 0.95em !important;
+        /* Same scale + clip as the .slides-print-mode ruleset below. */
+        font-size: 1.08em !important;
         overflow: hidden !important;
     }
 }
@@ -1200,11 +1200,11 @@ body.slides-print-mode [is-~='slide'] .slide-inner {
        in inches and the browser shrinks them to tiny thumbnails. */
     display: flex !important;
     flex-direction: column !important;
-    /* Shrink font ~15% so dense slides (timeline tables, supporting-
-       context bullet lists) have vertical room. Live deck scales to
-       viewport; print is fixed paper height, so content that fits
-       on screen can overflow paper without this. */
-    font-size: 0.95em !important;
+    /* Scale print type UP a touch so the exported PDF reads well as a
+       handout. The overflow:hidden clip below still catches the rare
+       dense slide (timeline tables, long bullet lists); most slides
+       have headroom on fixed paper, so bigger is the better default. */
+    font-size: 1.08em !important;
     /* Clip anything that still overflows rather than letting it
        bleed visibly past the paper edge — better to lose half a
        trailing line than show it sliced in two. */
