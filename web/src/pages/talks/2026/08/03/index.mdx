@@ -2409,6 +2409,51 @@ Five ways to get more model per GPU-hour:
 
 </Slide>
 
+{/* source: net-new · hands-on: run ezpz.examples.fsdp_tp end-to-end */}
+<Slide id="try-it">
+
+## Try it yourself: FSDP + TP in four lines
+
+Everything in this talk, runnable now. **Copy-paste onto any of these machines.**
+
+```bash
+# 1. bootstrap the ezpz environment (auto-detects the machine)
+source <(curl -fsSL https://bit.ly/ezpz-utils) && ezpz_setup_env
+uv pip install --no-cache --link-mode=copy "git+https://github.com/saforem2/ezpz"
+
+# 2. smoke test first (always)
+ezpz launch python3 -m ezpz.examples.test
+
+# 3. full FSDP + TP pre-training
+ezpz launch python3 -m ezpz.examples.fsdp_tp
+```
+
+> [!TIP]+ Same script, every machine
+> No `mpiexec` / `srun` / bind wrappers: `ezpz launch` auto-detects the scheduler
+> and device. Smoke-test before the real run, every time.
+
+<SpeakerNotes>
+The hands-on close: everything in this talk is runnable right now, and the point
+of ezpz is that these exact four lines work unchanged on Aurora, Polaris,
+Perlmutter, Frontier, or a laptop. Step one bootstraps the environment: the
+ezpz-utils script auto-detects the machine and sets up the module + venv for you,
+then uv pip installs ezpz (no-cache and link-mode=copy so it works cleanly on the
+shared filesystem). Step two is the smoke test, ezpz.examples.test, which the
+whole talk says to run first every time, it is a couple of minutes and catches a
+broken env or a bad node before you burn an allocation. Step three is the real
+thing: ezpz.examples.fsdp_tp is a complete FSDP + tensor-parallel pretraining
+example, the parallelism from the cartoon slide in actual runnable code. ezpz
+launch handles the scheduler and device binding, so there is no mpiexec or srun to
+get wrong. Encourage people to grab a short interactive allocation and try it
+during the break.
+</SpeakerNotes>
+
+<style>{`
+  #try-it pre.astro-code { font-size: 1.05em; }
+`}</style>
+
+</Slide>
+
 {/* source: reuse · thanks/QR pattern from 2026/07/14:1671 */}
 <Slide id="thanks">
 
