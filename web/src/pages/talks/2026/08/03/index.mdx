@@ -625,6 +625,137 @@ chose MoE.
 
 </Slide>
 
+{/* source: net-new · mermaid reproduction of the paper's parallelism cartoon (figures/parallelism-*.pdf): DP / FSDP / TP / PP / SP-CP */}
+<Slide id="parallelism-cartoon" size="sm">
+
+## The same five, in pictures
+
+<div class="pcart-grid">
+
+<figure>
+<figcaption>Data Parallel: model replicated, batch sliced, grads averaged</figcaption>
+
+```mermaid
+flowchart LR
+    x0["x0"] --> N0["NN → Loss"]
+    x1["x1"] --> N1["NN → Loss"]
+    N0 --> A["avg<br/>grads"]
+    N1 --> A
+    classDef d fill:#f2b8b508,stroke:#e05560,color:#e05560,stroke-width:1.5px
+    classDef m fill:#f9d79508,stroke:#ee8f24,color:#c9750f,stroke-width:1.5px
+    classDef g fill:#83838310,stroke:#838383,color:#838383,stroke-width:1.5px
+    class x0,x1 d
+    class N0,N1 m
+    class A g
+```
+
+</figure>
+
+<figure>
+<figcaption>FSDP / ZeRO: params sharded, all-gathered just-in-time per layer</figcaption>
+
+```mermaid
+flowchart LR
+    G0["GPU0<br/>shard A"] <-->|"all-gather"| G1["GPU1<br/>shard B"]
+    G1 <-->|"all-gather"| G2["GPU2<br/>shard C"]
+    classDef s fill:#f9d79508,stroke:#ee8f24,color:#c9750f,stroke-width:1.5px
+    class G0,G1,G2 s
+```
+
+</figure>
+
+<figure>
+<figcaption>Tensor Parallel: each layer's matmul sliced; all-reduce every layer</figcaption>
+
+```mermaid
+flowchart LR
+    subgraph GPU0
+      A0["Layer k<br/>half A"]
+    end
+    subgraph GPU1
+      A1["Layer k<br/>half B"]
+    end
+    A0 <-->|"all-reduce<br/>(every layer)"| A1
+    classDef t fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
+    class A0,A1 t
+```
+
+</figure>
+
+<figure>
+<figcaption>Pipeline Parallel: layer stack split into stages; micro-batches pipelined</figcaption>
+
+```mermaid
+flowchart LR
+    subgraph GPU0
+      direction LR
+      L0["L0"] --> L1["L1"]
+    end
+    subgraph GPU1
+      direction LR
+      L2["L2"] --> L3["L3"]
+    end
+    L1 -->|"stage<br/>hand-off"| L2
+    classDef p fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    class L0,L1,L2,L3 p
+```
+
+</figure>
+
+<figure class="pcart-wide">
+<figcaption>Sequence / Context: sequence sliced per rank; ring-attention rotates KV</figcaption>
+
+```mermaid
+flowchart LR
+    S0["GPU0<br/>seq 0 · KV 0"] -->|"KV"| S1["GPU1<br/>seq 1 · KV 1"]
+    S1 -->|"KV"| S2["GPU2<br/>seq 2 · KV 2"]
+    S2 -->|"KV rotates the ring"| S0
+    classDef c fill:#7c4ed508,stroke:#7c4ed5,color:#7c4ed5,stroke-width:1.5px
+    class S0,S1,S2 c
+```
+
+</figure>
+
+</div>
+
+<SpeakerNotes>
+The same five strategies from the previous table, now as pictures (this is the
+cartoon from our pretraining paper, redrawn). Data parallel: the model is
+replicated on every GPU, the batch is sliced (x0/x1/...), and gradients are
+all-reduced and averaged each step. FSDP/ZeRO: parameters, gradients, and
+optimizer state are sharded across GPUs and all-gathered just-in-time as each
+layer runs forward, trading communication for memory. Tensor parallel: each
+layer's matmul is split across GPUs with an all-reduce of activations every layer,
+so it is chatty, keep it on-node. Pipeline parallel: the layer stack is split into
+stages on different GPUs with a hand-off between stages, and micro-batches are
+pipelined to keep every stage busy. Sequence/context parallel: each GPU holds a
+slice of the sequence and its KV blocks rotate around a ring (ring-attention), for
+very long context. The takeaway is the same as the table: DP is the default,
+everything else answers a specific "will not fit" problem.
+</SpeakerNotes>
+
+<style>{`
+  #parallelism-cartoon .pcart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.5lh 2ch;
+    align-items: start;
+  }
+  /* SP/CP panel spans the empty 6th cell so the ring has room. */
+  #parallelism-cartoon .pcart-wide { grid-column: span 1; }
+  #parallelism-cartoon figure { margin: 0; }
+  #parallelism-cartoon figcaption {
+    font-size: 0.72em; color: var(--foreground2, #838383);
+    line-height: 1.25; margin-block-end: 0.2lh;
+  }
+  #parallelism-cartoon .mermaid svg { width: 100%; max-width: 100%; height: auto; max-height: 13lh; }
+  @media (max-width: 768px) {
+    #parallelism-cartoon .pcart-grid { grid-template-columns: 1fr; }
+  }
+`}</style>
+
+</Slide>
+
 {/* source: 2025/10/15:505-531 (ZeRO stages 1/2/3, FSDP) */}
 <Slide id="zero-fsdp">
 
