@@ -223,6 +223,15 @@
     li > p {
         margin-block: 0;
     }
+    /* A top-level list that follows a lead paragraph needs breathing room
+       above it, or the bullets fuse to the sentence. Adjacent-sibling form
+       (p + list) so it only fires after a paragraph — a list right after a
+       heading already gets its gap from the heading's margin-block-end, and
+       a list opening a slide gets none. 0.5lh matches the heading rhythm so
+       the lead + its bullets read as one group. */
+    .slide-inner > p + :is(ul, ol) {
+        margin-block-start: 0.5lh;
+    }
     table,
     th,
     td {
@@ -314,6 +323,29 @@
        taller than the line they sit in. */
     code {
         font-size: 0.92em;
+    }
+    /* Inline-code differentiation on slides. The global chip
+       (`--code-bg: surface1`, `--code-fg: text`) is nearly invisible on
+       the dark deck: the fill barely separates from `--base` and the text
+       is the same color as prose, so `import`, `stat()`, `rsync` read as
+       faintly-boxed body text (projector-hostile). Give the inline chip a
+       real cue: the theme's own violet, distinct from the blue link/heading
+       color, the pink accent, and the diagram greens.
+
+       Use the theme's `--purple` token DIRECTLY — every theme already tunes
+       it to be legible on its own background (dark theme: light purple l~0.7
+       on the near-black base; light theme: deep purple l~0.57 on near-white),
+       so it can never read "out of sync" with that theme's palette. Fill and
+       border are alpha-tinted from the same token. Scoped to inline code only
+       — `pre.astro-code > code` (the shiki codeblock body) keeps its theme. */
+    :is(p, li, td, h1, h2, h3, h4, figcaption) code {
+        --chip: var(--purple, var(--mauve, #8260cc));
+        color: var(--chip);
+        background-color: oklch(from var(--chip) l c h / 0.13);
+        border: 1px solid oklch(from var(--chip) l c h / 0.28);
+        border-radius: 3px;
+        padding-block: 0.02em;
+        padding-inline: 0.28em;
     }
     /* Codeblocks on slides must never overflow past the slide right
        edge — long shell commands (qsub lines, ezpz launch with
