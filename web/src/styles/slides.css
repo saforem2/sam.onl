@@ -1154,6 +1154,11 @@ body[data-speaker-window] [is-~='notes'] {
     [is-~='slide-status'] {
         display: none !important;
     }
+    /* Screen-reader skip link hides off-screen via translateY; print resets
+       transforms, so it would reappear on every page. Hard-hide it here. */
+    .skip-link {
+        display: none !important;
+    }
     [is-~='slide'] .slide-inner {
         position: absolute !important;
         inset: 0 !important;
@@ -1184,6 +1189,9 @@ body.slides-print-mode [is-~='slide'] {
     aspect-ratio: 16 / 9;
     page-break-after: always;
     break-after: page;
+}
+body.slides-print-mode .skip-link {
+    display: none !important;
 }
 body.slides-print-mode [is-~='slide-status'] {
     display: none !important;
