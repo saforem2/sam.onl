@@ -134,8 +134,9 @@ Every choice ahead trades compute for model quality; the job is to spend it well
 - You know HPC. You may be new to training LLMs at scale.
 - This is **lessons-learned**, not a survey: do-this-not-that from real runs on
   Aurora / Polaris.
-- Complementary to **Shilpika**'s talk: she covered {/* TODO(user): her topic(s) */},
-  so we focus on the rest of the pipeline.
+- Builds on today's earlier talks: **Jane** just did LLM basics (tokenization,
+  training objectives); **Bethany** covered the parallelisms; **Nathan**, profiling.
+  We assume those and focus on **making it survive at full-machine scale.**
 
 <SpeakerNotes>
 The through-line for the whole talk: you are trying to get the best model you can
@@ -146,6 +147,15 @@ Second-order optimizers try to reach the same loss in fewer steps. yeet and the
 Lustre work keep you from burning node-hours on startup. And the entire Part 2,
 failure recovery, exists so a crash does not throw away the compute you already
 spent. Keep asking, of every slide: how does this get more model per GPU-hour?
+
+Placement in the day: this comes right after Jane's Intro to LLM (tokenization,
+LM objectives, pre to post-training) and later in the day than Bethany's
+Distributed Deep Learning, which already covered the parallelism taxonomy (DP,
+FSDP/ZeRO, TP, PP, sequence/context/expert, hybrid) and Nathan's profiling talk.
+So our parallelism section is deliberately a fast recap framed as "which one to
+reach for and when," not a re-teach. Lean on "Bethany covered the how; here is
+the how-to-choose plus what breaks at scale." Shilpika only gives the morning
+welcome, so there is no technical overlap to dodge there.
 </SpeakerNotes>
 
 </Slide>
@@ -581,8 +591,8 @@ O(N) you'd get pushing from one source.
 
 ## The parallelism menu
 
-Five axes. You mix and match them ("4D parallelism" is just several of these
-stacked). The only question is _what each one splits_.
+Bethany covered these in depth. Fast recap as a **decision menu**: five axes, mix
+and match ("4D parallelism" = several stacked). The only question: _what each splits_.
 
 | Strategy | Abbr. | What it splits | You reach for it when... |
 | --- | :---: | --- | --- |
@@ -1598,7 +1608,7 @@ exactly why the bounded fan-out plus a .complete-marker-last discipline matters.
 
 </Slide>
 
-{/* source: reuse · checkpoint converters (SIAM25:363 / 2025-12-16) + node-local staging + checkpoint-729-hf */}
+{/* source: reuse · checkpoint converters (SIAM25:363 / 2025-12-16) + node-local staging */}
 <Slide id="fast-restart">
 
 ## Restarting quickly
@@ -1616,8 +1626,7 @@ The recovery clock runs crash → first-step-back-training, not crash → "file 
 - **Megatron ⇄ 🤗 HF ⇄ ZeRO ⇄ Universal**
 - **Universal** decouples from the parallelism layout → resume at a _different_
   TP/PP/DP than you saved at
-
-**Pays off downstream:** `checkpoint-729-hf` is the base our SFT and GRPO build on.
+- the converted HF checkpoint is what you **evaluate, serve, or fine-tune from**
 
 <SpeakerNotes>
 A checkpoint you cannot reload fast is only half an insurance policy. The recovery
@@ -1634,9 +1643,10 @@ training-format checkpoint and the format you evaluate, serve, or fine-tune from
 are not the same thing. Universal decouples the checkpoint from the parallelism
 layout, so you can resume at a different TP/PP/DP config than you saved at,
 recovering on whatever the scheduler gives you, not only an identical allocation.
-It pays off downstream too: checkpoint-729-hf is now a first-class production
-asset, the base our SFT and GRPO stages build on, so fast portable reload is not
-just a restart nicety, it is how the model leaves pre-training.
+And the converted HF checkpoint is the portable artifact everything after
+pre-training reads, so fast portable reload is not just a restart nicety, it is
+how the model leaves pre-training. (Post-training itself is Jane's talk, not this
+one.)
 </SpeakerNotes>
 
 </Slide>
