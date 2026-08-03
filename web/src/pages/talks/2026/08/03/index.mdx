@@ -460,6 +460,8 @@ One `import torch` = thousands of `stat()` / `open()`. Now × 50,000 ranks.
 > [!NOTE]+ Python is pathologically small-file
 > The fix is not a faster FS. It is not hitting the FS from every rank.
 
+Deep dive: [Running 50k Python processes on Aurora with `ezpz yeet`](https://samf.sh/posts/2026/05/01/)
+
 <SpeakerNotes>
 A single `import torch` is not one file read: it is thousands of stat(), open(),
 and read() calls walking site-packages for modules, .pyc caches, and shared
