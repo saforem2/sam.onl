@@ -1913,6 +1913,54 @@ on a Friday.
 
 </Slide>
 
+{/* source: reuse · 2026/07/14 since-tpc "where production stands" (CPT row dropped: post-training = Jane's scope) */}
+<Slide id="prod-status" size="sm">
+
+## Where production stands
+
+What the machinery above actually produced. The next few slides zoom in on these.
+
+<div class="tight-table">
+
+| Run | Nodes | Steps | Tokens | Loss | Status |
+| --- | ----: | ----: | --- | ---: | --- |
+| [**2B** base](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/2b/n256/) | 256 | 92,859 | 4.674T (100%) | 2.65 | ✅ **complete** |
+| [**2B-MDS** ref](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/2b-mds/) | 256 | 154,391 | 7.770T (166%) | 2.03 | ✅ 3-stage reference |
+| [**20B**/512N](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/20b/n512/) | 512 | 6,010 | 605B (13%) | 2.44 | advancing (auto-retry) |
+| [**20B**/256N](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/20b/n256/) | 256 | 6,301 | 159B (3%) | 2.44 | advancing |
+| [**80B**](https://github.com/saforem2/torchtitan/tree/ezpz/torchtitan/experiments/ezpz/docs/production/agpt/80b/n512/) | 512 | 14 | (NaN'd) | NaN | ❌ optimizer cliff |
+
+</div>
+
+- Two 2B runs **complete**; both 20B chains **advancing**; the **80B** hit the
+  bf16 optimizer cliff (the wall from Part 2).
+
+<SpeakerNotes>
+Orientation before the results curves: this is the current state of AuroraGPT
+production on Aurora, and everything on the next few slides is one of these rows.
+The 2B base finished its full 4.67T-token budget at loss 2.65. The 2B-MDS
+reference is the older Megatron-DeepSpeed run carried to 7.77T tokens (166% of the
+stage-1 budget) at loss 2.03, the lowest-loss model we have. Both 20B chains are
+advancing under the auto-retry machinery, the 512N one at ~605B tokens / loss 2.44.
+The 80B is the cautionary row: it NaN'd in the first dozen steps at the bf16
+optimizer cliff, the wall we hit in Part 2. Post-training runs (CPT/SFT/GRPO) are
+Jane's territory, so they are off this board; this is pretraining status only.
+</SpeakerNotes>
+
+<style>{`
+  #prod-status table { table-layout: fixed; width: max-content; max-width: 100%; }
+  #prod-status table th, #prod-status table td { white-space: nowrap; }
+  #prod-status table th:nth-child(1), #prod-status table td:nth-child(1) { width: 14ch; }
+  #prod-status table th:nth-child(2), #prod-status table td:nth-child(2) { width: 7ch; }
+  #prod-status table th:nth-child(3), #prod-status table td:nth-child(3) { width: 8ch; }
+  #prod-status table th:nth-child(4), #prod-status table td:nth-child(4) { width: 15ch; }
+  #prod-status table th:nth-child(5), #prod-status table td:nth-child(5) { width: 6ch; }
+  #prod-status table th:nth-child(6), #prod-status table td:nth-child(6) { width: 22ch; white-space: normal; }
+  #prod-status pre, #prod-status table { font-size: 0.95em; }
+`}</style>
+
+</Slide>
+
 {/* source: net-new · 2B MDS 3-stage loss; W&B pull via docs/production/agpt/2b-mds/loss_data */}
 <Slide id="results-2b">
 
@@ -1945,58 +1993,14 @@ together, which means no silent divergence, and each of the two data-mix stage
 transitions, at 4.673T and 7.064T tokens, steps the loss down cleanly, ending
 around 2.03. The x-axis is tokens, computed from the iteration count times the
 50.3M tokens per step (GBS 6144 x seq 8192). Data pulled from the production W&B
-run. The next slide is the 20B, same story one scale up.
+run. The next slides zoom out: every chain on one loss axis, then throughput/MFU,
+then the eval gate.
 </SpeakerNotes>
 
 <style>{`
   #results-2b figure { margin: 0.4lh 0 0; }
   #results-2b img { width: 100%; height: auto; max-height: 26lh; }
   #results-2b figcaption { font-size: 0.8em; color: var(--foreground2, #838383); margin-block-start: 0.4lh; line-height: 1.35; }
-`}</style>
-
-</Slide>
-
-{/* source: net-new · results payoff; loss from docs/experiments/agpt/aurora + eval from docs/evals/agpt/20b */}
-<Slide id="results-payoff">
-
-## Same story, one scale up: 20B
-
-The **20B** on Aurora, ~600B tokens: loss falls the same way, and the eval gate
-moves, well above random on every benchmark.
-
-<figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-08-03/figures/results-payoff-mobile.svg"
-        />
-        <img
-            src="/talks/2026-08-03/figures/results-payoff.svg"
-            alt="Two panels for AuroraGPT-20B: left, pretraining loss falling from 12.9 to 2.44 over ~605B tokens; right, final lm-eval scores (HellaSwag 0.61, ARC-Easy 0.65, ARC-Challenge 0.36, Winogrande 0.58, PIQA 0.76, BoolQ 0.58) all above their random baselines."
-        />
-    </picture>
-</figure>
-
-<SpeakerNotes>
-The one results slide in a how-to talk, placed right before the capstone so the
-machinery has a payoff. Everything in Parts 1 and 2, the data pipeline, the
-portable launch, the parallelism choices, the failure recovery, exists to get a
-model that trains cleanly and learns. This is AuroraGPT-20B on Aurora, the v2
-(fp32-master) run, about 600B tokens.
-
-Left panel: pretraining loss falls from 12.9 at init to about 2.44 over ~605B
-tokens (the full v2 512N chain, stitched across all its restarts). Right panel:
-final lm-eval, every benchmark clears its random baseline (the red dashed line,
-0.25 for the 4-way ARC/HellaSwag tasks, 0.5 for the binary Winogrande/PIQA/BoolQ)
-by a wide margin: HellaSwag 0.61, ARC-Easy 0.65, ARC-Challenge 0.36, Winogrande
-0.58, PIQA 0.76, BoolQ 0.58. Post-training (CPT, SFT, GRPO) and the full
-per-benchmark eval curves are in the backup slides and the July AuroraGPT deck.
-Data from the ezpz production docs.
-</SpeakerNotes>
-
-<style>{`
-  #results-payoff figure { margin: 0.4lh 0 0; }
-  #results-payoff img { width: 100%; height: auto; max-height: 26lh; }
 `}</style>
 
 </Slide>
@@ -2097,6 +2101,53 @@ throughput line are checkpoint/eval pauses, not slowdowns.
 
 </Slide>
 
+{/* source: reuse · 2026/07/14 agpt-eval "Evals: 2B + 20B vs MDS, per token" (eval-combined-4bench) */}
+<Slide id="results-eval">
+
+## It learns: eval vs tokens, and the 20B is most efficient
+
+Loss falling is necessary, not sufficient. The eval gate is what says the model
+learned, and **per token the 20B pulls ahead of both 2B chains.**
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/eval-combined-4bench-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/eval-combined-4bench.svg"
+            alt="lm-eval accuracy vs tokens consumed on four benchmarks (HellaSwag, ARC-Easy, ARC-Challenge, Winogrande) for the 2B v2 256N and 512N chains, the 20B v2 512N chain, and the 2B-MDS reference. On every benchmark the 20B (green) rises far steeper per token, reaching ARC-Easy ~0.69 and HellaSwag ~0.63 by ~440B tokens, beating both 2B chains at matched token counts."
+        />
+    </picture>
+    <figcaption>Four benchmarks vs tokens. The <strong>20B (green) climbs steepest per token</strong>: ARC-Easy ~0.69 by ~440B tokens, already past both 2B chains. More model per GPU-hour, made literal.</figcaption>
+</figure>
+
+<SpeakerNotes>
+The payoff, and it ties straight back to the thesis. Loss going down is necessary
+but not sufficient; the lm-eval gate is what tells you the model actually learned.
+Four benchmarks (HellaSwag, ARC-Easy, ARC-Challenge, Winogrande), accuracy vs
+tokens consumed, for the two 2B torchtitan chains, the 20B 512N chain, and the
+2B-MDS reference (the blue x, SophiaG).
+
+The reading: on every benchmark the 20B (green) rises far steeper per token than
+either 2B chain. By about 440B tokens it is already at ARC-Easy ~0.69 and
+HellaSwag ~0.63, beating both 2B chains at matched token counts by a wide margin,
+roughly 8x more token-efficient. That is "the most model per GPU-hour" made
+literal: at a fixed token (compute) budget, the larger model gets you further. The
+2B chains still climb nicely and plateau around 2T tokens (HellaSwag ~0.56,
+ARC-Easy ~0.65). Data from the committed eval tables in the ezpz docs. Post-training
+(CPT/SFT/GRPO) is Jane's talk and out of scope here; this is pretraining eval only.
+</SpeakerNotes>
+
+<style>{`
+  #results-eval figure { margin: 0.3lh 0 0; }
+  #results-eval img { width: 100%; height: auto; max-height: 24lh; }
+  #results-eval figcaption { font-size: 0.8em; color: var(--foreground2, #838383); margin-block-start: 0.4lh; line-height: 1.35; }
+`}</style>
+
+</Slide>
+
 {/* source: net-new capstone · ties together yeet + the fault-tolerance flags from Part 2 */}
 <Slide id="capstone">
 
@@ -2143,6 +2194,42 @@ a chained PBS resubmit wraps the whole thing at the JOB layer, the hours scope.
 The one-liner to land: at this scale you do not prevent failures, you make recovery
 so cheap that failure stops being an event. The person who launches this can close
 the laptop; the 9:36-PM-Friday silent hang from the previous slide recovered itself.
+</SpeakerNotes>
+
+</Slide>
+
+{/* source: reuse · 2026/07/14 generalizes "What generalizes, what doesn't" (MoE-specific items trimmed) */}
+<Slide id="generalizes">
+
+## What generalizes, what doesn't
+
+**Generalizes** _(vendor / site / model)_
+
+- Bit-exact deterministic **smoke gate** after every upstream sync
+- **lm-eval** as ground truth for "is it actually learning?"
+- **Spare-node failover** wrapper: same idea on Slurm
+- **Launcher / env autodetect**: push vendor-shaped assumptions _out_ of training code
+
+**Doesn't** _(re-tune per config / hardware / version)_
+
+- `torch.compile` decisions (helps dense, can _hurt_)
+- Collective tuning (CCL vs gloo fallbacks, NCCL/CCL env)
+- **Optimizer stability at the bf16 corner**: LR-finder rank ≠ sustained stability
+
+<SpeakerNotes>
+The meta-lesson, and it maps onto the whole talk. What generalizes is the
+machinery, not the numbers: the deterministic smoke gate after every fork sync,
+lm-eval as the ground-truth "is it learning" signal, the spare-node failover
+wrapper (the same idea ports to Slurm), and launcher/env autodetect that keeps
+vendor-shaped assumptions out of training code. That is exactly the ezpz bet: make
+the portable thing portable.
+
+What does not generalize, what you must re-tune for each config, hardware, and
+version: torch.compile decisions (it helps dense models but can hurt), collective
+tuning (CCL vs gloo fallbacks, the NCCL/CCL env soup), and above all optimizer
+stability at the bf16 corner, where the LR-finder's ranking does not predict
+sustained stability (that is what killed the 80B). Know which bucket a given knob
+is in, so you spend your tuning time only on the things that actually need it.
 </SpeakerNotes>
 
 </Slide>
@@ -2285,8 +2372,7 @@ Questions?
 Material that didn't make the main path but is here for Q&A. Pull the full slides
 from the [AuroraGPT-at-scale deck](https://samf.sh/talks/2026/07/14) as needed:
 
-- **Evaluation:** 2B vs 20B across ARC / HellaSwag / WinoGrande
-- **Post-training:** CPT · SFT · GRPO curves
+- **Post-training:** CPT · SFT · GRPO curves (covered in Jane's talk)
 - **MoE on Intel XPU:** throughput and where it stands
 - **AERIS:** a production case study on the same stack
 - **Failover engineering:** the full silent-hang recovery write-up
