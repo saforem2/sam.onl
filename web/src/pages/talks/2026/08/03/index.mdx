@@ -625,15 +625,15 @@ chose MoE.
 
 </Slide>
 
-{/* source: net-new · mermaid reproduction of the paper's parallelism cartoon (figures/parallelism-*.pdf): DP / FSDP / TP / PP / SP-CP */}
-<Slide id="parallelism-cartoon" size="sm">
+{/* source: net-new · mermaid reproduction of the paper's parallelism cartoon (figures/parallelism-*.pdf), part 1: DP / FSDP / TP */}
+<Slide id="parallelism-cartoon-1" size="sm">
 
-## The same five, in pictures
+## In pictures (1/2): replicate, shard, split a layer
 
 <div class="pcart-grid">
 
 <figure>
-<figcaption>Data Parallel: model replicated, batch sliced, grads averaged</figcaption>
+<figcaption>**Data Parallel** — model replicated, batch sliced, grads averaged</figcaption>
 
 ```mermaid
 flowchart LR
@@ -652,7 +652,7 @@ flowchart LR
 </figure>
 
 <figure>
-<figcaption>FSDP / ZeRO: params sharded, all-gathered just-in-time per layer</figcaption>
+<figcaption>**FSDP / ZeRO** — params sharded, all-gathered just-in-time per layer</figcaption>
 
 ```mermaid
 flowchart LR
@@ -664,26 +664,73 @@ flowchart LR
 
 </figure>
 
-<figure>
-<figcaption>Tensor Parallel: each layer's matmul sliced; all-reduce every layer</figcaption>
+<figure class="pcart-wide">
+<figcaption>**Tensor Parallel** — each layer's matmul sliced; all-reduce every layer</figcaption>
 
 ```mermaid
 flowchart LR
     subgraph GPU0
-      A0["Layer k<br/>half A"]
+      A0["Layer k · half A"]
     end
     subgraph GPU1
-      A1["Layer k<br/>half B"]
+      A1["Layer k · half B"]
     end
-    A0 <-->|"all-reduce<br/>(every layer)"| A1
+    A0 <-->|"all-reduce (every layer)"| A1
     classDef t fill:#118cc208,stroke:#118cc2,color:#118cc2,stroke-width:1.5px
     class A0,A1 t
 ```
 
 </figure>
 
+</div>
+
+- **DP** is the default (nothing changes). **FSDP** trades comms for memory.
+  **TP** is chatty (all-reduce every layer): keep it **on-node**.
+
+<SpeakerNotes>
+The five strategies from the table, now as pictures (the cartoon from our
+pretraining paper, redrawn), split over two slides. This first slide is the three
+that either replicate or shard the model itself. Data parallel: the model is
+replicated on every GPU, the batch is sliced (x0/x1/...), and gradients are
+all-reduced and averaged each step; it is the default and costs almost nothing.
+FSDP/ZeRO: parameters, gradients, and optimizer state are sharded across GPUs and
+all-gathered just-in-time as each layer runs forward, trading communication for
+memory. Tensor parallel: each layer's matmul is split across GPUs with an
+all-reduce of activations every single layer, so it is chatty, keep it on-node
+where the interconnect is fast. Next slide: the two that split along the compute /
+sequence axis (pipeline and sequence/context).
+</SpeakerNotes>
+
+<style>{`
+  #parallelism-cartoon-1 .pcart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6lh 3ch;
+    align-items: start;
+  }
+  #parallelism-cartoon-1 .pcart-wide { grid-column: 1 / -1; }
+  #parallelism-cartoon-1 figure { margin: 0; }
+  #parallelism-cartoon-1 figcaption {
+    font-size: 0.82em; color: var(--foreground2, #838383);
+    line-height: 1.3; margin-block-end: 0.3lh;
+  }
+  #parallelism-cartoon-1 .mermaid svg { width: 100%; max-width: 100%; height: auto; max-height: 15lh; }
+  @media (max-width: 768px) {
+    #parallelism-cartoon-1 .pcart-grid { grid-template-columns: 1fr; }
+  }
+`}</style>
+
+</Slide>
+
+{/* source: net-new · parallelism cartoon part 2: PP / SP-CP */}
+<Slide id="parallelism-cartoon-2" size="sm">
+
+## In pictures (2/2): split the depth, split the sequence
+
+<div class="pcart-grid">
+
 <figure>
-<figcaption>Pipeline Parallel: layer stack split into stages; micro-batches pipelined</figcaption>
+<figcaption>**Pipeline Parallel** — layer stack split into stages; micro-batches pipelined</figcaption>
 
 ```mermaid
 flowchart LR
@@ -695,15 +742,15 @@ flowchart LR
       direction LR
       L2["L2"] --> L3["L3"]
     end
-    L1 -->|"stage<br/>hand-off"| L2
+    L1 -->|"stage hand-off"| L2
     classDef p fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
     class L0,L1,L2,L3 p
 ```
 
 </figure>
 
-<figure class="pcart-wide">
-<figcaption>Sequence / Context: sequence sliced per rank; ring-attention rotates KV</figcaption>
+<figure>
+<figcaption>**Sequence / Context** — sequence sliced per rank; ring-attention rotates KV</figcaption>
 
 ```mermaid
 flowchart LR
@@ -718,39 +765,38 @@ flowchart LR
 
 </div>
 
+- **PP** splits the layer stack into stages across nodes; **SP/CP** splits the
+  **sequence** for long context (ring-attention over KV). **EP** (not shown) splits
+  MoE experts.
+
 <SpeakerNotes>
-The same five strategies from the previous table, now as pictures (this is the
-cartoon from our pretraining paper, redrawn). Data parallel: the model is
-replicated on every GPU, the batch is sliced (x0/x1/...), and gradients are
-all-reduced and averaged each step. FSDP/ZeRO: parameters, gradients, and
-optimizer state are sharded across GPUs and all-gathered just-in-time as each
-layer runs forward, trading communication for memory. Tensor parallel: each
-layer's matmul is split across GPUs with an all-reduce of activations every layer,
-so it is chatty, keep it on-node. Pipeline parallel: the layer stack is split into
-stages on different GPUs with a hand-off between stages, and micro-batches are
-pipelined to keep every stage busy. Sequence/context parallel: each GPU holds a
-slice of the sequence and its KV blocks rotate around a ring (ring-attention), for
-very long context. The takeaway is the same as the table: DP is the default,
-everything else answers a specific "will not fit" problem.
+The two axis-splitting strategies. Pipeline parallel: the layer stack is split
+into stages on different GPUs (L0/L1 on GPU0, L2/L3 on GPU1) with a hand-off
+between stages; micro-batches are pipelined so every stage stays busy instead of
+idling. It spans nodes fine, unlike TP. Sequence/context parallel: each GPU holds
+a slice of the sequence and its KV blocks, and the KV rotates around a ring
+(ring-attention), which is how you fit very long context. Expert parallel is the
+fifth axis from the table, not drawn here since it only matters if you chose MoE:
+it splits the experts of an MoE layer across GPUs. The takeaway across both slides
+is the table's: DP is the default, and everything else answers a specific
+will-not-fit problem, so climb only when memory forces you.
 </SpeakerNotes>
 
 <style>{`
-  #parallelism-cartoon .pcart-grid {
+  #parallelism-cartoon-2 .pcart-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 0.5lh 2ch;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6lh 3ch;
     align-items: start;
   }
-  /* SP/CP panel spans the empty 6th cell so the ring has room. */
-  #parallelism-cartoon .pcart-wide { grid-column: span 1; }
-  #parallelism-cartoon figure { margin: 0; }
-  #parallelism-cartoon figcaption {
-    font-size: 0.72em; color: var(--foreground2, #838383);
-    line-height: 1.25; margin-block-end: 0.2lh;
+  #parallelism-cartoon-2 figure { margin: 0; }
+  #parallelism-cartoon-2 figcaption {
+    font-size: 0.82em; color: var(--foreground2, #838383);
+    line-height: 1.3; margin-block-end: 0.3lh;
   }
-  #parallelism-cartoon .mermaid svg { width: 100%; max-width: 100%; height: auto; max-height: 13lh; }
+  #parallelism-cartoon-2 .mermaid svg { width: 100%; max-width: 100%; height: auto; max-height: 16lh; }
   @media (max-width: 768px) {
-    #parallelism-cartoon .pcart-grid { grid-template-columns: 1fr; }
+    #parallelism-cartoon-2 .pcart-grid { grid-template-columns: 1fr; }
   }
 `}</style>
 
