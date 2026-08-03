@@ -1036,6 +1036,85 @@ we built to survive them. The restarts are how you survive the bad news.
 
 </Slide>
 
+{/* source: copy of results-2b, shown up front as the Part 2 payoff-preview ("the loss curve") */}
+<Slide id="results-2b-preview">
+
+## Where we're headed: AuroraGPT-2B to 7.77T tokens
+
+One continuous run, **154K steps**, three data-mix stages. Everything in Part 2
+is what it takes to keep _this curve_ going.
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/mds-loss-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/mds-loss.svg"
+            alt="AuroraGPT-2B loss vs tokens over one continuous 7.77T-token run: train and val loss track together, plateau, then step down sharply at each of two data-mix stage transitions (4.673T and 7.064T tokens), ending at loss 2.03."
+        />
+    </picture>
+    <figcaption>Each data-mix transition (dashed) steps the loss down; train and val stay locked together to a final 2.03.</figcaption>
+</figure>
+
+<SpeakerNotes>
+A preview of the payoff, shown here at the top of Part 2 so the failure stories
+that follow have stakes: this is the flagship AuroraGPT-2B run, one continuous
+154,000-step pretraining to about 7.77T tokens, loss ending near 2.03, train and
+val locked together. It only exists because it survived weeks of the machinery we
+are about to cover: async checkpointing, layered auto-restart, silent-hang
+recovery. We come back to this curve, and the 20B, in full at the end.
+</SpeakerNotes>
+
+<style>{`
+  #results-2b-preview figure { margin: 0.4lh 0 0; }
+  #results-2b-preview img { width: 100%; height: auto; max-height: 26lh; }
+  #results-2b-preview figcaption { font-size: 0.8em; color: var(--foreground2, #838383); margin-block-start: 0.4lh; line-height: 1.35; }
+`}</style>
+
+</Slide>
+
+{/* source: copy of results-all, shown up front as the Part 2 payoff-preview */}
+<Slide id="results-all-preview">
+
+## And the full picture: every run, one axis
+
+Every canonical AuroraGPT pretraining run, loss vs tokens. Bigger models fall
+**faster per token**; the 2B reference rides three data-mix stages the furthest.
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/all-production-loss-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/all-production-loss.svg"
+            alt="Training loss vs tokens for five overlaid AuroraGPT chains: 2B-MDS reference (blue dashed) descending through two data-mix stage transitions to 2.03 at 7.77T tokens; 2B torchtitan n256 (salmon) and n512 (dark red) tracking near 2.65-2.71; and the two 20B chains (n256 orange dashed, n512 green) dropping steeply per token to about 2.44."
+        />
+    </picture>
+    <figcaption>The 20B chains (green, orange) drop fastest per token; the 2B-MDS reference (blue) goes furthest, stepping down at each data-mix transition to 2.03.</figcaption>
+</figure>
+
+<SpeakerNotes>
+The whole production program on one loss-vs-tokens axis, previewed here so the
+scale is clear before the failure section: five chains, the 2B-MDS reference
+(blue dashed) carried furthest to 7.77T / loss 2.03, the two 2B torchtitan chains,
+and the two 20B chains dropping steeply per token to about 2.44. Every one of
+these is a run that had to survive at full-machine scale. We return to this and
+the throughput/eval views at the end; right now, the point is just how much is
+riding on the recovery machinery.
+</SpeakerNotes>
+
+<style>{`
+  #results-all-preview figure { margin: 0.4lh 0 0; }
+  #results-all-preview img { width: 100%; height: auto; max-height: 25lh; }
+  #results-all-preview figcaption { font-size: 0.8em; color: var(--foreground2, #838383); margin-block-start: 0.4lh; line-height: 1.35; }
+`}</style>
+
+</Slide>
+
 {/* source: merge · was critical-batch-size + large-batches; 2026/07/14:218-226 + 2026/06/03:191-197 + large-batch caveats */}
 <Slide id="critical-batch-size" size="sm">
 
@@ -1074,7 +1153,7 @@ near-linear speedup.[^cbs-openai]
 
 - **LR scaling** (linear / $\sqrt{B}$)[^cbs-openai] + **longer warmup** + grad clip
 - **linear LR backfires:** 80B NaN'd _earlier_ (step 7 vs 29)
-- **LRs don't transfer:** `mano`@48 loses to AdamW@384
+- **LRs don't transfer:** `mano`@48 loses to AdamW@384 (unless you use **μP**[^cbs-mup])
 
 </Col>
 </Cols>
@@ -1105,7 +1184,9 @@ Where they break: past B_crit sample efficiency degrades. Linear LR scaling
 backfires at the extreme; at 80B, LR-scaling the 16x batch moved the NaN earlier,
 step 7 vs step 29. And LRs do not transfer across batch: mano tuned at GBS=48 loses
 to AdamW at GBS=384 (2.88 vs 2.71) until re-tuned. Practical rule: re-tune at the
-target batch and node count.
+target batch and node count, or sidestep the re-tuning entirely with muP (maximal-
+update parametrization): parametrize so the optimal LR is width-invariant, tune on
+a small proxy model, and transfer the hyperparameters to the full-scale run.
 </SpeakerNotes>
 
 [^cbs-openai]: [An Empirical Model of Large-Batch Training](https://arxiv.org/abs/1812.06162) (McCandlish et al. 2018): LR and warmup both need to grow with batch, and the payoff flattens at the critical batch size.
@@ -1114,6 +1195,8 @@ target batch and node count.
 
 [^cbs-zhou]: [How to Set the Batch Size for Large-Scale Pre-training?](https://arxiv.org/abs/2601.05034) (Zhou et al. 2025).
 
+[^cbs-mup]: **μP** (maximal-update parametrization): [Tensor Programs V](https://arxiv.org/abs/2203.03466) (Yang et al. 2022). Reparametrize so the optimal LR is invariant to width, tune on a small proxy, then transfer to the full model ("μTransfer").
+
 <style>{`
   /* B_crit schematic in the left column, ceiling+knobs stacked right, tip full
      width below — uses the horizontal space instead of leaving a dead gap. */
@@ -1121,6 +1204,84 @@ target batch and node count.
   #critical-batch-size .cbs-fig img { width: 100%; height: auto; max-height: 20lh; }
   @media (max-width: 768px) {
     #critical-batch-size .cbs-fig img { max-height: 16lh; }
+  }
+`}</style>
+
+</Slide>
+
+{/* source: reuse · 2026/07/14:938-1016 mano slide (table + figure + claims verbatim) */}
+<Slide id="mano" size="sm">
+
+## `mano`: Muon quality at AdamW speed
+
+[`mano`](https://arxiv.org/abs/2601.23000)[^mano] normalizes updates on a
+rotating **Oblique manifold** with $O(\text{dim})$ vector-norm ops (no
+Newton-Schulz iterations). So it matches Muon's loss without Muon's throughput
+tax.
+
+<div class="mano-grid">
+
+<div class="mano-left">
+
+<div class="tight-table">
+
+| Optimizer | Loss | TPS |
+| --- | ---: | ---: |
+| Muon | 3.557 | 4,556 |
+| **`mano`** | **3.631** | **7,048** |
+| AdamW | 3.801 | 7,245 |
+| SophiaG | 4.719 | 7,208 |
+
+</div>
+
+- **Muon and `mano` tie on loss (~3.6); `mano` runs at AdamW speed** (~7,000 vs
+  ~4,600 TPS), so it **wins on wall-clock**.
+- Caveat: at **large batch** (GBS=384) AdamW still wins (2.71 vs 2.88); `mano`'s
+  LR was tuned at GBS=48 and needs re-tuning.
+
+</div>
+
+<div class="mano-right">
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/optimizer-loss-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/optimizer-loss.svg"
+            alt="Training loss vs step for Muon, mano, AdamW, SophiaG at 2B / GBS=48 over 1000 steps: mano and Muon converge lowest and nearly overlap, AdamW above, SophiaG highest"
+        />
+    </picture>
+</figure>
+
+</div>
+
+</div>
+
+[^mano]: [`mano`: manifold-normalized optimization](https://arxiv.org/abs/2601.23000) (2026). Implemented in our fork alongside SPAM ([2501.06842](https://arxiv.org/abs/2501.06842)).
+
+<style>{`
+  #mano .mano-grid {
+    display: grid;
+    grid-template-columns: 34ch 1fr;
+    gap: 3ch;
+    align-items: start;
+    width: 100%;
+  }
+  #mano .mano-left { min-width: 0; }
+  #mano .mano-right { min-width: 0; display: flex; justify-content: center; }
+  #mano .mano-right figure { margin: 0; width: 100%; }
+  #mano .mano-right img { width: 100%; height: auto; max-height: 24lh; }
+  #mano table { table-layout: fixed; width: 100%; max-width: none; }
+  #mano table th:nth-child(1), #mano table td:nth-child(1) { width: 13ch; }
+  #mano table th:nth-child(2), #mano table td:nth-child(2),
+  #mano table th:nth-child(3), #mano table td:nth-child(3) {
+    width: auto; text-align: right; white-space: nowrap;
+  }
+  @media (max-width: 768px) {
+    #mano .mano-grid { grid-template-columns: 1fr; gap: 1lh; }
   }
 `}</style>
 
@@ -1218,84 +1379,6 @@ direction: manifold normalization instead of eigenbases.
   #optimizer-landscape .opt-cmp-fig { margin: 0; }
   #optimizer-landscape .opt-cmp-fig img { width: 100%; height: auto; max-height: 20lh; }
   #optimizer-landscape .opt-cmp-fig figcaption { font-size: 0.78em; color: var(--foreground2, #838383); margin-block-start: 0.3lh; line-height: 1.3; }
-`}</style>
-
-</Slide>
-
-{/* source: reuse · 2026/07/14:938-1016 mano slide (table + figure + claims verbatim) */}
-<Slide id="mano" size="sm">
-
-## `mano`: Muon quality at AdamW speed
-
-[`mano`](https://arxiv.org/abs/2601.23000)[^mano] normalizes updates on a
-rotating **Oblique manifold** with $O(\text{dim})$ vector-norm ops (no
-Newton-Schulz iterations). So it matches Muon's loss without Muon's throughput
-tax.
-
-<div class="mano-grid">
-
-<div class="mano-left">
-
-<div class="tight-table">
-
-| Optimizer | Loss | TPS |
-| --- | ---: | ---: |
-| Muon | 3.557 | 4,556 |
-| **`mano`** | **3.631** | **7,048** |
-| AdamW | 3.801 | 7,245 |
-| SophiaG | 4.719 | 7,208 |
-
-</div>
-
-- **Muon and `mano` tie on loss (~3.6); `mano` runs at AdamW speed** (~7,000 vs
-  ~4,600 TPS), so it **wins on wall-clock**.
-- Caveat: at **large batch** (GBS=384) AdamW still wins (2.71 vs 2.88); `mano`'s
-  LR was tuned at GBS=48 and needs re-tuning.
-
-</div>
-
-<div class="mano-right">
-
-<figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-08-03/figures/optimizer-loss-mobile.svg"
-        />
-        <img
-            src="/talks/2026-08-03/figures/optimizer-loss.svg"
-            alt="Training loss vs step for Muon, mano, AdamW, SophiaG at 2B / GBS=48 over 1000 steps: mano and Muon converge lowest and nearly overlap, AdamW above, SophiaG highest"
-        />
-    </picture>
-</figure>
-
-</div>
-
-</div>
-
-[^mano]: [`mano`: manifold-normalized optimization](https://arxiv.org/abs/2601.23000) (2026). Implemented in our fork alongside SPAM ([2501.06842](https://arxiv.org/abs/2501.06842)).
-
-<style>{`
-  #mano .mano-grid {
-    display: grid;
-    grid-template-columns: 34ch 1fr;
-    gap: 3ch;
-    align-items: start;
-    width: 100%;
-  }
-  #mano .mano-left { min-width: 0; }
-  #mano .mano-right { min-width: 0; display: flex; justify-content: center; }
-  #mano .mano-right figure { margin: 0; width: 100%; }
-  #mano .mano-right img { width: 100%; height: auto; max-height: 24lh; }
-  #mano table { table-layout: fixed; width: 100%; max-width: none; }
-  #mano table th:nth-child(1), #mano table td:nth-child(1) { width: 13ch; }
-  #mano table th:nth-child(2), #mano table td:nth-child(2),
-  #mano table th:nth-child(3), #mano table td:nth-child(3) {
-    width: auto; text-align: right; white-space: nowrap;
-  }
-  @media (max-width: 768px) {
-    #mano .mano-grid { grid-template-columns: 1fr; gap: 1lh; }
-  }
 `}</style>
 
 </Slide>
@@ -1434,91 +1517,6 @@ some went NaN. The takeaway: plan for the failure, not the happy path.
 [^bloom]: [BLOOM: A 176B-Parameter Open-Access Multilingual Language Model](https://arxiv.org/abs/2211.05100) (BigScience, 2022).
 
 [^glm]: [GLM-130B: An Open Bilingual Pre-Trained Model](https://arxiv.org/abs/2210.02414) (Zeng et al., ICLR 2023).
-
-</Slide>
-
-{/* source: refresh · 2026/06/03:6 abstract enumeration into a real slide */}
-<Slide id="failure-taxonomy">
-
-## A field guide to what breaks
-
-**The cost is telling transient (retry, fine) from systemic (retry reproduces it).**
-
-<figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-08-03/figures/failure-taxonomy-mobile.svg"
-        />
-        <img
-            src="/talks/2026-08-03/figures/failure-taxonomy.svg"
-            alt="Failure taxonomy grid: rows are where it broke (Hardware, Software, Network, System), columns are transient (retry and you're fine) vs systemic (retrying just reproduces it). Silent failures with no traceback (corrupt shard, bad upstream commit, collective hang) are marked as the dangerous ones."
-        />
-    </picture>
-</figure>
-
-<SpeakerNotes>
-Two axes matter. Where it broke, so you know who fixes it, and whether it is
-transient (retry and move on) or systemic (stop, or you corrupt the whole run).
-
-By layer: hardware is ECC errors, dead XPU, thermal throttle, a bad node in your
-allocation. Software is CheckpointError from routing non-determinism, OOM, a bad
-upstream commit. Network is fabric flaps, gloo "Connection closed by peer",
-collective hangs. System is Lustre stalls, PBS walltime, the scheduler handing you
-a node it should have drained.
-
-Transient means one bad node, a flaked collective, a mid-save kill: retry on fresh
-hardware and you are fine. Systemic means a config bug, a corrupted shard, a
-silent numerical bug: retrying just reproduces it faster. The whole operational
-cost is telling these two apart. Retry a systemic fault and you burn the spare
-pool; halt on a transient one and you waste walltime you already paid for. The
-dangerous cells are the silent ones, marked with a dot: no traceback, the loss
-still looks fine. The next two slides are exactly those.
-</SpeakerNotes>
-
-<style>{`
-  #failure-taxonomy figure { margin: 0.3lh 0 0; }
-  #failure-taxonomy img { width: 100%; height: auto; max-height: 24lh; }
-`}</style>
-
-</Slide>
-
-{/* source: refresh · real failure signatures (2025/12/16 restarts table; 2026/06/03 watchdog:1307) */}
-<Slide id="network-flaps">
-
-## War story: the fabric that wouldn't sit still
-
-At full-machine scale the interconnect is never fully healthy. It shows up two
-ways:
-
-- **Loud:** `gloo` `Connection closed by peer` (job `8470102`). You get an exit code.
-- **Quiet:** a collective just **stops**. Every rank blocks in the same `all_reduce`.
-
-The quiet one is dangerous:
-
-- **alive** by `kill -0`, nothing crashed
-- `xccl` ignores `train_timeout_seconds` → eats **full PBS walltime**
-- job `8479579` hung at **step 803**, heartbeat still ticking
-
-**The one signal you can trust:** a hang **quiets stdout**. Absence of progress is
-the detector (→ watchdog, later).
-
-<SpeakerNotes>
-At full-machine scale the interconnect is never fully healthy. A link flaps, a
-switch hiccups, and one collective somewhere stops making progress. The loud
-version is gloo TCP "Connection closed by peer" a few hours in (job 8470102,
-20B/256N); at least it crashed, so you get an exit code to act on. The quiet
-version is a collective that just stops: every rank blocks in the same all_reduce,
-waiting on a peer that will never answer.
-
-The quiet version is the dangerous one. The process is alive by kill -0, nothing
-has crashed. On XPU, xccl silently ignores train_timeout_seconds, so the hung
-collective sits there consuming your entire PBS walltime. We watched job 8479579
-(20B/512N) hang at step 803 with the heartbeat still ticking: alive, and doing
-nothing. The one signal you can trust is that a collective hang quiets stdout,
-because every rank is blocked in the same call so nothing reaches the log.
-Absence of progress is the detector, which is exactly what the watchdog keys on.
-</SpeakerNotes>
 
 </Slide>
 
@@ -1737,20 +1735,16 @@ snapshot to host memory, flush on a background thread, bound the fan-out.
 </Col>
 <Col width={5}>
 
-- **snapshot to host memory** (fast), then hand off
-- **stage, then flush** on a background thread
+- **snapshot to host memory**, then flush on a background thread
 - **bound concurrency:** cap ranks flushing at once
 - reload is **~55-63 s** at 20B (`dcp.load`-bound)
 
+> [!WARNING]+ The naive version took the job down
+> Unbounded async at **20B / 512N+** contends with training collectives on the
+> same fabric. Bound the fan-out; write a `.complete` marker last.
+
 </Col>
 </Cols>
-
-> [!WARNING]+ But the naive version took the job down
-> At **20B / 512N+**, unbounded `--checkpoint.async-mode=async` **takes the whole
-> job down**: the 232 GB write contends with training collectives on the same
-> fabric. A PBS **mid-save kill** once left a stale `step-4500/` **placeholder**,
-> the sync path assumed complete → walltime-blocked **weeks**. Bound the fan-out,
-> write a `.complete` marker last.
 
 <SpeakerNotes>
 Done right, async checkpointing hides the write behind compute. Snapshot to host
@@ -1992,17 +1986,21 @@ as the bash-lib path with a pure-Python loop on top.
 {/* source: reuse · watchdog 2026/07/14:1845 + FSM:1874 (mermaid verbatim) */}
 <Slide id="watchdog">
 
-## Catching silent hangs: `ezpz launch --timeout / --retries`
+## The detector under it all: the idle-timeout watchdog
 
-The PROCESS layer. A hang **quiets stdout**, and that silence is the signal.
+`--auto-retry` (previous slide) needs to _know_ a job hung. A hang **quiets
+stdout**, so idle stdout is the signal, and this watchdog is what fires on it.
 
 ```bash
+# --auto-retry turns the watchdog on for you (idle default = FAILOVER_IDLE_TIMEOUT).
+# Standalone, without node failover: --timeout is the detector, --retries re-execs.
 ezpz launch --timeout 600 --retries 3 \
     python -m torchtitan.train --config-file ./config.toml
 ```
 
 - **`--timeout SECONDS`**: kill if stdout goes **idle** (not walltime); exit 124
-- **`--retries N`**: re-exec on non-zero exit, backoff 5/10/20/40/60s
+- **`--retries N`**: bounded re-exec, backoff 5/10/20/40/60s. **Mutually
+  exclusive** with `--auto-retry` (bounded per-process vs unbounded node-level)
 
 ```mermaid
 stateDiagram-v2
@@ -2017,18 +2015,23 @@ Fires on **absence of progress**, not a heartbeat ping (a hung job is "alive" by
 `kill -0`).
 
 <SpeakerNotes>
-The PROCESS layer, and the one that catches what nothing else does. The problem:
-xccl on XPU silently ignores train_timeout_seconds, so a job stuck in a hung
-collective sits consuming the full PBS walltime instead of aborting. But every
-collective hang quiets stdout, since every rank blocks in the same call and
-nothing reaches the log. That silence is the signal we act on.
+This is the primitive under the previous slide. --auto-retry can only swap a bad
+node once it knows the job is stuck, and this idle-stdout watchdog is how it knows.
+The problem: xccl on XPU silently ignores train_timeout_seconds, so a job stuck in
+a hung collective sits consuming the full PBS walltime instead of aborting. But
+every collective hang quiets stdout, since every rank blocks in the same call and
+nothing reaches the log. That silence is the signal.
 
 --timeout SECONDS kills the launched process if its stdout goes idle, not
 walltime, for that many consecutive seconds, returning exit code 124 to match GNU
-timeout(1). --retries N re-executes on any non-zero exit, including the watchdog's
-124, up to N times, with exponential backoff 5, 10, 20, 40, 60 seconds capped. The
-watchdog fires on the absence of progress, not a heartbeat ping; a hung job is
-alive by kill -0, which is exactly why a heartbeat can lie to you.
+timeout(1). Under --auto-retry the watchdog is on by default (matching
+FAILOVER_IDLE_TIMEOUT); pass --timeout 0 to disable it even there. --retries N is
+the standalone re-exec path: it re-executes on any non-zero exit, including the
+watchdog's 124, up to N times, with backoff 5, 10, 20, 40, 60 seconds capped. It
+is mutually exclusive with --auto-retry, because --retries is bounded per-process
+retry and --auto-retry is unbounded node-level failover; you pick one. The
+watchdog fires on absence of progress, not a heartbeat ping; a hung job is alive
+by kill -0, which is exactly why a heartbeat can lie to you.
 
 Scope caveat: it watches only the process ezpz launch spawns directly. If qsub
 runs a wrapper that internally invokes python train.py, the watchdog needs to live
@@ -2605,5 +2608,92 @@ from the [AuroraGPT-at-scale deck](https://samf.sh/talks/2026/07/14) as needed:
 {/* TODO: lift the actual eval/CPT/SFT/GRPO/MoE/AERIS slides + figures from
    2026/07/14 if you want them inline rather than linked. Figures would need
    copying into public/talks/2026-08-03/figures/. */}
+
+</Slide>
+
+{/* extras: moved out of the main failures path (was after failure-default) so
+   the live talk stays keynote-sparse; kept here for Q&A + the paper write-up. */}
+<Slide id="failure-taxonomy">
+
+## A field guide to what breaks
+
+**The cost is telling transient (retry, fine) from systemic (retry reproduces it).**
+
+<figure>
+    <picture>
+        <source
+            media="(max-width: 768px)"
+            srcset="/talks/2026-08-03/figures/failure-taxonomy-mobile.svg"
+        />
+        <img
+            src="/talks/2026-08-03/figures/failure-taxonomy.svg"
+            alt="Failure taxonomy grid: rows are where it broke (Hardware, Software, Network, System), columns are transient (retry and you're fine) vs systemic (retrying just reproduces it). Silent failures with no traceback (corrupt shard, bad upstream commit, collective hang) are marked as the dangerous ones."
+        />
+    </picture>
+</figure>
+
+<SpeakerNotes>
+Two axes matter. Where it broke, so you know who fixes it, and whether it is
+transient (retry and move on) or systemic (stop, or you corrupt the whole run).
+
+By layer: hardware is ECC errors, dead XPU, thermal throttle, a bad node in your
+allocation. Software is CheckpointError from routing non-determinism, OOM, a bad
+upstream commit. Network is fabric flaps, gloo "Connection closed by peer",
+collective hangs. System is Lustre stalls, PBS walltime, the scheduler handing you
+a node it should have drained.
+
+Transient means one bad node, a flaked collective, a mid-save kill: retry on fresh
+hardware and you are fine. Systemic means a config bug, a corrupted shard, a
+silent numerical bug: retrying just reproduces it faster. The whole operational
+cost is telling these two apart. Retry a systemic fault and you burn the spare
+pool; halt on a transient one and you waste walltime you already paid for. The
+dangerous cells are the silent ones, marked with a dot: no traceback, the loss
+still looks fine (the silent-RMSNorm and silent-TP faults from the main path are
+exactly these).
+</SpeakerNotes>
+
+<style>{`
+  #failure-taxonomy figure { margin: 0.3lh 0 0; }
+  #failure-taxonomy img { width: 100%; height: auto; max-height: 24lh; }
+`}</style>
+
+</Slide>
+
+{/* source: refresh · real failure signatures (2025/12/16 restarts table; 2026/06/03 watchdog:1307) */}
+<Slide id="network-flaps">
+
+## War story: the fabric that wouldn't sit still
+
+At full-machine scale the interconnect is never fully healthy. It shows up two
+ways:
+
+- **Loud:** `gloo` `Connection closed by peer` (job `8470102`). You get an exit code.
+- **Quiet:** a collective just **stops**. Every rank blocks in the same `all_reduce`.
+
+The quiet one is dangerous:
+
+- **alive** by `kill -0`, nothing crashed
+- `xccl` ignores `train_timeout_seconds` → eats **full PBS walltime**
+- job `8479579` hung at **step 803**, heartbeat still ticking
+
+**The one signal you can trust:** a hang **quiets stdout**. Absence of progress is
+the detector (→ watchdog).
+
+<SpeakerNotes>
+At full-machine scale the interconnect is never fully healthy. A link flaps, a
+switch hiccups, and one collective somewhere stops making progress. The loud
+version is gloo TCP "Connection closed by peer" a few hours in (job 8470102,
+20B/256N); at least it crashed, so you get an exit code to act on. The quiet
+version is a collective that just stops: every rank blocks in the same all_reduce,
+waiting on a peer that will never answer.
+
+The quiet version is the dangerous one. The process is alive by kill -0, nothing
+has crashed. On XPU, xccl silently ignores train_timeout_seconds, so the hung
+collective sits there consuming your entire PBS walltime. We watched job 8479579
+(20B/512N) hang at step 803 with the heartbeat still ticking: alive, and doing
+nothing. The one signal you can trust is that a collective hang quiets stdout,
+because every rank is blocked in the same call so nothing reaches the log.
+Absence of progress is the detector, which is exactly what the watchdog keys on.
+</SpeakerNotes>
 
 </Slide>
