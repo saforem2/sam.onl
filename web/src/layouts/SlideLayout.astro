@@ -1,6 +1,12 @@
 ---
 import Layout from '@/layouts/Layout.astro'
 import Presentation from '@/components/slides/Presentation.astro'
+// KaTeX CSS: import from frontmatter (NOT `@import` in a <style> block) so Vite
+// processes the stylesheet's relative `url(fonts/KaTeX_*)` refs -- hashing them
+// into /_astro/ and COPYING the font files into the build. An `@import` inside
+// `<style is:global>` is passed through untouched, so the fonts 404 and math
+// renders in fallback faces. See Doc.astro for the same fix.
+import 'katex/dist/katex.min.css'
 
 interface Props {
     frontmatter?: { title?: string; description?: string }
@@ -18,16 +24,3 @@ const description = (Astro.props as Props).description ?? fm.description
     </Presentation>
 </Layout>
 
-{
-    /*
-  KaTeX CSS lives here (the deck path's analogue of Doc.astro) rather than in the
-  every-page global.css. Decks render via SlideLayout -> Layout -> Presentation and
-  never touch Doc.astro, so without this a deck's inline $...$ math shows twice: the
-  visual render plus KaTeX's hidden MathML copy (the .katex-mathml display:none rule
-  only ships inside katex.min.css). Keeping it deck-scoped leaves the landing and
-  other Layout-direct pages KaTeX-free.
-*/
-}
-<style is:global>
-    @import 'katex/dist/katex.min.css';
-</style>

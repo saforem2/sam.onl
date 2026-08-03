@@ -8,6 +8,11 @@ import { getReadingTime } from '@/utils/readingTime'
 import ShareButtons from '@/components/ShareButtons.astro'
 import { getCollection } from 'astro:content'
 import { execSync } from 'node:child_process'
+// KaTeX CSS via frontmatter import so Vite processes its relative
+// `url(fonts/KaTeX_*)` refs (hash into /_astro/, copy the fonts). An `@import`
+// in the <style> block below is passed through untouched -> fonts 404, math
+// renders in fallback faces. The .katex-mathml display:none rule still ships.
+import 'katex/dist/katex.min.css'
 
 // Prefer Netlify's BRANCH env var so preview deploys point at the
 // preview's source branch instead of the build host's checked-out
@@ -337,11 +342,8 @@ const articleSchema =
   block, or restart the dev server. Production builds always pick it up.
 -->
 <style is:global>
-    /* KaTeX first, then Doc.css. KaTeX lives here (not in global.css) so only
-       math-bearing pages — all of which render through Doc.astro — pay for it;
-       the landing/non-doc pages skip ~3.6KB gz off their critical CSS. Must
-       precede Doc.css in the cascade, same as the ordering rationale above. */
-    @import 'katex/dist/katex.min.css';
+    /* KaTeX CSS is imported from frontmatter (above) so Vite copies its fonts;
+       statusline + Doc.css stay here. */
     @import '@/styles/statusline.css';
     @import './Doc.css';
 </style>
