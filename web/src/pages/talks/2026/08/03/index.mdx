@@ -1520,99 +1520,6 @@ some went NaN. The takeaway: plan for the failure, not the happy path.
 
 </Slide>
 
-{/* source: bf16-freeze root cause (docs/guides/training-dtype-bf16-norm-freeze.md); v2 ARC-Easy curve from docs/evals/agpt/20b/README.md via gen-eval-arc-easy.mjs */}
-<Slide id="silent-rmsnorm">
-
-## Silent killer #1: bf16 master froze RMSNorm
-
-- **Symptom:** loss looked fine, but **lm-eval never moved** (ARC-Easy at random)
-- **Cause:** bf16 master + RMSNorm init `1.0` → ULP `7.8e-3` ≫ update `1.6e-5`, so
-  **every update rounds to zero**
-- **Why only RMSNorm:** linear layers init `std≈0.02` → finer ULP, update registers
-- **Fix:** fp32 master + `MixedPrecisionPolicy(param=bf16, reduce=fp32)`; ~10 GB at 20B
-
-<figure>
-    <picture>
-        <source
-            media="(max-width: 768px)"
-            srcset="/talks/2026-08-03/figures/eval-20b-v2-arc-easy-mobile.svg"
-        />
-        <img
-            src="/talks/2026-08-03/figures/eval-20b-v2-arc-easy.svg"
-            alt="20B v2 (fp32 master) ARC-Easy accuracy vs tokens seen, climbing from the random baseline of 0.25 up to a peak of about 0.69 over ~600B tokens"
-        />
-    </picture>
-    <figcaption>With the fix (fp32 master), the eval gate moves: 20B ARC-Easy climbs from random to ~0.69.</figcaption>
-</figure>
-
-> [!WARNING]+ The lesson
-> Loss looks like training. lm-eval is the only ground truth. Add a periodic eval
-> gate, or you can burn thousands of steps teaching a model nothing.
-
-<SpeakerNotes>
-Symptom: loss curves looked reasonable, but lm-eval scores never moved, ARC-Easy
-sat at the random baseline while the loss kept dropping. That gap is the whole
-point of the slide.
-
-Cause: training.dtype=bfloat16 gave us a bf16 master copy. RMSNorm weights init at
-1.0, and bf16 ULP at scale 1.0 is about 7.8e-3. The per-step optimizer update is
-about 1.6e-5, so every update rounds to zero. All 25 RMSNorm tensors sat frozen at
-exactly 1.0. Everything else trained fine because linear layers init at std about
-0.02, where bf16 ULP is about 3.8e-5, the same magnitude as the update, so it
-registers. RMSNorm's larger init scale means coarser ULP and the update vanishes
-in rounding.
-
-Fix: default training.dtype=float32 with FSDP MixedPrecisionPolicy(param_dtype=bf16,
-reduce_dtype=fp32). Master is fp32, forward/backward stay bf16. Costs about 1 GB
-extra master at 2B, about 10 GB at 20B, both under budget. The chart is the fixed
-(v2, fp32-master) 20B run: once RMSNorm can actually update, ARC-Easy climbs off
-the random baseline to about 0.69 over roughly 600B tokens. Data from the 20B eval
-table in the ezpz docs.
-</SpeakerNotes>
-
-<style>{`
-  #silent-rmsnorm figure { margin: 0.4lh 0 0; }
-  #silent-rmsnorm img { width: 100%; height: auto; max-height: 15lh; }
-  #silent-rmsnorm figcaption { font-size: 0.78em; color: var(--foreground2, #838383); margin-block-start: 0.3lh; line-height: 1.35; }
-`}</style>
-
-</Slide>
-
-{/* source: reuse · tp-loss bug 2026/06/03:1540 */}
-<Slide id="silent-tp">
-
-## Silent killer #2: TP reported loss / `dp_world_size`
-
-- **Symptom:** step-1 loss should be `ln(256128) ≈ 12.45`
-  - TP=1 → `12.95` ✓, TP=2 → **`1.07`** ✗ (exactly `12.84 / 12`, `dp_world_size=12`)
-- **Cause:** `_dist_reduce()` short-circuits DTensor; loss is Replicated on the TP
-  mesh but reduced over `batch_mesh` → cross-batch sum silently dropped
-- **Survived review:** grads/steps **correct**, only the logged `loss:` is `1/12` off
-- Filed `torchtitan#3204`; workaround `loss.full_tensor()` before `dist_sum`
-
-> [!TIP]+ Lesson
-> A **bit-exact smoke gate** caught this. The 2B TP=1 baseline gave a number to
-> disagree with. Without a reference, a wrong-but-plausible loss is invisible.
-
-<SpeakerNotes>
-Symptom: step-1 loss for agpt_* (vocab 256,128) should be ln(256128), about 12.45.
-On TP=1 we saw 12.95, good. On TP=2, after upstream commit 1786292d on 2026-04-27,
-step 1 reported as 1.07. That is exactly 12.84 divided by 12, where dp_world_size
-is 12: the loss was being divided by the wrong world size.
-
-Cause: _dist_reduce() short-circuits on DTensor via full_tensor(). But the loss is
-Replicated on the TP mesh, and the reduction was requested over batch_mesh, which
-is orthogonal, so the short-circuit silently drops the cross-batch sum. It
-survived review because gradients and optimizer steps are correct; only the loss
-field that lands in stdout and W&B is wrong, the curves look reasonable, just
-one-twelfth of the true value. Filed as pytorch/torchtitan#3204; our workaround
-calls loss.full_tensor() before dist_sum in ezpz/trainer.py:503-516. The lesson: a
-bit-exact smoke gate caught this immediately because the prior 2B TP=1 baseline
-gave us a number to disagree with.
-</SpeakerNotes>
-
-</Slide>
-
 {/* source: net-new · assembled from the Lustre/yeet post (posts/2026/05/01) */}
 <Slide id="shared-fs">
 
@@ -2648,8 +2555,9 @@ silent numerical bug: retrying just reproduces it faster. The whole operational
 cost is telling these two apart. Retry a systemic fault and you burn the spare
 pool; halt on a transient one and you waste walltime you already paid for. The
 dangerous cells are the silent ones, marked with a dot: no traceback, the loss
-still looks fine (the silent-RMSNorm and silent-TP faults from the main path are
-exactly these).
+still looks fine. A bf16 master that freezes RMSNorm so lm-eval never moves, or a
+TP reduction that logs the loss one-twelfth too low: correct-looking curves, no
+crash, and only a bit-exact eval gate or smoke test catches them.
 </SpeakerNotes>
 
 <style>{`
