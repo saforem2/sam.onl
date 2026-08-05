@@ -2258,14 +2258,13 @@ html[data-webtui-theme='catppuccin-latte'] {
                 grown to full line height on hover; painted ON TOP.
              2. BLUE underline — a static bar tinted from the link's OWN colour
                 at low alpha (codebase var is --url, not --url-color as in the
-                source snippet), 0.18lh tall, always present; painted UNDER.
+                source snippet), 0.33lh tall, always present; painted UNDER.
            REST: only the blue underline shows (pink is 0 height). HOVER: the
            pink grows up over the blue and the text flips to background0; on
            unhover it retracts and the blue underline returns. Only the pink
            layer's size changes, so the background-size transition in Doc.css
-           animates the grow. Extra horizontal padding makes the band read
-           bigger. */
-        padding-inline: 0.5ch;
+           animates the grow. */
+        padding-inline: 0ch;
         background-image:
             linear-gradient(
                 var(--accent, var(--blue)),
@@ -2287,7 +2286,7 @@ html[data-webtui-theme='catppuccin-latte'] {
             left bottom;
         background-size:
             100% 0,
-            100% 0.18lh;
+            100% 0.33lh;
         -webkit-box-decoration-break: clone;
         box-decoration-break: clone;
 
