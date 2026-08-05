@@ -306,12 +306,15 @@ async function main() {
         // top-level page (e.g. "about") is its own category.
         const category = slug.split('/')[0] || 'sam.onl'
 
-        // Format date
+        // Format date. Frontmatter dates are bare "YYYY-MM-DD", which parse as
+        // UTC midnight; formatting in the local zone (Central) then rolls back
+        // a day. Pin timeZone: UTC so the printed day matches the frontmatter.
         const date = fm.date
             ? new Date(fm.date).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
+                  timeZone: 'UTC',
               })
             : null
 
