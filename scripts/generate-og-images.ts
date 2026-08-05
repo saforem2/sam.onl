@@ -16,16 +16,42 @@ import { Resvg } from '@resvg/resvg-js'
 
 const PAGES_DIR = join(import.meta.dir, '..', 'web', 'src', 'pages')
 const OUT_DIR = join(import.meta.dir, '..', 'web', 'public', 'og')
-const FONT_PATH = join(import.meta.dir, 'fonts', 'Iosevka-Regular.ttf')
+const FONT_REGULAR = join(import.meta.dir, 'fonts', 'Iosevka-Regular.ttf')
+// Bold is decompressed from web/public/fonts/iosevka/Iosevka-Bold.woff2 via
+// `woff2_decompress` (satori can't read woff2). Same family the site ships.
+const FONT_BOLD = join(import.meta.dir, 'fonts', 'Iosevka-Bold.ttf')
 
-// Load font once
-const fontData = await Bun.file(FONT_PATH).arrayBuffer()
+// Load fonts once
+const regularData = await Bun.file(FONT_REGULAR).arrayBuffer()
+const boldData = await Bun.file(FONT_BOLD).arrayBuffer()
 
-// For the incremental check: if the generator itself or the font is
+// Site palette (from web/src/styles/global.css). The category tag + statusline
+// accent are keyed off the top-level slug segment so cards are sortable by type.
+const BG = '#1c1c1c'
+const PANEL = '#242424'
+const FG = '#e0e0e0'
+const MUTED = '#8a8a8a'
+const FRAME = '#3a3a3a'
+const CATEGORY_COLOR: Record<string, string> = {
+    posts: '#3b9dd2', // blue
+    talks: '#ee8f24', // orange
+    projects: '#9a76ce', // purple
+    ideas: '#ee8f24', // orange
+    about: '#3fb950', // green
+    now: '#3fb950', // green
+    css: '#3b9dd2', // blue
+    webtui: '#3b9dd2', // blue
+}
+const DEFAULT_ACCENT = '#e05560' // red
+
+// For the incremental check: if the generator itself or either font is
 // newer than a cached PNG, regenerate (the template may have changed
 // even when the source page didn't).
 const SCRIPT_MTIME = (await stat(new URL(import.meta.url).pathname)).mtimeMs
-const FONT_MTIME = (await stat(FONT_PATH)).mtimeMs
+const FONT_MTIME = Math.max(
+    (await stat(FONT_REGULAR)).mtimeMs,
+    (await stat(FONT_BOLD)).mtimeMs,
+)
 const GENERATOR_MTIME = Math.max(SCRIPT_MTIME, FONT_MTIME)
 
 // Strip emoji and other non-renderable characters from titles
@@ -40,9 +66,7 @@ function stripEmoji(text: string): string {
 }
 
 // Extract frontmatter from .md/.mdx files
-function extractFrontmatter(
-    content: string,
-): Record<string, string> | null {
+function extractFrontmatter(content: string): Record<string, string> | null {
     const match = content.match(/^---\n([\s\S]*?)\n---/)
     if (!match) return null
     const fm: Record<string, string> = {}
@@ -74,80 +98,167 @@ async function findPages(dir: string): Promise<string[]> {
     return files
 }
 
-// Generate a single OG image
+// Layout helpers: every parent div needs display:flex in satori.
+const col = (style: Record<string, unknown>, children: unknown[]) => ({
+    type: 'div',
+    props: {
+        style: { display: 'flex', flexDirection: 'column', ...style },
+        children,
+    },
+})
+const row = (style: Record<string, unknown>, children: unknown[]) => ({
+    type: 'div',
+    props: {
+        style: { display: 'flex', flexDirection: 'row', ...style },
+        children,
+    },
+})
+const txt = (text: string, style: Record<string, unknown> = {}) => ({
+    type: 'div',
+    props: {
+        style: { display: 'flex', fontFamily: 'Iosevka', ...style },
+        children: text,
+    },
+})
+const dot = (color: string) => ({
+    type: 'div',
+    props: {
+        style: {
+            display: 'flex',
+            width: '16px',
+            height: '16px',
+            borderRadius: '50%',
+            backgroundColor: color,
+        },
+        children: [],
+    },
+})
+
+// Generate a single OG image: a terminal-window card. The category (top-level
+// slug segment) drives the tag + statusline accent color.
 async function generateOgImage(
     title: string,
     date: string | null,
+    category: string,
 ): Promise<Buffer> {
-    const svg = await satori(
+    const accent = CATEGORY_COLOR[category] ?? DEFAULT_ACCENT
+    // Size the title to fit: longer titles step down.
+    const big = title.length > 52 ? 52 : title.length > 34 ? 62 : 72
+
+    const tree = col(
         {
-            type: 'div',
-            props: {
-                style: {
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-end',
-                    width: '100%',
-                    height: '100%',
-                    padding: '60px',
-                    backgroundColor: '#1c1c1c',
-                    color: '#e0e0e0',
-                    fontFamily: 'Iosevka Web',
-                },
-                children: [
-                    {
-                        type: 'div',
-                        props: {
-                            style: {
-                                fontSize: '28px',
-                                opacity: 0.5,
-                                marginBottom: '16px',
-                            },
-                            children: 'sam.onl',
-                        },
-                    },
-                    {
-                        type: 'div',
-                        props: {
-                            style: {
-                                fontSize: title.length > 40 ? '48px' : '60px',
-                                fontWeight: 400,
-                                lineHeight: 1.2,
-                                marginBottom: '24px',
-                            },
-                            children: title,
-                        },
-                    },
-                    ...(date
-                        ? [
-                              {
-                                  type: 'div',
-                                  props: {
-                                      style: {
-                                          fontSize: '24px',
-                                          opacity: 0.6,
-                                      },
-                                      children: date,
-                                  },
-                              },
-                          ]
-                        : []),
-                ],
-            },
+            width: '100%',
+            height: '100%',
+            padding: '56px',
+            backgroundColor: BG,
+            fontFamily: 'Iosevka',
         },
-        {
-            width: 1200,
-            height: 630,
-            fonts: [
+        [
+            col(
                 {
-                    name: 'Iosevka Web',
-                    data: fontData,
-                    weight: 400 as const,
-                    style: 'normal' as const,
+                    flex: 1,
+                    backgroundColor: PANEL,
+                    border: `2px solid ${FRAME}`,
+                    borderRadius: '14px',
+                    overflow: 'hidden',
                 },
-            ],
-        },
+                [
+                    // Title bar: traffic lights + sam.onl, category tag
+                    row(
+                        {
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '20px 32px',
+                            borderBottom: `2px solid ${FRAME}`,
+                        },
+                        [
+                            row({ alignItems: 'center', gap: '12px' }, [
+                                dot('#ff5f56'),
+                                dot('#ffbd2e'),
+                                dot('#27c93f'),
+                                txt('sam.onl', {
+                                    fontSize: '24px',
+                                    color: MUTED,
+                                    marginLeft: '12px',
+                                }),
+                            ]),
+                            txt(category, {
+                                fontSize: '22px',
+                                fontWeight: 700,
+                                color: accent,
+                                border: `2px solid ${accent}`,
+                                borderRadius: '8px',
+                                padding: '4px 16px',
+                            }),
+                        ],
+                    ),
+                    // Body: prompt + title, statusline footer
+                    col(
+                        {
+                            flex: 1,
+                            padding: '44px 48px',
+                            justifyContent: 'space-between',
+                        },
+                        [
+                            col({}, [
+                                txt(`$ cat ${category}/post.md`, {
+                                    fontSize: '26px',
+                                    color: MUTED,
+                                    marginBottom: '28px',
+                                }),
+                                txt(title, {
+                                    fontSize: `${big}px`,
+                                    fontWeight: 700,
+                                    color: FG,
+                                    lineHeight: 1.15,
+                                }),
+                            ]),
+                            row(
+                                {
+                                    alignItems: 'center',
+                                    gap: '16px',
+                                    fontSize: '24px',
+                                    borderTop: `2px solid ${FRAME}`,
+                                    paddingTop: '24px',
+                                },
+                                [
+                                    txt('Sam Foreman', {
+                                        color: accent,
+                                        fontWeight: 700,
+                                    }),
+                                    ...(date
+                                        ? [
+                                              txt('·', { color: MUTED }),
+                                              txt(date, { color: MUTED }),
+                                          ]
+                                        : []),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ],
     )
+
+    const svg = await satori(tree, {
+        width: 1200,
+        height: 630,
+        fonts: [
+            {
+                name: 'Iosevka',
+                data: regularData,
+                weight: 400 as const,
+                style: 'normal' as const,
+            },
+            {
+                name: 'Iosevka',
+                data: boldData,
+                weight: 700 as const,
+                style: 'normal' as const,
+            },
+        ],
+    })
 
     const resvg = new Resvg(svg, {
         fitTo: { mode: 'width', value: 1200 },
@@ -191,6 +302,10 @@ async function main() {
 
         const title = stripEmoji(fm.title)
 
+        // Category = top-level slug segment (posts/talks/projects/...); a
+        // top-level page (e.g. "about") is its own category.
+        const category = slug.split('/')[0] || 'sam.onl'
+
         // Format date
         const date = fm.date
             ? new Date(fm.date).toLocaleDateString('en-US', {
@@ -201,7 +316,7 @@ async function main() {
             : null
 
         // Generate
-        const png = await generateOgImage(title, date)
+        const png = await generateOgImage(title, date, category)
         await mkdir(dirname(outPath), { recursive: true })
         await Bun.write(outPath, png)
         generated++
