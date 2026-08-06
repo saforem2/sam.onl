@@ -878,7 +878,7 @@ memory-bound but the architecture still fits layer-wise.
 Climb only when memory forces you: **`DP → FSDP/ZeRO → TP → PP`**.
 
 <Cols>
-<Col width={4}>
+<Col width={3}>
 
 - **Fits on one GPU** → `DP`, scale batch
 - **Almost fits** → `FSDP`/`ZeRO` (stage 1, then 3)
@@ -889,9 +889,10 @@ Climb only when memory forces you: **`DP → FSDP/ZeRO → TP → PP`**.
 > Same script, every machine. No `mpiexec` / `srun` / bind wrappers.
 
 </Col>
-<Col width={3}>
+<Col width={4}>
 
 ```mermaid
+%%{init: {'themeVariables': {'fontSize': '22px'}, 'flowchart': {'nodeSpacing': 55, 'rankSpacing': 45, 'padding': 14}}}%%
 flowchart LR
     EZ(["<span style='font-weight:700'>ezpz launch</span>"])
     EZ --> AURORA["<i>PBS · Intel</i><br/><span style='font-weight:700'>Aurora</span>"]
@@ -1295,7 +1296,7 @@ tax.
 AdamW is the baseline. Everything else buys **curvature** at some compute price.
 
 <Cols>
-<Col width={3}>
+<Col width={2}>
 
 <div class="tight-table">
 
@@ -1313,7 +1314,7 @@ AdamW is the baseline. Everything else buys **curvature** at some compute price.
 each step. **SophiaG** takes the other cheap route: a clipped diagonal Hessian.[^ol-others]
 
 </Col>
-<Col width={4}>
+<Col width={3}>
 
 <figure class="opt-cmp-fig">
     <picture>
@@ -1377,7 +1378,7 @@ direction: manifold normalization instead of eigenbases.
   #optimizer-landscape table th, #optimizer-landscape table td { white-space: nowrap; }
   #optimizer-landscape table th:nth-child(2), #optimizer-landscape table td:nth-child(2) { white-space: normal; }
   #optimizer-landscape .opt-cmp-fig { margin: 0; }
-  #optimizer-landscape .opt-cmp-fig img { width: 100%; height: auto; max-height: 20lh; }
+  #optimizer-landscape .opt-cmp-fig img { width: 100%; height: auto; max-height: 26lh; }
   #optimizer-landscape .opt-cmp-fig figcaption { font-size: 0.78em; color: var(--foreground2, #838383); margin-block-start: 0.3lh; line-height: 1.3; }
 `}</style>
 
