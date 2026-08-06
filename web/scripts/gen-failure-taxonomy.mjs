@@ -45,8 +45,8 @@ const ROWS = [
     },
     {
         where: 'Software',
-        transient: ['OOM (transient spike)'],
-        systemic: ['config bug', 'corrupt shard ●', 'bad upstream commit ●'],
+        transient: ['mid-save kill', 'flaked dataloader worker'],
+        systemic: ['OOM (config too big)', 'corrupt shard ●', 'bad upstream commit ●'],
     },
     {
         where: 'Network',
@@ -55,7 +55,7 @@ const ROWS = [
     },
     {
         where: 'System',
-        transient: ['PBS walltime', 'scheduler hiccup'],
+        transient: ['scheduler hiccup', 'stale ckpt placeholder'],
         systemic: ['Lustre stall', 'un-drained bad node'],
     },
 ]
