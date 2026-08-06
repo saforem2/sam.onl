@@ -135,15 +135,21 @@ const dot = (color: string) => ({
 })
 
 // Generate a single OG image: a terminal-window card. The category (top-level
-// slug segment) drives the tag + statusline accent color.
+// slug segment) drives the tag + statusline accent color; promptPath is the real
+// source path shown after the `$ cat` prompt.
 async function generateOgImage(
     title: string,
     date: string | null,
     category: string,
+    promptPath: string,
 ): Promise<Buffer> {
     const accent = CATEGORY_COLOR[category] ?? DEFAULT_ACCENT
     // Size the title to fit: longer titles step down.
     const big = title.length > 52 ? 52 : title.length > 34 ? 62 : 72
+    // The prompt shows the real source path; long paths step the font down so
+    // they don't overflow the card (nowrap + hidden clips the rare extreme).
+    const prompt = `$ cat ${promptPath}`
+    const promptSize = prompt.length > 58 ? 18 : prompt.length > 46 ? 22 : 26
 
     const tree = col(
         {
@@ -163,7 +169,7 @@ async function generateOgImage(
                     overflow: 'hidden',
                 },
                 [
-                    // Title bar: traffic lights + sam.onl, category tag
+                    // Title bar: traffic lights + samf.sh, category tag
                     row(
                         {
                             alignItems: 'center',
@@ -176,7 +182,7 @@ async function generateOgImage(
                                 dot('#ff5f56'),
                                 dot('#ffbd2e'),
                                 dot('#27c93f'),
-                                txt('sam.onl', {
+                                txt('samf.sh', {
                                     fontSize: '24px',
                                     color: MUTED,
                                     marginLeft: '12px',
@@ -201,10 +207,12 @@ async function generateOgImage(
                         },
                         [
                             col({}, [
-                                txt(`$ cat ${category}/post.md`, {
-                                    fontSize: '26px',
+                                txt(prompt, {
+                                    fontSize: `${promptSize}px`,
                                     color: MUTED,
                                     marginBottom: '28px',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
                                 }),
                                 txt(title, {
                                     fontSize: `${big}px`,
@@ -304,7 +312,11 @@ async function main() {
 
         // Category = top-level slug segment (posts/talks/projects/...); a
         // top-level page (e.g. "about") is its own category.
-        const category = slug.split('/')[0] || 'sam.onl'
+        const category = slug.split('/')[0] || 'samf.sh'
+
+        // Real source path for the `$ cat` prompt, leading-slashed and relative
+        // to the pages dir, e.g. /talks/2026/08/03/index.md.
+        const promptPath = '/' + relative(PAGES_DIR, page)
 
         // Format date. Frontmatter dates are bare "YYYY-MM-DD", which parse as
         // UTC midnight; formatting in the local zone (Central) then rolls back
@@ -319,7 +331,7 @@ async function main() {
             : null
 
         // Generate
-        const png = await generateOgImage(title, date, category)
+        const png = await generateOgImage(title, date, category, promptPath)
         await mkdir(dirname(outPath), { recursive: true })
         await Bun.write(outPath, png)
         generated++
