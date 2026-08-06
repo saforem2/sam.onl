@@ -1865,9 +1865,8 @@ The NODE layer: allocate spares up front, swap them in on failure. Out of bash,
 into `ezpz`.
 
 ```bash
-# 522 nodes allocated; --np counts ranks, so × GPUs/host.
-# Spares auto-reserved: total_pbs − ⌈np/ppn⌉ ⇒ 10 here.
-ezpz launch --auto-retry --np $((512 * NGPU_PER_HOST)) \
+# 522 nodes allocated; train on 512, 10 auto-reserved as spare.
+ezpz launch --auto-retry --nhosts 512 \
   -- python -m torchtitan.train …
 ```
 
