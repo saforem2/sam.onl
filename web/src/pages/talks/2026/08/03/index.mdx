@@ -1858,21 +1858,51 @@ flowchart TB
 
 ## `--auto-retry`: bad-node failover, on tap
 
+<Cols>
+<Col width={4}>
+
 The NODE layer: allocate spares up front, swap them in on failure. Out of bash,
 into `ezpz`.
 
 ```bash
-# 522 nodes allocated, train on 512, keep 10 as spares.
-# Loop until success, walltime, or spare exhaustion.
-ezpz launch --auto-retry --np 512 -- python -m torchtitan.train …
+# 522 nodes, train on 512, 10 spare.
+ezpz launch --auto-retry --np 512 \
+  -- python -m torchtitan.train …
 ```
 
-- classifies exit: `success` / `walltime` / `bad-node` / `stuck-pre-training`
-- **bad-node** → scrape host from log, swap spare, re-exec
-- **config-bug guard:** 2 attempts with zero `step=` → stop
+- **bad-node** → scrape host, swap spare, re-exec
+- **config-bug guard:** 2 attempts with zero
+  `step=` → stop
 
-**Broke the 20B/512N stall:** that stale placeholder → walltime-blocked **weeks**;
+**Broke the 20B/512N stall:** a stale placeholder → walltime-blocked **weeks**;
 relaunch drove it **4,400 → 5,400**. Ships in [`ezpz#144`](https://github.com/saforem2/ezpz/pull/144).
+
+</Col>
+<Col width={3}>
+
+```mermaid
+flowchart TB
+    START(( )) -->|"qsub / sbatch"| LAUNCH["<span style='font-weight:700'>ezpz launch</span><br/><span style='font-weight:700'>--auto-retry</span>"]
+    LAUNCH -->|"run + idle watchdog<br/><i>exit 124 if 30 min silent</i>"| CLASSIFY["<span style='font-weight:700'>classify exit</span><br/><i>parse trailer · crash<br/>patterns · SIGTERM</i>"]
+    CLASSIFY -->|"success<br/><i>rc = 0, no crash</i>"| DONE["<span style='font-weight:700'>DONE</span><br/>rc = 0"]
+    CLASSIFY -->|"walltime / stuck /<br/>no spares left"| STOP["<span style='font-weight:700'>STOP</span><br/><i>spares exhausted ·<br/>stuck pre-training</i>"]
+    CLASSIFY -.->|"bad node <i>(crash / hang)</i><br/>swap in spare, retry"| LAUNCH
+
+    classDef launchC   fill:#7c4ed508,stroke:#7c4ed5,color:#7c4ed5,stroke-width:1.5px
+    classDef classifyC fill:#ee8f2408,stroke:#ee8f24,color:#ee8f24,stroke-width:1.5px
+    classDef doneC     fill:#1da81108,stroke:#1da811,color:#1da811,stroke-width:1.5px
+    classDef stopC     fill:#e0556008,stroke:#e05560,color:#e05560,stroke-width:1.5px
+    classDef startC    fill:#838383,stroke:#838383,color:#838383
+    class START startC
+    class LAUNCH launchC
+    class CLASSIFY classifyC
+    class DONE doneC
+    class STOP stopC
+    linkStyle 4 stroke:#e05560,color:#e05560
+```
+
+</Col>
+</Cols>
 
 <SpeakerNotes>
 The NODE layer of the cascade: allocate spares up front, swap them in on failure.
@@ -1886,8 +1916,16 @@ with zero step= markers and it stops, so you do not burn the whole spare pool on
 broken run. It broke the 20B/512N stall: that stale step-4500 placeholder from a
 PBS mid-save kill had the sync chain walltime-blocked for weeks, and an auto-retry
 relaunch drove it 4,400 to 5,400 cleanly. Ships in saforem2/ezpz#144, same scraper
-as the bash-lib path with a pure-Python loop on top.
+as the bash-lib path with a pure-Python loop on top. The diagram is Fig. 5 from the
+paper: each inner run's exit is reclassified, bad-node SIGTERMs trigger a
+spare-swap and retry (the dashed loop back to launch), while walltime, spare
+exhaustion, and stuck-startup are the terminal STOP outcomes the bash wrapper
+lacked.
 </SpeakerNotes>
+
+<style>{`
+  #auto-retry .mermaid svg { width: 100%; max-width: 100%; height: auto; max-height: 24lh; }
+`}</style>
 
 </Slide>
 
