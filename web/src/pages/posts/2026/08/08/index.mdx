@@ -1,0 +1,506 @@
+---
+layout: '@/layouts/Doc.astro'
+title: 'Pre-Training LLMs on a Supercomputer'
+date: 2026-08-08
+date-created: 2026-08-08
+date-modified: today
+description: 'What it takes to pre-train AuroraGPT on thousands of Intel GPUs at ALCF: data prep, environments and Lustre at scale, the parallelism menu, critical batch size, second-order optimizers and the bf16 cliff, failures, checkpointing, and fault-tolerant training. Synthesized from three 2026 talks.'
+---
+
+Over the summer of 2026 I gave three talks on the same subject from three
+different angles: [TPC'26](https://samf.sh/talks/2026/06/03) in June, the
+[Cerebras ⇆ ANL MoE Workshop](https://samf.sh/talks/2026/07/14) in July, and
+[ATPESC 2026](https://samf.sh/talks/2026/08/03) in August. Each was a snapshot of
+the same moving target: pre-training [AuroraGPT](https://samf.sh/posts/auroragpt)
+across thousands of Intel GPU nodes on [Aurora](https://www.alcf.anl.gov/aurora)
+at the Argonne Leadership Computing Facility.
+
+This post stitches those three together into one narrative. The through-line is
+simple to state and hard to earn: **the goal is the most model per GPU-hour**, not
+peak FLOP/s. Production pre-training at scale is less a story of theoretical
+throughput than of what works, what breaks, and how cheaply you recover. What
+follows is the pipeline in order, from the first tokenized shard to a run that
+stays alive to the end.
+
+## The stack
+
+Three concerns, three repositories, deliberately kept separate so each moves at
+its own pace:
+
+- 📚 [`blendcorpus`](https://github.com/zhenghh04/blendcorpus) handles **data**:
+  weighted blending and sharding across many corpora.
+- 🧠 [`torchtitan@ezpz`](https://github.com/saforem2/torchtitan/tree/ezpz) handles
+  **training**: our fork extended to target Intel XPUs, with FSDP, TP, PP, EP, and
+  MoE.
+- 🍋 [`ezpz`](https://github.com/saforem2/ezpz) handles **orchestration**: it makes
+  a distributed PyTorch launch portable across NVIDIA, AMD, Intel, MPS, and CPU
+  with no code changes.
+
+There is no `cuda` in user code. The training script asks `ezpz` for its device
+and backend and gets the right answer on whatever machine it lands on:
+
+```python
+import ezpz
+rank = ezpz.setup_torch()   # auto device + backend selection
+```
+
+```bash
+ezpz launch python3 train.py
+```
+
+The same script runs on Aurora (PBS, Intel), Polaris (PBS, NVIDIA), Perlmutter
+(SLURM, NVIDIA), Frontier (SLURM, AMD), or a laptop, with no per-site `mpiexec` /
+`srun` / CPU-bind wrappers. Pushing the vendor and scheduler assumptions out of
+the training code is the single change that makes everything downstream portable.
+
+## Data prep is the first wall
+
+Before a single GPU does useful work, you have to curate, blend, and shard 2T+
+tokens across many corpora (ArXiv, GitHub, Wikipedia, Reddit, StackExchange). This
+is a distributed-systems problem, and it has to be reproducible on every rank and
+every run, and survivable on a flaky filesystem with node failures and noisy
+neighbors. Three ordered steps: tokenize, blend, pin.
+
+**Tokenize once.** Pin the tokenizer up front (we use SentencePiece), append an
+end-of-document token per document, and emit fixed-size `.bin` shards plus a file
+list the blender consumes. Document packing to the sequence length changes the
+loss, so bake it into the shards, not the dataloader. The bottleneck here is the
+filesystem, not the tokenizer: tokenization is I/O-bound, millions of small reads
+plus a many-writer output that hammers shared Lustre. Read in large chunks, write
+few large shards. Re-tokenizing 2T tokens is a whole-allocation tax, so you want
+to pay it as rarely as possible.
+
+**Blend by weight, not by concatenation.** A naive `cat *.bin` trains ArXiv for a
+week and then Wikipedia for a day: order becomes a hyperparameter and the model
+forgets. Instead, sample every batch to a fixed domain mixture, deterministically,
+so the weights are honored per step. BlendCorpus does this as
+aggregate → sample → index, and the index build is on the critical path for every
+config change.
+
+<figure>
+    <img
+        src="/talks/2026-08-03/figures/data-processing.svg"
+        alt="Index-build time for 2T tokens: serial about one hour versus distributed about two minutes, a 30x speedup."
+    />
+    <figcaption>Building the blend index for 2T tokens: serial (~1 hr) vs distributed (~2 min), a 30x win. It runs on the critical path for every config change.</figcaption>
+</figure>
+
+**Pin everything.** Same seed, same shards, same weights gives the same batch on
+every rank, every run. Two things threaten that: data churn (re-scraped or
+re-shuffled shards silently break determinism) and upstream churn (we track a
+fork of `torchtitan`, and there were 46 upstream syncs in 7 weeks; any one can
+shift the RNG). The defense is to pin exact repo SHAs, the tokenizer version, the
+shard file lists, and the blend weights, all committed with the run. Every fork
+sync runs a 50-step deterministic smoke test first, and "bit-exact" means loss,
+gradient norm, and peak memory all match the baseline. This is not paranoia: an
+upstream commit that "just refactored the dataloader" once changed the shuffle
+order and quietly changed the loss curve.
+
+## A Python environment that survives Lustre
+
+The second wall is mundane and brutal: one `import torch` fans out into thousands
+of `stat()` and `open()` calls, and you are running it on 50,000 ranks at once. The
+metadata server chokes long before bandwidth does. What is laptop-seconds becomes
+cluster-minutes before step one, and you pay it every job. Per-file `rsync` past
+256 nodes is projected at one to two hours, dominated by per-file metadata cost.
+Python is pathologically small-file, and the fix is not a faster filesystem. It is
+not hitting the filesystem from every rank.
+
+Build the environment by layering on the site module rather than from scratch:
+
+```bash
+module load frameworks
+uv venv --system-site-packages --python python3 .venv
+source .venv/bin/activate
+uv pip install "git+https://github.com/saforem2/ezpz"
+```
+
+The rule is venv first, clone last. `--system-site-packages` lets the venv see the
+module's prebuilt torch; skip it and you get a fresh CPU-only wheel.
+
+Then broadcast that environment instead of rebuilding it everywhere. `ezpz yeet`
+copies the env once to node-local `/tmp` and fans it out node-to-node, so imports
+hit local SSD:
+
+```bash
+ezpz yeet --compress          # one tarball off Lustre
+source /tmp/.venv/bin/activate
+ezpz launch python3 -m your_app.train
+```
+
+The trick is the fan-out. A single source saturates its NIC at roughly eight
+outbound copies, so each node that finishes becomes a new source and a thread pool
+routes each pending node to the least-busy source. That turns a star (O(N)) into a
+greedy tree (~O(log N)). Per-node cost drops from 8.7s to about 0.18s, a 48x
+improvement, and a full-Aurora pre-launch lands under 13 minutes.
+
+<figure>
+    <img
+        src="/talks/2026-08-03/figures/yeet-env-seconds.svg"
+        alt="Total wall-clock for the yeet environment broadcast versus node count from 8 to 4096 nodes, staying roughly logarithmic."
+    />
+    <figcaption>Broadcast wall-clock from 8 to 4096 nodes. Two regimes: extract-bound below ~64 nodes, broadcast-bound above, where each doubling adds only ~1.5-1.8x. (Full write-up: <a href="https://samf.sh/posts/2026/05/01">Running 50k Python processes with ezpz yeet</a>.)</figcaption>
+</figure>
+
+## The parallelism menu
+
+Once a run starts, the question is how to split it. There are five axes, and you
+mix and match:
+
+- **DP** (data parallel) splits the batch: every GPU holds a full model copy and
+  processes different data. Reach for it first because it needs no model changes.
+- **FSDP / ZeRO** is still data parallel, but shards the replicated optimizer,
+  gradient, and parameter state and gathers it on demand. You buy memory with
+  communication (an all-gather per step).
+- **TP** (tensor parallel) splits individual weight matrices within a layer. It is
+  chatty (an all-reduce inside every layer), so keep it on-node.
+- **PP** (pipeline parallel) splits the model by layer into stages and streams
+  micro-batches. It spans nodes fine but needs careful micro-batch scheduling.
+- **SP / CP** splits the sequence dimension for long context, with ring-attention
+  rotating the KV. **EP** splits the experts of an MoE layer.
+
+<figure>
+    <img
+        src="/talks/2026-08-03/figures/zero-memory.svg"
+        alt="Per-GPU memory as proportional bars across four stages: baseline, ZeRO-1, ZeRO-2, and ZeRO-3, dropping from 16 GB toward 16 over N GB."
+    />
+    <figcaption>ZeRO/FSDP shards the 16-bytes-per-parameter Adam mixed-precision state across N ranks: stage 1 shards optimizer states (the biggest first win), stage 2 adds gradients, stage 3 adds parameters, driving per-GPU memory toward 16/N.</figcaption>
+</figure>
+
+The heuristic that matters: **climb only when memory forces you**, in the order
+`DP → FSDP/ZeRO → TP → PP`. If it fits on one GPU, use DP and scale the batch. If
+it almost fits, FSDP/ZeRO (stage 1, then stage 3). If a single layer will not fit,
+TP on-node and PP across. Add parallelism in order of pain.
+
+## Critical batch size
+
+There is a tension between long-running pre-training and how HPC facilities
+allocate time. INCITE wants you on at least 20% of the machine, which on Aurora is
+around 2,000 nodes. More nodes with pure data parallelism means a larger global
+batch, and past a point a larger batch gives you a worse model and unstable
+training.
+
+That point is the **critical batch size**, the largest batch where more
+data-parallel workers still buy near-linear speedup. Below it, doubling the batch
+roughly halves the steps and more nodes are nearly free. Above it, the speedup
+saturates and sample efficiency drops. HPC hits this ceiling first, precisely
+because the facility wants you wide.
+
+<figure>
+    <img
+        src="/talks/2026-08-03/figures/critical-batch.svg"
+        alt="Speedup versus global batch size on log-log axes: a near-linear region that bends and flattens past a marked critical batch size."
+    />
+    <figcaption>Below the critical batch size, 2x batch is about half the steps. Past it, speedup flattens and training destabilizes. It grows with model and data scale, but sub-linearly, so it is a moving target you measure.</figcaption>
+</figure>
+
+The fix is not "more DP." It is TP/PP/EP plus a batch size you chose. The knobs
+for going large are learning-rate scaling (linear or square-root), a longer
+warmup, and gradient clipping, with a large-batch optimizer like LAMB. But
+learning rates do not transfer for free: at 80B, a linearly-scaled LR moved the
+NaN earlier (step 7 instead of step 29), and `mano` tuned at GBS=48 loses to
+AdamW at GBS=384 (2.88 vs 2.71) unless you reparametrize with μP. Re-tune at the
+target batch and node count. Do not extrapolate a small-batch LR up a 100x jump
+and hope.
+
+## Optimizers, and the bf16 cliff
+
+AdamW is the baseline. Everything else buys curvature at some compute price.
+
+| Optimizer | Core idea |
+| --- | --- |
+| **AdamW** | diagonal 2nd moment + decoupled weight decay |
+| **SophiaG** | clipped Hessian-diagonal: light curvature, cheap |
+| **Shampoo** | Kronecker-factored preconditioner per layer |
+| **SOAP** | Adam in Shampoo's eigenbasis: stabler, fewer knobs |
+| **Muon** | Newton-Schulz orthogonalize: a cheap Shampoo-like step |
+
+Shampoo → SOAP → Muon is one family with the same second-moment structure, getting
+cheaper each step. SophiaG takes the other cheap route, a clipped diagonal Hessian.
+For the 2B reference run we chose SophiaG because at GBS=6,144 it was the only
+optimizer that reached a low loss while keeping gradient norms bounded. Muon, by
+contrast, diverges around 1.1T tokens with a gradient-norm spike of roughly six
+orders of magnitude.
+
+<figure>
+    <img
+        src="/talks/2026-08-03/figures/optimizer-comparison.svg"
+        alt="AuroraGPT-2B optimizer comparison at 50M tokens per batch on 256 nodes: training loss (top) and gradient norm (bottom) versus consumed tokens for AdamW, Lamb, Muon, and SophiaG. SophiaG reaches the lowest loss with bounded grad norm while Muon's gradient norm spikes about six orders of magnitude near 1.1T tokens."
+    />
+    <figcaption>Real 2B runs at GBS=6,144. SophiaG reaches the lowest loss with bounded gradient norm; Muon diverges at ~1.1T tokens.</figcaption>
+</figure>
+
+A newer entry, `mano`, normalizes updates on a rotating Oblique manifold using
+O(dim) vector-norm operations and no Newton-Schulz iterations, so it matches
+Muon's loss without Muon's throughput tax. At 2B over 1000 steps, Muon and `mano`
+tie on loss around 3.6, but `mano` runs at AdamW speed (~7,048 vs ~4,556 TPS), so
+it wins on wall-clock. The caveat from the previous section applies: at GBS=384,
+AdamW still wins on loss, because `mano`'s LR was tuned at GBS=48.
+
+The most instructive failure was at 80B. With a `dim` of 9216, every
+constant-learning-rate finder NaN-ed in the first dozen steps. The signature was
+always the same: the gradient norm went to infinity one step before the loss did,
+while the loss still looked flat around 12.9.
+
+| Optimizer | Died at | Signature |
+| --- | --- | --- |
+| `mano` | step 5 | grad NaN (diverged first) |
+| AdamW | step 9 | grad NaN |
+| SophiaG | step 14 | Hessian-term overflow (~6,100 node-hours) |
+
+Two things stand out. First, `mano` died first despite having the safest-looking
+80B learning-rate band, which means early-step ranking does not predict sustained
+stability. Second, three different optimizers failing the same way points to a
+corner-level instability (bf16 at `dim=9216`), not a tuning problem. The stable
+corner today is TP=4, LBS=1, GBS=372, validated 100 out of 100 steps NaN-free
+(loss 12.93 → 7.72) at about 9.8% MFU, with a fix in flight built on a longer
+warmup (≥200 steps), gradient clipping, and possibly an fp32 gradient path.
+
+<figure>
+    <img
+        src="/talks/2026-08-03/figures/lr-finder-80b.svg"
+        alt="80B learning-rate finder at GBS=6,144 across four optimizer sweeps: AdamW and Muon cliff straight to NaN with no usable minimum, while mano and SophiaG reach a real minimum first before SophiaG blows up past it."
+    />
+    <figcaption>The 80B learning-rate finder. AdamW and Muon cliff straight to NaN; mano and SophiaG find a real minimum first, but SophiaG blows up just past it.</figcaption>
+</figure>
+
+The way to find a learning rate at all is the classic sweep: ramp the LR
+exponentially over the first ~10% of training, watch the loss, and pick just below
+the point where it turns up. There are three regions: a flat high plateau, a
+basin, and a cliff where one step too big sends the gradients to infinity and the
+run NaNs. A few hundred steps to sweep saves a full-scale run that dies at step 7.
+
+## At scale, failure is the default
+
+The arithmetic is unforgiving. Cluster mean-time-between-failures is roughly
+single-node MTBF divided by N. If a node fails about once a year and you put
+16,000 of them in one job, that is around 44 failures a day, from expected value
+alone. Everyone who has run at this scale reports the same thing: Llama 3 405B saw
+419 interruptions over 54 days (about one every three hours, 99% auto-recovered);
+OPT-175B needed 35 manual restarts and cycled 100+ hosts; BLOOM and GLM-130B
+fought frequent loss spikes. You do not plan for the happy path. You plan for the
+failure.
+
+The operational cost is not the failures themselves. It is telling **transient**
+faults (retry and you are fine) from **systemic** ones (retry just reproduces the
+problem). Retry a systemic fault and you burn your spare pool; halt on a transient
+one and you waste walltime you already paid for.
+
+<figure>
+    <img
+        src="/talks/2026-08-03/figures/failure-taxonomy.svg"
+        alt="A 2x2 grid of failure modes: rows are where it broke (Hardware, Software, Network, System), columns are transient versus systemic. Silent failures with no traceback are marked as the dangerous ones."
+    />
+    <figcaption>Two axes: where it broke, and whether retrying fixes it. The dangerous cells are the silent ones, where there is no traceback and the loss still looks fine.</figcaption>
+</figure>
+
+The silent failures are the worst, because the loss keeps looking reasonable while
+the model learns nothing or logs the wrong number. Two real ones from production:
+
+- **A bf16 master copy froze RMSNorm.** The loss looked fine, but lm-eval never
+  moved (ARC-Easy stuck at the random baseline for 17,000+ steps). RMSNorm weights
+  initialize at 1.0, where the bf16 unit-in-last-place is about 7.8e-3, but the
+  per-step update was about 1.6e-5, so every update rounded to zero. All 25
+  RMSNorm tensors sat at exactly 1.0. Linear layers were fine because their
+  smaller init put the update and the ULP in the same range. The fix was an fp32
+  master with a mixed-precision policy (bf16 compute, fp32 reduce), costing about
+  10 GB extra at 20B. The lesson: loss looks like training, but lm-eval is the
+  only ground truth.
+- **Tensor parallelism reported the loss 1/12 too low.** Step-1 loss for a 256K
+  vocab should be about `ln(256128) ≈ 12.45`. TP=1 showed 12.95, but TP=2 after an
+  upstream commit reported 1.07, which is exactly 12.84 divided by the
+  `dp_world_size` of 12. A distributed reduction short-circuited on the wrong mesh
+  and silently dropped the cross-batch sum. Gradients and optimizer steps were
+  correct; only the logged number was wrong. Filed as `torchtitan#3204`.
+
+The other flavor of silent failure is the network. At full-machine scale the
+interconnect is never fully healthy. The loud version is a `gloo` "Connection
+closed by peer" a few hours in, and at least it gives you an exit code. The quiet
+version is a collective that just stops: every rank blocks in the same
+`all_reduce`, the process is alive by `kill -0`, and on XPU `xccl` silently
+ignores `train_timeout_seconds`, so the hang consumes the entire PBS walltime. One
+20B/512N job hung at step 803 with its heartbeat still ticking. The one signal you
+can trust is that a hang quiets stdout. Absence of progress is the detector.
+
+## Checkpointing without melting the cluster
+
+A checkpoint is your only insurance policy: when the job dies, you resume from the
+last one and everything since is wasted work. At 20B a checkpoint is 232 GB
+(weights, optimizer state at roughly 2x the model, plus scheduler, step, RNG, and
+dataloader position). A synchronous save stalls training about 23.6s and a reload
+is 55-63s, dominated by `dcp.load`.
+
+The Lustre tax you paid on reads comes back on the write path, now with every rank
+flushing 232 GB to the same metadata server. Worse, a checkpoint write that
+contends with training collectives on the same fabric can take the whole job down.
+
+The answer is asynchronous checkpointing done carefully: snapshot to host memory
+on the training thread (fast), then stage and flush on a background thread while
+the GPUs keep going, and bound how many ranks flush at once.
+
+<figure>
+    <img
+        src="/talks/2026-08-03/figures/async-ckpt.svg"
+        alt="Per-save training-thread stall, sync versus async, at 2B (23 GB) and 20B (232 GB). Sync blocks on the full write (3.75s and 23.6s); async pays only a short stage plus drain (1.05s and 5.4s)."
+    />
+    <figcaption>Async hides the write behind compute: at 20B, the training-thread stall drops from 23.6s to about 5.4s (4.4x), roughly 18s handed back per save.</figcaption>
+</figure>
+
+Done wrong, it is a foot-gun. At 20B/512N and beyond, an unbounded async save
+contends with training collectives and takes the whole job down. And there is a
+failure that hides inside checkpointing itself: a PBS mid-save kill once left a
+stale `step-4500/` placeholder directory, the sync path assumed the save was
+complete, and the run sat walltime-blocked for weeks. A half-written checkpoint is
+worse than no checkpoint, which is why the discipline is a bounded fan-out plus a
+`.complete` marker written last, so an incomplete checkpoint is skipped on reload.
+
+Restarting quickly matters as much as saving. The recovery clock runs from crash
+to first-step-back-training, not from crash to "file exists." So stage the
+checkpoint node-local (the same `ezpz yeet` fan-out, rather than 512 ranks pulling
+232 GB off Lustre at once), and keep converters between formats
+(Megatron ⇄ HF ⇄ ZeRO ⇄ Universal) so you can resume at a different TP/PP/DP than
+you saved at, and evaluate or serve from the HF export.
+
+## Fault-tolerant training
+
+Recovery is layered, because different failures live at different timescales:
+
+- **JOB scope** (PBS, hours): crash or walltime triggers a chained resubmit.
+- **NODE scope** (failover wrapper, minutes): a bad host is detected and swapped
+  from a spare pool.
+- **PROCESS scope** (`ezpz launch`, seconds): stdout goes idle, so kill and back
+  off.
+
+Inner loops catch most failures; outer loops catch the rest. The node layer moved
+out of bash and into `ezpz`:
+
+```bash
+# 522 nodes allocated; train on 512, 10 auto-reserved as spare.
+ezpz launch --auto-retry --nhosts 512 \
+  -- python -m torchtitan.train …
+```
+
+`--auto-retry` classifies each attempt's exit as success, walltime, bad-node, or
+stuck-pre-training. On a bad node it scrapes the failing host from the log, swaps
+in a spare, and re-execs. It guards against config bugs by stopping after two
+consecutive attempts with zero `step=` markers, so a broken run does not burn the
+whole spare pool. It broke the 20B/512N stall mentioned above, driving that run
+from step 4,400 to 5,400 cleanly, and it ships in
+[`ezpz#144`](https://github.com/saforem2/ezpz/pull/144).
+
+The process layer is the watchdog that catches silent hangs. Since a hang quiets
+stdout, `--timeout SECONDS` kills the launched process if its output goes idle
+(not on walltime) and returns exit code 124 to match GNU `timeout(1)`, and
+`--retries N` re-execs on any non-zero exit with exponential backoff. Under
+`--auto-retry` the watchdog is on by default, matching `FAILOVER_IDLE_TIMEOUT`. It
+fires on absence of progress, not a heartbeat ping, because a hung job is "alive"
+by `kill -0`.
+
+All of it fired unattended, in sequence, on a real silent hang. Job 8505298 on a
+Friday night logged step 37, then went silent; 30 minutes later the
+`--timeout=1800` watchdog sent SIGTERM, the wrapper classified exit 124 as a
+silent hang (distinct from a PBS walltime exit 143), found no traceback to scrape
+so blindly swapped the rank-0 host, and relaunched on a fresh node set, which ran
+to walltime with checkpoints persisted. Nobody was awake for any of it.
+
+The whole thing composes into one launch:
+
+```bash
+ezpz yeet --compress
+source /tmp/.venv/bin/activate
+ezpz launch \
+    --auto-retry \    # NODE: swap bad hosts from the spare pool
+    --nhosts 512 \    #       (allocate 522, keep 10 spare)
+    --timeout 1800 \  # PROCESS: kill on 30 min stdout silence
+    --retries 3 \     #          re-exec with exponential backoff
+    -- python3 -m torchtitan.train --config-file ./config.toml
+# JOB layer: a chained PBS resubmit wraps the whole thing (hours scope)
+```
+
+## Where production stands
+
+The payoff is a program of runs, not a single hero number. The 2B reference,
+trained on the older Megatron-DeepSpeed stack, completed one continuous
+7.77T-token run across three data-mix stages, ending at loss 2.03. The torchtitan
+chains and the 20B runs advance under auto-retry.
+
+| Run | Nodes | Steps | Tokens | Loss | Status |
+| --- | ---: | ---: | --- | ---: | --- |
+| 2B base | 256 | 92,859 | 4.674T (100%) | 2.65 | ✅ complete |
+| 2B-MDS reference | 256 | 154,391 | 7.770T | 2.03 | ✅ 3-stage reference |
+| 20B/512N | 512 | 6,010 | 605B (13%) | 2.44 | advancing (auto-retry) |
+| 20B/256N | 256 | 6,301 | 159B (3%) | 2.44 | advancing |
+| 80B | 512 | 14 | (NaN'd) | NaN | ❌ optimizer cliff |
+
+<figure>
+    <img
+        src="/talks/2026-08-03/figures/all-production-loss.svg"
+        alt="Training loss versus tokens for five overlaid AuroraGPT chains: the 2B-MDS reference descending through two data-mix stage transitions to 2.03 at 7.77T tokens, the 2B torchtitan chains near 2.65-2.71, and the two 20B chains dropping steeply per token to about 2.44."
+    />
+    <figcaption>Every production chain on one axis. The 2B-MDS reference (blue dashed) steps down at each data-mix transition to 2.03; the 20B chains fall steeply per token toward 2.44.</figcaption>
+</figure>
+
+The reason the 20B runs matter, despite being early in their token budget, is
+token efficiency. On every benchmark the 20B/512N chain rises far steeper per
+token than either 2B chain, reaching ARC-Easy around 0.69 and HellaSwag around
+0.63 by roughly 440B tokens, beating the 2B chains at matched token counts by
+close to 8x. That is "more model per GPU-hour" made literal.
+
+<figure>
+    <img
+        src="/talks/2026-08-03/figures/eval-combined-4bench.svg"
+        alt="lm-eval accuracy versus tokens on four benchmarks (HellaSwag, ARC-Easy, ARC-Challenge, Winogrande) for the 2B chains and the 20B/512N chain. On every benchmark the 20B rises far steeper per token."
+    />
+    <figcaption>Evals per token across four benchmarks. The 20B chain (green) climbs steepest; the 2B chains plateau around 2T tokens.</figcaption>
+</figure>
+
+The throughput picture explains why. Bigger models get fewer tokens/sec/GPU but
+higher model FLOP utilization, because the larger matmuls keep the XPUs busier:
+the 20B chains sit around 17-22% MFU versus 9-12% for 2B.
+
+<figure>
+    <img
+        src="/talks/2026-08-03/figures/all-production-perf.svg"
+        alt="Per-GPU throughput and MFU for the production chains: 2B chains around 2,500-4,700 tokens per second per GPU at 9-12% MFU, 20B chains around 350-450 tokens per second at 17-22% MFU."
+    />
+    <figcaption>Throughput and MFU per GPU. Bigger models trade tokens/sec for utilization: fewer tok/s/GPU, but higher MFU.</figcaption>
+</figure>
+
+## What generalizes
+
+Some of this transfers to any vendor and any machine, and some of it has to be
+re-earned every time.
+
+**Generalizes.** A bit-exact deterministic smoke gate after every upstream sync.
+lm-eval as the ground truth for whether the model is actually learning, since the
+loss will lie to you. A spare-node failover wrapper (the same idea works on
+Slurm). Launcher and environment autodetection, so vendor assumptions never leak
+into the training code.
+
+**Does not.** `torch.compile` decisions (it helps dense models and can hurt MoE on
+XPU). Activation-checkpointing boundaries. The EP-versus-FSDP frontier. Collective
+tuning across XCCL, gloo, and the NCCL/CCL environment. And optimizer stability at
+the bf16 corner, where, as the 80B cliff showed, the learning-rate-finder ranking
+does not predict sustained stability.
+
+If there are five things to take home:
+
+1. Data prep is a distributed-systems problem. Tokenize once, blend by weight, pin
+   everything.
+2. Do not hit Lustre from every rank. Stage node-local and broadcast the
+   environment.
+3. Add parallelism in order of pain (`DP → FSDP/ZeRO → TP → PP`) and stay under
+   the critical batch size.
+4. Loss is not ground truth. Gate on evals, and let a bit-exact smoke test catch
+   silent corruption.
+5. Do not try to prevent failures. Recover cheaply, with async checkpoints and
+   layered auto-restart.
+
+The full decks, with speaker notes and the rest of the figures, are at
+[TPC'26](https://samf.sh/talks/2026/06/03),
+[the MoE Workshop](https://samf.sh/talks/2026/07/14), and
+[ATPESC 2026](https://samf.sh/talks/2026/08/03).
+
+_This research used resources of the Argonne Leadership Computing Facility, a U.S.
+Department of Energy Office of Science user facility, under Contract
+DE-AC02-06CH11357._
