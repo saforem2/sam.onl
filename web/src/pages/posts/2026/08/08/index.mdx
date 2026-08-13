@@ -55,6 +55,14 @@ the training code is the single change that makes everything downstream portable
 
 ## Data prep is the first wall
 
+<figure class="figure-margin">
+    <img
+        src="/talks/2026-08-03/figures/data-processing.svg"
+        alt="Index-build time for 2T tokens: serial about one hour versus distributed about two minutes, a 30x speedup."
+    />
+    <figcaption>Building the blend index for 2T tokens: serial (~1 hr) vs distributed (~2 min), a 30x win. It runs on the critical path for every config change.</figcaption>
+</figure>
+
 Before a single GPU does useful work, you have to curate, blend, and shard 2T+
 tokens across many corpora (ArXiv, GitHub, Wikipedia, Reddit, StackExchange). This
 is a distributed-systems problem, and it has to be reproducible on every rank and
@@ -69,14 +77,6 @@ filesystem, not the tokenizer: tokenization is I/O-bound, millions of small read
 plus a many-writer output that hammers shared Lustre. Read in large chunks, write
 few large shards. Re-tokenizing 2T tokens is a whole-allocation tax, so you want
 to pay it as rarely as possible.
-
-<figure class="figure-margin">
-    <img
-        src="/talks/2026-08-03/figures/data-processing.svg"
-        alt="Index-build time for 2T tokens: serial about one hour versus distributed about two minutes, a 30x speedup."
-    />
-    <figcaption>Building the blend index for 2T tokens: serial (~1 hr) vs distributed (~2 min), a 30x win. It runs on the critical path for every config change.</figcaption>
-</figure>
 
 **Blend by weight, not by concatenation.** A naive `cat *.bin` trains ArXiv for a
 week and then Wikipedia for a day: order becomes a hyperparameter and the model

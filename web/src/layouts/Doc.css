@@ -176,18 +176,36 @@
            is exactly what this layout exists to avoid. The 1280px breakpoint
            is what guarantees the computed width stays legible (~30ch+). */
         width: min(calc(100% - var(--prose-measure) - 3ch), 52ch);
-        margin-block: 0 1lh;
         margin-inline-start: 3ch;
-        /* Nudge up to the cap-height of the adjacent paragraph's first
-           line rather than its line-box top, so figure and text read as
-           starting together. */
-        margin-block-start: 0.25lh;
+        /* Flush with the top of the adjacent text. The figure is declared
+           immediately after the section heading so the float rises to the
+           top of the section body; zero top margin keeps its first pixel
+           level with the first line of prose beside it. */
+        margin-block: 0 1lh;
     }
 
     /* The caption is centered under the figure by the global rule; at margin
        width that reads better left-aligned with a slightly tighter measure. */
     .figure-margin > figcaption {
         text-align: left;
+    }
+
+    /* Doc.astro forces a "vim blank line" (margin-block-start: 1lh
+       !important) onto the first child of an open heading-collapse
+       <details>. Declaring the margin figure first — which is what makes the
+       float rise to the top of the section — means the FLOAT absorbs that
+       gap: it gets pushed 1lh down while the in-flow paragraph beside it
+       keeps a 0 margin and sits 1lh higher, so the two are misaligned and
+       the section loses its blank line.
+
+       Hand the gap back to the first in-flow element: zero it on the float
+       and re-apply it to whatever follows. Needs !important + higher
+       specificity to beat the Doc.astro rule. */
+    .heading-collapse[open] > summary + .figure-margin {
+        margin-block-start: 0 !important;
+    }
+    .heading-collapse[open] > summary + .figure-margin + * {
+        margin-block-start: 1lh !important;
     }
 
     /* If the figure is taller than the prose it sits beside, the float would
