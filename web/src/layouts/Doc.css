@@ -142,6 +142,81 @@
     }
 }
 
+/* ── Margin figure ───────────────────────────────────────────────────────
+   Running prose is capped at --prose-measure (84ch) and left-aligned, so on
+   a wide viewport the article column leaves a large dead gutter to its
+   right: ~36ch at 1280px, ~54ch at 1440px, ~111ch at 1920px. A chart that
+   only needs to be *read alongside* its paragraph can live in that gutter
+   instead of interrupting the text flow.
+
+   Mechanism: float right, then pull the figure out past the prose cap with
+   a negative right margin. The float's containing block is the full article
+   column (not the 84ch prose cap, which is a max-width on the prose
+   elements themselves), so `margin-right: calc(...)` isn't needed — the
+   float simply sits at the article's right edge and the capped paragraphs
+   flow past it on the left, untouched.
+
+   Placement: a float can only rise as high as the point it's declared, so
+   the <figure> must appear in source BEFORE the paragraph it should sit
+   beside, not after it.
+
+   Breakpoint: the gutter has to be wide enough to hold a legible chart
+   before the float is worth it. Measured on this layout, the article column
+   clears the 84ch prose cap by ~30ch at 1280px and by only ~14ch at 1100px,
+   so 1280px is the floor — below it the float is dropped and the figure
+   returns to full-width block flow. */
+@media (min-width: 1280px) {
+    .figure-margin {
+        float: right;
+        /* Track the gutter: whatever the article column has beyond the prose
+           cap, minus a 3ch gap so text never touches the figure. The max
+           keeps it from sprawling on an ultrawide display. Deliberately NOT
+           clamp() with a min: a floor larger than the real gutter would push
+           the float back over the prose and reflow the text around it, which
+           is exactly what this layout exists to avoid. The 1280px breakpoint
+           is what guarantees the computed width stays legible (~30ch+). */
+        width: min(calc(100% - var(--prose-measure) - 3ch), 52ch);
+        margin-block: 0 1lh;
+        margin-inline-start: 3ch;
+        /* Nudge up to the cap-height of the adjacent paragraph's first
+           line rather than its line-box top, so figure and text read as
+           starting together. */
+        margin-block-start: 0.25lh;
+    }
+
+    /* The caption is centered under the figure by the global rule; at margin
+       width that reads better left-aligned with a slightly tighter measure. */
+    .figure-margin > figcaption {
+        text-align: left;
+    }
+
+    /* If the figure is taller than the prose it sits beside, the float would
+       otherwise bleed down into the NEXT section and shove that section's
+       first paragraphs sideways. Headings clear it so a margin figure can
+       never escape the section that declared it. Inert on pages with no
+       floats, which is every page that doesn't use .figure-margin. */
+    #doc-article :is(h1, h2, h3, h4, h5, h6) {
+        clear: both;
+    }
+
+    /* Reader view narrows #doc-article to --reader-width, which can be
+       NARROWER than the 84ch prose cap. The media query above is
+       viewport-based and can't see that, so the gutter calc goes negative
+       and the figure collapses to zero width — it vanishes off the page.
+       Reader is a deliberately single-column mode anyway, so opt out of the
+       float there and let the figure be a normal full-width block. */
+    html[data-reader] .figure-margin {
+        float: none;
+        width: 100%;
+        margin-inline-start: 0;
+        margin-block: 1lh;
+    }
+
+    html[data-reader] .figure-margin > figcaption {
+        text-align: center;
+    }
+}
+
 .post-meta {
     display: flex;
     flex-direction: row;

@@ -70,20 +70,20 @@ plus a many-writer output that hammers shared Lustre. Read in large chunks, writ
 few large shards. Re-tokenizing 2T tokens is a whole-allocation tax, so you want
 to pay it as rarely as possible.
 
-**Blend by weight, not by concatenation.** A naive `cat *.bin` trains ArXiv for a
-week and then Wikipedia for a day: order becomes a hyperparameter and the model
-forgets. Instead, sample every batch to a fixed domain mixture, deterministically,
-so the weights are honored per step. BlendCorpus does this as
-aggregate → sample → index, and the index build is on the critical path for every
-config change.
-
-<figure>
+<figure class="figure-margin">
     <img
         src="/talks/2026-08-03/figures/data-processing.svg"
         alt="Index-build time for 2T tokens: serial about one hour versus distributed about two minutes, a 30x speedup."
     />
     <figcaption>Building the blend index for 2T tokens: serial (~1 hr) vs distributed (~2 min), a 30x win. It runs on the critical path for every config change.</figcaption>
 </figure>
+
+**Blend by weight, not by concatenation.** A naive `cat *.bin` trains ArXiv for a
+week and then Wikipedia for a day: order becomes a hyperparameter and the model
+forgets. Instead, sample every batch to a fixed domain mixture, deterministically,
+so the weights are honored per step. BlendCorpus does this as
+aggregate → sample → index, and the index build is on the critical path for every
+config change.
 
 **Pin everything.** Same seed, same shards, same weights gives the same batch on
 every rank, every run. Two things threaten that: data churn (re-scraped or
