@@ -142,6 +142,15 @@
     }
 }
 
+/* Below the float breakpoint the figure is a normal block, but its
+   containing block is the full article column — which is wider than the
+   84ch prose cap between ~1024px and 1280px, so the chart hung out past
+   the text it belongs to. Cap it to the same measure as the prose. Above
+   1280px the float rule overrides this width. */
+.figure-margin {
+    max-width: var(--prose-measure);
+}
+
 /* ── Margin figure ───────────────────────────────────────────────────────
    Running prose is capped at --prose-measure (84ch) and left-aligned, so on
    a wide viewport the article column leaves a large dead gutter to its
@@ -1285,7 +1294,16 @@ h6::before {
             margin-block: 0 1lh;
         }
 
-        :is(li, details, blockquote, .callout) p {
+        /* Tighten paragraphs that are genuinely nested inside another
+           block (a list item, a callout, a real <details> disclosure) —
+           there the trailing 1lh reads as slack inside the container.
+
+           `details` must exclude `.heading-collapse`: every `##` section on
+           a doc page is wrapped in one of those, so an unqualified `details`
+           matched ALL body prose and silently stripped the blank line
+           between every paragraph in every section, site-wide. Only
+           author-written <details> should tighten. */
+        :is(li, details:not(.heading-collapse), blockquote, .callout) p {
             margin-block-end: 0;
         }
 
