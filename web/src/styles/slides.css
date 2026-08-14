@@ -380,6 +380,15 @@
         padding-block: 0;
         padding-inline: 1ch;
     }
+    /* Suppress the doc-page ASCII frame + language tag. Slides zero the
+       vertical padding above, so the frame (which global.css insets from
+       the pre's edges) would strike through the first and last lines of
+       code. A slide is already a framed surface with its own title and
+       chrome; a second box inside it is noise. */
+    pre.astro-code::before,
+    pre.astro-code::after {
+        content: none;
+    }
     /* Omit line numbers on slides — they add gutter clutter and the
        counter's tinted-background gutter never lines up cleanly with the
        pre's padding-block, leaving an uneven band above/below the numbers.

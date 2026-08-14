@@ -1449,7 +1449,6 @@ html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
    visually flush anyway. Inline padding stays 0 — the gutter and
    line-number column are handled by the `> code` rules below. */
 pre.astro-code {
-    padding: 0.4lh 0;
     /* Pull the line-number gutter into the left margin so the CODE text —
        not the numbers — lines up with the surrounding prose.
 
@@ -1482,7 +1481,70 @@ pre.astro-code {
     min-width: 0;
     max-width: round(calc(0.98 * 100%), 1ch);
     width: max-content;
-    padding-inline-end: 0;
+    /* Anchor for the ::before frame and ::after language tag below.
+       (The copy-button script also sets this inline at runtime; declaring
+       it here means the frame is correct before that script runs.) */
+    position: relative;
+    /* Room for the ASCII frame drawn by ::before, which is inset from the
+       pre's edges — without this the frame would cut through the code.
+       Replaces the earlier 0.4lh/0 padding. */
+    padding: 0.9lh 2ch;
+}
+
+/* ── ASCII box around code blocks ────────────────────────────────────────
+   Same visual language as the webtui box- utility (a drawn rectangle via
+   an absolutely-positioned pseudo-element behind the content), but done
+   locally rather than by adding box-="square" to the <pre>: the utility
+   sets its own padding and z-index, and the code block already relies on
+   a specific padding/background/scroll arrangement.
+
+   The frame is a real border on ::before so it never affects layout or
+   the horizontal scroll region. */
+pre.astro-code::before {
+    content: '';
+    position: absolute;
+    inset: 0.35lh 0.5ch;
+    border: 1px solid var(--foreground2);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Language tag riding the top border, "top-right" style. Shiki already
+   emits data-language on every <pre>, so this needs no JS.
+
+   Sits ON the border line with a background matching the block, so the
+   rule appears to break around the label the way a titled ASCII box
+   does. The other three corners stay empty by design. */
+pre.astro-code::after {
+    content: attr(data-language);
+    position: absolute;
+    top: 0.35lh;
+    right: 2.5ch;
+    translate: 0 -50%;
+    padding-inline: 0.75ch;
+    background: var(--pre-background, var(--background1));
+    color: var(--foreground2);
+    line-height: 1;
+    text-transform: lowercase;
+    user-select: none;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Unlabeled languages: `text` and `plaintext` are shiki's fallback for a
+   fence with no language, and they account for ~44% of the code blocks on
+   this site. A box tagged "text" is noise — draw the frame, skip the tag. */
+pre.astro-code[data-language='text']::after,
+pre.astro-code[data-language='plaintext']::after {
+    content: none;
+}
+
+/* The copy button occupies the same top-right slot as the language tag.
+   Hide the tag while the button is showing rather than letting them
+   overlap or stacking them into two competing labels. */
+pre.astro-code:hover::after,
+pre.astro-code:focus-within::after {
+    opacity: 0;
 }
 
 /* Align code blocks with text after the list marker. */
