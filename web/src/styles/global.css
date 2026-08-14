@@ -562,7 +562,6 @@
                alone would clip). */
             max-height: round(calc(0.35 * 100vh), 1lh);
             overflow-y: auto;
-            margin-left: -2ch;
         }
     }
 
@@ -1451,6 +1450,20 @@ html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
    line-number column are handled by the `> code` rules below. */
 pre.astro-code {
     padding: 0.4lh 0;
+    /* Pull the line-number gutter into the left margin so the CODE text —
+       not the numbers — lines up with the surrounding prose.
+
+       This must live on the <pre>, not on the inner <code>: the <pre> is
+       what paints --pre-background, so shifting only the <code> slid the
+       text out from under its own background, leaving the line numbers
+       stranded on the page background and the last column overhanging the
+       right edge by the same 2ch. Shifting the <pre> moves the painted box
+       and its contents together.
+
+       No width compensation needed: `width: max-content` below makes the
+       box hug its content, so the negative margin slides the whole block
+       left without changing how wide it is. */
+    margin-left: -2ch;
     margin-block: 0.5lh;
     align-self: start;
     background-color: var(--pre-background, var(--background1)) !important;
