@@ -1582,12 +1582,14 @@ pre.astro-code span.line::before {
     padding-right: 1ch;
     text-align: right;
     color: var(--pre-linenumber-fg, var(--foreground3));
-    /* color: var(--pre-linenumber-fg); */
     user-select: none;
-    border-right: 2px solid var(--background2);
-    /* border-bottom: 2px solid var(--background2); */
-    /* border-left: 2px solid var(--background2); */
-    background-color: var(--background0);
+    /* Line numbers are a reference aid, not content. Now that the gutter
+       is scooted into the margin they sit right next to the prose edge,
+       where a full-strength divider rule plus a tinted gutter band read as
+       a second column competing with the code. Drop both and dim the
+       digits instead: the numbers stay findable when you go looking for
+       them and recede when you don't. */
+    opacity: 40%;
 }
 
 .code-copy-btn {
