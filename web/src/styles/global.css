@@ -1320,7 +1320,7 @@ html[data-webtui-theme*='nvim-dark'] .dark-content {
 }
 
 html[data-webtui-theme='custom-light'] .astro-code {
-    --pre-background: oklch(from var(--code-bg, #f8f8f8) l c h);
+    --pre-background: var(--background0);
     background-color: var(--pre-background) !important;
 }
 /* Don't paint span-level backgrounds — let the pre's background show
@@ -1462,7 +1462,7 @@ pre.astro-code {
        No width compensation needed: `width: max-content` below makes the
        box hug its content, so the negative margin slides the whole block
        left without changing how wide it is. */
-    margin-left: -2ch;
+    margin-left: 0ch;
     margin-block: 0.5lh;
     align-self: start;
     background-color: var(--pre-background, var(--background1)) !important;
@@ -1489,7 +1489,7 @@ pre.astro-code {
        pre's edges — without this the frame would cut through the code.
        Kept tight: the frame sits at 0.2lh/0.5ch, so this leaves roughly a
        third of a line between the rule and the first line of code. */
-    padding: 0.55lh 1.5ch;
+    padding: 0.5lh 0;
 }
 
 /* ── ASCII box around code blocks ────────────────────────────────────────
@@ -1515,14 +1515,15 @@ pre.astro-code::before {
        in this file but never actually DEFINED in any theme, so it would
        resolve to currentColor here and render the border *brighter* than
        foreground2 rather than dimmer. */
-    border: 1px solid
+    border: 1px dotted
         color-mix(
             in srgb,
             var(--foreground2),
             var(--pre-background, var(--background1)) 45%
         );
+    background: var(--code-bg);
     pointer-events: none;
-    z-index: 1;
+    z-index: 0;
 }
 
 /* Language tag riding the top border, "top-right" style. Shiki already
@@ -1535,13 +1536,24 @@ pre.astro-code::after {
     content: attr(data-language);
     position: absolute;
     /* Must track the ::before inset above so the label stays centred on
-       the top rule rather than floating off it. */
+       the top rule rather than floating off it. At 0.75lh/-60% the label
+       dropped BELOW the frame and landed on the first line of code (it
+       overlapped `train.py` on a one-line bash block). */
     top: 0.35lh;
-    right: 2.5ch;
+    right: 1ch;
     translate: 0 -50%;
-    padding-inline: 0.75ch;
-    background: var(--pre-background, var(--background1));
-    color: var(--foreground2);
+    padding-inline: 0.5ch;
+    /* Tinted from the pink accent rather than using --material-pink-50
+       directly: that token is a fixed light pink from the material
+       palette, which reads as a highlighter block on a dark background.
+       Mixing it into the block's own background keeps the pink hue in
+       both themes. */
+    background: color-mix(
+        in srgb,
+        var(--material-pink),
+        var(--pre-background, var(--background1)) 82%
+    );
+    color: var(--material-pink);
     line-height: 1;
     text-transform: lowercase;
     user-select: none;
@@ -1661,15 +1673,18 @@ pre.astro-code span.line::before {
     margin-right: 1ch;
     padding-right: 1ch;
     text-align: right;
+    --pre-linenumber-fg: var(--foreground3);
     color: var(--pre-linenumber-fg, var(--foreground3));
+    /* Divider back between the gutter and the code, now that the block
+       has its own frame — the rule reads as the box's internal gutter
+       line rather than as a stray second column. */
+    border-right: 1pt solid var(--foreground2);
     user-select: none;
-    /* Line numbers are a reference aid, not content. Now that the gutter
-       is scooted into the margin they sit right next to the prose edge,
-       where a full-strength divider rule plus a tinted gutter band read as
-       a second column competing with the code. Drop both and dim the
-       digits instead: the numbers stay findable when you go looking for
-       them and recede when you don't. */
-    opacity: 40%;
+    /* Line numbers are a reference aid, not content: dimmed so they stay
+       findable when you go looking for them and recede when you don't.
+       (80%, not the earlier 40% — the digits now use --foreground3, which
+       is already a dim tone, so 40% on top of it was nearly invisible.) */
+    opacity: 80%;
 }
 
 .code-copy-btn {
