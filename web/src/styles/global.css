@@ -1510,6 +1510,15 @@ pre.astro-code::after {
     right: 1ch;
     padding-inline: 0.5ch;
     color: var(--lang-badge, var(--material-pink));
+    /* Faint wash of the badge's own hue, matching the relative-color
+       pattern used elsewhere in this file (cf. the heading colours and the
+       mark highlight). Deriving from --lang-badge rather than naming a
+       colour means each language's chip tints itself, and the low alpha
+       keeps it legible over either theme's page background without
+       needing a light/dark variant. */
+    background-color: oklch(
+        from var(--lang-badge, var(--material-pink)) l c h / 0.14
+    );
     /* Compact leading so the badge fits the 0.5lh margin gap without
        colliding with the prose above. Leading only — the font size is
        untouched, so this doesn't introduce a second type size. */
