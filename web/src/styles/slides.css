@@ -379,6 +379,10 @@
         margin-inline-start: 0ch;
         padding-block: 0;
         padding-inline: 1ch;
+        /* Doc pages give the <pre> a 1.1lh top margin as headroom for the
+           language badge. Slides have no badge, so that headroom is just
+           dead space on a fixed-height surface — keep the symmetric gap. */
+        margin-block: 0.5lh;
     }
     /* No language badge on slides — a deck already carries its own title
        and chrome. `padding-block: 0` above also drops the reserved strip
