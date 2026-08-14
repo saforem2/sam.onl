@@ -380,9 +380,9 @@
         padding-block: 0;
         padding-inline: 1ch;
     }
-    /* No language badge on slides. Slides zero the vertical padding above,
-       so a top-right label would sit on the first line of code, and a deck
-       already carries its own title and chrome. */
+    /* No language badge on slides — a deck already carries its own title
+       and chrome. `padding-block: 0` above also drops the reserved strip
+       that the badge would occupy, so both have to go together. */
     pre.astro-code::after {
         content: none;
     }

@@ -1466,6 +1466,12 @@ pre.astro-code {
        also sets this inline at runtime; declaring it here means the badge
        is positioned correctly before that script runs.) */
     position: relative;
+    /* Reserve a strip at the top for the language badge. The badge cannot
+       live outside the <pre> (overflow: auto clips it) and cannot sit at
+       top: 0 over zero padding (it lands on line 1), so the block gives it
+       a lane of its own. Blocks with no badge get the strip too, which
+       keeps every code block on the same vertical rhythm. */
+    padding-block-start: 1.1lh;
 }
 
 /* ── Language badge ──────────────────────────────────────────────────────
@@ -1477,10 +1483,19 @@ pre.astro-code {
    rule falls back to the pink default, so a new language picks up a
    sensible badge without touching this block.
 
-   The badge floats over the block's top-right corner. It is deliberately
-   NOT given a background box — the code block has no frame here, so a
-   filled chip would read as a sticker pasted on top; tinted text alone
-   sits better against the block's own background. */
+   The badge sits in a reserved strip at the top of the block. That strip
+   is real padding on the <pre> (see padding-block-start above), NOT a
+   pseudo-element floated over line 1 — at top: 0 with no padding the badge
+   printed straight on top of the first line whenever the code filled the
+   available width.
+
+   It also cannot be moved ABOVE the block: the <pre> carries
+   `overflow: auto` for long-line scrolling, which clips any pseudo-element
+   positioned outside its padding box, so a badge lifted into the margin
+   gap simply vanishes.
+
+   No background box: the strip is empty, so tinted text alone is enough
+   and a filled chip would read as a sticker. */
 pre.astro-code::after {
     content: attr(data-language);
     position: absolute;
@@ -1488,8 +1503,10 @@ pre.astro-code::after {
     right: 1ch;
     padding-inline: 0.5ch;
     color: var(--lang-badge, var(--material-pink));
-    background: var(--pre-background, var(--background1));
-    line-height: 1.4;
+    /* Fills the reserved strip exactly, so the badge is vertically
+       centred in it without a magic offset. (Leading only — the font size
+       is untouched, so this doesn't introduce a second type size.) */
+    line-height: 1.1lh;
     text-transform: lowercase;
     user-select: none;
     pointer-events: none;
