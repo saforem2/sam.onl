@@ -384,10 +384,11 @@
            dead space on a fixed-height surface — keep the symmetric gap. */
         margin-block: 0.5lh;
     }
-    /* No language badge on slides — a deck already carries its own title
-       and chrome. `padding-block: 0` above also drops the reserved strip
-       that the badge would occupy, so both have to go together. */
-    pre.astro-code::after {
+    /* No language badge or its notched top rule on slides — a deck already
+       carries its own title and chrome, and with `padding-block: 0` above
+       there is no room for either. */
+    pre.astro-code::after,
+    pre.astro-code::before {
         content: none;
     }
     /* Omit line numbers on slides — they add gutter clutter and the

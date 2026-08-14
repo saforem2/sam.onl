@@ -1489,19 +1489,14 @@ pre.astro-code {
    rule falls back to the pink default, so a new language picks up a
    sensible badge without touching this block.
 
-   The badge sits in the margin ABOVE the block, not inside it. Inside, it
-   either prints on line 1 (at top: 0 with no padding) or forces an empty
-   tinted strip across the top of every block, which reads as a rendering
-   bug rather than a label. Out here it costs the block nothing: the 0.5lh
-   top margin already separates the block from the prose above, and the
-   badge tucks into that gap.
+   The badge straddles the block's top edge, the way a title breaks the top
+   rule of an ASCII box. It cannot live INSIDE the block: at top: 0 over
+   zero padding it prints on line 1, and reserving padding for it renders
+   as an empty tinted strip across every block.
 
    This is why the <pre> above switches to `overflow: visible` and hands
    scrolling to the <code>: with overflow on the <pre>, anything positioned
-   outside its box is clipped and the badge disappears entirely.
-
-   No background box: floating in whitespace, a filled chip reads as a
-   sticker. Tinted text alone is enough. */
+   outside its box is clipped and the badge disappears entirely. */
 pre.astro-code::after {
     /* Nerd Font glyph, set per language by the --lang-icon rules below.
        Falls back to the generic "code" glyph for anything unmapped, so a
@@ -1509,49 +1504,59 @@ pre.astro-code::after {
 
        IMPORTANT: only glyphs verified present in the CURATED Nerd Font
        subset (web/public/fonts/nerd/SymbolsNerdFont-Regular.woff2) may be
-       used — anything outside it renders as tofu. Notably the Python and
-       JS brand marks (U+E73C, U+E74E) are NOT in the subset, which is why
-       those map to terminal/braces glyphs instead. */
+       used — anything outside it renders as tofu, and the subset carries
+       an unpredictable slice of each icon family (e.g. it has seti's
+       Python U+E606 but not devicon's U+E73C). Check a codepoint by
+       measuring its rendered width before using it. */
     content: var(--lang-icon, '\e796');
     font-family: 'Symbols Nerd Font', var(--font-family);
     position: absolute;
-    /* Sits astride the block's top edge rather than fully above it: the
-       glyph is a mark, not a word, so overlapping the boundary reads as a
-       tab on the block instead of a floating label.
-
-       0.25lh, not 0.5lh: at half a line the glyph dropped far enough into
-       the block to sit on the first line of code (it covered `train.py` on
-       a one-line bash block). A quarter line still breaks the edge without
-       reaching the text. */
+    /* Centre the glyph exactly ON the block's top edge: `bottom: 100%`
+       puts its bottom on that edge, then translating down by half its own
+       height drops the midpoint onto it. Using 50% of the element rather
+       than a hand-tuned lh fraction means it stays centred if the glyph
+       size ever changes. */
     bottom: 100%;
-    translate: 0 0.25lh;
+    translate: 0 50%;
     right: 1ch;
-    padding-inline: 0.5ch;
+    /* Gap either side so the top border (below) breaks cleanly around the
+       glyph instead of running into it. */
+    padding-inline: 0.6ch;
     color: var(--lang-badge, var(--material-pink));
-    /* Faint wash of the badge's own hue, matching the relative-color
-       pattern used elsewhere in this file (cf. the heading colours and the
-       mark highlight). Deriving from --lang-badge rather than naming a
-       colour means each language's chip tints itself, and the low alpha
-       keeps it legible over either theme's page background without
-       needing a light/dark variant. */
-    background-color: oklch(
-        from var(--lang-badge, var(--material-pink)) l c h / 0.14
-    );
-    /* Compact leading so the badge fits the 0.5lh margin gap without
-       colliding with the prose above. Leading only — the font size is
-       untouched, so this doesn't introduce a second type size. */
+    /* Page background, not a tint: the badge has to mask the border it
+       sits on so the rule appears to break around it, which is the whole
+       ASCII-box effect. A translucent wash would let the line show
+       through. */
+    background: var(--background0);
     line-height: 1;
-    text-transform: lowercase;
     user-select: none;
     pointer-events: none;
     z-index: 2;
 }
 
+/* The rule the badge breaks. Only the top edge is drawn — a full box would
+   fight the block's own background fill; a single rule with the glyph
+   notched into it is the part of the ASCII-box idiom that carries the
+   meaning. Tinted to the language hue but well muted, so it reads as
+   structure rather than as a second accent. */
+pre.astro-code::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    border-top: 1px solid
+        oklch(from var(--lang-badge, var(--material-pink)) l c h / 0.45);
+    pointer-events: none;
+    z-index: 1;
+}
+
 /* Unlabeled: `text` / `plaintext` are shiki's fallback for a fence with no
    language and are ~44% of the code blocks on this site. A badge for
-   "no language" is noise. */
+   "no language" is noise — and with no badge there is nothing to notch
+   into the rule, so the rule goes too. */
 pre.astro-code[data-language='text']::after,
-pre.astro-code[data-language='plaintext']::after {
+pre.astro-code[data-language='plaintext']::after,
+pre.astro-code[data-language='text']::before,
+pre.astro-code[data-language='plaintext']::before {
     content: none;
 }
 
@@ -1561,7 +1566,9 @@ pre.astro-code[data-language='plaintext']::after {
    at zero opacity the tinted background box still occupies the space and
    dims what is behind it. */
 pre.astro-code:hover::after,
-pre.astro-code:focus-within::after {
+pre.astro-code:focus-within::after,
+pre.astro-code:hover::before,
+pre.astro-code:focus-within::before {
     content: none;
 }
 
@@ -1573,76 +1580,76 @@ pre.astro-code:focus-within::after {
    measuring its rendered width in the browser (tofu measures ~23px at
    64px; these all measure 42-64px). Do not add a glyph without checking
    it the same way — the subset is curated, not the full Nerd Font. */
-pre.astro-code[data-language='python']::after {
+pre.astro-code[data-language='python'] {
     --lang-badge: var(--material-blue);
-    /* Terminal, not the Python logo: U+E73C is absent from the subset. */
-    --lang-icon: '\e795';
+    /* seti's Python mark. (devicon's U+E73C is absent from the subset.) */
+    --lang-icon: '\e606';
 }
-pre.astro-code[data-language='bash']::after,
-pre.astro-code[data-language='sh']::after,
-pre.astro-code[data-language='shell']::after,
-pre.astro-code[data-language='zsh']::after,
-pre.astro-code[data-language='console']::after {
+pre.astro-code[data-language='bash'],
+pre.astro-code[data-language='sh'],
+pre.astro-code[data-language='shell'],
+pre.astro-code[data-language='zsh'],
+pre.astro-code[data-language='console'] {
     --lang-badge: var(--material-green);
     --lang-icon: '\f489';
 }
-pre.astro-code[data-language='js']::after,
-pre.astro-code[data-language='javascript']::after,
-pre.astro-code[data-language='jsx']::after {
+pre.astro-code[data-language='js'],
+pre.astro-code[data-language='javascript'],
+pre.astro-code[data-language='jsx'] {
     --lang-badge: var(--material-yellow-green);
     /* Angle brackets: the JS brand mark U+E74E is absent from the subset. */
     --lang-icon: '\e60e';
 }
-pre.astro-code[data-language='ts']::after,
-pre.astro-code[data-language='typescript']::after,
-pre.astro-code[data-language='tsx']::after {
+pre.astro-code[data-language='ts'],
+pre.astro-code[data-language='typescript'],
+pre.astro-code[data-language='tsx'] {
     --lang-badge: var(--material-light-blue);
     --lang-icon: '\e628';
 }
-pre.astro-code[data-language='css']::after,
-pre.astro-code[data-language='scss']::after {
+pre.astro-code[data-language='css'],
+pre.astro-code[data-language='scss'] {
     --lang-badge: var(--material-violet);
     --lang-icon: '\e749';
 }
-pre.astro-code[data-language='html']::after,
-pre.astro-code[data-language='astro']::after,
-pre.astro-code[data-language='xml']::after {
+pre.astro-code[data-language='html'],
+pre.astro-code[data-language='astro'],
+pre.astro-code[data-language='xml'] {
     --lang-badge: var(--material-orange);
     --lang-icon: '\e736';
 }
-pre.astro-code[data-language='json']::after,
-pre.astro-code[data-language='jsonc']::after,
-pre.astro-code[data-language='yaml']::after,
-pre.astro-code[data-language='yml']::after {
+pre.astro-code[data-language='json'],
+pre.astro-code[data-language='jsonc'],
+pre.astro-code[data-language='yaml'],
+pre.astro-code[data-language='yml'] {
     --lang-badge: var(--material-teal);
     /* Gear: config-shaped formats. */
     --lang-icon: '\eb51';
 }
-pre.astro-code[data-language='toml']::after {
+pre.astro-code[data-language='toml'] {
     --lang-badge: var(--material-teal);
     --lang-icon: '\e6b2';
 }
-pre.astro-code[data-language='markdown']::after,
-pre.astro-code[data-language='md']::after,
-pre.astro-code[data-language='mdx']::after {
+pre.astro-code[data-language='markdown'],
+pre.astro-code[data-language='md'],
+pre.astro-code[data-language='mdx'] {
     --lang-badge: var(--material-blue-grey);
     --lang-icon: '\f15b';
 }
-pre.astro-code[data-language='diff']::after,
-pre.astro-code[data-language='patch']::after {
+pre.astro-code[data-language='diff'],
+pre.astro-code[data-language='patch'] {
     --lang-badge: var(--material-red);
     --lang-icon: '\ea73';
 }
-pre.astro-code[data-language='c']::after,
-pre.astro-code[data-language='cpp']::after {
+pre.astro-code[data-language='c'],
+pre.astro-code[data-language='cpp'] {
     --lang-badge: var(--material-deep-purple);
     --lang-icon: '\e61e';
 }
-pre.astro-code[data-language='rust']::after {
+pre.astro-code[data-language='rust'] {
     --lang-badge: var(--material-deep-purple);
-    --lang-icon: '\e7a8';
+    --lang-icon: '\e68b';
 }
-pre.astro-code[data-language='go']::after {
+pre.astro-code[data-language='go'] {
     --lang-badge: var(--material-deep-purple);
     --lang-icon: '\e627';
 }
