@@ -1503,10 +1503,28 @@ pre.astro-code {
    No background box: floating in whitespace, a filled chip reads as a
    sticker. Tinted text alone is enough. */
 pre.astro-code::after {
-    content: attr(data-language);
+    /* Nerd Font glyph, set per language by the --lang-icon rules below.
+       Falls back to the generic "code" glyph for anything unmapped, so a
+       new language gets a sensible mark without touching this rule.
+
+       IMPORTANT: only glyphs verified present in the CURATED Nerd Font
+       subset (web/public/fonts/nerd/SymbolsNerdFont-Regular.woff2) may be
+       used — anything outside it renders as tofu. Notably the Python and
+       JS brand marks (U+E73C, U+E74E) are NOT in the subset, which is why
+       those map to terminal/braces glyphs instead. */
+    content: var(--lang-icon, '\e796');
+    font-family: 'Symbols Nerd Font', var(--font-family);
     position: absolute;
-    /* Bottom edge of the badge rests on the block's top edge. */
+    /* Sits astride the block's top edge rather than fully above it: the
+       glyph is a mark, not a word, so overlapping the boundary reads as a
+       tab on the block instead of a floating label.
+
+       0.25lh, not 0.5lh: at half a line the glyph dropped far enough into
+       the block to sit on the first line of code (it covered `train.py` on
+       a one-line bash block). A quarter line still breaks the edge without
+       reaching the text. */
     bottom: 100%;
+    translate: 0 0.25lh;
     right: 1ch;
     padding-inline: 0.5ch;
     color: var(--lang-badge, var(--material-pink));
@@ -1530,25 +1548,35 @@ pre.astro-code::after {
 }
 
 /* Unlabeled: `text` / `plaintext` are shiki's fallback for a fence with no
-   language and are ~44% of the code blocks on this site. A badge reading
-   "text" is noise. */
+   language and are ~44% of the code blocks on this site. A badge for
+   "no language" is noise. */
 pre.astro-code[data-language='text']::after,
 pre.astro-code[data-language='plaintext']::after {
     content: none;
 }
 
-/* The copy button occupies the same top-right slot, so the badge steps
-   aside while the button is showing rather than stacking two labels. */
+/* Hide the badge on hover so whatever sits behind it — the copy button,
+   which claims the same top-right slot, and the code underneath — is
+   fully visible and clickable. `content: none` rather than `opacity: 0`:
+   at zero opacity the tinted background box still occupies the space and
+   dims what is behind it. */
 pre.astro-code:hover::after,
 pre.astro-code:focus-within::after {
-    opacity: 0;
+    content: none;
 }
 
-/* Per-language hues, grouped by family so related languages read as
-   related: shells warm, Python/config in its own band, web languages
-   cool, data formats muted. */
+/* Per-language hue + glyph. Both live on one rule per family so a language
+   is described in a single place. Hues are grouped so related languages
+   read as related: shells green, web languages cool, data formats teal.
+
+   Every codepoint below was verified against the shipped subset by
+   measuring its rendered width in the browser (tofu measures ~23px at
+   64px; these all measure 42-64px). Do not add a glyph without checking
+   it the same way — the subset is curated, not the full Nerd Font. */
 pre.astro-code[data-language='python']::after {
     --lang-badge: var(--material-blue);
+    /* Terminal, not the Python logo: U+E73C is absent from the subset. */
+    --lang-icon: '\e795';
 }
 pre.astro-code[data-language='bash']::after,
 pre.astro-code[data-language='sh']::after,
@@ -1556,47 +1584,67 @@ pre.astro-code[data-language='shell']::after,
 pre.astro-code[data-language='zsh']::after,
 pre.astro-code[data-language='console']::after {
     --lang-badge: var(--material-green);
+    --lang-icon: '\f489';
 }
 pre.astro-code[data-language='js']::after,
 pre.astro-code[data-language='javascript']::after,
 pre.astro-code[data-language='jsx']::after {
     --lang-badge: var(--material-yellow-green);
+    /* Angle brackets: the JS brand mark U+E74E is absent from the subset. */
+    --lang-icon: '\e60e';
 }
 pre.astro-code[data-language='ts']::after,
 pre.astro-code[data-language='typescript']::after,
 pre.astro-code[data-language='tsx']::after {
     --lang-badge: var(--material-light-blue);
+    --lang-icon: '\e628';
 }
 pre.astro-code[data-language='css']::after,
 pre.astro-code[data-language='scss']::after {
     --lang-badge: var(--material-violet);
+    --lang-icon: '\e749';
 }
 pre.astro-code[data-language='html']::after,
 pre.astro-code[data-language='astro']::after,
 pre.astro-code[data-language='xml']::after {
     --lang-badge: var(--material-orange);
+    --lang-icon: '\e736';
 }
 pre.astro-code[data-language='json']::after,
 pre.astro-code[data-language='jsonc']::after,
 pre.astro-code[data-language='yaml']::after,
-pre.astro-code[data-language='yml']::after,
+pre.astro-code[data-language='yml']::after {
+    --lang-badge: var(--material-teal);
+    /* Gear: config-shaped formats. */
+    --lang-icon: '\eb51';
+}
 pre.astro-code[data-language='toml']::after {
     --lang-badge: var(--material-teal);
+    --lang-icon: '\e6b2';
 }
 pre.astro-code[data-language='markdown']::after,
 pre.astro-code[data-language='md']::after,
 pre.astro-code[data-language='mdx']::after {
     --lang-badge: var(--material-blue-grey);
+    --lang-icon: '\f15b';
 }
 pre.astro-code[data-language='diff']::after,
 pre.astro-code[data-language='patch']::after {
     --lang-badge: var(--material-red);
+    --lang-icon: '\ea73';
 }
 pre.astro-code[data-language='c']::after,
-pre.astro-code[data-language='cpp']::after,
-pre.astro-code[data-language='rust']::after,
+pre.astro-code[data-language='cpp']::after {
+    --lang-badge: var(--material-deep-purple);
+    --lang-icon: '\e61e';
+}
+pre.astro-code[data-language='rust']::after {
+    --lang-badge: var(--material-deep-purple);
+    --lang-icon: '\e7a8';
+}
 pre.astro-code[data-language='go']::after {
     --lang-badge: var(--material-deep-purple);
+    --lang-icon: '\e627';
 }
 
 /* Align code blocks with text after the list marker. */
