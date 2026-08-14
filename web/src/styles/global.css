@@ -1804,15 +1804,18 @@ pre.astro-code:focus-within .code-copy-btn,
     content: ']';
 }
 
-/* Figure captions — centered under the image, italic prose body,
-   "Fig: " prefix in the strongest foreground for emphasis. Targets
-   <figcaption> directly so it works whether the markdown gave us a
-   wrapping <p> or bare inline text. */
+/* Figure captions — italic prose body, "Fig: " prefix in the strongest
+   foreground for emphasis. Targets <figcaption> directly so it works
+   whether the markdown gave us a wrapping <p> or bare inline text.
+
+   No font-size override: the TUI grid has exactly ONE type size, and a
+   fractional em here would put caption text off the shared lh rhythm
+   that every ch/lh measurement in this file assumes. Captions read as
+   secondary through italics and a dimmer foreground, not through size. */
 figcaption {
     text-align: center;
     color: var(--foreground1);
     font-style: italic;
-    font-size: 0.875em;
 }
 /* Markdown often wraps caption text in a <p> — flatten that so the
    "Fig: " ::before stays inline with the caption text instead of
@@ -1830,6 +1833,32 @@ figure:has(:is(img, svg, picture)) > figcaption::before {
     color: var(--foreground0);
     font-style: normal;
     font-weight: var(--font-weight-bold);
+}
+
+/* Boxed caption on doc pages: a tinted card with a hard offset shadow,
+   matching the chip/widget idiom used elsewhere in this file (no blur —
+   the offset reads as a doubled terminal edge, not a drop shadow).
+
+   Scoped to #doc-article deliberately. `figcaption` is a bare global
+   selector and most of the site's captions live in SLIDE DECKS, which are
+   fixed-height flex columns: adding padding + a bottom margin there pushes
+   the caption out of its column, where it renders as an empty clipped box
+   over the footer. Decks keep the plain centered caption.
+
+   Left-aligned because a boxed caption is a block, and centering ragged
+   text inside a visible border looks accidental. */
+#doc-article figcaption {
+    text-align: left;
+    color: var(--foreground2);
+    background: var(--background1);
+    outline: 1px solid var(--background2);
+    padding: 0.5lh 1ch;
+    margin-block-end: 1lh;
+    /* Theme-aware rather than a hardcoded black: derived from the
+       page background so it stays a shadow in light themes and doesn't
+       become an invisible void in dark ones. */
+    box-shadow: 0.25ch 0.25ch 0 0
+        color-mix(in srgb, var(--background0), var(--foreground0) 25%);
 }
 
 p:has(> img) {
