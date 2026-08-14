@@ -555,13 +555,14 @@
         .astro-code > & {
             color: inherit;
             background-color: inherit;
-            /* Cap a code block at ~2/3 of the viewport so a very long
+            /* Cap a code block at ~1/3 of the viewport so a very long
                listing scrolls in place instead of pushing the rest of the
                article far down the page. Rounded to the lh grid to match the
                deck cap above; overflow-y:auto so it scrolls (max-height
                alone would clip). */
-            max-height: round(calc(0.66 * 100vh), 1lh);
+            max-height: round(calc(0.35 * 100vh), 1lh);
             overflow-y: auto;
+            margin-left: -2ch;
         }
     }
 
@@ -1437,12 +1438,19 @@ html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
     background-color: var(--pre-background) !important;
 }
 
-/* Code-block container: hugs content, no internal padding band.
-   Half-line gap above and below so code blocks don't crowd
-   surrounding text. (Was asymmetric 0.5lh top / 1lh bottom for
-   no good reason — equalized.) */
+/* Code-block container: hugs content horizontally, with a small
+   vertical breathing band so the first and last lines aren't flush
+   against the block's own background edge. Half-line gap above and
+   below so code blocks don't crowd surrounding text. (Was asymmetric
+   0.5lh top / 1lh bottom for no good reason — equalized.)
+
+   The vertical padding lives HERE and not on the inner <code>: the
+   <pre> is what paints --pre-background, so padding on the <code>
+   would sit inside a band that has already ended, leaving the text
+   visually flush anyway. Inline padding stays 0 — the gutter and
+   line-number column are handled by the `> code` rules below. */
 pre.astro-code {
-    padding: 0;
+    padding: 0.4lh 0;
     margin-block: 0.5lh;
     align-self: start;
     background-color: var(--pre-background, var(--background1)) !important;
