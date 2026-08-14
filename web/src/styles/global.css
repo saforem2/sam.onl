@@ -1442,7 +1442,12 @@ html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
    surrounding text. (Was asymmetric 0.5lh top / 1lh bottom for
    no good reason — equalized.) */
 pre.astro-code {
-    padding: 0;
+    /* Half a line of breathing room above the first line and below the
+       last, painted in the block's own background. Without it the badge
+       (and the copy button that replaces it on hover) sits on top of code
+       that reaches the top-right corner. Inline padding stays 0 — the
+       gutter and line-number column handle that. */
+    padding: 0.5lh 0;
     /* Extra headroom (vs the 0.5lh below) so the language badge, which
        sits in this gap, clears whatever is above — including the last line
        of an immediately-preceding code block, where 0.5lh left the badge
@@ -1511,13 +1516,14 @@ pre.astro-code::after {
     content: var(--lang-icon, '\e796');
     font-family: 'Symbols Nerd Font', var(--font-family);
     position: absolute;
-    /* Centre the glyph exactly ON the block's top edge: `bottom: 100%`
-       puts its bottom on that edge, then translating down by half its own
-       height drops the midpoint onto it. Using 50% of the element rather
-       than a hand-tuned lh fraction means it stays centred if the glyph
-       size ever changes. */
-    bottom: 100%;
-    translate: 0 50%;
+    /* Centre the glyph exactly ON the block's top edge: `top: 0` puts its
+       top there, then translating up by half its own height drops the
+       midpoint onto the edge. Using 50% of the element rather than a
+       hand-tuned lh fraction means it stays centred if the glyph size
+       changes. The block's 0.5lh top padding keeps the first line of code
+       clear of it. */
+    top: 0;
+    translate: 0 -50%;
     right: 1ch;
     /* Gap either side so the top border (below) breaks cleanly around the
        glyph instead of running into it. */
@@ -1560,16 +1566,17 @@ pre.astro-code[data-language='plaintext']::before {
     content: none;
 }
 
-/* Hide the badge on hover so whatever sits behind it — the copy button,
-   which claims the same top-right slot, and the code underneath — is
-   fully visible and clickable. `content: none` rather than `opacity: 0`:
-   at zero opacity the tinted background box still occupies the space and
-   dims what is behind it. */
+/* On hover the language glyph becomes a copy glyph in place — the badge IS
+   the affordance rather than being displaced by a separate control. The
+   notched rule stays put; only the mark changes.
+
+   The real <button> still does the copying (see .code-copy-btn), so this
+   swap is purely visual. That button is styled as a bare hit-target
+   covering the badge, so the cursor and click both land correctly. */
 pre.astro-code:hover::after,
-pre.astro-code:focus-within::after,
-pre.astro-code:hover::before,
-pre.astro-code:focus-within::before {
-    content: none;
+pre.astro-code:focus-within::after {
+    content: '\ebcc';
+    color: var(--foreground1);
 }
 
 /* Per-language hue + glyph. Both live on one rule per family so a language
@@ -1766,41 +1773,48 @@ pre.astro-code span.line::before {
     background-color: var(--background0);
 }
 
+/* Invisible hit-target sitting exactly over the language badge. The badge
+   itself (pre.astro-code::after) provides the visuals and swaps to a copy
+   glyph on hover; a pseudo-element can't receive clicks, so this real
+   button supplies the cursor, the click, and the accessible name.
+
+   Its own label is hidden rather than removed — screen readers still get
+   "copy", and the script's "copied!" / "failed" text still lands
+   somewhere, it just isn't painted over the glyph. */
 .code-copy-btn {
     position: absolute;
+    /* Cover the badge: same corner, sized to the glyph plus its padding. */
     top: 0;
     right: 1ch;
-    padding: 0 1ch;
-    font-size: 0.85em;
-    font-family: var(--font-family);
-    color: var(--foreground2);
-    background: var(--background1);
-    border: 1px solid var(--foreground2);
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.15s;
-    z-index: 5;
-    /* Pin to top-right of the pre. Inline-flex center handles vertical
-       text alignment; box-sizing: border-box so the 1px border counts
-       toward the 1lh height (otherwise total height = 1lh + 2px which
-       gets clipped by overflow-y: hidden on single-line code blocks). */
+    translate: 0 -50%;
+    /* Explicit box: the button's own text is hidden, so it has no
+       intrinsic size to fall back on. Sized to cover the glyph. */
+    display: block;
     box-sizing: border-box;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    width: 3ch;
     height: 1lh;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    z-index: 5;
+    /* Hide the button's own label without hiding the button. `color:
+       transparent` + clipped overflow keeps it focusable and keeps its
+       accessible name, unlike display:none or visibility:hidden.
+       font-size stays inherited — at 0 the element collapses to a
+       zero-size box and stops being clickable. */
+    color: transparent;
+    overflow: hidden;
+    white-space: nowrap;
     line-height: 1;
-
-    &:hover {
-        color: var(--foreground0);
-        background: var(--background2);
-    }
 }
 
-pre.astro-code:hover .code-copy-btn,
-pre.astro-code:focus-within .code-copy-btn,
+/* Keyboard users get the same swap as mouse users: the :focus-within rule
+   on the badge above already fires, so nothing extra is needed here beyond
+   a visible focus ring on the target itself. */
 .code-copy-btn:focus-visible {
-    opacity: 1;
+    outline: 1px solid var(--foreground2);
+    outline-offset: 2px;
 }
 
 @media (pointer: coarse) {
