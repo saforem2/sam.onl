@@ -1487,8 +1487,9 @@ pre.astro-code {
     position: relative;
     /* Room for the ASCII frame drawn by ::before, which is inset from the
        pre's edges — without this the frame would cut through the code.
-       Replaces the earlier 0.4lh/0 padding. */
-    padding: 0.9lh 2ch;
+       Kept tight: the frame sits at 0.2lh/0.5ch, so this leaves roughly a
+       third of a line between the rule and the first line of code. */
+    padding: 0.55lh 1.5ch;
 }
 
 /* ── ASCII box around code blocks ────────────────────────────────────────
@@ -1503,8 +1504,23 @@ pre.astro-code {
 pre.astro-code::before {
     content: '';
     position: absolute;
+    /* 0.35lh, not less: the ::after language tag is centred on this top
+       rule, so the inset has to leave enough headroom above the pre for
+       the label's own half-height. At 0.2lh the tag was sliced by the
+       block's top edge. */
     inset: 0.35lh 0.5ch;
-    border: 1px solid var(--foreground2);
+    /* The frame is structure, not content — at full --foreground2 it
+       competed with the code it wraps. Mixed toward the block background
+       instead of using --foreground3: that token is referenced elsewhere
+       in this file but never actually DEFINED in any theme, so it would
+       resolve to currentColor here and render the border *brighter* than
+       foreground2 rather than dimmer. */
+    border: 1px solid
+        color-mix(
+            in srgb,
+            var(--foreground2),
+            var(--pre-background, var(--background1)) 45%
+        );
     pointer-events: none;
     z-index: 1;
 }
@@ -1518,6 +1534,8 @@ pre.astro-code::before {
 pre.astro-code::after {
     content: attr(data-language);
     position: absolute;
+    /* Must track the ::before inset above so the label stays centred on
+       the top rule rather than floating off it. */
     top: 0.35lh;
     right: 2.5ch;
     translate: 0 -50%;
