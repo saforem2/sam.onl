@@ -1270,8 +1270,15 @@ h6::before {
             margin-inline-start: var(--li-text-offset, 0ch);
         }
 
-        li > :is(pre, [is-~='pre']) {
+        /* `:not(.astro-code)` — shiki code blocks set their own 0.5lh
+           vertical padding (global.css) to keep the language badge off the
+           first line of code. This rule was written when those blocks had
+           none, and zeroing padding-block here silently undid it for every
+           code block nested in a list item. Plain <pre> still gets flushed. */
+        li > :is(pre, [is-~='pre']):not(.astro-code) {
             padding-block: 0;
+        }
+        li > :is(pre, [is-~='pre']) {
             text-indent: 0;
         }
 
