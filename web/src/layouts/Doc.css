@@ -729,6 +729,12 @@ h6::before {
 #main-content li > details:not(.footnote-popover) {
     margin-left: 2ch !important;
     width: calc(100% - 2ch);
+    /* The `*` reset zeroes every margin, and nothing else targets a
+       <details> nested in a list item — so a collapsed disclosure (the
+       "+ Output" toggles) sat flush against the code block above it and
+       the next list item below. Half a line on each side, matching the
+       code block's own margin-block, so the three stack on one rhythm. */
+    margin-block: 0.5lh !important;
 }
 
 #main-content details[is-~='accordion'] + details[is-~='accordion'] {
@@ -1126,6 +1132,49 @@ h6::before {
            tags at any depth. */
         :is(p, ul, ol, dl, blockquote, h1, h2, h3, h4, h5, h6) {
             max-width: var(--prose-measure);
+        }
+
+        /* …except that capping `ul, ol` also caps everything inside a list
+           item, so a code block nested in a list inherited the 84ch prose
+           ceiling and got clipped (measured: 1651px of content squeezed
+           into 663px). Let the list grow to the full column when it
+           contains a code block, and let that block use the room.
+
+           `100%`, NOT `none`: removing the cap outright lets a long-line
+           block size to its content and blow past the column — measured
+           484px of overflow at 390px, silently clipped by #main-content's
+           overflow-x. Capping at the container keeps the block inside the
+           column and lets its own overflow-x scroll the long lines. */
+        :is(ul, ol):has(> li > pre.astro-code) {
+            max-width: 100%;
+        }
+        li > pre.astro-code {
+            max-width: 100%;
+        }
+        /* Keep the list's own prose at the readable measure even though the
+           list box is now wider than it.
+
+           `li > p` is `display: inline` elsewhere in this file, and
+           max-width does not apply to inline boxes — so capping the <p>
+           alone silently did nothing and the text ran to the widened list
+           (measured 907px against a 714px cap). Cap the <li> itself, which
+           IS a block, and let the code block opt back out below. */
+        :is(ul, ol):has(> li > pre.astro-code) > li {
+            max-width: var(--prose-measure);
+        }
+        /* …and let the code block use the full column despite that cap.
+           The <li> is capped at the prose measure, so the block escapes it
+           by sizing against the LIST (which runs the full column) rather
+           than its parent: `100cqw` with the list as the query container.
+           Bounded, not unbounded — `max-width: none` + `width: max-content`
+           let long-line blocks run up to 353px past the column, where
+           #main-content silently clipped them. */
+        :is(ul, ol):has(> li > pre.astro-code) {
+            container-type: inline-size;
+        }
+        :is(ul, ol):has(> li > pre.astro-code) > li > pre.astro-code {
+            max-width: 100cqw;
+            width: min(max-content, 100cqw);
         }
 
         strong {

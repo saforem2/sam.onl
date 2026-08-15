@@ -1749,6 +1749,13 @@ pre.astro-code span.line[tabindex='0'] {
 pre.astro-code span.line[tabindex='0']:focus-visible {
     background-color: oklch(from var(--foreground0) l c h / 0.12);
     box-shadow: inset 2px 0 0 0 var(--foreground0);
+    /* The <code> carries `padding-inline-end: 4ch` so the longest line
+       doesn't kiss the block edge. A line's `width: 100%` resolves against
+       that padded content box, so the focus highlight stopped 4ch short of
+       the block's right edge. Paint back over the padding so the selected
+       line reads as full width. */
+    margin-inline-end: -4ch;
+    padding-inline-end: 4ch;
 }
 
 pre.astro-code span.line {
@@ -2038,7 +2045,6 @@ figcaption {
     text-align: center;
     color: var(--foreground1);
     font-style: italic;
-    font-size: 0.875em;
 }
 /* Markdown often wraps caption text in a <p> — flatten that so the
    "Fig: " ::before stays inline with the caption text instead of
@@ -2056,6 +2062,32 @@ figure:has(:is(img, svg, picture)) > figcaption::before {
     color: var(--foreground0);
     font-style: normal;
     font-weight: var(--font-weight-bold);
+}
+
+/* Boxed caption on doc pages: a tinted card with a hard offset shadow,
+   matching the chip/widget idiom used elsewhere in this file (no blur —
+   the offset reads as a doubled terminal edge, not a drop shadow).
+
+   Scoped to #doc-article deliberately. `figcaption` is a bare global
+   selector and most of the site's captions live in SLIDE DECKS, which are
+   fixed-height flex columns: adding padding + a bottom margin there pushes
+   the caption out of its column, where it renders as an empty clipped box
+   over the footer. Decks keep the plain centered caption.
+
+   Left-aligned because a boxed caption is a block, and centering ragged
+   text inside a visible border looks accidental. */
+#doc-article figcaption {
+    text-align: left;
+    color: var(--foreground2);
+    background: var(--background1);
+    outline: 1px solid var(--background2);
+    padding: 0.5lh 1ch;
+    margin-block-end: 1lh;
+    /* Theme-aware rather than a hardcoded black: derived from the
+       page background so it stays a shadow in light themes and doesn't
+       become an invisible void in dark ones. */
+    box-shadow: 0.25ch 0.25ch 0 0
+        color-mix(in srgb, var(--background0), var(--foreground0) 25%);
 }
 
 p:has(> img) {
