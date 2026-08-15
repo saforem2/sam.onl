@@ -1579,6 +1579,46 @@ pre.astro-code:focus-within::after {
     color: var(--foreground1);
 }
 
+/* Click feedback. The script adds .is-copied (or .is-copy-failed) to the
+   <pre> for ~1.2s; these rules own everything the user sees.
+
+   Success shows a check, failure an x, each in its own colour, and the
+   glyph pops once. The state classes beat the :hover rule above because
+   they are declared later at equal specificity — the pointer is still over
+   the block at the moment of the click, so :hover is necessarily active
+   and the swap has to win from here. */
+pre.astro-code.is-copied::after,
+pre.astro-code.is-copied:hover::after {
+    content: '\eab2';
+    color: var(--material-green);
+    animation: code-copy-pop 240ms ease-out;
+}
+
+pre.astro-code.is-copy-failed::after,
+pre.astro-code.is-copy-failed:hover::after {
+    content: '\f00d';
+    color: var(--material-red);
+    animation: code-copy-pop 240ms ease-out;
+}
+
+/* Scale from the glyph's own centre. The badge is positioned with
+   `translate: 0 -50%`, and `transform` is a separate property from
+   `translate`, so animating transform here does not clobber that offset. */
+@keyframes code-copy-pop {
+    0% {
+        transform: scale(0.6);
+        opacity: 0.4;
+    }
+    55% {
+        transform: scale(1.25);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 /* Per-language hue + glyph. Both live on one rule per family so a language
    is described in a single place. Hues are grouped so related languages
    read as related: shells green, web languages cool, data formats teal.
@@ -1765,12 +1805,8 @@ pre.astro-code span.line::before {
     padding-right: 1ch;
     text-align: right;
     color: var(--pre-linenumber-fg, var(--foreground3));
-    /* color: var(--pre-linenumber-fg); */
     user-select: none;
     border-right: 2px solid var(--background2);
-    /* border-bottom: 2px solid var(--background2); */
-    /* border-left: 2px solid var(--background2); */
-    background-color: var(--background0);
 }
 
 /* Invisible hit-target sitting exactly over the language badge. The badge
