@@ -1227,44 +1227,10 @@ const articleSchema =
             }
         }
 
-        const isShiftRegionKey =
-            e.shiftKey &&
-            !e.ctrlKey &&
-            !e.metaKey &&
-            !e.altKey &&
-            ['h', 'j', 'k', 'l'].includes(e.key.toLowerCase())
-
-        if (isShiftRegionKey) {
-            const shiftedKey = e.key.toLowerCase()
-            let target: HTMLElement | null = null
-
-            if (shiftedKey === 'h') {
-                target = getSidebarTarget() as HTMLElement | null
-            }
-
-            if (shiftedKey === 'j') {
-                target =
-                    getVisibleMainElements()[0] ??
-                    findFirstFocusableElement() ??
-                    currentElement ??
-                    null
-            }
-
-            if (shiftedKey === 'k') {
-                target = getNavbarTarget() as HTMLElement | null
-            }
-
-            if (shiftedKey === 'l') {
-                target = getTocTarget() as HTMLElement | null
-            }
-
-            if (target instanceof HTMLElement) {
-                e.preventDefault()
-                vimFocusElement(target)
-            }
-
-            return
-        }
+        // Shift+H/J/K/L region-focus bindings removed alongside the Ctrl
+        // equivalents: shifted letters are awkward to reach, the TOC target
+        // no longer exists, and the z-chords cover the same moves. Plain
+        // h / l (below) still hop between sidebar and main.
 
         if (e.key === 'h' && !e.ctrlKey && !e.metaKey && !e.altKey) {
             const activeElement = document.activeElement
@@ -1668,16 +1634,6 @@ const articleSchema =
         refreshKeySpans()
     }
 
-    const getSidebarFocusTarget = () =>
-        document.querySelector(
-            '#sidebar a.active, #sidebar details summary, #sidebar a[href]',
-        ) as HTMLElement | null
-
-    const getTocFocusTarget = () =>
-        document.querySelector(
-            '#toc-sidebar a.active, #toc-sidebar a[href]',
-        ) as HTMLElement | null
-
     const isElementVisible = (element: HTMLElement) => {
         if (element.hidden) return false
 
@@ -1924,43 +1880,10 @@ const articleSchema =
                 )
             }
 
-            if (!e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
-
-            const key = e.key.toLowerCase()
-
-            if (key === 'h') {
-                e.preventDefault()
-                const sidebarTarget = getSidebarFocusTarget()
-                if (sidebarTarget instanceof HTMLElement) {
-                    vimFocusElement(sidebarTarget)
-                }
-                return
-            }
-
-            if (key === 'l') {
-                e.preventDefault()
-                const tocTarget = getTocFocusTarget()
-                if (tocTarget instanceof HTMLElement) {
-                    vimFocusElement(tocTarget)
-                }
-                return
-            }
-
-            if (key === 'j') {
-                e.preventDefault()
-                const mainTarget = getMainFocusTarget()
-                if (mainTarget instanceof HTMLElement) {
-                    vimFocusElement(mainTarget)
-                }
-            }
-
-            if (key === 'k') {
-                e.preventDefault()
-                const navbarTarget = getNavbarFocusTarget()
-                if (navbarTarget instanceof HTMLElement) {
-                    vimFocusElement(navbarTarget)
-                }
-            }
+            // Ctrl+H/J/K/L region-focus bindings removed: Ctrl+L is the
+            // browser's address bar, Ctrl+H/J/K collide with editor and OS
+            // shortcuts, and the TOC they targeted no longer exists. The
+            // z-chords above (zh / zj / zk / zr) cover the same navigation.
         })
     }
 </script>
