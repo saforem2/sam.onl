@@ -598,6 +598,39 @@ h6::before {
     background-image: none;
     border-right: 2px dashed var(--background1);
     transition: border-color 0.1s linear;
+    /* The element itself is only ~9px wide, which is a fussy target (the
+       usual floor for a pointer target is ~24px). Rather than widen the
+       visible strip — which would move the divider and eat column space —
+       the ::before below extends the HIT AREA into the dead space on
+       either side. The line stays exactly where it is. */
+    touch-action: none;
+}
+
+/* Invisible grab pad. An absolutely-positioned child is out of flow, so
+   negative offsets extend the pointer target without changing layout or
+   moving the visible line.
+
+   The offsets are NOT symmetric, because the box is not centred on its own
+   divider: the line is the border on the box's RIGHT edge, so the 8.5px box
+   already sits entirely to the left of the line. Padding both sides equally
+   would put the zone almost entirely on the sidebar side of the line — which
+   is exactly the bug this replaced: the old -14/-7 pair reached 21px left of
+   the line but only 4px right of it (measured), so aiming at or just right of
+   the line — the natural target — missed. It also overlapped the nearest
+   sidebar link by ~5px, stealing its clicks.
+
+   Measured free space at 1600px: 8.5px before the nearest sidebar link on
+   the left, 17px before the H1 on the right. These offsets centre a ~26px
+   zone on the line (~12px each side) and stay clear of both. */
+#sidebar-resizer::before,
+#toc-resizer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -5px;
+    right: -12px;
+    cursor: inherit;
 }
 
 #sidebar-resizer:hover,
