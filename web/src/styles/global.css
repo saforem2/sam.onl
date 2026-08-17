@@ -2064,6 +2064,37 @@ figure:has(:is(img, svg, picture)) > figcaption::before {
     font-weight: var(--font-weight-bold);
 }
 
+/* Shrink the figure to its image so the caption matches the thing it
+   captions. Images render at their natural size (often well under the
+   column), but a <figure> is a plain block that fills the column, so a
+   777px chart wore a 1103px caption — 326px of overhang, worst case 429.
+
+   `width: fit-content` on the figure alone does NOT work (verified with an
+   inline !important: still 1103px). Shrink-to-fit resolves to the widest
+   child's max-content, and a caption of running text unwrapped is wider
+   than the column, so the caption keeps setting the width.
+
+   `width: 0` + `min-width: 100%` on the caption is the part that works:
+   zero width takes the caption out of the figure's intrinsic-size
+   calculation, so the figure sizes to the image, then min-width stretches
+   the caption back to whatever the figure settled on.
+
+   `:not(.figure-margin)` is load-bearing. That class is a right-floated
+   margin figure whose width comes from a float rule in Doc.css; letting
+   this override it expanded the chart to full width and crushed the prose
+   into a ~130px ribbon. */
+#doc-article
+    figure:has(> :is(img, svg, picture)):not(.figure-margin, .figure-row) {
+    width: fit-content;
+    max-width: 100%;
+}
+#doc-article
+    figure:has(> :is(img, svg, picture)):not(.figure-margin, .figure-row)
+    > figcaption {
+    width: 0;
+    min-width: 100%;
+}
+
 /* Boxed caption on doc pages: a tinted card with a hard offset shadow,
    matching the chip/widget idiom used elsewhere in this file (no blur —
    the offset reads as a doubled terminal edge, not a drop shadow).
