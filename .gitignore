@@ -20,6 +20,18 @@ web/network-landing.txt
 /FILE_NAME
 /80b_benchmark.md
 web/public/Inconsolata.zip
+# Screenshots taken while working on the app itself. The /*.png rule above is
+# root-anchored, so it does not reach into web/.
+web/*.png
+
+# Stale local copies of components that have tracked equivalents
+# (web/src/components/SidebarFileTree.astro, web/src/utils/content.ts).
+# Kept on disk as a reference; never part of the build.
+ignore/
+
+# Exported deck PDFs. Build artifacts, regenerated from the .mdx decks, and
+# not served from web/public.
+/*.pdf
 
 # Dependencies
 node_modules
