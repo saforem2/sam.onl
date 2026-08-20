@@ -52,15 +52,13 @@ section.
 ### Install and start `argo-shim`
 
 ```bash
-# A recent argo-shim already includes the bearer-auth + user-injection support
-# (see "Contributing back"). Install from PyPI, or from a local checkout.
-uv tool install argo-shim
-
 # If your ALCF username differs from your local login name, tell the shim:
 export CELS_USERNAME=<your-alcf-username>
 
-# Start it (creates the SSH tunnel, writes a token to ~/.claude/settings.json)
-argo-shim
+# Run it (creates the SSH tunnel, writes a token to ~/.claude/settings.json).
+# A recent argo-shim already includes the bearer-auth + user-injection support
+# (see "Contributing back"); uvx fetches it from PyPI with no install step.
+uvx argo-shim
 ```
 
 `argo-shim` listens on `127.0.0.1:25940`, derives a per-user port for the SSH
@@ -252,10 +250,10 @@ export ARGO_SHIM_TOKEN=$(python3 -c "import json;print(json.load(open('$HOME/.cl
 
 ### 2. `llm-rosetta` gateway (for OpenAI-only clients)
 
-Install the gateway:
+Run the gateway:
 
 ```bash
-uv tool install "llm-rosetta[gateway]"
+uvx --from "llm-rosetta[gateway]" llm-rosetta-gateway
 ```
 
 Create `~/.config/llm-rosetta-gateway/config.jsonc`. The Argo providers point
@@ -347,8 +345,7 @@ export a short-lived access token before starting/restarting the gateway:
 
 ```bash
 # First-time / monthly-ish auth; opens a Globus browser flow.
-uv run --with globus-sdk --with openai \
-  ~/.config/llm-rosetta-gateway/inference_auth_token.py authenticate
+uvx --from alcf-ai alcf-ai auth login
 
 # Refresh/export the access token for this shell, then restart rosetta so
 # ${ALCF_INFERENCE_TOKEN} gets substituted into the config.
@@ -660,13 +657,8 @@ PY
 # Export a fresh Globus access token for ALCF Inference Endpoints. First run may
 # require an interactive browser auth flow (see below).
 alcf-inference-token() {
-  local helper="$HOME/.config/llm-rosetta-gateway/inference_auth_token.py"
-  mkdir -p "$(dirname "$helper")"
-  if [[ ! -r "$helper" ]]; then
-    curl -fsSL "https://raw.githubusercontent.com/argonne-lcf/inference-endpoints/refs/heads/main/inference_auth_token.py" -o "$helper" || return 1
-  fi
   local token
-  token=$(uv run --with globus-sdk --with openai "$helper" get_access_token) || return 1
+  token=$(uvx --from alcf-ai alcf-ai auth get-access-token) || return 1
   export ALCF_INFERENCE_TOKEN="$token"
   print "ALCF_INFERENCE_TOKEN refreshed (${token:0:8}…)"
 }
