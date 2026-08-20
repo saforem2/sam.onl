@@ -49,16 +49,16 @@ The minimal setup is two steps: start `argo-shim`, and Claude Code picks it up
 automatically. If Claude Code with Argo is all you want, you can stop after this
 section.
 
-### Install and start `argo-shim`
+### Start `argo-shim`
+
+One line: creates the SSH tunnel and writes a token to
+`~/.claude/settings.json`. A recent `argo-shim` already includes the
+bearer-auth + user-injection support (see [Contributing
+back](#contributing-back)); `uvx` fetches it from PyPI with no install step.
 
 ```bash
-# If your ALCF username differs from your local login name, tell the shim:
-export CELS_USERNAME=<your-alcf-username>
-
-# Run it (creates the SSH tunnel, writes a token to ~/.claude/settings.json).
-# A recent argo-shim already includes the bearer-auth + user-injection support
-# (see "Contributing back"); uvx fetches it from PyPI with no install step.
-uvx argo-shim
+# Drop CELS_USERNAME if your ALCF username matches your local login name.
+CELS_USERNAME=<your-alcf-username> uvx argo-shim
 ```
 
 `argo-shim` listens on `127.0.0.1:25940`, derives a per-user port for the SSH
