@@ -65,17 +65,26 @@ CELS_USERNAME=<your-alcf-username> uvx argo-shim
 tunnel, and prints the token. Each restart **rotates** the token (important
 later).
 
-Quick sanity check (the token lives in `~/.claude/settings.json`):
+Quick sanity check. The token lives in `~/.claude/settings.json`, so the
+helper digs it out itself. It builds the request body with [`jq`][jq] (`brew
+install jq`) rather than string interpolation, so a prompt containing quotes
+or an apostrophe still produces valid JSON:
 
 ```bash
-TOKEN=$(python3 -c "import json;print(json.load(open('$HOME/.claude/settings.json'))['apiKeyHelper'].split()[-1])")
+# argo-ask <model> <prompt...>  — Claude via Anthropic Messages.
+argo-ask() {
+  local model="$1"; shift
+  local token
+  token=$(python3 -c "import json;print(json.load(open('$HOME/.claude/settings.json'))['apiKeyHelper'].split()[-1])") || return 1
+  jq -nc --arg m "$model" --arg p "$*" \
+    '{model:$m, max_tokens:64, messages:[{role:"user",content:$p}]}' \
+  | curl -sS http://127.0.0.1:25940/argoapi/v1/messages \
+      -H "x-api-key: $token" -H "anthropic-version: 2023-06-01" \
+      -H "content-type: application/json" --data @-
+}
 
-# Claude via Anthropic Messages: should return JSON
-curl -sS -H "x-api-key: $TOKEN" -H "anthropic-version: 2023-06-01" \
-  -H "content-type: application/json" \
-  http://127.0.0.1:25940/argoapi/v1/messages \
-  -d '{"model":"Claude Sonnet 4.5","max_tokens":20,
-       "messages":[{"role":"user","content":"say hi"}]}'
+argo-ask "Claude Sonnet 4.5" say hi          # should return JSON
+argo-ask "Claude Sonnet 4.5" "what's 2+2?"   # quotes are safe
 ```
 
 ### Claude Code (Anthropic, native)
@@ -178,6 +187,7 @@ that:
 
 [argo-shim]: https://github.com/n-getty/argo-shim
 [n-getty]: https://github.com/n-getty
+[jq]: https://jqlang.github.io/jq/
 
 To make the OpenAI path work and let OpenAI-format clients authenticate, I made
 two small additive patches (covered in [Gotchas](#gotchas) below), both since
@@ -359,23 +369,27 @@ For my day-to-day post-shim-restart ritual I use:
 argo-rosetta-sync --with-inference
 ```
 
-Test the translation (OpenAI request in, Claude answer out):
+Test the translation (OpenAI request in, Claude answer out). Same shape as
+`argo-ask` above, but pointed at the gateway and speaking OpenAI's format,
+so one helper covers every model rosetta knows about:
 
 ```bash
-curl -sS http://127.0.0.1:8765/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model":"claude-opus-4-8",
-       "messages":[{"role":"user","content":"say hi"}],"max_tokens":20}'
-```
+# rosetta-ask <model> <prompt...>
+rosetta-ask() {
+  local model="$1"; shift
+  jq -nc --arg m "$model" --arg p "$*" \
+    '{model:$m, max_tokens:64, messages:[{role:"user",content:$p}]}' \
+  | curl -sS http://127.0.0.1:8765/v1/chat/completions \
+      -H "Content-Type: application/json" --data @-
+}
 
-And test an ALCF inference model (if `ALCF_INFERENCE_TOKEN` was set before the
-gateway started):
+# An Argo model...
+rosetta-ask claude-opus-4-8 say hi
 
-```bash
-curl -sS http://127.0.0.1:8765/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model":"alcf-sophia/openai/gpt-oss-120b",
-       "messages":[{"role":"user","content":"say hi"}],"max_tokens":20}'
+# ...and an ALCF inference model, if ALCF_INFERENCE_TOKEN was exported before
+# the gateway started. A stale token shows up here as
+# {"error":{"code":"unauthorized"}} — rerun alcf-inference-token, restart.
+rosetta-ask alcf-sophia/openai/gpt-oss-120b say hi
 ```
 
 The gateway also ships a web admin panel at
