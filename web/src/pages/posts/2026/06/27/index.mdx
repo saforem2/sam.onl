@@ -83,8 +83,8 @@ argo-ask() {
       -H "content-type: application/json" --data @-
 }
 
-argo-ask "Claude Sonnet 4.5" say hi          # should return JSON
-argo-ask "Claude Sonnet 4.5" "what's 2+2?"   # quotes are safe
+argo-ask "Claude Opus 5" say hi          # should return JSON
+argo-ask "Claude Opus 5" "what's 2+2?"   # quotes are safe
 ```
 
 ### Claude Code (Anthropic, native)
@@ -244,7 +244,7 @@ custom provider pointed at the shim (OpenCode's `@ai-sdk/anthropic` sends
                 "headers": { "anthropic-version": "2023-06-01" }
             },
             "models": {
-                "claudeopus48": { "name": "claude-4.8-opus" }
+                "claudeopus5": { "name": "claude-opus-5" }
             }
         }
     }
@@ -301,27 +301,27 @@ OpenAI-compatible endpoint:
         },
     },
     "models": {
-        // Register each model in BOTH forms clients send: bare ("claude-opus-4-8")
-        // and vendor-prefixed ("anthropic/claude-opus-4-8"). Declare `capabilities`
+        // Register each model in BOTH forms clients send: bare ("claude-opus-5")
+        // and vendor-prefixed ("anthropic/claude-opus-5"). Declare `capabilities`
         // explicitly: the default is ["text"], which makes rosetta strip images.
-        "claude-opus-4-8": {
+        "claude-opus-5": {
             "provider": "argo",
-            "upstream_model": "Claude Opus 4.8",
+            "upstream_model": "Claude Opus 5",
             "capabilities": ["text", "vision", "tools", "reasoning"],
         },
-        "anthropic/claude-opus-4-8": {
+        "anthropic/claude-opus-5": {
             "provider": "argo",
-            "upstream_model": "Claude Opus 4.8",
+            "upstream_model": "Claude Opus 5",
             "capabilities": ["text", "vision", "tools", "reasoning"],
         },
-        "gpt-5.5": {
+        "gpt-5.6-sol": {
             "provider": "argo-openai",
-            "upstream_model": "GPT-5.5",
+            "upstream_model": "GPT-5.6 Sol",
             "capabilities": ["text", "vision", "tools", "reasoning"],
         },
-        "openai/gpt-5.5": {
+        "openai/gpt-5.6-sol": {
             "provider": "argo-openai",
-            "upstream_model": "GPT-5.5",
+            "upstream_model": "GPT-5.6 Sol",
             "capabilities": ["text", "vision", "tools", "reasoning"],
         },
 
@@ -384,7 +384,7 @@ rosetta-ask() {
 }
 
 # An Argo model...
-rosetta-ask claude-opus-4-8 say hi
+rosetta-ask claude-opus-5 say hi
 
 # ...and an ALCF inference model, if ALCF_INFERENCE_TOKEN was exported before
 # the gateway started. A stale token shows up here as
@@ -408,7 +408,7 @@ OpenCode and Hermes) it points at the rosetta gateway rather than the shim.
 Define a custom provider and select it as the default:
 
 ```toml
-model = "gpt-5.5"
+model = "gpt-5.6-sol"
 model_provider = "rosetta"
 
 [model_providers.rosetta]
@@ -427,21 +427,21 @@ A few Codex-specific notes:
 
 - The provider id (`rosetta` here) can be anything **except** the reserved
   built-ins `openai`, `ollama`, and `lmstudio`.
-- Any rosetta model works as the top-level `model`: swap `gpt-5.5` for
-  `claude-opus-4-8`, `alcf-sophia/openai/gpt-oss-120b`, etc. (use the exact
+- Any rosetta model works as the top-level `model`: swap `gpt-5.6-sol` for
+  `claude-opus-5`, `alcf-sophia/openai/gpt-oss-120b`, etc. (use the exact
   ids you registered in the gateway config above).
 - To switch models per session without editing the config, pass them on the
   command line:
 
 ```bash
-codex --model claude-opus-4-8 --model-provider rosetta
+codex --model claude-opus-5 --model-provider rosetta
 ```
 
 Sanity-check that Codex is reaching the gateway (this hits the same
 `/v1/chat/completions` the earlier `curl` did, just through Codex's config):
 
 ```bash
-codex exec --model gpt-5.5 --model-provider rosetta "say hi"
+codex exec --model gpt-5.6-sol --model-provider rosetta "say hi"
 ```
 
 ### 4. Hermes (CLI + `hermes desktop`)
@@ -453,7 +453,7 @@ gateway with a `custom` provider:
 ```yaml
 model:
     base_url: 'http://127.0.0.1:8765/v1'
-    default: 'claude-opus-4-8'
+    default: 'claude-opus-5'
     provider: 'custom'
 ```
 
@@ -461,7 +461,7 @@ model:
 OpenAI-compatible endpoint (`base_url` takes precedence over any named
 provider). Because the rosetta gateway runs **no-auth** (loopback only), no API
 key is needed. Use any id you registered in the gateway config for `default`
-(`gpt-5.5`, `alcf-sophia/openai/gpt-oss-120b`, …).
+(`gpt-5.6-sol`, `alcf-sophia/openai/gpt-oss-120b`, …).
 
 Prefer to configure it interactively? `hermes model` walks you through adding a
 custom endpoint and writes the same block. Then confirm the CLI reaches the
@@ -528,7 +528,7 @@ Two Hermes-specific quirks:
   request: only an inline `api_key` in `config.yaml` (which the desktop UI
   _strips_ on save). Running the gateway no-auth sidesteps this entirely.
 - Hermes prepends a vendor prefix to model names
-  (`anthropic/claude-opus-4-8`), then matches that exact string against the
+  (`anthropic/claude-opus-5`), then matches that exact string against the
   endpoint's `/v1/models` list. So the gateway must register **both** the bare
   and vendor-prefixed forms of every model, hence the duplicated entries in
   the config above.
@@ -548,17 +548,17 @@ it: no error, just a model that "couldn't see" the image.
 The fix is to declare real capabilities per model in the gateway config:
 
 ```jsonc
-"claude-opus-4-8": {
+"claude-opus-5": {
   "provider": "argo",
-  "upstream_model": "Claude Opus 4.8",
+  "upstream_model": "Claude Opus 5",
   "capabilities": ["text", "vision", "tools", "reasoning"]
 }
 ```
 
-My [regen script](#a-regen-script) now sets these per model family (Claude 4.x
-and the GPT-5/o-series get `text + vision + tools + reasoning`; GPT-4o/4.1 get
-`text + vision + tools`). After regenerating, images flow through to Argo
-instead of being quietly discarded.
+My [regen script](#a-regen-script) now sets these per model family (Claude
+4.x/5 and the GPT-5/o-series get `text + vision + tools + reasoning`;
+GPT-4o/4.1 get `text + vision + tools`). After regenerating, images flow
+through to Argo instead of being quietly discarded.
 
 ### 5. Duplicated responses in the Hermes desktop app
 
@@ -574,7 +574,7 @@ turn had `tool_turns=10`).
 
 The culprit was Hermes' `display.interim_assistant_messages: true`, which
 renders the model's _interim commentary between tool calls_ **and** the final
-answer. With a verbose reasoning model (GPT-5.5) those two are near-identical,
+answer. With a verbose reasoning model (GPT-5.6 Sol) those two are near-identical,
 so you see the reply twice with slightly different wording. The fix is one line
 in `~/.hermes/config.yaml`:
 
