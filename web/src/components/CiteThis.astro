@@ -1,0 +1,162 @@
+---
+import { buildBibtex, type CitationKind } from '@/utils/citation'
+
+interface Props {
+    title: string
+    date: Date
+    pathname: string
+    kind: CitationKind
+    citationKey: string
+}
+
+const { title, date, pathname, kind, citationKey } = Astro.props as Props
+
+const bibtex = buildBibtex({ title, date, pathname, kind }, citationKey)
+const label = kind === 'talk' ? 'talk' : 'post'
+---
+
+{
+    /*
+  The BibTeX is emitted as a plain <pre><code>, NOT a Shiki-highlighted
+  `pre.astro-code`. Two reasons: this markup is generated at build time and
+  never passes through the markdown pipeline, and the copy-button script in
+  Doc.astro binds to `pre.astro-code` specifically. So this block carries its
+  own copy button rather than borrowing that one.
+*/
+}
+<aside class="cite-this">
+    <details>
+        <summary>Cite this {label}</summary>
+        <div class="cite-body">
+            <pre class="cite-bibtex"
+                ><code>{bibtex}</code><button type="button" class="cite-copy-btn" aria-label="Copy BibTeX citation" title="Copy BibTeX">&#xf0c5;</button></pre
+            >
+        </div>
+    </details>
+</aside>
+
+<style>
+    .cite-this {
+        margin-block-start: 2lh;
+        border-top: 1px solid var(--background2);
+        padding-block-start: 1lh;
+    }
+
+    .cite-this summary {
+        cursor: pointer;
+        color: var(--foreground2);
+        font-style: italic;
+        list-style: none;
+    }
+
+    .cite-this summary::-webkit-details-marker {
+        display: none;
+    }
+
+    /* Disclosure caret, drawn rather than relying on the UA marker so it
+       matches the site's other collapsibles. */
+    .cite-this summary::before {
+        content: '+ ';
+        font-style: normal;
+        color: var(--foreground2);
+    }
+
+    .cite-this details[open] summary::before {
+        content: '- ';
+    }
+
+    .cite-this summary:hover {
+        color: var(--foreground0);
+    }
+
+    /* The BACKGROUND LIVES HERE, on the wrapper, not on the <pre>.
+       global.css @layer components carries
+
+           pre:not([size-]):not(.astro-code) { background-color: transparent
+                                               !important }
+
+       which a scoped component rule cannot outrank (layered !important beats
+       unlayered — the same cascade quirk documented on the li>details and
+       pre.astro-code rules). Painting the wrapper sidesteps it entirely and
+       avoids adding yet another !important. The <pre> stays transparent and
+       lets this show through.
+
+       --pre-background is NOT used: it is declared per-theme on `.astro-code`
+       only, so it does not resolve in this scope. --background1 is global. */
+    .cite-body {
+        margin-block-start: 0.5lh;
+        background: var(--background1);
+    }
+
+    .cite-bibtex {
+        position: relative;
+        padding: 0.5lh 1ch;
+        margin: 0;
+        overflow-x: auto;
+        white-space: pre;
+        color: var(--foreground1);
+    }
+
+    /* The <pre> is `white-space: pre`, which the button inherits -- but its
+       label is a single Nerd Font glyph inside a 3ch-wide box, so without an
+       explicit nowrap + width the glyph wrapped and the button measured
+       14x51px instead of one line. Also needs its own background: it sits
+       over the BibTeX text, which scrolls underneath it. */
+    .cite-copy-btn {
+        position: absolute;
+        top: 0.5lh;
+        right: 1ch;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 3ch;
+        height: 1lh;
+        white-space: nowrap;
+        border: none;
+        background: var(--background1);
+        color: var(--foreground2);
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        font-family: inherit;
+        font-size: inherit;
+    }
+
+    .cite-copy-btn:hover {
+        color: var(--foreground0);
+    }
+
+    .cite-copy-btn.is-copied {
+        color: var(--material-green, var(--green));
+    }
+
+    .cite-copy-btn.is-failed {
+        color: var(--material-red, var(--red));
+    }
+</style>
+
+<script>
+    document
+        .querySelectorAll<HTMLButtonElement>('.cite-copy-btn')
+        .forEach((btn) => {
+            let resetTimer: ReturnType<typeof setTimeout> | undefined
+            btn.addEventListener('click', async () => {
+                const code = btn.parentElement?.querySelector('code')
+                if (!code) return
+                btn.classList.remove('is-copied', 'is-failed')
+                try {
+                    await navigator.clipboard.writeText(code.textContent ?? '')
+                    btn.classList.add('is-copied')
+                    btn.textContent = ''
+                } catch {
+                    btn.classList.add('is-failed')
+                    btn.textContent = ''
+                }
+                clearTimeout(resetTimer)
+                resetTimer = setTimeout(() => {
+                    btn.classList.remove('is-copied', 'is-failed')
+                    btn.textContent = ''
+                }, 1600)
+            })
+        })
+</script>

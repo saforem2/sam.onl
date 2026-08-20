@@ -6,6 +6,12 @@ import { makeSidebarOrderedPages } from '@/utils/content'
 import { compareUrlPaths, splitPathChunks } from '@/utils/url'
 import { getReadingTime } from '@/utils/readingTime'
 import ShareButtons from '@/components/ShareButtons.astro'
+import CiteThis from '@/components/CiteThis.astro'
+import {
+    citationKeyBase,
+    resolveCitationKey,
+    type CitationKind,
+} from '@/utils/citation'
 import { getCollection } from 'astro:content'
 import { execSync } from 'node:child_process'
 // KaTeX CSS via frontmatter import so Vite processes its relative
@@ -311,6 +317,51 @@ if (isPost) {
         .slice(0, 3)
 }
 
+// ---------------------------------------------------------------------------
+// "Cite this post/talk" block.
+//
+// Only pages that are a real dated work get one: 54 of the 61 posts+talks.
+// The other 7 are section index pages (/posts/, /posts/2025/, ...) which have
+// no date and are not citable.
+//
+// The key needs to know about EVERY citable page, not just this one, because
+// a few pages share a base key (the same talk given three times, two "Building
+// PyTorch from Source" posts, and one post/talk pair with identical titles).
+// resolveCitationKey appends MMDD to each member of a colliding group, so we
+// collect all bases first.
+// ---------------------------------------------------------------------------
+const citationDate = frontmatter.date ? parseDocDate(frontmatter.date) : null
+const isCitable = (isPost || isTalk) && !!citationDate && !!frontmatter.title
+
+let citationKey = ''
+if (isCitable) {
+    const allDocs = await getCollection('docs')
+    const bases: string[] = []
+    for (const doc of allDocs) {
+        const id = doc.id.replace(/\/index\.(mdx?|md)$/, '')
+        if (!/^(posts|talks)\//.test(id)) continue
+        const d = doc.data.date ? parseDocDate(doc.data.date) : null
+        if (!d || !doc.data.title) continue
+        bases.push(
+            citationKeyBase({
+                title: doc.data.title,
+                date: d,
+                pathname: `/${id}/`,
+                kind: id.startsWith('talks/') ? 'talk' : 'post',
+            }),
+        )
+    }
+    citationKey = resolveCitationKey(
+        {
+            title: frontmatter.title,
+            date: citationDate!,
+            pathname: currentPath,
+            kind: isTalk ? 'talk' : 'post',
+        },
+        bases,
+    )
+}
+
 const articleSchema =
     isPost && frontmatter.date
         ? JSON.stringify({
@@ -561,6 +612,21 @@ const articleSchema =
                                 )
                             }
                             <slot />
+                            {
+                                isCitable && (
+                                    <CiteThis
+                                        title={frontmatter.title}
+                                        date={citationDate!}
+                                        pathname={currentPath}
+                                        kind={
+                                            (isTalk
+                                                ? 'talk'
+                                                : 'post') as CitationKind
+                                        }
+                                        citationKey={citationKey}
+                                    />
+                                )
+                            }
                             {
                                 relatedPosts.length > 0 && (
                                     <aside style="margin-top: 2lh; border-top: 1px solid var(--foreground2); padding-top: 1lh;">
