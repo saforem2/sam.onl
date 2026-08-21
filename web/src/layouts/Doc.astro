@@ -320,9 +320,9 @@ if (isPost) {
 // ---------------------------------------------------------------------------
 // "Cite this post/talk" block.
 //
-// Only pages that are a real dated work get one: 54 of the 61 posts+talks.
-// The other 7 are section index pages (/posts/, /posts/2025/, ...) which have
-// no date and are not citable.
+// Only pages that are a real dated work get one: 58 of the 70 posts+talks.
+// The rest are section index pages (/posts/, /posts/2025/, ...) with no date,
+// plus 4 slide decks that render through SlideLayout instead of this layout.
 //
 // The key needs to know about EVERY citable page, not just this one, because
 // a few pages share a base key (the same talk given three times, two "Building
@@ -340,6 +340,11 @@ if (isCitable) {
     for (const doc of allDocs) {
         const id = doc.id.replace(/\/index\.(mdx?|md)$/, '')
         if (!/^(posts|talks)\//.test(id)) continue
+        // Slide decks render through SlideLayout and never emit a Cite
+        // block, so they are not citable pages and must not count toward a
+        // collision. Leaving them in gave two keys a disambiguating MMDD
+        // suffix against a phantom they never actually collided with.
+        if (doc.data.layout?.includes('SlideLayout')) continue
         const d = doc.data.date ? parseDocDate(doc.data.date) : null
         if (!d || !doc.data.title) continue
         bases.push(

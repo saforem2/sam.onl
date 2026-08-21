@@ -1,8 +1,8 @@
 // BibTeX citation generation for posts and talks.
 //
 // Doc.astro renders a "Cite this post/talk" block at the end of every page
-// that has both a title and a date (54 of 61 posts+talks; the rest are
-// section index pages, which are not citable works).
+// that has both a title and a date (58 pages). Section index pages have no
+// date, and slide decks render through SlideLayout, so neither is citable.
 
 export type CitationKind = 'post' | 'talk'
 
@@ -54,6 +54,22 @@ export function citationDateParts(date: Date): {
 const SITE = 'https://samf.sh'
 const AUTHOR = 'Sam Foreman'
 
+/** BibTeX's built-in month macros, emitted unbraced so styles can format them. */
+const MONTH_MACROS = [
+    'jan',
+    'feb',
+    'mar',
+    'apr',
+    'may',
+    'jun',
+    'jul',
+    'aug',
+    'sep',
+    'oct',
+    'nov',
+    'dec',
+]
+
 /**
  * Words dropped when a citation key has to fall back to title words.
  * Only used for date-only URLs (`/posts/2026/08/08/`), where the path
@@ -95,10 +111,17 @@ function stripDecoration(title: string): string {
     const noEmoji = [...title]
         .filter((ch) => {
             const cp = ch.codePointAt(0) ?? 0
-            // Variation selectors, ZWJ, and everything from the symbol
-            // blocks upward. 0x2500 is a deliberately blunt cut: it keeps
-            // Latin-1 (µ, é) and drops arrows, box drawing, and emoji.
+            // Variation selectors and ZWJ never carry meaning here.
             if (cp === 0xfe0f || cp === 0x200d) return false
+            // U+2192 is kept so escapeBibtex can map it to $\rightarrow$.
+            if (cp === 0x2192) return true
+            // Match pictographs by Unicode property rather than a codepoint
+            // cut. An earlier `cp < 0x2500` looked safe but let everything in
+            // U+2190..U+24FF through, and "⏱ Comparing Launchers on Aurora"
+            // shipped a literal U+23F1 into a title field, which halts a
+            // pdflatex run with "Unicode character not set up for use with
+            // LaTeX". Latin-1 (µ, é) is unaffected and still passes.
+            if (/\p{Extended_Pictographic}/u.test(ch)) return false
             return cp < 0x2500
         })
         .join('')
@@ -176,8 +199,13 @@ export function escapeBibtex(value: string): string {
             // renderer, not for us. Drop the backslash and keep the character,
             // otherwise it becomes \textbackslash{}> which is nonsense.
             .replace(/\\([<>|[\]()*_#`])/g, '$1')
-            .replace(/\\/g, '\\textbackslash{}')
-            .replace(/([&%$#_{}])/g, '\\$1')
+            // One pass, not two. Escaping backslashes first and braces second
+            // made the second pass escape the braces the first pass had just
+            // emitted, turning a lone `\` into `\textbackslash\{\}`. A single
+            // replace never rescans its own replacement text.
+            .replace(/[&%$#_{}\\]/g, (m) =>
+                m === '\\' ? '\\textbackslash{}' : `\\${m}`,
+            )
             .replace(/~/g, '\\textasciitilde{}')
             .replace(/\^/g, '\\textasciicircum{}')
             .replace(/→/g, '$\\rightarrow$')
@@ -205,18 +233,30 @@ export function buildBibtex(input: CitationInput, key: string): string {
     const entryType = input.kind === 'talk' ? 'misc' : 'article'
     const fields: Array<[string, string]> = [
         ['author', `{${AUTHOR}}`],
-        ['title', `{${title}}`],
+        // Double braces, not single. Many .bst styles (plain, unsrt, abbrv)
+        // run change.case$ on the title and would lowercase everything after
+        // the first word: "Pre-Training LLMs on ALCF" -> "Pre-training llms
+        // on alcf". The extra group marks the whole title as protected, so
+        // acronyms (ALCF, LLM, HPC, GPU) survive verbatim.
+        ['title', `{{${title}}}`],
         ['year', `{${year}}`],
-        ['month', `{${month}}`],
+        // Unbraced three-letter macro, the BibTeX convention for months. A
+        // braced "{08}" renders as a literal 08 instead of "August"/"Aug"
+        // per the style.
+        ['month', MONTH_MACROS[Number(month) - 1] ?? `{${month}}`],
         ['day', `{${day}}`],
     ]
 
+    // No \url{}: that macro is defined by hyperref/url, and an entry that
+    // assumes it breaks any document without those packages loaded with
+    // "Undefined control sequence". A bare URL is universally safe, and the
+    // dedicated `url` field below is what modern styles actually read.
     if (input.kind === 'talk') {
-        fields.push(['howpublished', `{Talk, \\url{${url}}}`])
+        fields.push(['howpublished', `{Talk, ${url}}`])
     } else {
         // Straight apostrophe: a curly one would need a Unicode-aware engine.
         fields.push(['journal', `{${AUTHOR}'s Blog}`])
-        fields.push(['howpublished', `{\\url{${SITE}}}`])
+        fields.push(['howpublished', `{${SITE}}`])
     }
     fields.push(['url', `{${url}}`])
 

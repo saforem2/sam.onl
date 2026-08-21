@@ -51,14 +51,19 @@ section.
 
 ### Start `argo-shim`
 
-One line: creates the SSH tunnel and writes a token to
-`~/.claude/settings.json`. A recent `argo-shim` already includes the
-bearer-auth + user-injection support (see [Contributing
-back](#contributing-back)); `uvx` fetches it from PyPI with no install step.
+One line to try it, one to keep it. `argo-shim` creates the SSH tunnel and
+writes a token to `~/.claude/settings.json`. A recent build already includes
+the bearer-auth + user-injection support (see [Contributing
+back](#contributing-back)).
 
 ```bash
+# Kick the tires without installing anything.
 # Drop CELS_USERNAME if your ALCF username matches your local login name.
 CELS_USERNAME=<your-alcf-username> uvx argo-shim
+
+# Keep it: this is a long-running daemon you restart often, and the shell
+# helpers further down invoke it as a bare `argo-shim`, so put it on PATH.
+uv tool install argo-shim
 ```
 
 `argo-shim` listens on `127.0.0.1:25940`, derives a per-user port for the SSH
@@ -260,11 +265,14 @@ export ARGO_SHIM_TOKEN=$(python3 -c "import json;print(json.load(open('$HOME/.cl
 
 ### 2. `llm-rosetta` gateway (for OpenAI-only clients)
 
-Run the gateway:
+Install the gateway. Same reasoning as `argo-shim`: it is a daemon you
+restart often, and later sections call `llm-rosetta-gateway` by bare name.
 
 ```bash
-uvx --from "llm-rosetta[gateway]" llm-rosetta-gateway
+uv tool install "llm-rosetta[gateway]"
 ```
+
+Don't start it yet, it needs the config below first.
 
 Create `~/.config/llm-rosetta-gateway/config.jsonc`. The Argo providers point
 at the local shim; the ALCF inference providers point directly at the public
