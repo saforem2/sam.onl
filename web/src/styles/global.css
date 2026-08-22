@@ -1441,6 +1441,46 @@ html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
    Half-line gap above and below so code blocks don't crowd
    surrounding text. (Was asymmetric 0.5lh top / 1lh bottom for
    no good reason — equalized.) */
+/* ---------------------------------------------------------------------------
+   Notebook log output (```logs fences)
+
+   src/utils/rehype-log-output.mjs splits each Rich-formatted log line into
+   timestamp / level / source / message spans. These rules restore the color
+   the terminal had; the notebook export dropped it. Blocks are excluded from
+   Shiki (astro.config.mjs excludeLangs), so nothing here fights a token color.
+
+   Theme tokens only, so all 11 themes track automatically. Color-only, so no
+   units are involved.
+   --------------------------------------------------------------------------- */
+code.language-logs .log-ts,
+code.language-logs .log-src {
+    color: var(--foreground2);
+}
+
+code.language-logs .log-level {
+    font-weight: bold;
+}
+
+code.language-logs .log-level-i {
+    color: var(--blue);
+}
+
+code.language-logs .log-level-w {
+    color: var(--yellow);
+}
+
+code.language-logs .log-level-e {
+    color: var(--red);
+}
+
+code.language-logs .log-level-d {
+    color: var(--foreground2);
+}
+
+code.language-logs .log-msg {
+    color: var(--foreground0);
+}
+
 pre.astro-code {
     /* Half a line of breathing room above the first line and below the
        last, painted in the block's own background. Without it the badge
