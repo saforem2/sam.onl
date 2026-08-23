@@ -1442,6 +1442,117 @@ html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
    surrounding text. (Was asymmetric 0.5lh top / 1lh bottom for
    no good reason — equalized.) */
 /* ---------------------------------------------------------------------------
+   Notebook cells (In[n] / Out[n])
+
+   src/utils/rehype-notebook-cells.mjs wraps each executed code block, plus the
+   output that followed it, in a .nb-cell. Without this the two rendered as
+   unrelated siblings with a gap, so a reader could not tell which output came
+   from which cell.
+
+   Grid, not absolute positioning: the prompt is a real column, so it stays put
+   when the code scrolls horizontally. min-width 0 on the body is what actually
+   lets a long line scroll instead of stretching the grid.
+   --------------------------------------------------------------------------- */
+.nb-cell {
+    margin-block: 1lh;
+}
+
+.nb-in,
+.nb-out {
+    display: grid;
+    grid-template-columns: 9ch minmax(0, 1fr);
+    align-items: start;
+    column-gap: 1ch;
+}
+
+.nb-body {
+    min-width: 0;
+}
+
+/* Zero the block's own margin: .nb-cell owns the vertical rhythm now, and
+   leaving both gives a double gap between the code and its output. */
+.nb-body > pre {
+    margin-block: 0;
+}
+
+.nb-prompt {
+    color: var(--foreground2);
+    text-align: right;
+    white-space: nowrap;
+    user-select: none;
+    /* Sit on the first line of code, not on the block's top edge.
+       pre.astro-code has 1.1lh of top margin plus 0.5lh of top padding; the
+       prompt is outside the block so it must absorb both, or it floats ~23px
+       high (measured). */
+    padding-block-start: calc(1.1lh + 0.5lh);
+}
+
+/* The output row's own margin was zeroed above, so its prompt only needs the
+   block's internal padding. */
+.nb-out > .nb-prompt {
+    padding-block-start: 0.5lh;
+}
+
+.nb-in > .nb-prompt {
+    color: var(--blue);
+}
+
+.nb-out > .nb-prompt {
+    color: var(--red);
+}
+
+/* --blue and --red are tuned as accents, not as body text. Measured against
+   the LIGHT backgrounds they land at 3.12 and 2.78, both under the 4.5 AA
+   floor. Capping lightness keeps the hue (In stays blue, Out stays red) while
+   clearing AA. Scoped to the light themes on purpose: the dark ones already
+   measure 7.40 / 6.14, and darkening there would make it worse. */
+html[data-webtui-theme='custom-light'] .nb-in > .nb-prompt,
+html[data-webtui-theme='sam-light'] .nb-in > .nb-prompt,
+html[data-webtui-theme='catppuccin-latte'] .nb-in > .nb-prompt,
+html[data-webtui-theme*='nvim-light'] .nb-in > .nb-prompt {
+    color: oklch(from var(--blue) min(l, 0.48) c h);
+}
+
+html[data-webtui-theme='custom-light'] .nb-out > .nb-prompt,
+html[data-webtui-theme='sam-light'] .nb-out > .nb-prompt,
+html[data-webtui-theme='catppuccin-latte'] .nb-out > .nb-prompt,
+html[data-webtui-theme*='nvim-light'] .nb-out > .nb-prompt {
+    color: oklch(from var(--red) min(l, 0.48) c h);
+}
+
+/* Bind the output to its cell. The tint plus the accent rail is what makes
+   the pair read as one unit rather than two loose blocks; without it the
+   output floats with nothing tying it to the code above.
+
+   The rail is painted on .nb-body, not the <pre>: the global
+   `pre:not(.astro-code) { background: transparent !important }` in
+   @layer components outranks a scoped rule (the same cascade quirk noted on
+   the cite-body and li>details rules). */
+.nb-out > .nb-body {
+    border-left: 2px solid var(--red);
+    background: var(--background1);
+}
+
+.nb-out > .nb-body > pre {
+    padding-inline-start: 1ch;
+}
+
+/* Below the prose breakpoint a 9ch gutter costs a quarter of the viewport.
+   Stack the label above the block instead of beside it. */
+@media (max-width: 80ch) {
+    .nb-in,
+    .nb-out {
+        display: block;
+    }
+
+    .nb-prompt {
+        display: block;
+        text-align: left;
+        padding-block-start: 0;
+    }
+}
+
+/* ---------------------------------------------------------------------------
    Notebook log output (```logs fences)
 
    src/utils/rehype-log-output.mjs splits each Rich-formatted log line into

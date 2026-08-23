@@ -7,7 +7,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import remarkSlides from './src/utils/remark-slides.mjs'
 import rehypeTaskListInteractive from './src/utils/rehype-task-list-interactive.mjs'
-import rehypeLogOutput from './src/utils/rehype-log-output.mjs'
+import rehypeNotebookCells from './src/utils/rehype-notebook-cells.mjs'
 // import rehypeMermaid from 'rehype-mermaid'
 // import Catppuccin from 'tm-themes/themes/catppuccin-mocha'
 // import { getSingletonHighlighter } from 'shiki'
@@ -408,7 +408,7 @@ export default defineConfig({
             rehypeKatex,
             rehypeMermaidClientSide,
             rehypeTaskListInteractive,
-            rehypeLogOutput,
+            rehypeNotebookCells,
         ],
         syntaxHighlight: {
             type: 'shiki',
@@ -452,7 +452,7 @@ export default defineConfig({
                 rehypeKatex,
                 rehypeMermaidClientSide,
                 rehypeTaskListInteractive,
-                rehypeLogOutput,
+                rehypeNotebookCells,
             ],
         }),
         sitemap(),
