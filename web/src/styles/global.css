@@ -1453,8 +1453,17 @@ html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
    when the code scrolls horizontally. min-width 0 on the body is what actually
    lets a long line scroll instead of stretching the grid.
    --------------------------------------------------------------------------- */
+/* One rhythm for the whole run. Measured gaps between consecutive cells were
+   42 / 42 / 92 / 21 / 21px before this, because each cell's own margin-block
+   collapsed differently depending on what sat between them. */
 .nb-cell {
-    margin-block: 1lh;
+    margin-block: 1.5lh;
+}
+
+/* Rows inside a cell hug: the output belongs to the code directly above it. */
+.nb-cell > .nb-in + .nb-out,
+.nb-cell > .nb-out + .nb-out {
+    margin-block-start: 0.25lh;
 }
 
 .nb-in,
@@ -1533,8 +1542,24 @@ html[data-webtui-theme*='nvim-light'] .nb-out > .nb-prompt {
     background: var(--background1);
 }
 
-.nb-out > .nb-body > pre {
+/* The output block must fill its tinted body. pre.astro-code is shrink-to-fit
+   (`width: fit-content` upstream, so a short line renders a narrow box); left
+   alone the tint extended the full column while the block sat at 25% of it,
+   which read as a stray grey band. */
+.nb-out > .nb-body > pre,
+.nb-out > .nb-body pre.astro-code {
+    width: 100%;
+    max-width: 100%;
     padding-inline-start: 1ch;
+    background: transparent;
+}
+
+/* Output is not source: numbering a log dump is noise, and it puts a second
+   gutter immediately right of the Out[n] prompt. The counter lives on
+   `pre.astro-code span.line::before` (see the line-number block below), so
+   that is what has to be suppressed. */
+.nb-out pre.astro-code span.line::before {
+    content: none;
 }
 
 /* Below the prose breakpoint a 9ch gutter costs a quarter of the viewport.

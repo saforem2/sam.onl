@@ -204,6 +204,50 @@ const isInputPre = (node) => {
 /** True for the <pre> holding a ```logs fence. */
 const isLogsPre = (node) => fenceLang(node) === 'logs'
 
+/**
+ * A <details> written by scripts/build-4dsu3-post.mjs to fold the tail of a
+ * long output. Identified by containing a logs <pre> and nothing else of
+ * substance -- deliberately narrow, so a hand-written <details> in prose is
+ * not swallowed into the cell above it.
+ */
+function isTruncationDetails(node) {
+    if (tagOf(node) !== 'details') return false
+    if (hasClass(node, 'heading-collapse')) return false
+    let logs = 0
+    visit(node, (n) => {
+        if (isLogsPre(n)) logs += 1
+    })
+    return logs > 0
+}
+
+/**
+ * A wrapper that CONTAINS a cell's output rather than being one.
+ *
+ * jupyter/test uses a fourth structure the other posts do not:
+ *
+ *   <div>
+ *     <details is-="accordion">
+ *       <summary><code>output</code></summary>
+ *       <div class="cell-output …">
+ *
+ * so the output the input cell should absorb is two levels down. Without
+ * this, all 25 of that post's collapsed outputs detached and rendered as
+ * Out[1].
+ */
+function containsCellOutput(node) {
+    const tag = tagOf(node)
+    if (tag !== 'div' && tag !== 'details') return false
+    if (hasClass(node, 'cell-output')) return false
+    let found = false
+    visit(node, (n) => {
+        if (hasClass(n, 'cell-output')) {
+            found = true
+            return false
+        }
+    })
+    return found
+}
+
 function el(tagName, className, children) {
     return {
         type: 'element',
@@ -234,13 +278,15 @@ function promptRow(kind, n, block) {
  * `counter` is shared across the whole page so numbering is sequential in
  * document order rather than restarting inside each <details>.
  */
-function walk(parent, counter, inCitation) {
+function walk(parent, counter, inCitation, claimable = false) {
     // The citation block is a pre.astro-code too, and must not become In[1].
     const skip = inCitation || hasClass(parent, 'cite-body')
 
     for (const child of parent.children ?? []) {
         if (child.type === 'element' || child.type?.startsWith('mdxJsx')) {
-            walk(child, counter, skip)
+            // A wrapper whose output the enclosing input cell will absorb:
+            // descend, but tell the subtree not to self-label.
+            walk(child, counter, skip, claimable || containsCellOutput(child))
         }
     }
     if (skip) return
@@ -258,30 +304,37 @@ function walk(parent, counter, inCitation) {
             continue
         }
 
-        // An output <pre> already wrapped in a legacy .cell-output div: keep
-        // the div (other CSS targets it) and label it in place.
+        // A legacy .cell-output div. Only label it here if nothing upstream
+        // will claim it: jupyter/test nests these inside
+        // <div><details is-="accordion">, and the recursion reaches the inner
+        // div BEFORE the outer wrapper is offered to the input cell above.
+        // Labelling unconditionally produced 25 nested, doubled Out[1] rows.
         if (hasClass(node, 'cell-output')) {
-            const n = counter.value || 1
-            out.push(
-                el(
-                    'div',
-                    ['nb-cell', 'nb-cell-orphan'],
-                    [promptRow('out', n, node)],
-                ),
-            )
+            if (claimable) {
+                out.push(node)
+            } else {
+                out.push(
+                    el(
+                        'div',
+                        ['nb-cell', 'nb-cell-orphan'],
+                        [promptRow('out', counter.value || 1, node)],
+                    ),
+                )
+            }
             i += 1
             continue
         }
 
         if (!isInputPre(node)) {
-            // A bare logs <pre> with no preceding input still gets a prompt.
-            if (isLogsPre(node)) {
-                const n = counter.value || 1
+            // A bare logs <pre> with no preceding input. Rare, and it is
+            // genuinely output, so label it with the number of whatever cell
+            // last ran rather than inventing one.
+            if (isLogsPre(node) && counter.value > 0) {
                 out.push(
                     el(
                         'div',
                         ['nb-cell', 'nb-cell-orphan'],
-                        [promptRow('out', n, node)],
+                        [promptRow('out', counter.value, node)],
                     ),
                 )
                 i += 1
@@ -309,9 +362,31 @@ function walk(parent, counter, inCitation) {
                 next.type === 'element' || next.type?.startsWith('mdxJsx')
             if (
                 nextIsEl &&
-                (isLogsPre(next) || hasClass(next, 'cell-output'))
+                (isLogsPre(next) ||
+                    fenceLang(next) === 'text' ||
+                    hasClass(next, 'cell-output') ||
+                    containsCellOutput(next))
             ) {
                 rows.push(promptRow('out', n, next))
+                i += 1
+                continue
+            }
+            // A truncation <details> is a CONTINUATION of the output above it
+            // ("show the remaining 500 lines"), not a new cell. Fold it into
+            // the same Out[n] row. Left as a sibling it became its own
+            // prompt-less block, and its inner logs <pre> was picked up as an
+            // orphan -- which is how five separate blocks all rendered Out[1].
+            if (nextIsEl && isTruncationDetails(next)) {
+                rows.push(
+                    el(
+                        'div',
+                        ['nb-out', 'nb-out-more'],
+                        [
+                            el('span', ['nb-prompt'], []),
+                            el('div', ['nb-body'], [next]),
+                        ],
+                    ),
+                )
                 i += 1
                 continue
             }
