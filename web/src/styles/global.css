@@ -1499,16 +1499,14 @@ html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
     text-align: right;
     white-space: nowrap;
     user-select: none;
-    /* Sit on the first line of code, not on the block's top edge.
-       pre.astro-code has 1.1lh of top margin plus 0.5lh of top padding; the
-       prompt is outside the block so it must absorb both, or it floats ~23px
-       high (measured). */
-    padding-block-start: calc(1.1lh + 0.5lh);
-}
+    /* Sit on the first LINE of code, not on the block's top edge. The block
+       keeps 0.5lh of internal top padding, so the prompt has to absorb that
+       much and no more.
 
-/* The output row's own margin was zeroed above, so its prompt only needs the
-   block's internal padding. */
-.nb-out > .nb-prompt {
+       This used to add 1.1lh on top, compensating for pre.astro-code's own
+       top margin. That margin is now zeroed inside .nb-body, so the extra
+       1.1lh became pure overshoot and pushed the prompt 33.6px down while
+       the first code line sat at 10.5px. */
     padding-block-start: 0.5lh;
 }
 
@@ -1552,14 +1550,22 @@ html[data-webtui-theme*='nvim-light'] .nb-out > .nb-prompt {
     background: var(--background1);
 }
 
-/* The output block must fill its tinted body. pre.astro-code is shrink-to-fit
-   (`width: fit-content` upstream, so a short line renders a narrow box); left
-   alone the tint extended the full column while the block sat at 25% of it,
-   which read as a stray grey band. */
+/* Every block in a notebook cell spans the full column.
+   pre.astro-code is shrink-to-fit upstream, which is right for a lone code
+   block in prose but wrong in a stacked run: the 17 input blocks on the 4D
+   SU(3) post measured 419-725px inside an 893px column, so their right edges
+   stepped in and out down the page. For output it was worse -- the tint ran
+   the full width while the block sat at 25% of it, leaving a grey band. */
+.nb-in > .nb-body > pre,
+.nb-in > .nb-body pre.astro-code,
 .nb-out > .nb-body > pre,
 .nb-out > .nb-body pre.astro-code {
     width: 100%;
     max-width: 100%;
+}
+
+.nb-out > .nb-body > pre,
+.nb-out > .nb-body pre.astro-code {
     padding-inline-start: 1ch;
     background: transparent;
 }
