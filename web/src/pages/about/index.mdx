@@ -1151,14 +1151,7 @@ Click any column header to re-sort. Full list at [/projects](/projects).
   #repo-table th { white-space: nowrap; }
   #repo-table td.col-stars,
   #repo-table td.col-updated { white-space: nowrap; }
-  /* Descriptions are prose: let them wrap and cap the column, otherwise the
-     terminal style's tbody nowrap makes this column greedy and pushes Lang
-     out past the scroll wrapper. */
-  #repo-table td.col-desc {
-    color: var(--foreground2);
-    white-space: normal;
-    max-width: 44ch;
-  }
+  #repo-table td.col-desc { color: var(--foreground2); }
 `}</style>
 
 <p id="repo-grid-status">Loading repositories from GitHub…</p>
