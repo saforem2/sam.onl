@@ -2230,9 +2230,8 @@ const articleSchema =
                 details.classList.add('heading-collapse')
                 // Collapse year-section headings (e.g. "📆 2025") and a
                 // short allowlist of *exact* section labels on the about
-                // page (Music / Projects / More). Strip any leading
-                // emoji-icon-+-space before comparing so e.g.
-                // "📓 Projects" still matches "projects".
+                // page (Music / More). Strip any leading emoji-icon-+-space
+                // before comparing so e.g. "📓 More" still matches "more".
                 //
                 // Ignore the `<a class="heading-anchor">` that rehype
                 // injects (renders as a literal "##"/"###"/etc.) — its
@@ -2254,7 +2253,6 @@ const articleSchema =
                     .toLowerCase()
                 const collapseExact = new Set([
                     'music',
-                    'projects',
                     'more',
                     'detailed list',
                     'by year',

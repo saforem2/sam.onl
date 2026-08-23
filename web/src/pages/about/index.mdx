@@ -1112,20 +1112,23 @@ Pre-Training group] for the [AuroraGPT] project.
 
 ## 📂 Projects
 
-<a href="https://github.com/saforem2/"><code>saforem2</code></a>'s GitHub Repositories — top 10 by stars.
-Full list at [/projects](/projects).
+<a href="https://github.com/saforem2/"><code>saforem2</code></a>'s GitHub Repositories: 10 most recently updated.
+Click any column header to re-sort. Full list at [/projects](/projects).
 
 <style>{`
   #repo-table {
-    width: 100%;
     margin-block: 1lh;
-    border-collapse: collapse;
   }
+  /* WebTUI styles any bare <button> as a control: height 3lh and
+     margin-inline 1ch. Both have to be unset here or the header row grows to
+     ~2.3x the body-row height and the labels sit inset from their cells. */
   #repo-table th button {
     appearance: none;
     background: none;
     border: none;
     padding: 0;
+    margin: 0;
+    height: auto;
     font: inherit;
     color: inherit;
     cursor: pointer;
@@ -1139,22 +1142,31 @@ Full list at [/projects](/projects).
     display: inline-block;
     width: 1ch;
     color: var(--foreground2);
-    font-size: 0.85em;
   }
   #repo-table th[data-sort-dir="asc"] .repo-arrow::before { content: "↑"; }
   #repo-table th[data-sort-dir="desc"] .repo-arrow::before { content: "↓"; }
   #repo-table td { vertical-align: top; }
+  /* Keep column labels on one line — the terminal table style leaves th free
+     to wrap, which broke "Updated" into "Update / d". */
+  #repo-table th { white-space: nowrap; }
   #repo-table td.col-stars,
   #repo-table td.col-updated { white-space: nowrap; }
-  #repo-table td.col-desc { color: var(--foreground2); }
+  /* Descriptions are prose: let them wrap and cap the column, otherwise the
+     terminal style's tbody nowrap makes this column greedy and pushes Lang
+     out past the scroll wrapper. */
+  #repo-table td.col-desc {
+    color: var(--foreground2);
+    white-space: normal;
+    max-width: 44ch;
+  }
 `}</style>
 
 <p id="repo-grid-status">Loading repositories from GitHub…</p>
-<table id="repo-table" hidden>
+<table id="repo-table" data-table-style="terminal" hidden>
   <thead>
     <tr>
-      <th data-sort="stars" data-sort-dir="desc"><button type="button" aria-label="Sort by stars">⭐ <span class="repo-arrow"></span></button></th>
-      <th data-sort="updated"><button type="button" aria-label="Sort by last updated">Updated <span class="repo-arrow"></span></button></th>
+      <th data-sort="stars"><button type="button" aria-label="Sort by stars">⭐ <span class="repo-arrow"></span></button></th>
+      <th data-sort="updated" data-sort-dir="desc"><button type="button" aria-label="Sort by last updated">Updated <span class="repo-arrow"></span></button></th>
       <th data-sort="name"><button type="button" aria-label="Sort by repository name">Repo <span class="repo-arrow"></span></button></th>
       <th>Description</th>
       <th data-sort="lang"><button type="button" aria-label="Sort by language">Lang <span class="repo-arrow"></span></button></th>
@@ -1201,7 +1213,7 @@ Full list at [/projects](/projects).
       return cmp * mul;
     }
     let repos = [];
-    let sortKey = "stars";
+    let sortKey = "updated";
     let sortDir = "desc";
     function makeCell(text, cls) {
       const td = document.createElement("td");
