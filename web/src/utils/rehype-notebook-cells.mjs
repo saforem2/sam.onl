@@ -248,6 +248,35 @@ function containsCellOutput(node) {
     return found
 }
 
+/**
+ * A figure emitted by a cell: `<p><img></p>` and nothing else.
+ *
+ * Matplotlib output lands in the markdown as a bare image paragraph
+ * (`![](/assets/output_13_0.svg)`), one per figure, as plain siblings after
+ * the code fence. They are output and belong inside the cell -- without this
+ * a `plot_all()` call showed nine charts floating below its Out[n] with
+ * nothing tying them to it.
+ *
+ * Requires the paragraph to hold ONLY images, so a prose paragraph that
+ * happens to contain an inline image is not swallowed into the cell above.
+ */
+function isFigureParagraph(node) {
+    if (tagOf(node) !== 'p') return false
+    let imgs = 0
+    for (const c of node.children ?? []) {
+        if (c.type === 'text') {
+            if (c.value.trim()) return false
+            continue
+        }
+        if (tagOf(c) === 'img') {
+            imgs += 1
+            continue
+        }
+        return false
+    }
+    return imgs > 0
+}
+
 function el(tagName, className, children) {
     return {
         type: 'element',
@@ -360,6 +389,27 @@ function walk(parent, counter, inCitation, claimable = false) {
             }
             const nextIsEl =
                 next.type === 'element' || next.type?.startsWith('mdxJsx')
+
+            // A RUN of figure paragraphs is ONE output: `plot_all()` emits
+            // nine charts as nine sibling <p><img>, and giving each its own
+            // Out[n] row repeated the same prompt nine times down the page.
+            // Collect the whole run into a single row.
+            if (nextIsEl && isFigureParagraph(next)) {
+                const figs = []
+                while (i < kids.length) {
+                    const f = kids[i]
+                    if (f.type === 'text' && !f.value.trim()) {
+                        i += 1
+                        continue
+                    }
+                    if (!isFigureParagraph(f)) break
+                    figs.push(f)
+                    i += 1
+                }
+                rows.push(promptRow('out', n, el('div', ['nb-figures'], figs)))
+                continue
+            }
+
             if (
                 nextIsEl &&
                 (isLogsPre(next) ||

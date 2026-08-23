@@ -1545,9 +1545,17 @@ html[data-webtui-theme*='nvim-light'] .nb-out > .nb-prompt {
    `pre:not(.astro-code) { background: transparent !important }` in
    @layer components outranks a scoped rule (the same cascade quirk noted on
    the cite-body and li>details rules). */
+/* Cap output at a third of the viewport and scroll past it. A single cell
+   can emit 500 log lines or nine stacked figures, which otherwise pushes the
+   next input cell entirely off-screen and makes the page read as output with
+   occasional code. Rounded to whole lines so the cut never lands mid-glyph. */
 .nb-out > .nb-body {
     border-left: 2px solid var(--red);
     background: var(--background1);
+    max-height: round(down, 33vh, 1lh);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--foreground2) transparent;
 }
 
 /* Every block in a notebook cell spans the full column.
