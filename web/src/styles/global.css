@@ -1455,9 +1455,15 @@ html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
    --------------------------------------------------------------------------- */
 /* One rhythm for the whole run. Measured gaps between consecutive cells were
    42 / 42 / 92 / 21 / 21px before this, because each cell's own margin-block
-   collapsed differently depending on what sat between them. */
+   collapsed differently depending on what sat between them.
+
+   The negative inline-start pulls the cell left so the 9ch prompt gutter
+   hangs into the margin instead of indenting the code away from the prose
+   column: the code block keeps the same left edge as an ordinary code block
+   elsewhere on the page. */
 .nb-cell {
-    margin-block: 1.5lh;
+    margin-block: 1lh;
+    margin-inline-start: -3ch;
 }
 
 /* Rows inside a cell hug: the output belongs to the code directly above it. */
@@ -1479,8 +1485,12 @@ html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
 }
 
 /* Zero the block's own margin: .nb-cell owns the vertical rhythm now, and
-   leaving both gives a double gap between the code and its output. */
-.nb-body > pre {
+   leaving both gives a double gap between the code and its output.
+   Descendant, not child: a legacy .cell-output wraps its <pre> one level
+   deeper, and that one kept its 23px top margin, which showed as an empty
+   band above the output text. */
+.nb-body pre,
+.nb-body pre.astro-code {
     margin-block: 0;
 }
 
@@ -1551,6 +1561,17 @@ html[data-webtui-theme*='nvim-light'] .nb-out > .nb-prompt {
     width: 100%;
     max-width: 100%;
     padding-inline-start: 1ch;
+    background: transparent;
+}
+
+/* The <pre> is not the only thing painting. Shiki puts the theme background
+   on the <code> too, and the global inline-code rule paints any bare <code>.
+   Left alone, that inner box shows as a lighter panel inside the output tint
+   -- full-width for a ```text block, and hugging just the glyphs for a logs
+   block, since that <code> is inline-sized. The row's own tint is the only
+   background output should have. */
+.nb-out .nb-body pre code,
+.nb-out .nb-body pre code span {
     background: transparent;
 }
 
