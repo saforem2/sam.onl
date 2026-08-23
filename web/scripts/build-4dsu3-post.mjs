@@ -64,7 +64,7 @@ function remapImage(line) {
 
 const FRONTMATTER = `---
 layout: '@/layouts/Doc.astro'
-title: '🔳 \`l2hmc-qcd\` Example: 4D SU(3)'
+title: '🔳 l2hmc-qcd Example: 4D SU(3)'
 date: 2023-12-05
 date-modified: today
 description: 'Training and evaluating the L2HMC sampler on 4D SU(3) lattice gauge theory: HMC baseline, 100 training steps, and a plaquette comparison against HMC.'
