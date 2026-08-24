@@ -1219,14 +1219,13 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
   #repo-table td.col-updated { white-space: nowrap; }
   #repo-table td.col-desc { color: var(--foreground2); }
   /* Marks a row that is not a project of my own: a fork, or a repo I only
-     landed a PR in. Same type size as everything else, distinguished by
-     colour and a bracket rather than by shrinking it. */
+     landed a merged PR in. Nerd Font has to be named explicitly here; the
+     table otherwise renders in the body font, which has no codicons. */
   .repo-kind {
+    font-family: 'Symbols Nerd Font', monospace;
     color: var(--foreground2);
     white-space: nowrap;
   }
-  .repo-kind::before { content: "["; }
-  .repo-kind::after { content: "]"; }
 `}</style>
 
 <p id="repo-grid-status">Loading repositories from GitHub…</p>
@@ -1319,11 +1318,19 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
       a.rel = "noopener noreferrer";
       td.appendChild(a);
       // Say what kind of row this is, so a fork or a PR to someone else's
-      // project is not read as a project of my own.
+      // project is not read as a project of my own. Glyphs are codicons that
+      // are VERIFIED PRESENT in our curated Symbols Nerd Font subset: the
+      // octicons for fork/PR (U+F402, U+F407) are NOT in it and measure the
+      // same width as a known-missing codepoint, i.e. they render as tofu.
       if (row.kind !== "own") {
         const tag = document.createElement("span");
         tag.className = "repo-kind";
-        tag.textContent = row.kind;
+        // U+EA63 cod-repo_forked, U+EA83 cod-git_merge (every PR row here is
+        // a merged PR, so the merge glyph is the accurate one).
+        tag.textContent = row.kind === "fork" ? "\uEA63" : "\uEA83";
+        tag.setAttribute("title", row.kind === "fork" ? "fork" : "merged PR");
+        tag.setAttribute("aria-label", row.kind === "fork" ? "fork" : "merged PR");
+        tag.setAttribute("role", "img");
         td.append(" ", tag);
       }
       return td;
@@ -1414,11 +1421,9 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
               });
             }
           }
-          // Compare the FULL owner/name, not the bare repo name. Matching on
-          // the name alone suppressed 18 of 21 upstreams, because forking a
-          // project gives me a repo of the same name: Oaklight/llm-rosetta was
-          // hidden by my own llm-rosetta fork, which is precisely the row
-          // worth showing since the PR landed upstream.
+          // Drop only a PR row that points at a repo I own outright (same
+          // owner AND name). A PR into somebody else's project is never a
+          // duplicate of one of mine.
           const ownedFull = new Set(
             repos.map((r) => (username + "/" + r.name).toLowerCase())
           );
@@ -1427,6 +1432,36 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
             if (!ownedFull.has(full.toLowerCase())) external.push(row);
           }
           external.sort((a, b) => b.date.localeCompare(a.date));
+
+          // Collapse fork/upstream pairs, preferring upstream. 18 of my 21
+          // contributed-to repos also exist as forks under my account, so
+          // without this the table shows llm-rosetta twice: once as my fork
+          // and once as Oaklight/llm-rosetta. The upstream row is the
+          // meaningful one (the PR landed there), but my fork carries the
+          // language and description the API omits from a search result, so
+          // the merged row keeps the upstream identity and borrows the fork's
+          // metadata. The list endpoint does not return a fork's parent, so
+          // the pairing is by repo name, which is what a fork keeps by
+          // default.
+          const upstreamNames = new Set(
+            external.map((r) => r.name.split("/")[1].toLowerCase())
+          );
+          for (const row of external) {
+            const bare = row.name.split("/")[1].toLowerCase();
+            const mine = repos.find(
+              (r) => r.kind === "fork" && r.name.toLowerCase() === bare
+            );
+            if (mine) {
+              row.description = mine.description || row.description;
+              row.language = mine.language || row.language;
+              // Keep whichever timestamp is newer: pushing to my fork and
+              // landing the PR upstream are both work on that project.
+              if (mine.date > row.date) row.date = mine.date;
+            }
+          }
+          repos = repos.filter(
+            (r) => !(r.kind === "fork" && upstreamNames.has(r.name.toLowerCase()))
+          );
           // Reserve slots rather than letting date alone decide. My own repos
           // are pushed to daily, so the top 25 by date bottoms out around
           // 2026-06-29 while the newest external PR is 2026-08-14: on merit
