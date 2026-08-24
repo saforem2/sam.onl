@@ -199,6 +199,7 @@ Pre-Training group] for the [AuroraGPT] project.
      only a hint and gets ignored once the rows exceed it. */
   .table-scroll-wrapper:has(> #posts-table),
   .table-scroll-wrapper:has(> #talks-table),
+  .table-scroll-wrapper:has(> #repo-table),
   #work-table .table-scroll-wrapper {
     max-height: 20lh;
     overflow-y: auto;
@@ -228,6 +229,7 @@ Pre-Training group] for the [AuroraGPT] project.
   @media (max-width: 80ch) {
     .table-scroll-wrapper:has(> #posts-table),
     .table-scroll-wrapper:has(> #talks-table),
+    .table-scroll-wrapper:has(> #repo-table),
     #work-table .table-scroll-wrapper {
       margin-inline-end: 0;
       max-width: 100%;
@@ -240,6 +242,7 @@ Pre-Training group] for the [AuroraGPT] project.
      passing under it. */
   #posts-table thead th,
   #talks-table thead th,
+  #repo-table thead th,
   #work-table thead th {
     position: sticky;
     top: 0;
@@ -1174,7 +1177,7 @@ Pre-Training group] for the [AuroraGPT] project.
 
 ## 📂 Projects
 
-<a href="https://github.com/saforem2/"><code>saforem2</code></a>'s GitHub Repositories: 10 most recently updated.
+<a href="https://github.com/saforem2/"><code>saforem2</code></a>'s GitHub Repositories: 25 most recently updated.
 Click any column header to re-sort. Full list at [/projects](/projects).
 
 <style>{`
@@ -1229,7 +1232,7 @@ Click any column header to re-sort. Full list at [/projects](/projects).
   </thead>
   <tbody></tbody>
 </table>
-<div id="repo-grid" data-github-user="saforem2" data-limit="10" data-show-cards="false" hidden></div>
+<div id="repo-grid" data-github-user="saforem2" data-limit="25" data-show-cards="false" hidden></div>
 
 <script>{`
   (async function () {
@@ -1242,10 +1245,15 @@ Click any column header to re-sort. Full list at [/projects](/projects).
     const cap = limit ? parseInt(limit, 10) : Infinity;
     const showCards = grid.getAttribute("data-show-cards") !== "false";
     const username = grid.getAttribute("data-github-user") || "saforem2";
-    const apiUrl =
-      "https://api.github.com/users/" +
-      username +
-      "/repos?per_page=100&sort=updated";
+    // GitHub sorts by updated BEFORE paginating, so page 1 holds the 100 most
+    // recently touched repos, of which only ~41 are non-forks (123 non-forks
+    // across 277 total). Walk pages until we have enough after filtering, so
+    // the cap is honoured rather than silently truncated by one page's worth
+    // of forks. At the current cap this stops after page 1.
+    function pageUrl(page) {
+      return "https://api.github.com/users/" + username +
+        "/repos?per_page=100&sort=updated&page=" + page;
+    }
     function formatNumber(n) {
       if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\\.0$/, "") + "M";
       if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\\.0$/, "") + "k";
@@ -1319,10 +1327,15 @@ Click any column header to re-sort. Full list at [/projects](/projects).
       });
     });
     try {
-      const res = await fetch(apiUrl);
-      if (!res.ok) throw new Error("GitHub API error: " + res.status);
-      const data = await res.json();
-      repos = data.filter((r) => !r.fork);
+      const MAX_PAGES = 3;
+      for (let page = 1; page <= MAX_PAGES; page += 1) {
+        const res = await fetch(pageUrl(page));
+        if (!res.ok) throw new Error("GitHub API error: " + res.status);
+        const data = await res.json();
+        repos = repos.concat(data.filter((r) => !r.fork));
+        // Short page means there is nothing after it.
+        if (data.length < 100 || repos.length >= cap) break;
+      }
       if (repos.length === 0) {
         if (status) status.textContent = "No repositories found.";
         return;
