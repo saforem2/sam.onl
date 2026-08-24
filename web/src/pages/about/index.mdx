@@ -7,7 +7,7 @@ order: 0
 import { getCollection } from 'astro:content'
 import LastUpdated from '@/components/LastUpdated.astro'
 
-export const recentPosts = (await getCollection('docs'))
+export const allPosts = (await getCollection('docs'))
     .filter((doc) => {
         const id = doc.id
         if (!id) return false
@@ -23,9 +23,8 @@ export const recentPosts = (await getCollection('docs'))
         )
     })
     .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
-    .slice(0, 8)
 
-export const recentTalks = (await getCollection('docs'))
+export const allTalks = (await getCollection('docs'))
     .filter((doc) => {
         const id = doc.id
         if (!id) return false
@@ -37,7 +36,6 @@ export const recentTalks = (await getCollection('docs'))
         )
     })
     .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
-    .slice(0, 8)
 
 ## 🧑🏻‍💻 About
 <div id="flex-container" style="display: flex; gap: 1ch; justify-content: space-between">
@@ -193,12 +191,69 @@ Pre-Training group] for the [AuroraGPT] project.
 
 </div>
 
+<style>{`
+  /* The posts / talks / work lists run 37, 23 and 27 rows. Shown in full they
+     bury everything below them, so each is capped at 20 lines and scrolls.
+     The height goes on .table-scroll-wrapper (Doc.astro wraps every table in
+     one at runtime) rather than the table itself: max-height on a <table> is
+     only a hint and gets ignored once the rows exceed it. */
+  .table-scroll-wrapper:has(> #posts-table),
+  .table-scroll-wrapper:has(> #talks-table),
+  #work-table .table-scroll-wrapper {
+    max-height: 20lh;
+    overflow-y: auto;
+    /* Reserve the scrollbar track so the table does not shift sideways when
+       the list is short enough not to need one. */
+    scrollbar-gutter: stable;
+    /* Leave a gutter either side that belongs to the PAGE, not the table.
+       Measured without it: a wheel over a capped table fed all 720px into the
+       inner list and advanced the page 0, so scrolling past the posts list
+       took ~8 ticks before the page moved at all. The gutter gives somewhere
+       to put the pointer that scrolls the page normally.
+       overscroll-behavior only governs what happens at the inner boundary, so
+       it cannot solve the pass-through on its own. */
+    margin-inline: 4ch;
+    max-width: calc(100% - 8ch);
+  }
+  /* No gutter on narrow screens: 8ch costs a third of a 358px column there,
+     and touch scrolling does not have the pointer-capture problem the gutter
+     exists to solve. */
+  @media (max-width: 80ch) {
+    .table-scroll-wrapper:has(> #posts-table),
+    .table-scroll-wrapper:has(> #talks-table),
+    #work-table .table-scroll-wrapper {
+      margin-inline: 0;
+      max-width: 100%;
+    }
+  }
+  /* Keep the column headers visible while scrolling. WebTUI sets
+     position: relative on every td, and a positioned element paints above a
+     non-positioned one, so the pinned header needs an explicit z-index on the
+     th itself (that is where the position lives) to stay on top of the rows
+     passing under it. */
+  #posts-table thead th,
+  #talks-table thead th,
+  #work-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    /* A sticky element paints over nothing by default, and border-collapse
+       hands the cell borders to the table, so the band needs its own opaque
+       fill and its border redrawn as an inset shadow. */
+    background-color: var(--background1);
+    box-shadow:
+      inset 0 1px 0 var(--foreground3),
+      inset 0 -1px 0 var(--foreground3),
+      inset -1px 0 0 var(--foreground3);
+  }
+`}</style>
+
 ## 📬 Posts
 
-<table data-table-style="terminal">
+<table id="posts-table" data-table-style="terminal">
 <thead><tr><th>Date</th><th>Title</th></tr></thead>
 <tbody>
-{recentPosts.map((post) => (
+{allPosts.map((post) => (
 <tr>
 <td>{(() => { const d = new Date(post.data.date); return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`; })()}</td>
 <td><a href={`/${post.id.replace(/\/index\.(mdx?|md)$/, '/')}`}>{post.data.title}</a></td>
@@ -217,10 +272,10 @@ Pre-Training group] for the [AuroraGPT] project.
 > - HTML: [https://samforeman.me/talks/ai-for-science-2024/](https://samforeman.me/talks/ai-for-science-2024/)
 > - Slides: [https://samforeman.me/talks/ai-for-science-2024/slides](https://samforeman.me/talks/ai-for-science-2024/slides)
 
-<table data-table-style="terminal">
+<table id="talks-table" data-table-style="terminal">
 <thead><tr><th>Date</th><th>Title</th><th>Location</th></tr></thead>
 <tbody>
-{recentTalks.map((talk) => (
+{allTalks.map((talk) => (
 <tr>
 <td>{(() => { const d = new Date(talk.data.date); return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`; })()}</td>
 <td><a href={`/${talk.id.replace(/\/index\.(mdx?|md)$/, '/')}`}>{talk.data.shortTitle ?? talk.data.title}</a></td>
@@ -796,7 +851,7 @@ Pre-Training group] for the [AuroraGPT] project.
 > [!TIP|inline]
 > For a full list of my publications, see my [Google Scholar](https://scholar.google.com/citations?user=vV_1zDwAAAAJ&hl=en)
 
-<div data-table-style="terminal">
+<div id="work-table" data-table-style="terminal">
 
 | Year | Title |
 | ---- | ----- |
