@@ -1177,8 +1177,9 @@ Pre-Training group] for the [AuroraGPT] project.
 
 ## 📂 Projects
 
-<a href="https://github.com/saforem2/"><code>saforem2</code></a>'s GitHub Repositories: 25 most recently updated.
-Click any column header to re-sort. Full list at [/projects](/projects).
+<a href="https://github.com/saforem2/"><code>saforem2</code></a>'s 25 most recently
+pushed-to repositories, including forks and other people's projects I've landed
+merged PRs in. Click any column header to re-sort. Full list at [/projects](/projects).
 
 <style>{`
   #repo-table {
@@ -1217,6 +1218,15 @@ Click any column header to re-sort. Full list at [/projects](/projects).
   #repo-table td.col-stars,
   #repo-table td.col-updated { white-space: nowrap; }
   #repo-table td.col-desc { color: var(--foreground2); }
+  /* Marks a row that is not a project of my own: a fork, or a repo I only
+     landed a PR in. Same type size as everything else, distinguished by
+     colour and a bracket rather than by shrinking it. */
+  .repo-kind {
+    color: var(--foreground2);
+    white-space: nowrap;
+  }
+  .repo-kind::before { content: "["; }
+  .repo-kind::after { content: "]"; }
 `}</style>
 
 <p id="repo-grid-status">Loading repositories from GitHub…</p>
@@ -1245,14 +1255,21 @@ Click any column header to re-sort. Full list at [/projects](/projects).
     const cap = limit ? parseInt(limit, 10) : Infinity;
     const showCards = grid.getAttribute("data-show-cards") !== "false";
     const username = grid.getAttribute("data-github-user") || "saforem2";
-    // GitHub sorts by updated BEFORE paginating, so page 1 holds the 100 most
-    // recently touched repos, of which only ~41 are non-forks (123 non-forks
-    // across 277 total). Walk pages until we have enough after filtering, so
-    // the cap is honoured rather than silently truncated by one page's worth
-    // of forks. At the current cap this stops after page 1.
+    // sort=pushed, not updated: updated_at moves on metadata alone (a star, a
+    // description edit), while pushed_at is the "I actually worked on this"
+    // signal. 43 of the first 100 repos disagree between the two, e.g.
+    // torchtitan reads updated 2026-08-19 but pushed 2026-08-24.
     function pageUrl(page) {
       return "https://api.github.com/users/" + username +
-        "/repos?per_page=100&sort=updated&page=" + page;
+        "/repos?per_page=100&sort=pushed&page=" + page;
+    }
+    // Merged PRs to repos owned by somebody else. These never appear in the
+    // /users/:u/repos endpoint at any page depth, so pytorch/torchtitan and
+    // n-getty/argo-shim are invisible without a second source.
+    function prSearchUrl() {
+      return "https://api.github.com/search/issues?q=" +
+        encodeURIComponent("author:" + username + " type:pr is:merged -user:" + username) +
+        "&sort=updated&order=desc&per_page=100";
     }
     function formatNumber(n) {
       if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\\.0$/, "") + "M";
@@ -1264,10 +1281,16 @@ Click any column header to re-sort. Full list at [/projects](/projects).
       const mul = dir === "asc" ? 1 : -1;
       let cmp = 0;
       if (key === "stars") {
-        cmp = a.stargazers_count - b.stargazers_count;
-        if (cmp === 0) cmp = a.updated_at.localeCompare(b.updated_at);
+        // A contributed repo has no star count of its own to show. Sort those
+        // to the end in either direction rather than letting null read as 0.
+        const as = a.stars, bs = b.stars;
+        if (as === null && bs === null) cmp = 0;
+        else if (as === null) return 1;
+        else if (bs === null) return -1;
+        else cmp = as - bs;
+        if (cmp === 0) cmp = a.date.localeCompare(b.date);
       } else if (key === "updated") {
-        cmp = a.updated_at.localeCompare(b.updated_at);
+        cmp = a.date.localeCompare(b.date);
       } else if (key === "name") {
         cmp = a.name.localeCompare(b.name);
       } else if (key === "lang") {
@@ -1276,6 +1299,9 @@ Click any column header to re-sort. Full list at [/projects](/projects).
       return cmp * mul;
     }
     let repos = [];
+    let prRows = [];
+    // How many of the cap are held for repos I only contributed to.
+    const PR_SLOTS = Math.min(6, Math.floor(cap / 4));
     let sortKey = "updated";
     let sortDir = "desc";
     function makeCell(text, cls) {
@@ -1284,28 +1310,41 @@ Click any column header to re-sort. Full list at [/projects](/projects).
       if (cls) td.className = cls;
       return td;
     }
-    function makeRepoCell(repo) {
+    function makeRepoCell(row) {
       const td = document.createElement("td");
       const a = document.createElement("a");
-      a.href = repo.html_url;
-      a.textContent = repo.name;
+      a.href = row.url;
+      a.textContent = row.name;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
       td.appendChild(a);
+      // Say what kind of row this is, so a fork or a PR to someone else's
+      // project is not read as a project of my own.
+      if (row.kind !== "own") {
+        const tag = document.createElement("span");
+        tag.className = "repo-kind";
+        tag.textContent = row.kind;
+        td.append(" ", tag);
+      }
       return td;
     }
     function render() {
-      const sorted = repos.slice().sort((a, b) => compare(a, b, sortKey, sortDir));
+      // Fill the reserved slots first, then top up with everything else, then
+      // sort the combined set so the user's chosen column still governs the
+      // order they see.
+      const ownSorted = repos.slice().sort((a, b) => compare(a, b, "updated", "desc"));
+      const picked = ownSorted.slice(0, Math.max(0, cap - prRows.length)).concat(prRows);
+      const sorted = picked.sort((a, b) => compare(a, b, sortKey, sortDir));
       const shown = sorted.slice(0, cap);
       tbody.replaceChildren();
-      shown.forEach((repo) => {
+      shown.forEach((row) => {
         const tr = document.createElement("tr");
         tr.append(
-          makeCell(formatNumber(repo.stargazers_count || 0), "col-stars"),
-          makeCell(fmtDate(repo.updated_at), "col-updated"),
-          makeRepoCell(repo),
-          makeCell(repo.description || "", "col-desc"),
-          makeCell(repo.language || "")
+          makeCell(row.stars === null ? "" : formatNumber(row.stars), "col-stars"),
+          makeCell(fmtDate(row.date), "col-updated"),
+          makeRepoCell(row),
+          makeCell(row.description || "", "col-desc"),
+          makeCell(row.language || "")
         );
         tbody.appendChild(tr);
       });
@@ -1326,16 +1365,80 @@ Click any column header to re-sort. Full list at [/projects](/projects).
         render();
       });
     });
+    // Everything downstream reads this shape, so a repo and a contributed-to
+    // project can share one sorted list.
+    function rowFromRepo(r) {
+      return {
+        kind: r.fork ? "fork" : "own",
+        name: r.name,
+        url: r.html_url,
+        date: r.pushed_at || r.updated_at,
+        stars: r.stargazers_count || 0,
+        description: r.description || "",
+        language: r.language || "",
+      };
+    }
     try {
+      // Sorted by pushed, so page 1 already holds the most recently touched
+      // repos and one page covers any realistic cap. Keep walking only if the
+      // cap is large enough to need it.
       const MAX_PAGES = 3;
       for (let page = 1; page <= MAX_PAGES; page += 1) {
         const res = await fetch(pageUrl(page));
         if (!res.ok) throw new Error("GitHub API error: " + res.status);
         const data = await res.json();
-        repos = repos.concat(data.filter((r) => !r.fork));
-        // Short page means there is nothing after it.
+        repos = repos.concat(data.map(rowFromRepo));
         if (data.length < 100 || repos.length >= cap) break;
       }
+
+      // Second source, deliberately non-fatal: the search API is rate limited
+      // to 10 req/min unauthenticated, so a failure here must not blank a
+      // table the first request already filled.
+      try {
+        const prRes = await fetch(prSearchUrl());
+        if (prRes.ok) {
+          const pr = await prRes.json();
+          const byRepo = new Map();
+          for (const it of pr.items || []) {
+            const full = it.repository_url.split("/repos/")[1];
+            if (!full) continue;
+            const when = it.closed_at || it.updated_at;
+            const prev = byRepo.get(full);
+            // Keep only the most recent merged PR per upstream repo.
+            if (!prev || when > prev.date) {
+              byRepo.set(full, {
+                kind: "PR", name: full,
+                url: "https://github.com/" + full,
+                date: when, stars: null,
+                description: it.title || "", language: "",
+              });
+            }
+          }
+          // Compare the FULL owner/name, not the bare repo name. Matching on
+          // the name alone suppressed 18 of 21 upstreams, because forking a
+          // project gives me a repo of the same name: Oaklight/llm-rosetta was
+          // hidden by my own llm-rosetta fork, which is precisely the row
+          // worth showing since the PR landed upstream.
+          const ownedFull = new Set(
+            repos.map((r) => (username + "/" + r.name).toLowerCase())
+          );
+          const external = [];
+          for (const [full, row] of byRepo) {
+            if (!ownedFull.has(full.toLowerCase())) external.push(row);
+          }
+          external.sort((a, b) => b.date.localeCompare(a.date));
+          // Reserve slots rather than letting date alone decide. My own repos
+          // are pushed to daily, so the top 25 by date bottoms out around
+          // 2026-06-29 while the newest external PR is 2026-08-14: on merit
+          // alone no contributed repo ever appears, and pytorch/torchtitan
+          // (2026-04-21) would need a cap near 60. Guaranteeing a few slots is
+          // the only way this table shows both kinds of work at this size.
+          prRows = external.slice(0, PR_SLOTS);
+        }
+      } catch (prErr) {
+        console.warn("PR search unavailable:", prErr);
+      }
+
       if (repos.length === 0) {
         if (status) status.textContent = "No repositories found.";
         return;
