@@ -202,17 +202,24 @@ Pre-Training group] for the [AuroraGPT] project.
   #work-table .table-scroll-wrapper {
     max-height: 20lh;
     overflow-y: auto;
+    /* The base .table-scroll-wrapper rule sets width: 100%, which left the
+       posts box 835px wide around a 626px table: 208px of dead space with the
+       scrollbar stranded at the far edge. fit-content shrinks the box to the
+       table while max-width still clamps the wide case (talks is 887px and
+       genuinely scrolls). */
+    width: fit-content;
     /* Reserve the scrollbar track so the table does not shift sideways when
        the list is short enough not to need one. */
     scrollbar-gutter: stable;
-    /* Leave a gutter either side that belongs to the PAGE, not the table.
-       Measured without it: a wheel over a capped table fed all 720px into the
-       inner list and advanced the page 0, so scrolling past the posts list
-       took ~8 ticks before the page moved at all. The gutter gives somewhere
-       to put the pointer that scrolls the page normally.
-       overscroll-behavior only governs what happens at the inner boundary, so
-       it cannot solve the pass-through on its own. */
-    margin-inline: 4ch;
+    /* Leave a gutter that belongs to the PAGE, not the table, so there is
+       somewhere to put the pointer that scrolls the page normally. Measured
+       without it: a wheel over a capped table fed all 720px into the inner
+       list and advanced the page 0, so scrolling past the posts list took ~8
+       ticks before the page moved at all. overscroll-behavior only governs
+       the inner boundary, so it cannot solve the pass-through on its own.
+       End side only: a leading margin indented the tables out of line with
+       the body text. */
+    margin-inline-end: 8ch;
     max-width: calc(100% - 8ch);
   }
   /* No gutter on narrow screens: 8ch costs a third of a 358px column there,
@@ -222,7 +229,7 @@ Pre-Training group] for the [AuroraGPT] project.
     .table-scroll-wrapper:has(> #posts-table),
     .table-scroll-wrapper:has(> #talks-table),
     #work-table .table-scroll-wrapper {
-      margin-inline: 0;
+      margin-inline-end: 0;
       max-width: 100%;
     }
   }
