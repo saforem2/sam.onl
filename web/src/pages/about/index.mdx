@@ -1243,9 +1243,11 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
     color: var(--foreground2);
     white-space: nowrap;
     /* Fixed slot so the repo names stay in one column: the three glyphs are
-       not the same advance width. */
+       not the same advance width (the github mark is the widest). Sized
+       2.5ch rather than 2ch because at 2ch the widest glyph sat flush
+       against the name with no gap. */
     display: inline-block;
-    width: 2ch;
+    width: 2.5ch;
   }
 `}</style>
 
@@ -1360,10 +1362,10 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
       // All three were added to the curated Symbols Nerd Font subset for this
       // (it shipped 1582 glyphs and carried only E725); the subset is curated,
       // so any glyph not explicitly kept renders as tofu.
-      //   U+E702 git    own repo
-      //   U+E725 fork   my fork of someone else's project
-      //   U+E727 merge  a repo I only landed a merged PR in
-      const GLYPH = { own: "\uE702", fork: "\uE725", PR: "\uE727" };
+      //   U+F09B github  own repo
+      //   U+E725 fork    my fork of someone else's project
+      //   U+E727 merge   a repo I only landed a merged PR in
+      const GLYPH = { own: "\uF09B", fork: "\uE725", PR: "\uE727" };
       const LABEL = { own: "repository", fork: "fork", PR: "merged PR" };
       const tag = document.createElement("span");
       tag.className = "repo-kind";
