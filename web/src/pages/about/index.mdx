@@ -1217,7 +1217,17 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
   #repo-table th { white-space: nowrap; }
   #repo-table td.col-stars,
   #repo-table td.col-updated { white-space: nowrap; }
-  #repo-table td.col-desc { color: var(--foreground2); }
+  /* Cap the description at ~46ch. It inherits the terminal style's tbody
+     nowrap, so this truncates on one line rather than wrapping: an earlier
+     attempt that let it wrap made row heights ragged (one line vs two) and
+     the table sat narrower than its own content. The full text stays
+     available via the title attribute. */
+  #repo-table td.col-desc {
+    color: var(--foreground2);
+    max-width: 46ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   /* Marks a row that is not a project of my own: a fork, or a repo I only
      landed a merged PR in. Nerd Font has to be named explicitly here; the
      table otherwise renders in the body font, which has no codicons. */
@@ -1225,6 +1235,10 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
     font-family: 'Symbols Nerd Font', monospace;
     color: var(--foreground2);
     white-space: nowrap;
+    /* Fixed slot so the repo names stay in one column: the three glyphs are
+       not the same advance width. */
+    display: inline-block;
+    width: 2ch;
   }
 `}</style>
 
@@ -1309,30 +1323,35 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
       if (cls) td.className = cls;
       return td;
     }
+    function descCell(text) {
+      const td = makeCell(text, "col-desc");
+      // Truncated by CSS, so keep the full text reachable on hover.
+      if (text) td.setAttribute("title", text);
+      return td;
+    }
     function makeRepoCell(row) {
       const td = document.createElement("td");
+      // Leading glyph, so the eye can pick out kind before reading the name.
+      // All three were added to the curated Symbols Nerd Font subset for this
+      // (it shipped 1582 glyphs and carried only E725); the subset is curated,
+      // so any glyph not explicitly kept renders as tofu.
+      //   U+E702 git    own repo
+      //   U+E725 fork   my fork of someone else's project
+      //   U+E727 merge  a repo I only landed a merged PR in
+      const GLYPH = { own: "\uE702", fork: "\uE725", PR: "\uE727" };
+      const LABEL = { own: "repository", fork: "fork", PR: "merged PR" };
+      const tag = document.createElement("span");
+      tag.className = "repo-kind";
+      tag.textContent = GLYPH[row.kind] || GLYPH.own;
+      tag.setAttribute("title", LABEL[row.kind] || LABEL.own);
+      tag.setAttribute("aria-label", LABEL[row.kind] || LABEL.own);
+      tag.setAttribute("role", "img");
       const a = document.createElement("a");
       a.href = row.url;
       a.textContent = row.name;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
-      td.appendChild(a);
-      // Say what kind of row this is, so a fork or a PR to someone else's
-      // project is not read as a project of my own. Glyphs are codicons that
-      // are VERIFIED PRESENT in our curated Symbols Nerd Font subset: the
-      // octicons for fork/PR (U+F402, U+F407) are NOT in it and measure the
-      // same width as a known-missing codepoint, i.e. they render as tofu.
-      if (row.kind !== "own") {
-        const tag = document.createElement("span");
-        tag.className = "repo-kind";
-        // U+EA63 cod-repo_forked, U+EA83 cod-git_merge (every PR row here is
-        // a merged PR, so the merge glyph is the accurate one).
-        tag.textContent = row.kind === "fork" ? "\uEA63" : "\uEA83";
-        tag.setAttribute("title", row.kind === "fork" ? "fork" : "merged PR");
-        tag.setAttribute("aria-label", row.kind === "fork" ? "fork" : "merged PR");
-        tag.setAttribute("role", "img");
-        td.append(" ", tag);
-      }
+      td.append(tag, a);
       return td;
     }
     function render() {
@@ -1350,7 +1369,7 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
           makeCell(row.stars === null ? "" : formatNumber(row.stars), "col-stars"),
           makeCell(fmtDate(row.date), "col-updated"),
           makeRepoCell(row),
-          makeCell(row.description || "", "col-desc"),
+          descCell(row.description || ""),
           makeCell(row.language || "")
         );
         tbody.appendChild(tr);
@@ -1446,21 +1465,41 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
           const upstreamNames = new Set(
             external.map((r) => r.name.split("/")[1].toLowerCase())
           );
+          // Which side of a fork/upstream pair to keep depends on where the
+          // work actually is. saforem2/torchtitan carries my ezpz branch and
+          // was pushed to today, while the merged PR upstream is from April:
+          // collapsing to pytorch/torchtitan sent the row's link to a repo I
+          // do not develop in. So keep whichever side was pushed to more
+          // recently, and let it carry the other's metadata.
+          const drop = new Set();
           for (const row of external) {
             const bare = row.name.split("/")[1].toLowerCase();
             const mine = repos.find(
               (r) => r.kind === "fork" && r.name.toLowerCase() === bare
             );
-            if (mine) {
+            if (!mine) continue;
+            if (mine.date > row.date) {
+              // My fork is the live one. Keep it, and note upstream on it.
+              mine.description = mine.description || row.description;
+              drop.add(row.name);
+            } else {
+              // The PR upstream is the more recent work. Keep that row, but
+              // borrow the language and description a search result lacks.
               row.description = mine.description || row.description;
               row.language = mine.language || row.language;
-              // Keep whichever timestamp is newer: pushing to my fork and
-              // landing the PR upstream are both work on that project.
-              if (mine.date > row.date) row.date = mine.date;
+              drop.add("fork:" + bare);
             }
           }
+          for (let i = external.length - 1; i >= 0; i -= 1) {
+            if (drop.has(external[i].name)) external.splice(i, 1);
+          }
           repos = repos.filter(
-            (r) => !(r.kind === "fork" && upstreamNames.has(r.name.toLowerCase()))
+            (r) =>
+              !(
+                r.kind === "fork" &&
+                upstreamNames.has(r.name.toLowerCase()) &&
+                drop.has("fork:" + r.name.toLowerCase())
+              )
           );
           // Reserve slots rather than letting date alone decide. My own repos
           // are pushed to daily, so the top 25 by date bottoms out around
