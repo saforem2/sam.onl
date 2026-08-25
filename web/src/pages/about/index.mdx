@@ -1231,6 +1231,13 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
   /* Marks a row that is not a project of my own: a fork, or a repo I only
      landed a merged PR in. Nerd Font has to be named explicitly here; the
      table otherwise renders in the body font, which has no codicons. */
+  /* "name @ branch". Muted so the repo name still reads as the primary
+     label, and nowrap so a slashed branch does not fold mid-name. */
+  .repo-branch {
+    color: var(--foreground2);
+    white-space: nowrap;
+  }
+  .repo-branch a { color: inherit; }
   .repo-kind {
     font-family: 'Symbols Nerd Font', monospace;
     color: var(--foreground2);
@@ -1276,6 +1283,14 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
       return "https://api.github.com/users/" + username +
         "/repos?per_page=100&sort=pushed&page=" + page;
     }
+    // Recent public pushes, which is the only cheap way to learn WHICH branch
+    // I was working in: default_branch reads "main" on every fork, and the
+    // branches endpoint carries no commit dates, so ranking branches would
+    // cost one request per branch per repo.
+    function eventsUrl() {
+      return "https://api.github.com/users/" + username +
+        "/events/public?per_page=100";
+    }
     // Merged PRs to repos owned by somebody else. These never appear in the
     // /users/:u/repos endpoint at any page depth, so pytorch/torchtitan and
     // n-getty/argo-shim are invisible without a second source.
@@ -1313,6 +1328,16 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
     }
     let repos = [];
     let prRows = [];
+    // repo full_name -> branch of my most recent push there.
+    let pushBranches = new Map();
+    function annotateBranches(list) {
+      for (const r of list) {
+        const full = r.name.includes("/") ? r.name : username + "/" + r.name;
+        const b = pushBranches.get(full);
+        // Only worth showing when it is not the branch you would assume.
+        if (b && b !== "main" && b !== "master") r.branch = b;
+      }
+    }
     // How many of the cap are held for repos I only contributed to.
     const PR_SLOTS = Math.min(6, Math.floor(cap / 4));
     let sortKey = "updated";
@@ -1352,6 +1377,20 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
       a.target = "_blank";
       a.rel = "noopener noreferrer";
       td.append(tag, a);
+      // The branch I last pushed to, when it is not the default one. Links to
+      // that branch rather than the repo root, since that is where the work
+      // being advertised actually lives.
+      if (row.branch) {
+        const at = document.createElement("span");
+        at.className = "repo-branch";
+        const bl = document.createElement("a");
+        bl.href = row.url + "/tree/" + row.branch;
+        bl.textContent = row.branch;
+        bl.target = "_blank";
+        bl.rel = "noopener noreferrer";
+        at.append(" @ ", bl);
+        td.appendChild(at);
+      }
       return td;
     }
     function render() {
@@ -1417,6 +1456,33 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
         if (data.length < 100 || repos.length >= cap) break;
       }
 
+      // Branch annotations, non-fatal. The feed only reaches back a couple of
+      // days and covered 6 of 25 rows when measured, so a branch is a bonus on
+      // recently-touched repos rather than something every row will carry.
+      try {
+        const evRes = await fetch(eventsUrl());
+        if (evRes.ok) {
+          const events = await evRes.json();
+          const branchOf = new Map();
+          for (const e of events || []) {
+            if (e.type !== "PushEvent") continue;
+            const full = e.repo && e.repo.name;
+            const ref = (e.payload && e.payload.ref) || "";
+            if (!full || !ref.startsWith("refs/heads/")) continue;
+            // Events are newest-first, so the first hit per repo wins.
+            if (!branchOf.has(full)) {
+              branchOf.set(full, ref.slice("refs/heads/".length));
+            }
+          }
+          // Stash the whole map: PR rows are built further down, after this
+          // block, so they cannot be annotated here.
+          pushBranches = branchOf;
+          annotateBranches(repos);
+        }
+      } catch (evErr) {
+        console.warn("events feed unavailable:", evErr);
+      }
+
       // Second source, deliberately non-fatal: the search API is rate limited
       // to 10 req/min unauthenticated, so a failure here must not blank a
       // table the first request already filled.
@@ -1451,6 +1517,9 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
             if (!ownedFull.has(full.toLowerCase())) external.push(row);
           }
           external.sort((a, b) => b.date.localeCompare(a.date));
+          // Same treatment for repos I only contributed to: a push to
+          // n-getty/argo-shim@chore/move-tests-to-dir is worth naming.
+          annotateBranches(external);
 
           // Collapse fork/upstream pairs, preferring upstream. 18 of my 21
           // contributed-to repos also exist as forks under my account, so
@@ -1484,9 +1553,11 @@ merged PRs in. Click any column header to re-sort. Full list at [/projects](/pro
               drop.add(row.name);
             } else {
               // The PR upstream is the more recent work. Keep that row, but
-              // borrow the language and description a search result lacks.
+              // borrow the language, description and branch a search result
+              // lacks.
               row.description = mine.description || row.description;
               row.language = mine.language || row.language;
+              if (mine.branch) row.branch = mine.branch;
               drop.add("fork:" + bare);
             }
           }
