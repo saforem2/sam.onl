@@ -2111,7 +2111,14 @@ const articleSchema =
             if (!code) return
             let ok = true
             try {
-                await navigator.clipboard.writeText(code.innerText)
+                // Copy the code WITHOUT the line-number anchors. They are real
+                // elements inside each line now, so innerText picks them up
+                // and every copied block came out as "1# Kick the tires...".
+                const clone = code.cloneNode(true) as HTMLElement
+                for (const n of clone.querySelectorAll('.code-line-link')) {
+                    n.remove()
+                }
+                await navigator.clipboard.writeText(clone.innerText)
                 button.textContent = 'copied!'
             } catch {
                 ok = false
@@ -2137,11 +2144,14 @@ const articleSchema =
 
 <!-- Linkable code lines.
 
-     The line numbers are CSS ::before counters, which cannot hold an href or
-     receive a click, so the gutter is made interactive here instead: one
-     delegated listener per block works out which line was hit from the click
-     position rather than wrapping 17,837 line spans across the site in
-     anchors.
+     Each line number is a real <a href="#b<n>-L<line>">. An earlier version
+     hit-tested clicks against the ::before counter box instead, which worked
+     but was not a link: the browser had no "Copy Link" to offer on
+     right-click, and no middle-click, no hover URL in the status bar. A real
+     anchor gets all of that for free.
+
+     The counter therefore moves off `span.line::before` and onto the anchor,
+     so the number is the link rather than sitting beside it.
 
      Anchors are #b<n>-L<line>: a page can carry 30 code blocks (the argo post
      does), so a bare #L12 would be ambiguous. Both indices are positional and
@@ -2157,70 +2167,24 @@ const articleSchema =
         const blockId = 'b' + (blockIndex + 1)
         block.dataset.blockId = blockId
 
-        // Give every line an id so the browser can scroll to it natively and
-        // :target can highlight it without any script running.
         lines.forEach((line, i) => {
-            line.id = blockId + '-L' + (i + 1)
-        })
-
-        // The gutter is the ::before box on each line: its width is the
-        // number column plus its margin/padding. Anything left of that edge
-        // is a click on the number rather than on the code.
-        const gutterHit = (event) => {
-            const line = event.target.closest('span.line')
-            if (!line) return null
-            const style = getComputedStyle(line, '::before')
-            const edge =
-                line.getBoundingClientRect().left +
-                parseFloat(style.width || '0') +
-                parseFloat(style.marginRight || '0') +
-                parseFloat(style.paddingRight || '0')
-            return event.clientX <= edge ? line : null
-        }
-
-        block.addEventListener('mousemove', (event) => {
-            block.classList.toggle('is-gutter-hover', !!gutterHit(event))
-        })
-        block.addEventListener('mouseleave', () => {
-            block.classList.remove('is-gutter-hover')
-        })
-
-        let resetTimer: ReturnType<typeof setTimeout> | undefined
-        block.addEventListener('click', async (event) => {
-            const line = gutterHit(event)
-            if (!line) return
-            event.preventDefault()
-            const url =
-                location.origin +
-                location.pathname +
-                location.search +
-                '#' +
-                line.id
-            // Update the address bar without a jump: the line is already on
-            // screen, and pushing a hash would scroll it under the header.
-            history.replaceState(null, '', '#' + line.id)
-            // Highlight explicitly rather than relying on :target, which does
-            // not re-fire when the same line is clicked twice.
-            for (const el of block.querySelectorAll('.is-line-linked')) {
-                el.classList.remove('is-line-linked')
-            }
-            line.classList.add('is-line-linked')
-            try {
-                await navigator.clipboard.writeText(url)
-            } catch {
-                /* Clipboard can be denied; the hash is set either way. */
-            }
-            clearTimeout(resetTimer)
-            resetTimer = setTimeout(() => {
-                line.classList.remove('is-line-linked')
-            }, 1600)
+            const id = blockId + '-L' + (i + 1)
+            line.id = id
+            // Skip a line that already has one (script re-entry / view swap).
+            if (line.querySelector(':scope > .code-line-link')) return
+            const link = document.createElement('a')
+            link.className = 'code-line-link'
+            link.href = '#' + id
+            link.textContent = String(i + 1)
+            // The number is decorative for a screen reader walking the code;
+            // the accessible name says what following it does.
+            link.setAttribute('aria-label', 'Link to line ' + (i + 1))
+            line.prepend(link)
         })
     })
 
-    // Highlight a line arrived at from an inbound link, and re-scroll it clear
-    // of the sticky header: the browser's own jump happens before these ids
-    // exist, so it either does nothing or leaves the line tucked under the
-    // header at ~32px.
+    // Highlight the linked line. Runs for both an inbound link and our own
+    // clicks, since clicking an <a href="#..."> fires hashchange.
     const markTargetLine = (scroll: boolean) => {
         for (const el of document.querySelectorAll('.is-line-linked')) {
             el.classList.remove('is-line-linked')
@@ -2230,30 +2194,28 @@ const articleSchema =
         const line = document.getElementById(id)
         if (!line) return
         line.classList.add('is-line-linked')
-        // Scroll the PAGE, not the code block. `line.scrollIntoView()` looked
-        // like a timing bug — the line kept landing at ~32px under the sticky
-        // header — but the <code> is itself a scroll container, so the call
-        // was centring the line inside the block and leaving the page wherever
-        // the browser's hash jump had put it. Scrolling the block's own
-        // scroller by the delta moves the page instead.
-        if (scroll) {
-            const centre = () => {
-                const scroller =
-                    document.getElementById('main-content') ??
-                    document.scrollingElement
-                if (!scroller) return
-                const target =
+        if (!scroll) return
+        // Scroll the PAGE, not the block: <code> is itself a scroll container,
+        // so scrollIntoView on the line centres it inside the block and leaves
+        // the page wherever the browser's hash jump put it (~32px, under the
+        // sticky header).
+        const centre = () => {
+            const scroller =
+                document.getElementById('main-content') ??
+                document.scrollingElement
+            if (!scroller) return
+            scroller.scrollBy({
+                top:
                     line.getBoundingClientRect().top -
                     scroller.getBoundingClientRect().top -
-                    scroller.clientHeight / 2
-                scroller.scrollBy({ top: target })
-            }
-            if (document.readyState === 'complete') centre()
-            else window.addEventListener('load', centre, { once: true })
+                    scroller.clientHeight / 2,
+            })
         }
+        if (document.readyState === 'complete') centre()
+        else window.addEventListener('load', centre, { once: true })
     }
-    // Scroll on first paint (the browser could not, the ids were not there
-    // yet) but not on hashchange, which is our own click on an on-screen line.
+    // Scroll on arrival only. On our own click the line is already on screen,
+    // and yanking it to centre under the cursor is disorienting.
     markTargetLine(true)
     window.addEventListener('hashchange', () => markTargetLine(false))
 </script>

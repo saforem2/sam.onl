@@ -2031,6 +2031,11 @@ pre.astro-code .line {
         'Segoe UI Emoji', 'Noto Color Emoji';
 }
 
+/* The line number. Rendered by script as a real <a> so it can be copied,
+   middle-clicked and opened like any other link; the ::before counter it
+   replaced could do none of that. The counter-increment stays here as the
+   fallback for any block the script has not reached (or if JS is off), where
+   the ::before still draws the number. */
 pre.astro-code span.line::before {
     counter-increment: line;
     content: counter(line);
@@ -2045,20 +2050,47 @@ pre.astro-code span.line::before {
     user-select: none;
     border-right: 2px solid var(--background2);
 }
+/* Once the anchor exists it IS the number, so the pseudo-element stands down
+   rather than printing a second one. */
+pre.astro-code span.line:has(> .code-line-link)::before {
+    content: none;
+}
+.code-line-link {
+    display: inline-block;
+    min-width: 1ch;
+    max-width: 3ch;
+    margin-right: 1ch;
+    padding-right: 1ch;
+    text-align: right;
+    color: var(--pre-linenumber-fg, var(--foreground3));
+    border-right: 2px solid var(--background2);
+    text-decoration: none;
+    user-select: none;
+}
+/* Only the hovered number lights up. The first version put the hover class on
+   the <pre>, which lit every line in the block at once. */
+.code-line-link:hover,
+.code-line-link:focus-visible {
+    color: var(--lang-badge, var(--material-pink));
+    text-decoration: none;
+}
+/* The number is a link, so it would otherwise inherit the site's body-link
+   treatment (a grow-from-underline block that fills the line box); over a 1ch
+   digit that reads as a dark square. Keep it a plain glyph. */
+pre.astro-code .code-line-link,
+pre.astro-code .code-line-link:hover,
+pre.astro-code .code-line-link:focus,
+pre.astro-code .code-line-link:focus-visible {
+    background: none;
+    background-color: transparent;
+    box-shadow: none;
+}
 
 /* ── Linkable lines ──────────────────────────────────────────────────────
    Clicking a line number copies a link to that line. The number itself is a
    ::before counter and cannot be an anchor, so Doc.astro hit-tests the click
    against the gutter box; these rules only supply the affordance and the
    highlight. */
-
-/* Cursor + colour shift while the pointer is over the gutter. The class is
-   set on the <pre> rather than per line, so one toggle lights the whole
-   column: the target is the number strip, not an individual row. */
-pre.astro-code.is-gutter-hover span.line::before {
-    color: var(--lang-badge, var(--material-pink));
-    cursor: pointer;
-}
 
 /* The clicked (or linked-to) line. Tinted with the same language hue as the
    block's border so the highlight reads as part of the block rather than a
@@ -2069,14 +2101,18 @@ pre.astro-code.is-gutter-hover span.line::before {
    pre.astro-code[data-language=...], and a bare var() here resolved to the
    pink fallback instead of the block's colour. */
 pre.astro-code[data-language] span.line.is-line-linked {
-    background-color: color-mix(
-        in oklch,
-        transparent,
-        var(--lang-badge, var(--material-pink)) 14%
-    );
-    box-shadow: inset 2px 0 0 0 var(--lang-badge, var(--material-pink));
+    /* Rail only, no wash. A translucent tint of the language colour needs
+       the colour taken apart, and --lang-badge is itself relative
+       (--material-teal: oklch(from #009688 l c h)): neither
+       `oklch(from var(--lang-badge) ... / .14)` nor `color-mix` can consume
+       one, both silently falling back to pink, and painting an opacity
+       overlay instead put a layer over the line's own text. Plain
+       `var(--lang-badge)` resolves fine, so the rail carries the language
+       colour and the row is marked by the rail alone. */
+    box-shadow: inset 3px 0 0 0 var(--lang-badge, var(--material-pink));
 }
-pre.astro-code span.line.is-line-linked::before {
+pre.astro-code span.line.is-line-linked::before,
+pre.astro-code span.line.is-line-linked > .code-line-link {
     color: var(--lang-badge, var(--material-pink));
 }
 
