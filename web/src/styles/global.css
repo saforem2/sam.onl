@@ -1656,12 +1656,10 @@ code.language-logs .log-msg {
 }
 
 pre.astro-code {
-    /* Half a line of breathing room above the first line and below the
-       last, painted in the block's own background. Without it the badge
-       (and the copy button that replaces it on hover) sits on top of code
-       that reaches the top-right corner. Inline padding stays 0 — the
-       gutter and line-number column handle that. */
-    padding: 0.5lh 0;
+    /* Just enough room that the badge straddling the top edge does not sit
+       on the first line of code. 0.5lh was half a blank row top and bottom,
+       which read as padding rather than as a frame around the code. */
+    padding: 0.25lh 0;
     /* Extra headroom (vs the 0.5lh below) so the language badge, which
        sits in this gap, clears whatever is above — including the last line
        of an immediately-preceding code block, where 0.5lh left the badge
@@ -1977,8 +1975,10 @@ pre.astro-code span.line[tabindex='0'] {
 }
 
 pre.astro-code span.line[tabindex='0']:focus-visible {
-    background-color: oklch(from var(--foreground0) l c h / 0.12);
-    box-shadow: inset 2px 0 0 0 var(--foreground0);
+    background-color: oklch(
+        from var(--lang-badge, var(--material-pink)) l c h / 0.12
+    );
+    box-shadow: inset 2px 0 0 0 var(--lang-badge, var(--material-pink));
     /* The <code> carries `padding-inline-end: 4ch` so the longest line
        doesn't kiss the block edge. A line's `width: 100%` resolves against
        that padded content box, so the focus highlight stopped 4ch short of
@@ -2057,8 +2057,12 @@ pre.astro-code span.line:has(> .code-line-link)::before {
 }
 .code-line-link {
     display: inline-block;
-    min-width: 1ch;
-    max-width: 3ch;
+    /* One fixed width for the whole block, not min/max around the digits:
+       a 1ch..3ch range let the box grow at line 10, stepping the divider
+       6.5px to the right mid-gutter. --line-number-width is set per block by
+       Doc.astro from the widest line number it actually has, so a 9-line
+       block keeps a 1ch gutter and a 100-line block widens once, uniformly. */
+    width: var(--line-number-width, 2ch);
     margin-right: 1ch;
     padding-right: 1ch;
     text-align: right;
@@ -2101,15 +2105,22 @@ pre.astro-code .code-line-link:focus-visible {
    pre.astro-code[data-language=...], and a bare var() here resolved to the
    pink fallback instead of the block's colour. */
 pre.astro-code[data-language] span.line.is-line-linked {
-    /* Rail only, no wash. A translucent tint of the language colour needs
-       the colour taken apart, and --lang-badge is itself relative
-       (--material-teal: oklch(from #009688 l c h)): neither
-       `oklch(from var(--lang-badge) ... / .14)` nor `color-mix` can consume
-       one, both silently falling back to pink, and painting an opacity
-       overlay instead put a layer over the line's own text. Plain
-       `var(--lang-badge)` resolves fine, so the rail carries the language
-       colour and the row is marked by the rail alone. */
+    /* Same treatment as :focus-visible above, so a line you tabbed to and a
+       line you linked to read the same.
+
+       !important because a hash jump also FOCUSES the line (it carries
+       tabindex="0"), and a loosely-nested `&:focus, &:hover` rule from the
+       prev/next nav styles paints `oklch(from var(--accent) l c h / .08)`
+       over it — pink, whatever the block's language. That rule sits later in
+       the cascade at equal specificity, so ordering alone does not win. */
+    background-color: oklch(
+        from var(--lang-badge, var(--material-pink)) l c h / 0.14
+    ) !important;
     box-shadow: inset 3px 0 0 0 var(--lang-badge, var(--material-pink));
+    /* Match the focus rule: paint back over the <code>'s 4ch end padding so
+       the highlight runs the full width instead of stopping short. */
+    margin-inline-end: -4ch;
+    padding-inline-end: 4ch;
 }
 pre.astro-code span.line.is-line-linked::before,
 pre.astro-code span.line.is-line-linked > .code-line-link {

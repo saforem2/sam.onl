@@ -2166,6 +2166,12 @@ const articleSchema =
         if (!lines.length) return
         const blockId = 'b' + (blockIndex + 1)
         block.dataset.blockId = blockId
+        // Size the gutter once per block, to its widest line number, so the
+        // divider does not step right when the count crosses 9 -> 10.
+        block.style.setProperty(
+            '--line-number-width',
+            String(lines.length).length + 'ch',
+        )
 
         lines.forEach((line, i) => {
             const id = blockId + '-L' + (i + 1)
