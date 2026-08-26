@@ -1328,7 +1328,7 @@ html[data-webtui-theme='custom-light'] .astro-code {
 }
 /* Don't paint span-level backgrounds — let the pre's background show
    through uniformly, including the top/bottom padding band. */
-html[data-webtui-theme='custom-light'] .astro-code span {
+html[data-webtui-theme='custom-light'] .astro-code span:not(.line) {
     --pre-background: oklch(from var(--code-bg, #f8f8f8) l c h);
     background-color: transparent !important;
 }
@@ -1349,7 +1349,7 @@ html[data-webtui-theme='custom-light'] .astro-code span[style*='#FF9800'] {
     color: #ff5722 !important;
 }
 
-html[data-webtui-theme='custom-dark'] .astro-code span {
+html[data-webtui-theme='custom-dark'] .astro-code span:not(.line) {
     color: var(--shiki-custom-dark) !important;
     font-style: var(--shiki-custom-dark-font-style) !important;
     font-weight: var(--shiki-custom-dark-font-weight) !important;
@@ -1358,7 +1358,7 @@ html[data-webtui-theme='custom-dark'] .astro-code span {
     background-color: transparent !important;
 }
 
-html[data-webtui-theme='catppuccin'] .astro-code span {
+html[data-webtui-theme='catppuccin'] .astro-code span:not(.line) {
     color: var(--shiki-catppuccin) !important;
     font-style: var(--shiki-catppuccin-font-style) !important;
     font-weight: var(--shiki-catppuccin-font-weight) !important;
@@ -1368,7 +1368,7 @@ html[data-webtui-theme='catppuccin'] .astro-code span {
 }
 
 html[data-webtui-theme='catppuccin-latte'] .astro-code,
-html[data-webtui-theme='catppuccin-latte'] .astro-code span {
+html[data-webtui-theme='catppuccin-latte'] .astro-code span:not(.line) {
     color: var(--shiki-catppuccin-latte) !important;
     font-style: var(--shiki-catppuccin-latte-font-style) !important;
     font-weight: var(--shiki-catppuccin-latte-font-weight) !important;
@@ -1381,7 +1381,7 @@ html[data-webtui-theme='catppuccin-latte'] .astro-code span {
    Activates --shiki-sam-light-* / --shiki-sam-dark-* CSS vars baked into
    the rendered code blocks at build time by shikiConfig.themes. */
 html[data-webtui-theme='sam-light'] .astro-code,
-html[data-webtui-theme='sam-light'] .astro-code span {
+html[data-webtui-theme='sam-light'] .astro-code span:not(.line) {
     color: var(--shiki-sam-light) !important;
     font-style: var(--shiki-sam-light-font-style) !important;
     font-weight: var(--shiki-sam-light-font-weight) !important;
@@ -1390,7 +1390,7 @@ html[data-webtui-theme='sam-light'] .astro-code span {
     background-color: transparent !important;
 }
 html[data-webtui-theme='sam-dark'] .astro-code,
-html[data-webtui-theme='sam-dark'] .astro-code span {
+html[data-webtui-theme='sam-dark'] .astro-code span:not(.line) {
     color: var(--shiki-sam-dark) !important;
     font-style: var(--shiki-sam-dark-font-style) !important;
     font-weight: var(--shiki-sam-dark-font-weight) !important;
@@ -1404,7 +1404,7 @@ html[data-webtui-theme='sam-dark'] .astro-code span {
    mechanism as the sam-* themes: --shiki-<key>-* CSS vars baked into each code
    block at build by shikiConfig.themes. */
 html[data-webtui-theme='nvim-light-role'] .astro-code,
-html[data-webtui-theme='nvim-light-role'] .astro-code span {
+html[data-webtui-theme='nvim-light-role'] .astro-code span:not(.line) {
     color: var(--shiki-nvim-light-role) !important;
     font-style: var(--shiki-nvim-light-role-font-style) !important;
     font-weight: var(--shiki-nvim-light-role-font-weight) !important;
@@ -1413,7 +1413,7 @@ html[data-webtui-theme='nvim-light-role'] .astro-code span {
     background-color: transparent !important;
 }
 html[data-webtui-theme='nvim-light-hue'] .astro-code,
-html[data-webtui-theme='nvim-light-hue'] .astro-code span {
+html[data-webtui-theme='nvim-light-hue'] .astro-code span:not(.line) {
     color: var(--shiki-nvim-light-hue) !important;
     font-style: var(--shiki-nvim-light-hue-font-style) !important;
     font-weight: var(--shiki-nvim-light-hue-font-weight) !important;
@@ -1422,7 +1422,7 @@ html[data-webtui-theme='nvim-light-hue'] .astro-code span {
     background-color: transparent !important;
 }
 html[data-webtui-theme='nvim-dark-role'] .astro-code,
-html[data-webtui-theme='nvim-dark-role'] .astro-code span {
+html[data-webtui-theme='nvim-dark-role'] .astro-code span:not(.line) {
     color: var(--shiki-nvim-dark-role) !important;
     font-style: var(--shiki-nvim-dark-role-font-style) !important;
     font-weight: var(--shiki-nvim-dark-role-font-weight) !important;
@@ -1431,7 +1431,7 @@ html[data-webtui-theme='nvim-dark-role'] .astro-code span {
     background-color: transparent !important;
 }
 html[data-webtui-theme='nvim-dark-hue'] .astro-code,
-html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
+html[data-webtui-theme='nvim-dark-hue'] .astro-code span:not(.line) {
     color: var(--shiki-nvim-dark-hue) !important;
     font-style: var(--shiki-nvim-dark-hue-font-style) !important;
     font-weight: var(--shiki-nvim-dark-hue-font-weight) !important;
@@ -2044,6 +2044,40 @@ pre.astro-code span.line::before {
     color: var(--pre-linenumber-fg, var(--foreground3));
     user-select: none;
     border-right: 2px solid var(--background2);
+}
+
+/* ── Linkable lines ──────────────────────────────────────────────────────
+   Clicking a line number copies a link to that line. The number itself is a
+   ::before counter and cannot be an anchor, so Doc.astro hit-tests the click
+   against the gutter box; these rules only supply the affordance and the
+   highlight. */
+
+/* Cursor + colour shift while the pointer is over the gutter. The class is
+   set on the <pre> rather than per line, so one toggle lights the whole
+   column: the target is the number strip, not an individual row. */
+pre.astro-code.is-gutter-hover span.line::before {
+    color: var(--lang-badge, var(--material-pink));
+    cursor: pointer;
+}
+
+/* The clicked (or linked-to) line. Tinted with the same language hue as the
+   block's border so the highlight reads as part of the block rather than a
+   new accent, and drawn with a left rail so the eye lands on the row start.
+   `box-shadow` rather than `border-left` to avoid shifting the text.
+
+   The hue is read off the <pre> explicitly: --lang-badge is declared on
+   pre.astro-code[data-language=...], and a bare var() here resolved to the
+   pink fallback instead of the block's colour. */
+pre.astro-code[data-language] span.line.is-line-linked {
+    background-color: color-mix(
+        in oklch,
+        transparent,
+        var(--lang-badge, var(--material-pink)) 14%
+    );
+    box-shadow: inset 2px 0 0 0 var(--lang-badge, var(--material-pink));
+}
+pre.astro-code span.line.is-line-linked::before {
+    color: var(--lang-badge, var(--material-pink));
 }
 
 /* Invisible hit-target sitting exactly over the language badge. The badge
