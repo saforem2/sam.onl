@@ -1319,9 +1319,12 @@ html[data-webtui-theme*='nvim-dark'] .dark-content {
     display: revert !important;
 }
 
+/* Code blocks carry no fill (see pre.astro-code below); they are bounded by
+   a language-tinted border instead. This rule used to repaint the panel with
+   !important, which beat that. */
 html[data-webtui-theme='custom-light'] .astro-code {
-    --pre-background: oklch(from var(--code-bg, #f8f8f8) l c h);
-    background-color: var(--pre-background) !important;
+    --pre-background: transparent;
+    background-color: transparent !important;
 }
 /* Don't paint span-level backgrounds — let the pre's background show
    through uniformly, including the top/bottom padding band. */
@@ -1352,7 +1355,7 @@ html[data-webtui-theme='custom-dark'] .astro-code span {
     font-weight: var(--shiki-custom-dark-font-weight) !important;
     text-decoration: var(--shiki-custom-dark-text-decoration) !important;
     --pre-background: var(--background1);
-    background-color: var(--pre-background) !important;
+    background-color: transparent !important;
 }
 
 html[data-webtui-theme='catppuccin'] .astro-code span {
@@ -1361,7 +1364,7 @@ html[data-webtui-theme='catppuccin'] .astro-code span {
     font-weight: var(--shiki-catppuccin-font-weight) !important;
     text-decoration: var(--shiki-catppuccin-text-decoration) !important;
     --pre-background: var(--background1, var(--shiki-catppuccin-bg));
-    background-color: var(--pre-background) !important ;
+    background-color: transparent !important;
 }
 
 html[data-webtui-theme='catppuccin-latte'] .astro-code,
@@ -1371,7 +1374,7 @@ html[data-webtui-theme='catppuccin-latte'] .astro-code span {
     font-weight: var(--shiki-catppuccin-latte-font-weight) !important;
     text-decoration: var(--shiki-catppuccin-latte-text-decoration) !important;
     --pre-background: oklch(from #e6e9ef l c h);
-    background-color: var(--pre-background) !important;
+    background-color: transparent !important;
 }
 
 /* sam.onl Light/Dark Shiki themes — palette-matched syntax highlighting.
@@ -1384,7 +1387,7 @@ html[data-webtui-theme='sam-light'] .astro-code span {
     font-weight: var(--shiki-sam-light-font-weight) !important;
     text-decoration: var(--shiki-sam-light-text-decoration) !important;
     --pre-background: var(--shiki-sam-light-bg, #f8f8f8);
-    background-color: var(--pre-background) !important;
+    background-color: transparent !important;
 }
 html[data-webtui-theme='sam-dark'] .astro-code,
 html[data-webtui-theme='sam-dark'] .astro-code span {
@@ -1393,7 +1396,7 @@ html[data-webtui-theme='sam-dark'] .astro-code span {
     font-weight: var(--shiki-sam-dark-font-weight) !important;
     text-decoration: var(--shiki-sam-dark-text-decoration) !important;
     --pre-background: var(--shiki-sam-dark-bg, #282828);
-    background-color: var(--pre-background) !important;
+    background-color: transparent !important;
 }
 
 /* Neovim Shiki themes — onelight (light) / cyberdream (dark), generated from
@@ -1407,7 +1410,7 @@ html[data-webtui-theme='nvim-light-role'] .astro-code span {
     font-weight: var(--shiki-nvim-light-role-font-weight) !important;
     text-decoration: var(--shiki-nvim-light-role-text-decoration) !important;
     --pre-background: var(--shiki-nvim-light-role-bg, #ffffff);
-    background-color: var(--pre-background) !important;
+    background-color: transparent !important;
 }
 html[data-webtui-theme='nvim-light-hue'] .astro-code,
 html[data-webtui-theme='nvim-light-hue'] .astro-code span {
@@ -1416,7 +1419,7 @@ html[data-webtui-theme='nvim-light-hue'] .astro-code span {
     font-weight: var(--shiki-nvim-light-hue-font-weight) !important;
     text-decoration: var(--shiki-nvim-light-hue-text-decoration) !important;
     --pre-background: var(--shiki-nvim-light-hue-bg, #ffffff);
-    background-color: var(--pre-background) !important;
+    background-color: transparent !important;
 }
 html[data-webtui-theme='nvim-dark-role'] .astro-code,
 html[data-webtui-theme='nvim-dark-role'] .astro-code span {
@@ -1425,7 +1428,7 @@ html[data-webtui-theme='nvim-dark-role'] .astro-code span {
     font-weight: var(--shiki-nvim-dark-role-font-weight) !important;
     text-decoration: var(--shiki-nvim-dark-role-text-decoration) !important;
     --pre-background: var(--shiki-nvim-dark-role-bg, #1c1c1c);
-    background-color: var(--pre-background) !important;
+    background-color: transparent !important;
 }
 html[data-webtui-theme='nvim-dark-hue'] .astro-code,
 html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
@@ -1434,7 +1437,7 @@ html[data-webtui-theme='nvim-dark-hue'] .astro-code span {
     font-weight: var(--shiki-nvim-dark-hue-font-weight) !important;
     text-decoration: var(--shiki-nvim-dark-hue-text-decoration) !important;
     --pre-background: var(--shiki-nvim-dark-hue-bg, #1c1c1c);
-    background-color: var(--pre-background) !important;
+    background-color: transparent !important;
 }
 
 /* Code-block container: hugs content, no internal padding band.
@@ -1665,7 +1668,19 @@ pre.astro-code {
        overlapping the code. */
     margin-block: 1.1lh 0.5lh;
     align-self: start;
-    background-color: var(--pre-background, var(--background1)) !important;
+    /* No fill: the block is defined by its border, not a tinted panel.
+       --pre-background is the token every other rule reads (webtui's base
+       pre, the per-theme overrides at ~1322, the gradient that fakes the
+       padding band), so blanking it here turns them all off at once instead
+       of needing an !important per rule. The explicit background-color and
+       -image still have to be set: Shiki writes an inline background-color
+       on the <pre>, and the base pre rule paints a gradient. */
+    --pre-background: transparent;
+    background-color: transparent !important;
+    background-image: none !important;
+    /* Inline padding so code clears the border it now sits inside. The end
+       side is set further down, where this rule previously zeroed it. */
+    padding-inline-start: 1ch;
     /* No max-height cap here — the surrounding container (slide-inner,
        article body) handles its own overflow. Capping the pre forces
        internal scrolling which clips visible content and makes users
@@ -1689,7 +1704,9 @@ pre.astro-code {
     min-width: 0;
     max-width: round(calc(0.98 * 100%), 1ch);
     width: max-content;
-    padding-inline-end: 0;
+    /* 1ch, not 0: the block is bounded by a border now, so code running
+       flush into the right edge reads as a clipping bug. */
+    padding-inline-end: 1ch;
     /* Anchor for the ::after language badge below. (The copy-button script
        also sets this inline at runtime; declaring it here means the badge
        is positioned correctly before that script runs.) */
@@ -1751,17 +1768,18 @@ pre.astro-code::after {
     z-index: 2;
 }
 
-/* The rule the badge breaks. Only the top edge is drawn — a full box would
-   fight the block's own background fill; a single rule with the glyph
-   notched into it is the part of the ASCII-box idiom that carries the
-   meaning. Tinted to the language hue but well muted, so it reads as
-   structure rather than as a second accent. */
+/* The box the badge breaks. Now that the block carries no background fill,
+   all four edges are drawn: with no panel to bound it, a lone top rule left
+   the code floating. Tinted to the language hue and held back from full
+   strength so it reads as structure rather than as a second accent — though
+   stronger than the 0.28 the top-only rule used, since a border is now the
+   only thing separating code from page. */
 pre.astro-code::before {
     content: '';
     position: absolute;
-    inset: 0 0 auto 0;
-    border-top: 1px solid
-        oklch(from var(--lang-badge, var(--material-pink)) l c h / 0.28);
+    inset: 0;
+    border: 1px solid
+        oklch(from var(--lang-badge, var(--material-pink)) l c h / 0.45);
     pointer-events: none;
     z-index: 1;
 }
