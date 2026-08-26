@@ -2061,16 +2061,42 @@ pre.astro-code span.line:has(> .code-line-link)::before {
        a 1ch..3ch range let the box grow at line 10, stepping the divider
        6.5px to the right mid-gutter. --line-number-width is set per block by
        Doc.astro from the widest line number it actually has, so a 9-line
-       block keeps a 1ch gutter and a 100-line block widens once, uniformly. */
+       block keeps a 1ch gutter and a 100-line block widens once, uniformly.
+
+       content-box, against the site-wide border-box default: the width names
+       the space the DIGITS get. Under border-box the 1ch padding and 2px
+       border ate into it, leaving 8.5px — one character — so "10" spilled
+       through the divider and text-align: right had nothing to align. */
+    box-sizing: content-box;
     width: var(--line-number-width, 2ch);
     margin-right: 1ch;
     padding-right: 1ch;
     text-align: right;
     color: var(--pre-linenumber-fg, var(--foreground3));
+    /* Per line, so it spans the code rather than the whole frame. Drawing it
+       once for the block (to meet the border at top and bottom, as a TUI box
+       joins at ┬/┴) needs a full-height element, and the three candidates all
+       failed: pre::before is the frame, pre::after is the language badge, and
+       code::before cannot stretch vertically inside a flex-column that also
+       scrolls. Not worth a wrapper element for ~5px at each end. */
     border-right: 2px solid var(--background2);
     text-decoration: none;
     user-select: none;
 }
+
+/* The gutter divider, drawn once for the whole block rather than as a
+   border-right on each line. Per line it could only span the lines, so it
+   stopped ~5px short of the frame at top and bottom and read as floating;
+   as a full-height rule it meets the border at both ends, the way a TUI box
+   joins at its ┬ and ┴. Positioned at the gutter's outer edge: the anchor's
+   content width, plus its 1ch padding and the code's 1ch inset. */
+/* The gutter divider is drawn as an inset shadow on the border box rather
+   than its own pseudo-element: ::before is the frame and ::after is the
+   language badge, both already taken. A single vertical line at the gutter's
+   outer edge, spanning the full height so it meets the frame at top and
+   bottom the way a TUI box joins at ┬ and ┴.
+   Offset = block padding-inline (1ch) + digit width + their 1ch padding. */
+
 /* Only the hovered number lights up. The first version put the hover class on
    the <pre>, which lit every line in the block at once. */
 .code-line-link:hover,
