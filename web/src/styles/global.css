@@ -1730,18 +1730,13 @@ pre.astro-code {
    scrolling to the <code>: with overflow on the <pre>, anything positioned
    outside its box is clipped and the badge disappears entirely. */
 pre.astro-code::after {
-    /* Nerd Font glyph, set per language by the --lang-icon rules below.
-       Falls back to the generic "code" glyph for anything unmapped, so a
-       new language gets a sensible mark without touching this rule.
-
-       IMPORTANT: only glyphs verified present in the CURATED Nerd Font
-       subset (web/public/fonts/nerd/SymbolsNerdFont-Regular.woff2) may be
-       used — anything outside it renders as tofu, and the subset carries
-       an unpredictable slice of each icon family (e.g. it has seti's
-       Python U+E606 but not devicon's U+E73C). Check a codepoint by
-       measuring its rendered width before using it. */
-    content: var(--lang-icon, '\e796');
-    font-family: 'Symbols Nerd Font', var(--font-family);
+    /* The language NAME, read straight off the attribute shiki already
+       emits, the way a TUI panel titles its frame. This replaced a Nerd Font
+       glyph per language: the name is unambiguous (js vs ts vs jsonc all had
+       to share marks), needs no curated-subset check, and reads at any size.
+       The --lang-icon rules below are kept as the copy-affordance glyph. */
+    content: attr(data-language);
+    font-family: var(--font-family);
     position: absolute;
     /* Centre the glyph exactly ON the block's top edge: `top: 0` puts its
        top there, then translating up by half its own height drops the
@@ -1751,9 +1746,11 @@ pre.astro-code::after {
        clear of it. */
     top: 0;
     translate: 0 -50%;
-    right: 1ch;
+    /* Top-left, so the label titles the frame instead of trailing it, and so
+       it no longer shares the corner with the copy button. */
+    left: 2ch;
     /* Gap either side so the top border (below) breaks cleanly around the
-       glyph instead of running into it. */
+       label instead of running into it. */
     padding-inline: 0.6ch;
     color: var(--lang-badge, var(--material-pink));
     /* Page background, not a tint: the badge has to mask the border it
@@ -1801,10 +1798,39 @@ pre.astro-code[data-language='plaintext']::before {
    The real <button> still does the copying (see .code-copy-btn), so this
    swap is purely visual. That button is styled as a bare hit-target
    covering the badge, so the cursor and click both land correctly. */
-pre.astro-code:hover::after,
-pre.astro-code:focus-within::after {
+/* The copy glyph, drawn by the button itself. It used to be a content swap on
+   the language badge, which worked while the badge sat under the button in
+   the top-right corner; the badge is the language NAME at the top-LEFT now,
+   so swapping it would put the icon nowhere near what you click.
+   Visible only on hover / keyboard focus, as before. */
+pre.astro-code .code-copy-btn::before {
+    /* U+EBCC cod-copy, U+EAB2 check, U+EA76 close: all verified present
+       in the curated subset (EB4D and EA87 are not). */
     content: '\ebcc';
-    color: var(--foreground1);
+    font-family: 'Symbols Nerd Font', var(--font-family);
+    color: var(--foreground3);
+    background: var(--background0);
+    padding-inline: 0.4ch;
+    opacity: 0;
+    transition: opacity 100ms linear;
+}
+pre.astro-code:hover .code-copy-btn::before,
+pre.astro-code:focus-within .code-copy-btn::before {
+    opacity: 1;
+}
+pre.astro-code .code-copy-btn:hover::before {
+    color: var(--lang-badge, var(--material-pink));
+}
+/* Copy result: the <pre> carries .is-copied / .is-copy-failed for 1.2s. */
+pre.astro-code.is-copied .code-copy-btn::before {
+    content: '\eab2';
+    color: var(--green, var(--material-green));
+    opacity: 1;
+}
+pre.astro-code.is-copy-failed .code-copy-btn::before {
+    content: '\ea76';
+    color: var(--red, var(--material-red));
+    opacity: 1;
 }
 
 /* Click feedback. The script adds .is-copied (or .is-copy-failed) to the
