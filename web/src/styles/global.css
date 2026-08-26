@@ -1665,8 +1665,9 @@ pre.astro-code {
     /* Extra headroom (vs the 0.5lh below) so the language badge, which
        sits in this gap, clears whatever is above — including the last line
        of an immediately-preceding code block, where 0.5lh left the badge
-       overlapping the code. */
-    margin-block: 1.1lh 0.5lh;
+       overlapping the code. A whole line is enough for that; 1.1lh was
+       overshoot. */
+    margin-block: 1lh 0.5lh;
     align-self: start;
     /* No fill: the block is defined by its border, not a tinted panel.
        --pre-background is the token every other rule reads (webtui's base
@@ -1779,7 +1780,7 @@ pre.astro-code::before {
     position: absolute;
     inset: 0;
     border: 1px solid
-        oklch(from var(--lang-badge, var(--material-pink)) l c h / 0.45);
+        oklch(from var(--lang-badge, var(--material-pink)) l c h / 0.9);
     pointer-events: none;
     z-index: 1;
 }
