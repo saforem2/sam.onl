@@ -257,11 +257,15 @@
            band for more comfortable reading; the ch-based layout scales
            with it cleanly. Mobile (<=480px) keeps its own flat 16px rule
            below.
-           NB: px bounds (not rem) are deliberate — this var is applied at
-           both `html` and `body`, and a rem-based clamp compounds (body's
-           rem re-resolves against the already-bumped root, landing at
-           ~18px). px bounds make the clamp nesting-invariant. */
-        --font-size: clamp(16px, 10px + 1vw, 17px);
+           rem, not px: a px root ignores a raised browser font default
+           outright (15px stays 15px for someone who asked for 20px), which
+           is the accessibility floor that decides this value. 1rem tracks
+           that setting instead — 20px for that user, 16px for everyone else.
+
+           The previous note here warned that a rem clamp compounds to ~18px
+           because the var lands on both `html` and `body`. Measured: it does
+           not; both resolve to the same value. */
+        --font-size: 1rem;
         /* --line-height: 1.5; */
         --line-height: initial;
         --font-family-sans-serif: var(--font-family);
@@ -1177,7 +1181,9 @@
 
 @media (max-width: 480px) {
     :root {
-        --font-size: 16px;
+        /* Same value as the desktop root now, but kept as its own declaration
+           so a future mobile-only tweak has somewhere to go. */
+        --font-size: 1rem;
     }
 
     body,
@@ -1746,9 +1752,9 @@ pre.astro-code::after {
        clear of it. */
     top: 0;
     translate: 0 -50%;
-    /* Top-left, so the label titles the frame instead of trailing it, and so
-       it no longer shares the corner with the copy button. */
-    left: 2ch;
+    /* Top-right. The copy button shares this corner, so it is offset left of
+       the button's 3ch box rather than sitting under it. */
+    right: 4ch;
     /* Gap either side so the top border (below) breaks cleanly around the
        label instead of running into it. */
     padding-inline: 0.6ch;
