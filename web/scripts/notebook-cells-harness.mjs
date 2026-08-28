@@ -59,7 +59,10 @@ show('K: input + wrapper{ cellOut, section{cellOut} }', {
     type: 'root',
     children: [
         pre('python', 'print(1)'),
-        el('div', {}, [cellOut('FIRST'), el('section', {}, [cellOut('SECOND')])]),
+        el('div', {}, [
+            cellOut('FIRST'),
+            el('section', {}, [cellOut('SECOND')]),
+        ]),
     ],
 })
 
