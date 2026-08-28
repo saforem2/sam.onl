@@ -156,6 +156,63 @@ Gotchas if it is ever set up:
   no longer editable in the current dashboard. There is no wrangler
   command for this, so the API may be the only path.
 
+### Candidate workflow: `dev` as the working branch (not set up)
+
+The natural fit for the above is one long-lived branch rather than a
+domain per feature branch: `main` stays production, all work lands on
+`dev`, `preview.samf.sh` always shows dev's latest build, and a
+`dev` -> `main` PR ships. Checked against the docs; it holds up.
+
+A stale `dev` already exists on origin (`c7807d9`, 2026-03-09, 777
+commits behind main). Adopting it is a **reset to main, not a merge** —
+a force-push, so it needs an explicit go-ahead.
+
+Why it fits here:
+
+- **The alias is stable.** A branch alias binds to the branch, not to a
+  deployment; Pages re-points it at each new build automatically. A
+  failed build leaves it serving the last good one. No expiry.
+- **Build cost is a wash.** Today a change costs 2 builds (feature
+  branch + merge to main); under this model it also costs 2 (push to
+  dev + merge to main). It only gets worse if pushes stop being
+  batched — worth watching, given the burst commit pattern (15 in a day
+  on 2026-08-14).
+- **It can cost *less*.** Settings > Builds > Branch control > Preview:
+  pick **Custom branches**, Include = `dev`, leave Exclude **empty**
+  (the docs' Example 1 pattern; their stated Excludes-then-Includes
+  precedence contradicts their own Example 3, so include-only is the
+  unambiguous config). Every other branch then stops building. Leave
+  "Enable automatic production branch deployments" checked so `main`
+  keeps deploying.
+- **Env vars are a non-issue for this project.** Pages scopes variables
+  separately for Preview and Production, and a mismatch is the usual
+  trap. Ours are already Preview-scoped (branch previews build and
+  serve 200) and all three are build-time only — no secrets, no
+  bindings, no datastores. So the standard "never mirror production
+  secrets into preview" warning does not bite; there is nothing
+  sensitive to leak. Re-check this if a binding or secret is ever added.
+- **`noindex` is already correct.** Verified live: a branch preview
+  returns `x-robots-tag: noindex`, production does not.
+
+Order of operations, if this is ever done:
+
+1. Reset `dev` to `main` and push; wait for one **green** dev build.
+   The alias does not exist until a successful deployment does.
+2. Add `preview.samf.sh` as a Pages custom domain, activate it, and only
+   then retarget its CNAME to `dev.sam-onl.pages.dev`.
+3. Verify it serves **dev**, not production. A 200 is not proof: an
+   unproxied record or a missing dev deployment both fall back to the
+   production branch silently. Diff against a known dev-only string.
+4. Set the branch controls above.
+
+Two ways to break it later: excluding `dev` from preview builds (the
+alias freezes and quietly serves stale content), and
+`wrangler pages deployment delete --force` against dev's head, which is
+the one documented way to destroy an aliased deployment. Also note that
+branches skipped by branch controls produce **no GitHub check run** — if
+a branch protection rule ever requires the Cloudflare check, remove it
+first or those PRs will hang forever.
+
 ## Build minutes / quotas
 
 | Tier        | Free                                            |
