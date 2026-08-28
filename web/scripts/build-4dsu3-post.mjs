@@ -8,8 +8,8 @@
  * its output was flat 4-space-indented text with no structure.
  *
  * What this changes, and nothing else:
- *   1. indented output blocks  -> ```logs fences, so rehype-log-output.mjs can
- *      colorize the timestamp / level / source / message fields
+ *   1. indented output blocks  -> ```logs fences, so rehype-notebook-cells.mjs
+ *      can colorize the timestamp / level / source / message fields
  *   2. long output (> KEEP_LINES) -> wrapped in <details>, nothing deleted
  *   3. relative index_files/ image paths -> /assets/output_*.svg, which already
  *      exist in public/ and do not move when the route changes

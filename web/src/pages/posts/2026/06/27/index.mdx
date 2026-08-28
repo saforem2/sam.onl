@@ -644,7 +644,7 @@ Every `argo-shim` restart mints a new token. To keep everything in sync I use
 shell helpers in `~/.config/zsh/functions.zsh`. These are the actual pieces you
 need, not magic commands hidden elsewhere.
 
-```bash
+```zsh
 # Re-export the live shim token into the env vars various clients read.
 refresh-argo-token() {
   local settings="$HOME/.claude/settings.json"
