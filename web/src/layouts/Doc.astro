@@ -2162,6 +2162,13 @@ const articleSchema =
     lineBlocks.forEach((block, blockIndex) => {
         const code = block.querySelector('code')
         if (!code) return
+        // Unlabeled blocks (`text` / `plaintext`, shiki's fallback for a fence
+        // with no language) get no gutter. These are ASCII diagrams, terminal
+        // transcripts and log excerpts rather than source you would cite a
+        // line of, and a number column breaks box-drawing alignment. Matches
+        // global.css, which already drops the badge and border for these.
+        const lang = block.dataset.language
+        if (lang === 'text' || lang === 'plaintext') return
         const lines = code.querySelectorAll('span.line')
         if (!lines.length) return
         const blockId = 'b' + (blockIndex + 1)
