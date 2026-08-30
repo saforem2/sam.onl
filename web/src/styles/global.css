@@ -689,6 +689,24 @@
             from var(--callout-color) calc(l * var(--oklch-scale, 1.12)) c h /
                 0.1
         );
+        /* Opaque equivalent of --callout-bg for descendants that need to MASK
+           something (the code-block language badge and copy glyph paint over
+           the block's border). --callout-bg is translucent by design, so
+           masking with it directly would let the border show through; this
+           composites the same tint onto the page background at full alpha.
+           Kept adjacent to --callout-bg so the two stay in step. */
+        /* The surface a descendant must paint to MASK something (the code
+           block's language badge and copy glyph paint over its border).
+
+           Two real layers, not a precomputed mix: --callout-bg is translucent
+           and the browser composites it over the page itself. Trying to
+           reproduce that composite with color-mix got the wrong colour in both
+           oklch and srgb (measured pure black in every theme). Painting the
+           same tint over the same page background makes the mask match the
+           callout surface by construction. Kept next to --callout-bg so the
+           two stay in step. */
+        --code-mask-bg: var(--callout-bg);
+        --code-mask-under: var(--background0);
         padding-left: 0.5ch;
         transition:
             transform 120ms ease-out,
@@ -968,6 +986,17 @@
                leading the title. */
             display: flex;
             align-items: baseline;
+            /* A flex container makes every child a flex ITEM and drops the
+               whitespace text nodes between them, so a title carrying inline
+               markup lost its spaces: "The `Host *` trap" rendered as
+               "TheHost *trap". Re-add the gap between items rather than
+               abandoning flex (the layout above depends on it). 1ch, not an
+               arbitrary length: it is exactly one character cell, so the join
+               matches the surrounding monospace text.
+
+               margin-inline-start:auto on the toggle still pushes it right —
+               a gap does not interfere with that. */
+            gap: 0 1ch;
             background-color: var(--callout-summary-bg);
             color: var(--callout-color);
             font-weight: var(--font-weight-bold);
@@ -1765,7 +1794,21 @@ pre.astro-code::after {
        sits on so the rule appears to break around it, which is the whole
        ASCII-box effect. A translucent wash would let the line show
        through. */
-    background: var(--background0);
+    /* Mask the border with whatever surface the block actually sits on, not
+       the page background: inside a callout that surface is --callout-bg
+       layered over the page, and painting --background0 there left a visible
+       page-coloured rectangle behind the label. --code-mask-bg is set by any
+       container with its own fill (see .callout below); it falls back to the
+       page background everywhere else. */
+    /* Tint layer over page layer (see --code-mask-bg on .callout). Outside a
+       callout --code-mask-bg is unset, so this collapses to the page
+       background alone -- the original behaviour. */
+    background:
+        linear-gradient(
+            var(--code-mask-bg, transparent),
+            var(--code-mask-bg, transparent)
+        ),
+        var(--code-mask-under, var(--background0));
     line-height: 1;
     user-select: none;
     pointer-events: none;
@@ -1822,7 +1865,14 @@ pre.astro-code .code-copy-btn::before {
     content: '\ebcc';
     font-family: 'Symbols Nerd Font', var(--font-family);
     color: var(--foreground3);
-    background: var(--background0);
+    /* Same border-masking as the language badge above; same reason it must
+       follow the container surface rather than the page background. */
+    background:
+        linear-gradient(
+            var(--code-mask-bg, transparent),
+            var(--code-mask-bg, transparent)
+        ),
+        var(--code-mask-under, var(--background0));
     padding-inline: 0.4ch;
     opacity: 0;
     transition: opacity 100ms linear;
@@ -1993,10 +2043,21 @@ pre.astro-code > code {
     counter-reset: line;
     line-height: initial;
     /* background-color: var(--background1, var(--pre-background)) !important; */
-    /* Trailing padding so the last char of the longest line doesn't kiss the
-       block edge — without this, lines that exactly hit max-content get clipped
-       at the right when the `pre`'s own padding-inline-end is 0. */
-    padding-inline-end: 4ch;
+    /* Trailing clearance so the last character of a long line does not kiss
+       the block edge when scrolled to the end.
+
+       `scroll-padding-inline-end`, NOT `padding-inline-end`: the <pre> is
+       `width: max-content`, so real padding here is counted into the block's
+       intrinsic width and every SHORT block inherited 4ch of dead space after
+       its last character (measured: 39 of 43 blocks on this page never scroll,
+       so the gap was doing nothing on 91% of them while making each look
+       lopsided). scroll-padding only applies to the scroll container's own
+       scrolling, so it is inert until the content actually overflows — which
+       is exactly when the clearance is wanted.
+
+       The <pre>'s own padding-inline-end: 1ch (above) still keeps a
+       one-character margin on the non-scrolling case. */
+    scroll-padding-inline-end: 4ch;
 }
 
 pre.astro-code span.line[tabindex='0'] {
